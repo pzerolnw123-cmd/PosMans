@@ -9,7 +9,7 @@ export async function POST(request: Request) {
       "content-type": request.headers.get("content-type") || "application/json",
       "x-csrf-token": request.headers.get("x-csrf-token") || "",
       origin: request.headers.get("origin") || "http://localhost:3000",
-      referer: request.headers.get("referer") || "http://localhost:3000/admin",
+      referer: request.headers.get("referer") || "http://localhost:3000/owner",
     },
     body,
   });

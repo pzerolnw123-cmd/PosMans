@@ -424,13 +424,10 @@ router.post("/logout-all", requireTrustedOrigin, requireCsrf, requireAuth, async
 
 router.get("/me", requireAuth, async (req, res, next) => {
   try {
-    const csrfToken = issueCsrfToken();
-    setCsrfCookie(res, csrfToken);
     res.set("Cache-Control", "no-store");
     res.json({
       user: req.session.user,
       session: { expiresAt: req.session.expiresAt },
-      csrfToken,
     });
   } catch (error) {
     next(error);

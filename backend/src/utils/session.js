@@ -2,6 +2,12 @@ const crypto = require("node:crypto");
 const { prisma } = require("../lib/db");
 const { env } = require("../config/env");
 
+const EXPIRED_SESSION_CLEANUP_INTERVAL_MS = 60 * 1000;
+const SESSION_REFRESH_THRESHOLD_MS = Math.min(5 * 60 * 1000, Math.floor(env.SESSION_IDLE_TIMEOUT_MS / 2));
+
+let lastExpiredSessionCleanupAt = 0;
+let expiredSessionCleanupPromise = null;
+
 function hashToken(value) {
   return crypto.createHmac("sha256", env.SESSION_HASH_SECRET).update(value).digest("hex");
 }
@@ -35,7 +41,19 @@ function cookieOptions(expiresAt) {
 }
 
 async function cleanupExpiredSessions() {
-  await prisma.session.deleteMany({ where: { expiresAt: { lte: new Date() } } });
+  const now = Date.now();
+  if (now - lastExpiredSessionCleanupAt < EXPIRED_SESSION_CLEANUP_INTERVAL_MS) {
+    return expiredSessionCleanupPromise || null;
+  }
+
+  lastExpiredSessionCleanupAt = now;
+  expiredSessionCleanupPromise = prisma.session
+    .deleteMany({ where: { expiresAt: { lte: new Date() } } })
+    .finally(() => {
+      expiredSessionCleanupPromise = null;
+    });
+
+  return expiredSessionCleanupPromise;
 }
 
 function calculateSessionExpiry(now, createdAt = now) {
@@ -106,6 +124,13 @@ async function getSessionFromToken(token) {
 
 async function touchSession(session) {
   const now = new Date();
+  const remainingMs = session.expiresAt.getTime() - now.getTime();
+
+  // Only refresh the idle timeout when the session is getting close to expiry.
+  if (remainingMs > SESSION_REFRESH_THRESHOLD_MS) {
+    return session;
+  }
+
   const nextExpiresAt = calculateSessionExpiry(now, session.createdAt);
 
   if (nextExpiresAt <= session.expiresAt) {

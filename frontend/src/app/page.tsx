@@ -1,190 +1,142 @@
 import Link from "next/link";
 import { getCurrentSession } from "@/lib/session";
+import { getWorkspaceHref } from "@/lib/workspace";
+import { PanelCard } from "@/components/backoffice-shell";
 
-const productHighlights = [
+const featureCards = [
   {
-    title: "ขายหน้าร้านเร็ว",
-    copy: "เปิดบิลไว รองรับงานหน้าร้านและการจัดการคำสั่งซื้อในหน้าจอเดียว",
+    title: "ขายไว",
+    copy: "หน้า POS และหลังบ้านใช้ภาษาภาพแบบเดียวกัน ช่วยให้ทีมใหม่เข้าใจระบบเร็วและใช้งานมั่นใจขึ้น",
   },
   {
-    title: "หลังบ้านเข้าใจง่าย",
-    copy: "เจ้าของร้านดูภาพรวมยอดขาย สต็อก และสิทธิ์ผู้ใช้งานได้แบบไม่ซับซ้อน",
+    title: "จัดการร้านชัด",
+    copy: "แยกส่วนสินค้า รายงาน การตั้งค่า และสิทธิ์ผู้ใช้เป็นบล็อกชัดเจนตาม flow จริงของร้านอาหาร",
   },
   {
-    title: "แยกระบบชัดเจน",
-    copy: "Frontend และ backend แยกบทบาท ทำให้ขยายระบบและดูแลความปลอดภัยได้ง่ายขึ้น",
+    title: "พร้อมต่อยอด",
+    copy: "ดีไซน์นี้เปิดทางให้เพิ่มหน้าสินค้า สต็อก รายงาน และ checkout โดยยังรักษาโครงสร้างเดิมได้",
   },
 ];
 
-const featurePillars = [
-  "แดชบอร์ดสำหรับเจ้าของร้าน",
-  "ระบบสิทธิ์ Super Admin และ Owner",
-  "Session และ auth แบบปลอดภัย",
-  "พร้อมต่อยอดสินค้า สต็อก และรายงาน",
+const statCards = [
+  { label: "Sections Ready", value: "3", hint: "Home, Login, Owner" },
+  { label: "Design Tokens", value: "1 system", hint: "Shared cards, inputs, buttons, sidebar" },
+  { label: "Visual Direction", value: "Store console", hint: "Clean glass panels with soft blue glow" },
 ];
 
 export default async function HomePage() {
   const session = await getCurrentSession();
-  const primaryHref = session ? "/admin" : "/login";
-  const primaryLabel = session ? "ไปที่แดชบอร์ด" : "เข้าสู่ระบบ";
+  const primaryHref = session ? getWorkspaceHref(session.user) : "/login";
+  const primaryLabel = session ? "เปิดหลังบ้าน" : "เข้าสู่ระบบ";
 
   return (
-    <main className="relative overflow-hidden">
-      <section className="mx-auto flex min-h-screen w-full max-w-7xl flex-col px-6 pb-12 pt-6 lg:px-10 lg:pb-16 lg:pt-8">
-        <header className="flex items-center justify-between rounded-full border border-white/70 bg-white/70 px-5 py-4 shadow-[0_12px_35px_rgba(25,32,29,0.08)] backdrop-blur">
+    <main>
+      <div className="app-frame">
+        <div className="topbar">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[var(--accent-deep)]">POS MANS</p>
-            <p className="mt-1 text-sm text-[var(--muted)]">Smart POS platform for modern stores</p>
+            <p className="eyebrow-label">POS MANS</p>
+            <p className="muted-text">Store-first interface system inspired by your reference screen</p>
           </div>
-
-          <nav className="hidden items-center gap-6 text-sm text-[var(--muted)] md:flex">
-            <a href="#features" className="transition hover:text-[var(--foreground)]">
-              ฟีเจอร์
-            </a>
-            <a href="#workflow" className="transition hover:text-[var(--foreground)]">
-              การใช้งาน
-            </a>
-            <Link
-              href="/login"
-              className="rounded-full border border-[var(--border)] bg-white/80 px-4 py-2 font-medium text-[var(--foreground)] transition hover:border-[var(--accent)]"
-            >
-              Login
+          <div className="button-row">
+            <Link href="/login" className="secondary-button">
+              เข้าสู่ระบบ
             </Link>
-          </nav>
-        </header>
-
-        <div className="grid flex-1 items-center gap-10 py-10 lg:grid-cols-[1.05fr_0.95fr] lg:py-16">
-          <section className="space-y-8">
-            <div className="space-y-5">
-              <span className="inline-flex rounded-full border border-white/80 bg-white/75 px-4 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-[var(--accent-deep)] shadow-[0_8px_24px_rgba(29,31,30,0.08)]">
-                Built for Store Owners
-              </span>
-              <div className="max-w-3xl space-y-5">
-                <h1 className="text-5xl font-semibold leading-[0.94] tracking-[-0.07em] text-[var(--foreground)] sm:text-6xl lg:text-7xl">
-                  ระบบ POS ที่ช่วยให้ร้านขายไวขึ้น และจัดการหลังบ้านได้ชัดขึ้น
-                </h1>
-                <p className="max-w-2xl text-base leading-8 text-[var(--muted)] sm:text-lg">
-                  POS MANS ออกแบบมาสำหรับร้านที่อยากมีหน้าขายที่คล่องตัว และมีหลังบ้านที่เจ้าของร้านเข้าใจได้ทันที
-                  ตั้งแต่ยอดขาย สต็อก ไปจนถึงการควบคุมสิทธิ์ของผู้ใช้งานในระบบ
-                </p>
-              </div>
-            </div>
-
-            <div className="flex flex-col gap-4 sm:flex-row">
-              <Link
-                href={primaryHref}
-                className="inline-flex items-center justify-center rounded-full bg-[var(--foreground)] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent)]"
-              >
-                {primaryLabel}
-              </Link>
-              <a
-                href="#features"
-                className="inline-flex items-center justify-center rounded-full border border-[var(--border)] bg-white/80 px-6 py-3 text-sm font-semibold text-[var(--foreground)] transition hover:border-[var(--accent)]"
-              >
-                ดูภาพรวมระบบ
-              </a>
-            </div>
-
-            <div className="grid gap-4 sm:grid-cols-3">
-              {productHighlights.map((item) => (
-                <article key={item.title} className="rounded-[28px] border border-white/80 bg-white/75 p-5 shadow-[0_14px_34px_rgba(28,33,31,0.08)]">
-                  <h2 className="text-lg font-semibold text-[var(--foreground)]">{item.title}</h2>
-                  <p className="mt-2 text-sm leading-6 text-[var(--muted)]">{item.copy}</p>
-                </article>
-              ))}
-            </div>
-          </section>
-
-          <section className="relative">
-            <div className="absolute -left-4 top-8 h-28 w-28 rounded-full bg-[rgba(217,72,95,0.12)] blur-2xl" />
-            <div className="absolute right-0 top-0 h-32 w-32 rounded-full bg-[rgba(81,129,119,0.14)] blur-2xl" />
-
-            <div className="glass-panel relative overflow-hidden rounded-[36px] p-6 sm:p-8">
-              <div className="absolute inset-x-0 top-0 h-28 bg-[linear-gradient(180deg,rgba(217,72,95,0.16),transparent)]" />
-              <div className="relative space-y-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--accent-deep)]">Owner View</p>
-                    <h2 className="mt-2 text-2xl font-semibold tracking-[-0.05em] text-[var(--foreground)]">
-                      คุมร้านจากภาพรวมเดียว
-                    </h2>
-                  </div>
-                  <div className="rounded-full border border-white/70 bg-white/80 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-[var(--foreground)]">
-                    Live Ready
-                  </div>
-                </div>
-
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <article className="rounded-[28px] border border-white/80 bg-white/85 p-5">
-                    <p className="text-sm text-[var(--muted)]">ยอดขายวันนี้</p>
-                    <h3 className="mt-3 text-4xl font-semibold tracking-[-0.05em] text-[var(--foreground)]">THB 28,450</h3>
-                    <p className="mt-2 text-sm text-emerald-700">+12.4% จากเมื่อวาน</p>
-                  </article>
-
-                  <article className="rounded-[28px] border border-white/80 bg-[rgba(30,35,32,0.95)] p-5 text-white">
-                    <p className="text-sm text-white/70">ผู้ใช้งานในระบบ</p>
-                    <h3 className="mt-3 text-4xl font-semibold tracking-[-0.05em]">2 Roles</h3>
-                    <p className="mt-2 text-sm text-white/70">Super Admin สำหรับทีมคุณ และ Owner สำหรับลูกค้า</p>
-                  </article>
-                </div>
-
-                <div id="workflow" className="rounded-[32px] border border-white/80 bg-white/80 p-6">
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                    <div>
-                      <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--accent-deep)]">Workflow</p>
-                      <h3 className="mt-2 text-xl font-semibold tracking-[-0.04em] text-[var(--foreground)]">
-                        จากหน้าร้านสู่หลังบ้านอย่างเป็นระบบ
-                      </h3>
-                    </div>
-                    <span className="rounded-full bg-[rgba(217,72,95,0.1)] px-3 py-2 text-xs font-semibold text-[var(--accent-deep)]">
-                      Clean split architecture
-                    </span>
-                  </div>
-
-                  <div className="mt-5 grid gap-3">
-                    {[
-                      "จัดการการล็อกอินและ session ผ่าน backend",
-                      "ให้เจ้าของร้านเข้าถึงข้อมูลเฉพาะร้านตัวเอง",
-                      "เปิดทางต่อยอดสินค้า สต็อก รายงาน และ POS checkout",
-                    ].map((item) => (
-                      <div
-                        key={item}
-                        className="rounded-[22px] border border-white/70 bg-[rgba(255,255,255,0.85)] px-4 py-4 text-sm text-[var(--foreground)]"
-                      >
-                        {item}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </section>
+            <Link href={primaryHref} className="primary-button">
+              {primaryLabel}
+            </Link>
+          </div>
         </div>
 
-        <section id="features" className="grid gap-5 lg:grid-cols-[0.9fr_1.1fr]">
-          <div className="glass-panel rounded-[32px] p-6 sm:p-8">
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--accent-deep)]">Why it works</p>
-            <h2 className="mt-3 text-3xl font-semibold tracking-[-0.05em] text-[var(--foreground)]">
-              โครงสร้างพร้อมโตสำหรับงานขายจริง
-            </h2>
-            <p className="mt-4 text-base leading-7 text-[var(--muted)]">
-              หน้าแรกนี้ออกแบบให้สื่อสารกับร้านค้าได้ทันทีว่า POS MANS ไม่ใช่แค่หน้าขาย แต่เป็นระบบที่มีฐานหลังบ้านพร้อมต่อยอด
-              ทั้งเรื่อง auth, tenant access และ owner dashboard
+        <section className="hero-layout" style={{ marginTop: 18 }}>
+          <article className="hero-card">
+            <p className="eyebrow-label">Complete UI Refresh</p>
+            <h1 className="hero-title">POS หลังบ้านที่ดูพร้อมใช้งานตั้งแต่หน้าบ้านถึงหน้าตั้งค่า</h1>
+            <p className="hero-copy">
+              เราปรับหน้าเว็บทุกหน้าที่มีอยู่ให้ไปในทิศทางเดียวกับภาพอ้างอิง:
+              sidebar ชัด, card โปร่งสะอาด, ปุ่มเด่นอ่านง่าย, และ form ที่โฟกัสกับงานเจ้าของร้านจริง
             </p>
-          </div>
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            {featurePillars.map((item, index) => (
-              <article key={item} className="glass-panel rounded-[28px] p-6">
-                <span className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--accent-deep)]">
-                  0{index + 1}
-                </span>
-                <h3 className="mt-3 text-xl font-semibold tracking-[-0.04em] text-[var(--foreground)]">{item}</h3>
-              </article>
-            ))}
-          </div>
+            <div className="button-row" style={{ justifyContent: "flex-start", marginTop: 22 }}>
+              <Link href={primaryHref} className="primary-button">
+                {primaryLabel}
+              </Link>
+              <a href="#overview" className="secondary-button">
+                ดูภาพรวม
+              </a>
+            </div>
+          </article>
+
+          <PanelCard
+            eyebrow="Preview"
+            title="FastManFoods"
+            description="ตัวอย่างทิศทาง UI ที่ยึดจากหน้าตั้งค่าร้านในภาพ และขยายให้ครอบคลุมทั้งระบบ"
+          >
+            <div className="stats-grid" style={{ marginTop: 20 }}>
+              {statCards.map((item) => (
+                <div key={item.label} className="metric-card">
+                  <h3>{item.label}</h3>
+                  <strong>{item.value}</strong>
+                  <p className="muted-text">{item.hint}</p>
+                </div>
+              ))}
+            </div>
+          </PanelCard>
         </section>
-      </section>
+
+        <section id="overview" className="marketing-grid" style={{ marginTop: 18 }}>
+          {featureCards.map((item) => (
+            <article key={item.title} className="mini-card">
+              <p className="eyebrow-label">Feature</p>
+              <h3>{item.title}</h3>
+              <p className="muted-text">{item.copy}</p>
+            </article>
+          ))}
+        </section>
+
+        <section className="content-grid" style={{ marginTop: 18 }}>
+          <PanelCard
+            eyebrow="Included Pages"
+            title="สิ่งที่ถูกยกดีไซน์ใหม่แล้ว"
+            description="หน้าที่ผู้ใช้แตะจริงตอนนี้ทั้งหมดอยู่ใน visual language ชุดเดียวกันแล้ว"
+          >
+            <div className="settings-grid">
+              {[
+                "หน้าแรกสำหรับแนะนำระบบและพาไปยัง flow ที่ใช้งานต่อ",
+                "หน้าเข้าสู่ระบบพร้อมสองขั้นตอน username/password และ PIN keypad",
+                "หน้า owner ที่วางเป็นหน้าตั้งค่าร้านตามภาพอ้างอิง พร้อม sidebar และ profile card",
+              ].map((item) => (
+                <div key={item} className="metric-card">
+                  <p className="muted-text" style={{ marginTop: 0 }}>
+                    {item}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </PanelCard>
+
+          <PanelCard
+            eyebrow="Experience"
+            title="แนวทาง UX ที่ยึดไว้"
+            description="ลดความรก เพิ่มการอ่านค่าเร็ว และจัดความสำคัญด้วยระยะห่าง น้ำหนักตัวอักษร และสถานะที่ชัด"
+          >
+            <div className="settings-grid">
+              {[
+                ["Sidebar ก่อน", "ผู้ใช้รู้ทันทีว่าตอนนี้อยู่ส่วนไหนของระบบ"],
+                ["Card เป็นโมดูล", "ทุกพื้นที่ทำงานแยกหน้าที่ชัดเหมือน mockup"],
+                ["Action เด่น", "ปุ่มหลักใช้สีแบรนด์และวางชิดมุมล่างขวาตาม flow บันทึก"],
+              ].map(([title, copy]) => (
+                <div key={title} className="inline-preview">
+                  <div>
+                    <h3>{title}</h3>
+                    <p className="muted-text">{copy}</p>
+                  </div>
+                  <span className="ghost-pill">UX</span>
+                </div>
+              ))}
+            </div>
+          </PanelCard>
+        </section>
+      </div>
     </main>
   );
 }

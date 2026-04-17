@@ -254,7 +254,7 @@ describe("backend security hardening", () => {
     expect(response.status).toBe(400);
   });
 
-  test("extends active session expiry on authenticated requests", async () => {
+  test("extends active session expiry on authenticated requests when close to expiry", async () => {
     const app = createApp();
     prisma.session.findUnique.mockResolvedValue({
       id: "session-1",
@@ -268,6 +268,21 @@ describe("backend security hardening", () => {
     expect(response.status).toBe(200);
     expect(prisma.session.update).toHaveBeenCalled();
     expect(response.headers["set-cookie"][0]).toContain("pos_mans_session=");
+  });
+
+  test("does not extend a session that is still fresh", async () => {
+    const app = createApp();
+    prisma.session.findUnique.mockResolvedValue({
+      id: "session-1",
+      createdAt: new Date(Date.now() - 10 * 60_000),
+      expiresAt: new Date(Date.now() + 45 * 60_000),
+      user: buildSessionUser(),
+    });
+
+    const response = await request(app).get("/api/auth/me").set("Cookie", ["pos_mans_session=session-token"]);
+
+    expect(response.status).toBe(200);
+    expect(prisma.session.update).not.toHaveBeenCalled();
   });
 
   test("rejects sessions that exceed the absolute timeout", async () => {

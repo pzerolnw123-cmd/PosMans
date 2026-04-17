@@ -1,7 +1,7 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { csrfCookieName, readCookie } from "@/lib/csrf";
 
 export function LogoutButton() {
@@ -25,9 +25,10 @@ export function LogoutButton() {
           router.refresh();
         });
       }}
-      className="rounded-2xl border border-[var(--border)] bg-white/80 px-5 py-3 text-sm font-semibold text-[var(--foreground)] transition hover:border-[var(--accent)] hover:text-[var(--accent)] disabled:opacity-60"
+      className="logout-button"
+      style={{ width: "100%", marginTop: 14 }}
     >
-      {pending ? "Signing out..." : "Sign out"}
+      {pending ? "กำลังออกจากระบบ..." : "ออกจากระบบ"}
     </button>
   );
 }

@@ -1,8 +1,9 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { csrfCookieName, ensureCsrfToken, readCookie } from "@/lib/csrf";
+import { getWorkspaceHref } from "@/lib/workspace";
 
 const keypad = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "", "0", "backspace"] as const;
 const pinLength = 6;
@@ -37,7 +38,7 @@ export function LoginForm() {
   async function completeAuth(url: "/api/auth/verify-pin" | "/api/auth/setup-pin", body: Record<string, string>, fallbackError: string) {
     const csrfToken = await getCsrfToken();
     if (!csrfToken) {
-      setError("Unable to initialize security token. Please refresh and try again.");
+      setError("ไม่สามารถเริ่มต้น security token ได้ กรุณารีเฟรชหน้าแล้วลองใหม่");
       return;
     }
 
@@ -59,8 +60,12 @@ export function LoginForm() {
       return;
     }
 
+    const data = (await response.json().catch(() => null)) as
+      | { user?: { platformRole: string; storeRole: string | null } }
+      | null;
+
     startTransition(() => {
-      router.push("/admin");
+      router.push(data?.user ? getWorkspaceHref(data.user) : "/owner");
       router.refresh();
     });
   }
@@ -70,13 +75,13 @@ export function LoginForm() {
 
     const normalizedUsername = username.trim().toLowerCase();
     if (!normalizedUsername || !password) {
-      setError("Enter your username and password first.");
+      setError("กรอก username และ password ก่อน");
       return;
     }
 
     const csrfToken = await getCsrfToken();
     if (!csrfToken) {
-      setError("Unable to initialize security token. Please refresh and try again.");
+      setError("ไม่สามารถเริ่มต้น security token ได้ กรุณารีเฟรชหน้าแล้วลองใหม่");
       return;
     }
 
@@ -98,7 +103,7 @@ export function LoginForm() {
       | null;
 
     if (!response.ok || !data?.user) {
-      setError(data?.error || "Sign in failed");
+      setError(data?.error || "เข้าสู่ระบบไม่สำเร็จ");
       return;
     }
 
@@ -124,8 +129,9 @@ export function LoginForm() {
       return;
     }
 
-    if (pin.length >= pinLength) return;
-    setPin((current) => `${current}${value}`);
+    if (pin.length < pinLength) {
+      setPin((current) => `${current}${value}`);
+    }
   }
 
   function removeDigit() {
@@ -151,28 +157,28 @@ export function LoginForm() {
     setError(null);
 
     if (pin.length !== pinLength) {
-      setError("PIN must be 6 digits.");
+      setError("PIN ต้องมี 6 หลัก");
       return;
     }
 
-    await completeAuth("/api/auth/verify-pin", { pin }, "PIN verification failed");
+    await completeAuth("/api/auth/verify-pin", { pin }, "ตรวจสอบ PIN ไม่สำเร็จ");
   }
 
   async function submitSetupPinStep() {
     setError(null);
 
     if (pin.length !== pinLength || confirmPin.length !== pinLength) {
-      setError("Enter and confirm all 6 PIN digits.");
+      setError("กรอก PIN ให้ครบทั้งสองช่อง");
       return;
     }
 
     if (pin !== confirmPin) {
-      setError("PIN confirmation does not match.");
+      setError("PIN ทั้งสองชุดไม่ตรงกัน");
       setConfirmPin("");
       return;
     }
 
-    await completeAuth("/api/auth/setup-pin", { pin, confirmPin }, "PIN setup failed");
+    await completeAuth("/api/auth/setup-pin", { pin, confirmPin }, "ตั้งค่า PIN ไม่สำเร็จ");
   }
 
   function resetChallenge() {
@@ -184,88 +190,61 @@ export function LoginForm() {
   }
 
   if (challengeUser) {
-    const title = challengeMode === "setup" ? "Set your new PIN" : "Current passcode";
+    const title = challengeMode === "setup" ? "ตั้งค่า PIN ใหม่" : "ยืนยัน PIN";
     const description =
       challengeMode === "setup"
-        ? `Create a 6-digit PIN for ${challengeUser.username}, then confirm it once more.`
-        : `Enter the current PIN for ${challengeUser.username}.`;
+        ? `สร้าง PIN 6 หลักสำหรับ ${challengeUser.username} แล้วกรอกยืนยันอีกครั้ง`
+        : `กรอก PIN ปัจจุบันของ ${challengeUser.username} เพื่อเข้าสู่หลังบ้าน`;
 
     return (
-      <div className="w-full max-w-md rounded-[34px] bg-[rgba(30,31,33,0.96)] p-5 text-white shadow-[0_24px_80px_rgba(16,18,21,0.35)]">
-        <div className="space-y-6 rounded-[28px] border border-white/8 px-5 pb-6 pt-5 sm:px-7 sm:pb-8 sm:pt-6">
-          <div className="flex items-start justify-between gap-4">
-            <div className="space-y-2">
-              <div className="inline-flex rounded-full bg-white/8 px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-white/70">
-                {challengeMode === "setup" ? "Pin Setup" : "Pin Access"}
-              </div>
-              <div>
-                <h1 className="text-3xl font-semibold tracking-[-0.04em] text-white">{title}</h1>
-                <p className="mt-2 text-sm text-white/60">{description}</p>
-              </div>
-            </div>
-
-            <button type="button" onClick={resetChallenge} className="text-3xl leading-none text-white/80 transition hover:text-white">
-              X
-            </button>
-          </div>
-
-          <div className="py-2 text-sm text-white/55">Signed in as {challengeUser.displayName}</div>
-
-          <div className="space-y-4">
+      <div className="pin-shell">
+        <div className="pin-panel">
+          <div className="panel-header">
             <div>
-              <p className="mb-3 text-center text-xs font-semibold uppercase tracking-[0.22em] text-white/45">
-                {challengeMode === "setup" ? "New PIN" : "PIN"}
+              <p className="eyebrow-label" style={{ color: "rgba(255,255,255,0.58)" }}>
+                {challengeMode === "setup" ? "PIN Setup" : "PIN Access"}
               </p>
-              <div className="flex justify-center gap-4 py-1">
-                {Array.from({ length: pinLength }).map((_, index) => {
-                  const filled = index < pin.length;
-                  return (
-                    <div
-                      key={index}
-                      className={`h-4 w-4 rounded-full border transition ${filled ? "border-white bg-white" : "border-white/75 bg-transparent"}`}
-                    />
-                  );
-                })}
-              </div>
+              <h1 style={{ color: "#fff", fontSize: "2.2rem" }}>{title}</h1>
+              <p style={{ color: "rgba(255,255,255,0.68)" }}>{description}</p>
             </div>
-
-            {challengeMode === "setup" ? (
-              <div>
-                <p className="mb-3 text-center text-xs font-semibold uppercase tracking-[0.22em] text-white/45">Confirm PIN</p>
-                <div className="flex justify-center gap-4 py-1">
-                  {Array.from({ length: pinLength }).map((_, index) => {
-                    const filled = index < confirmPin.length;
-                    return (
-                      <div
-                        key={index}
-                        className={`h-4 w-4 rounded-full border transition ${filled ? "border-white bg-white" : "border-white/75 bg-transparent"}`}
-                      />
-                    );
-                  })}
-                </div>
-              </div>
-            ) : null}
-
-            <button
-              type="button"
-              onClick={() => {
-                setPin("");
-                setConfirmPin("");
-                setError(null);
-              }}
-              className="mx-auto block text-sm font-medium text-white/72 transition hover:text-white"
-            >
-              Clear
+            <button type="button" onClick={resetChallenge} className="ghost-button" style={{ background: "rgba(255,255,255,0.08)", color: "#fff", borderColor: "rgba(255,255,255,0.1)" }}>
+              เปลี่ยนบัญชี
             </button>
           </div>
+
+          <p style={{ color: "rgba(255,255,255,0.74)", margin: "18px 0 0" }}>Signed in as {challengeUser.displayName}</p>
+
+          <div style={{ marginTop: 18 }}>
+            <p className="form-caption" style={{ color: "rgba(255,255,255,0.58)", textAlign: "center", marginBottom: 12 }}>
+              {challengeMode === "setup" ? "PIN ใหม่" : "PIN"}
+            </p>
+            <div className="pin-dots">
+              {Array.from({ length: pinLength }).map((_, index) => (
+                <span key={index} className={index < pin.length ? "pin-dot is-filled" : "pin-dot"} />
+              ))}
+            </div>
+          </div>
+
+          {challengeMode === "setup" ? (
+            <div style={{ marginTop: 18 }}>
+              <p className="form-caption" style={{ color: "rgba(255,255,255,0.58)", textAlign: "center", marginBottom: 12 }}>
+                ยืนยัน PIN
+              </p>
+              <div className="pin-dots">
+                {Array.from({ length: pinLength }).map((_, index) => (
+                  <span key={index} className={index < confirmPin.length ? "pin-dot is-filled" : "pin-dot"} />
+                ))}
+              </div>
+            </div>
+          ) : null}
 
           {error ? (
-            <p className="rounded-2xl border border-[rgba(255,92,92,0.25)] bg-[rgba(255,92,92,0.08)] px-4 py-3 text-sm text-[rgba(255,189,189,0.92)]">
+            <p className="alert-error" style={{ marginTop: 18, background: "rgba(208,87,111,0.12)", color: "#ffc6d0", borderColor: "rgba(255,158,180,0.18)" }}>
               {error}
             </p>
           ) : null}
 
-          <div className="grid grid-cols-3 gap-x-10 gap-y-6 pt-3">
+          <div className="keypad-grid">
             {keypad.map((key) => {
               if (key === "") {
                 return <div key="empty" />;
@@ -277,24 +256,25 @@ export function LoginForm() {
                     key={key}
                     type="button"
                     onClick={removeDigit}
-                    className="h-16 rounded-full text-4xl font-light text-white transition hover:bg-white/8 disabled:opacity-40"
+                    className="keypad-button"
                     disabled={pending || (!pin.length && !confirmPin.length)}
                     aria-label="Delete last digit"
                   >
-                    {"<-"}
+                    ←
                   </button>
                 );
               }
 
-              const maxReached = challengeMode === "setup" ? pin.length >= pinLength && confirmPin.length >= pinLength : pin.length >= pinLength;
+              const maxReached =
+                challengeMode === "setup" ? pin.length >= pinLength && confirmPin.length >= pinLength : pin.length >= pinLength;
 
               return (
                 <button
                   key={key}
                   type="button"
                   onClick={() => appendDigit(key)}
-                  className="h-16 rounded-full text-4xl font-light text-white transition hover:bg-white/8 disabled:opacity-40"
-                  disabled={maxReached || pending}
+                  className="keypad-button"
+                  disabled={pending || maxReached}
                 >
                   {key}
                 </button>
@@ -302,14 +282,28 @@ export function LoginForm() {
             })}
           </div>
 
-          <button
-            type="button"
-            onClick={() => void (challengeMode === "setup" ? submitSetupPinStep() : submitVerifyPinStep())}
-            disabled={pending || (challengeMode === "setup" ? confirmPin.length !== pinLength : pin.length !== pinLength)}
-            className="mt-2 w-full rounded-2xl bg-white px-5 py-3 text-sm font-semibold text-[#1d1e20] transition hover:bg-[rgba(255,255,255,0.88)] disabled:cursor-not-allowed disabled:opacity-45"
-          >
-            {pending ? "Verifying..." : challengeMode === "setup" ? "Save PIN and enter" : "Unlock backoffice"}
-          </button>
+          <div className="button-row" style={{ marginTop: 16 }}>
+            <button
+              type="button"
+              onClick={() => {
+                setPin("");
+                setConfirmPin("");
+                setError(null);
+              }}
+              className="ghost-button"
+              style={{ background: "rgba(255,255,255,0.06)", color: "#fff", borderColor: "rgba(255,255,255,0.1)" }}
+            >
+              ล้างค่า
+            </button>
+            <button
+              type="button"
+              onClick={() => void (challengeMode === "setup" ? submitSetupPinStep() : submitVerifyPinStep())}
+              className="primary-button"
+              disabled={pending || (challengeMode === "setup" ? confirmPin.length !== pinLength : pin.length !== pinLength)}
+            >
+              {pending ? "กำลังตรวจสอบ..." : challengeMode === "setup" ? "บันทึก PIN และเข้าใช้งาน" : "ปลดล็อกหลังบ้าน"}
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -320,54 +314,47 @@ export function LoginForm() {
       action={async () => {
         await submitPasswordStep();
       }}
-      className="glass-panel flex w-full max-w-md flex-col gap-5 rounded-[32px] p-8 shadow-[0_18px_50px_rgba(28,33,31,0.12)]"
+      className="auth-card"
     >
-      <div className="space-y-3">
-        <div className="inline-flex w-fit rounded-full bg-white/85 px-3 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-[var(--accent-deep)]">
-          Step 1 of 2
-        </div>
-        <h1 className="text-3xl font-semibold tracking-[-0.04em] text-[var(--foreground)]">Sign in with username</h1>
-        <p className="text-sm text-[var(--muted)]">
-          Enter your username and password first. If this is your first login, we will help you set a PIN next.
-        </p>
+      <p className="eyebrow-label">Step 1 of 2</p>
+      <h1>เข้าสู่ระบบด้วยบัญชีร้าน</h1>
+      <p>กรอก username และ password ก่อน จากนั้นระบบจะพาไปยืนยัน PIN หรือสร้าง PIN ใหม่ทันที</p>
+
+      <div className="settings-grid" style={{ marginTop: 18 }}>
+        <label className="field-row">
+          <span>Username</span>
+          <input
+            required
+            value={username}
+            onChange={(event) => setUsername(event.target.value)}
+            autoComplete="username"
+            className="app-input"
+            placeholder="owner.fastmanfoods"
+          />
+        </label>
+
+        <label className="field-row">
+          <span>Password</span>
+          <input
+            required
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+            type="password"
+            autoComplete="current-password"
+            className="app-input"
+            placeholder="กรอกรหัสผ่านของคุณ"
+          />
+        </label>
       </div>
 
-      <label className="space-y-2">
-        <span className="text-sm font-medium text-[var(--foreground)]">Username</span>
-        <input
-          required
-          value={username}
-          onChange={(event) => setUsername(event.target.value)}
-          autoComplete="username"
-          className="w-full rounded-2xl border border-[var(--border)] bg-white/80 px-4 py-3 outline-none transition focus:border-[var(--accent)] focus:ring-4 focus:ring-[var(--ring)]"
-          placeholder="loveptn123"
-        />
-      </label>
+      {error ? <p className="alert-error" style={{ marginTop: 16 }}>{error}</p> : null}
 
-      <label className="space-y-2">
-        <span className="text-sm font-medium text-[var(--foreground)]">Password</span>
-        <input
-          required
-          value={password}
-          onChange={(event) => setPassword(event.target.value)}
-          type="password"
-          autoComplete="current-password"
-          className="w-full rounded-2xl border border-[var(--border)] bg-white/80 px-4 py-3 outline-none transition focus:border-[var(--accent)] focus:ring-4 focus:ring-[var(--ring)]"
-          placeholder="Enter your password"
-        />
-      </label>
-
-      {error ? (
-        <p className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>
-      ) : null}
-
-      <button
-        type="submit"
-        disabled={pending || !username.trim() || !password}
-        className="rounded-2xl bg-[var(--foreground)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-70"
-      >
-        {pending ? "Checking account..." : "Continue"}
-      </button>
+      <div className="button-row" style={{ marginTop: 18, justifyContent: "space-between" }}>
+        <span className="ghost-pill">หลังบ้านจะตรวจ session และ CSRF ต่อที่ backend</span>
+        <button type="submit" className="primary-button" disabled={pending || !username.trim() || !password}>
+          {pending ? "กำลังตรวจบัญชี..." : "ดำเนินการต่อ"}
+        </button>
+      </div>
     </form>
   );
 }
