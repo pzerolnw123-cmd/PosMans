@@ -2,6 +2,7 @@ import Link from "next/link";
 import { getCurrentSession } from "@/lib/session";
 import { getWorkspaceHref } from "@/lib/workspace";
 import { PanelCard } from "@/components/backoffice-shell";
+import { ghostPillClass } from "@/components/ui-primitives";
 
 const featureCards = [
   {
@@ -31,36 +32,50 @@ export default async function HomePage() {
 
   return (
     <main>
-      <div className="app-frame">
-        <div className="topbar">
+      <div className="mx-auto w-[min(1400px,calc(100%-32px))] px-0 pb-7 pt-[18px] max-[720px]:w-[min(100%-20px,100%)] max-[720px]:pt-2.5">
+        <div className="flex items-center justify-between gap-4 rounded-[18px] border border-[var(--border)] bg-[rgba(22,27,38,0.85)] px-5 py-4 shadow-[var(--shadow-soft)] max-[720px]:flex-col max-[720px]:items-stretch">
           <div>
-            <p className="eyebrow-label">POS MANS</p>
-            <p className="muted-text">Store-first interface system inspired by your reference screen</p>
+            <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[#6b7a94]">POS MANS</p>
+            <p className="mt-1 text-[0.92rem] text-[var(--foreground-soft)]">Store-first interface system inspired by your reference screen</p>
           </div>
-          <div className="button-row">
-            <Link href="/login" className="secondary-button">
+          <div className="flex flex-wrap justify-end gap-[10px] max-[720px]:[&>*]:w-full">
+            <Link
+              href="/login"
+              className="inline-flex min-h-[42px] items-center justify-center gap-[10px] rounded-[10px] border border-[var(--border)] bg-[rgba(22,27,38,0.8)] px-[18px] font-bold text-[var(--foreground)] transition hover:-translate-y-px hover:border-[var(--border-strong)] hover:shadow-[rgba(0,0,0,0.15)_0_5px_10px]"
+            >
               เข้าสู่ระบบ
             </Link>
-            <Link href={primaryHref} className="primary-button">
+            <Link
+              href={primaryHref}
+              className="inline-flex min-h-[42px] items-center justify-center gap-[10px] rounded-[10px] border border-transparent bg-[linear-gradient(135deg,var(--brand)_0%,#8070f0_100%)] px-[18px] font-bold text-white shadow-[rgba(108,92,231,0.18)_0_6px_14px] transition hover:-translate-y-px"
+            >
               {primaryLabel}
             </Link>
           </div>
         </div>
 
-        <section className="hero-layout" style={{ marginTop: 18 }}>
-          <article className="hero-card">
-            <p className="eyebrow-label">Complete UI Refresh</p>
-            <h1 className="hero-title">POS หลังบ้านที่ดูพร้อมใช้งานตั้งแต่หน้าบ้านถึงหน้าตั้งค่า</h1>
-            <p className="hero-copy">
-              เราปรับหน้าเว็บทุกหน้าที่มีอยู่ให้ไปในทิศทางเดียวกับภาพอ้างอิง:
-              sidebar ชัด, card โปร่งสะอาด, ปุ่มเด่นอ่านง่าย, และ form ที่โฟกัสกับงานเจ้าของร้านจริง
+        <section className="mt-[18px] grid gap-[18px] grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] max-[1180px]:grid-cols-1">
+          <article className="min-h-full rounded-[22px] border border-[var(--border)] bg-[var(--surface)] p-7 shadow-[var(--shadow-card)] backdrop-blur-[14px]">
+            <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[#6b7a94]">Complete UI Refresh</p>
+            <h1 className="mt-[10px] max-w-[12ch] text-[clamp(2rem,2.9vw,3.3rem)] leading-[0.98] tracking-[-0.065em]">
+              POS หลังบ้านที่ดูพร้อมใช้งานตั้งแต่หน้าบ้านถึงหน้าตั้งค่า
+            </h1>
+            <p className="text-[var(--foreground-soft)]">
+              เราปรับหน้าเว็บทุกหน้าที่มีอยู่ให้ไปในทิศทางเดียวกับภาพอ้างอิง: sidebar ชัด, card โปร่งสะอาด, ปุ่มเด่นอ่านง่าย,
+              และ form ที่โฟกัสกับงานเจ้าของร้านจริง
             </p>
 
-            <div className="button-row" style={{ justifyContent: "flex-start", marginTop: 22 }}>
-              <Link href={primaryHref} className="primary-button">
+            <div className="mt-[22px] flex flex-wrap justify-start gap-[10px] max-[720px]:[&>*]:w-full">
+              <Link
+                href={primaryHref}
+                className="inline-flex min-h-[42px] items-center justify-center gap-[10px] rounded-[10px] border border-transparent bg-[linear-gradient(135deg,var(--brand)_0%,#8070f0_100%)] px-[18px] font-bold text-white shadow-[rgba(108,92,231,0.18)_0_6px_14px] transition hover:-translate-y-px"
+              >
                 {primaryLabel}
               </Link>
-              <a href="#overview" className="secondary-button">
+              <a
+                href="#overview"
+                className="inline-flex min-h-[42px] items-center justify-center gap-[10px] rounded-[10px] border border-[var(--border)] bg-[rgba(22,27,38,0.8)] px-[18px] font-bold text-[var(--foreground)] transition hover:-translate-y-px hover:border-[var(--border-strong)] hover:shadow-[rgba(0,0,0,0.15)_0_5px_10px]"
+              >
                 ดูภาพรวม
               </a>
             </div>
@@ -71,66 +86,65 @@ export default async function HomePage() {
             title="FastManFoods"
             description="ตัวอย่างทิศทาง UI ที่ยึดจากหน้าตั้งค่าร้านในภาพ และขยายให้ครอบคลุมทั้งระบบ"
           >
-            <div className="stats-grid" style={{ marginTop: 20 }}>
+            <div className="mt-5 grid grid-cols-3 gap-[14px] max-[720px]:grid-cols-1">
               {statCards.map((item) => (
-                <div key={item.label} className="metric-card">
-                  <h3>{item.label}</h3>
-                  <strong>{item.value}</strong>
-                  <p className="muted-text">{item.hint}</p>
+                <div
+                  key={item.label}
+                  className="rounded-2xl border border-[var(--border)] bg-[linear-gradient(180deg,rgba(22,27,38,0.94)_0%,rgba(18,22,34,0.94)_100%)] p-[18px]"
+                >
+                  <h3 className="m-0 text-[1.08rem] font-bold tracking-[-0.03em]">{item.label}</h3>
+                  <strong className="mt-[10px] block text-[2rem] leading-none tracking-[-0.05em]">{item.value}</strong>
+                  <p className="mt-1 text-[0.92rem] text-[var(--foreground-soft)]">{item.hint}</p>
                 </div>
               ))}
             </div>
           </PanelCard>
         </section>
 
-        <section id="overview" className="marketing-grid" style={{ marginTop: 18 }}>
+        <section id="overview" className="mt-[18px] grid grid-cols-3 gap-[18px] max-[1180px]:grid-cols-2 max-[720px]:grid-cols-1">
           {featureCards.map((item) => (
-            <article key={item.title} className="mini-card">
-              <p className="eyebrow-label">Feature</p>
-              <h3>{item.title}</h3>
-              <p className="muted-text">{item.copy}</p>
+            <article key={item.title} className="rounded-[18px] border border-[var(--border)] bg-[var(--surface)] p-[18px] shadow-[var(--shadow-card)] backdrop-blur-[14px]">
+              <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[#6b7a94]">Feature</p>
+              <h3 className="my-[10px] text-[1.36rem] tracking-[-0.04em]">{item.title}</h3>
+              <p className="mt-1 text-[0.92rem] text-[var(--foreground-soft)]">{item.copy}</p>
             </article>
           ))}
         </section>
 
-        <section className="content-grid" style={{ marginTop: 18 }}>
-          <PanelCard
-            eyebrow="Included Pages"
-            title="สิ่งที่ถูกยกดีไซน์ใหม่แล้ว"
-            description="หน้าที่ผู้ใช้แตะจริงตอนนี้ทั้งหมดอยู่ใน visual language ชุดเดียวกันแล้ว"
-          >
-            <div className="settings-grid">
+        <section className="mt-[18px] grid grid-cols-[minmax(0,1.1fr)_minmax(320px,0.9fr)] gap-[18px] max-[1180px]:grid-cols-1">
+          <PanelCard eyebrow="Included Pages" title="สิ่งที่ถูกยกดีไซน์ใหม่แล้ว" description="หน้าที่ผู้ใช้แตะจริงตอนนี้ทั้งหมดอยู่ใน visual language ชุดเดียวกันแล้ว">
+            <div className="mt-4 grid gap-[14px]">
               {[
                 "หน้าแรกสำหรับแนะนำระบบและพาไปยัง flow ที่ใช้งานต่อ",
                 "หน้าเข้าสู่ระบบพร้อมสองขั้นตอน username/password และ PIN keypad",
                 "หน้า owner ที่วางเป็นหน้าตั้งค่าร้านตามภาพอ้างอิง พร้อม sidebar และ profile card",
               ].map((item) => (
-                <div key={item} className="metric-card">
-                  <p className="muted-text" style={{ marginTop: 0 }}>
-                    {item}
-                  </p>
+                <div
+                  key={item}
+                  className="rounded-2xl border border-[var(--border)] bg-[linear-gradient(180deg,rgba(22,27,38,0.94)_0%,rgba(18,22,34,0.94)_100%)] p-[18px]"
+                >
+                  <p className="m-0 text-[0.92rem] text-[var(--foreground-soft)]">{item}</p>
                 </div>
               ))}
             </div>
           </PanelCard>
 
-          <PanelCard
-            eyebrow="Experience"
-            title="แนวทาง UX ที่ยึดไว้"
-            description="ลดความรก เพิ่มการอ่านค่าเร็ว และจัดความสำคัญด้วยระยะห่าง น้ำหนักตัวอักษร และสถานะที่ชัด"
-          >
-            <div className="settings-grid">
+          <PanelCard eyebrow="Experience" title="แนวทาง UX ที่ยึดไว้" description="ลดความรก เพิ่มการอ่านค่าเร็ว และจัดความสำคัญด้วยระยะห่าง น้ำหนักตัวอักษร และสถานะที่ชัด">
+            <div className="mt-4 grid gap-[14px]">
               {[
                 ["Sidebar ก่อน", "ผู้ใช้รู้ทันทีว่าตอนนี้อยู่ส่วนไหนของระบบ"],
                 ["Card เป็นโมดูล", "ทุกพื้นที่ทำงานแยกหน้าที่ชัดเหมือน mockup"],
                 ["Action เด่น", "ปุ่มหลักใช้สีแบรนด์และวางชิดมุมล่างขวาตาม flow บันทึก"],
               ].map(([title, copy]) => (
-                <div key={title} className="inline-preview">
+                <div
+                  key={title}
+                  className="flex justify-between gap-[14px] rounded-[14px] border border-[var(--border)] bg-[linear-gradient(180deg,rgba(22,27,38,0.96)_0%,rgba(18,22,34,0.96)_100%)] p-[18px] max-[720px]:flex-col"
+                >
                   <div>
-                    <h3>{title}</h3>
-                    <p className="muted-text">{copy}</p>
+                    <h3 className="m-0 text-[1.08rem] font-bold tracking-[-0.03em]">{title}</h3>
+                    <p className="mt-1 text-[0.92rem] text-[var(--foreground-soft)]">{copy}</p>
                   </div>
-                  <span className="ghost-pill">UX</span>
+                  <span className={ghostPillClass}>UX</span>
                 </div>
               ))}
             </div>
