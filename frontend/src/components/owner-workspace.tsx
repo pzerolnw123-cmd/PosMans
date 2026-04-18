@@ -5,7 +5,7 @@ import { LogoutButton } from "@/components/logout-button";
 import { InteractiveActionGrid } from "@/components/interactive-action-grid";
 import { OwnerPasswordClient, OwnerProfileClient } from "@/components/owner-settings-client";
 import { ProductManagementStudio } from "@/components/product-management-studio";
-import { StatusPill } from "@/components/ui-primitives";
+import { PageHeader, StatusPill } from "@/components/ui-primitives";
 
 export type OwnerSectionKey = "sales" | "payments" | "receipts" | "reports" | "menu" | "overview" | "settings";
 
@@ -124,16 +124,16 @@ function renderOwnerScreen(activeSection: OwnerSectionKey, storeName: string, ow
           className="grid h-full min-h-0 grid-rows-[156px_minmax(0,1fr)] gap-[18px] max-[1180px]:grid-rows-[auto_minmax(0,1fr)]"
           aria-label="sales layout"
         >
-          <div className="flex h-[156px] min-h-[156px] max-h-[156px] items-start justify-between overflow-hidden rounded-[20px] border border-[var(--border)] bg-[rgba(22,27,38,0.85)] px-5 py-6 shadow-[var(--shadow-soft)] max-[1180px]:h-auto max-[1180px]:min-h-[156px] max-[720px]:flex-col max-[720px]:items-stretch max-[720px]:gap-4">
-            <div>
-              <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[#6b7a94]">Sales Floor</p>
-              <strong className="mt-2 block text-[1.35rem] leading-none tracking-[-0.04em] text-white">ขายหน้าร้าน</strong>
-            </div>
-            <div className="flex flex-none items-center gap-3 max-[720px]:w-full" aria-hidden="true">
+          <PageHeader
+            eyebrow="Sales Floor"
+            title="ขายหน้าร้าน"
+            actions={
+              <>
               <div className="h-5 w-[72px] rounded-full border border-[var(--border)] bg-[rgba(255,255,255,0.06)] max-[720px]:w-full" />
               <div className="h-5 w-[136px] rounded-full border border-[var(--border)] bg-[rgba(255,255,255,0.06)] max-[720px]:w-full" />
-            </div>
-          </div>
+              </>
+            }
+          />
 
           <div className="grid h-full min-h-0 grid-cols-[minmax(0,1fr)_320px] gap-[18px] max-[1180px]:grid-cols-1">
             <section className="grid min-h-0 grid-rows-[auto_minmax(0,1fr)_auto] gap-[18px]" aria-label="sales main area">
