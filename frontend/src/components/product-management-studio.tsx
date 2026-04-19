@@ -1,158 +1,47 @@
 "use client";
 
-import type { ReactNode } from "react";
-import { useEffect, useState } from "react";
+import type { ChangeEvent } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useBackofficeShellAlert } from "@/components/backoffice-shell";
+import { CropModal } from "@/components/product-management-studio/crop-modal";
+import { ProductDetailPanel } from "@/components/product-management-studio/detail-panel";
 import {
-  PageHeader,
-  StatusPill,
-  dangerButtonClass,
-  ghostButtonClass,
-  inputClass,
-  primaryButtonClass,
-  secondaryButtonClass,
-} from "@/components/ui-primitives";
-
-type ProductCategory = "ทั้งหมด" | "อาหาร" | "เครื่องดื่ม" | "เบเกอรี";
-type ProductAccent = "noodle" | "fried" | "bakery" | "dessert" | "drink";
-
-type ProductItem = {
-  id: string;
-  code: string;
-  name: string;
-  category: Exclude<ProductCategory, "ทั้งหมด">;
-  price: number;
-  status: "พร้อมขาย" | "ใกล้หมด";
-  accent: ProductAccent;
-  illustration: string;
-};
-
-const categoryOptions: ProductCategory[] = ["ทั้งหมด", "อาหาร", "เครื่องดื่ม", "เบเกอรี"];
-
-const accentStyles: Record<ProductAccent, { banner: string; thumb: string }> = {
-  noodle: {
-    banner:
-      "border border-[rgba(100,120,160,0.18)] bg-[linear-gradient(135deg,rgba(255,255,255,0.06),transparent_55%),linear-gradient(180deg,rgba(90,65,30,0.7),rgba(70,48,25,0.8)_55%,rgba(55,38,20,0.85)_100%)]",
-    thumb:
-      "bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.08),transparent_36%),linear-gradient(180deg,rgba(70,52,28,0.98),rgba(50,36,18,0.98))]",
-  },
-  fried: {
-    banner:
-      "border border-[rgba(100,120,160,0.18)] bg-[linear-gradient(135deg,rgba(255,255,255,0.06),transparent_55%),linear-gradient(180deg,rgba(85,60,28,0.7),rgba(68,45,22,0.8)_55%,rgba(50,35,18,0.85)_100%)]",
-    thumb:
-      "bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.08),transparent_36%),linear-gradient(180deg,rgba(65,48,25,0.98),rgba(48,32,16,0.98))]",
-  },
-  bakery: {
-    banner:
-      "border border-[rgba(100,120,160,0.18)] bg-[linear-gradient(135deg,rgba(255,255,255,0.06),transparent_55%),linear-gradient(180deg,rgba(82,62,32,0.7),rgba(65,48,26,0.8)_55%,rgba(52,38,20,0.85)_100%)]",
-    thumb:
-      "bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.08),transparent_36%),linear-gradient(180deg,rgba(68,50,28,0.98),rgba(50,38,20,0.98))]",
-  },
-  dessert: {
-    banner:
-      "border border-[rgba(100,120,160,0.18)] bg-[linear-gradient(135deg,rgba(255,255,255,0.06),transparent_55%),linear-gradient(180deg,rgba(78,58,28,0.7),rgba(60,44,22,0.8)_55%,rgba(48,34,18,0.85)_100%)]",
-    thumb:
-      "bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.08),transparent_36%),linear-gradient(180deg,rgba(62,46,24,0.98),rgba(45,32,16,0.98))]",
-  },
-  drink: {
-    banner:
-      "border border-[rgba(100,120,160,0.18)] bg-[linear-gradient(135deg,rgba(255,255,255,0.06),transparent_55%),linear-gradient(180deg,rgba(85,55,25,0.7),rgba(65,40,20,0.8)_55%,rgba(52,30,16,0.85)_100%)]",
-    thumb:
-      "bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.08),transparent_36%),linear-gradient(180deg,rgba(65,42,20,0.98),rgba(48,28,14,0.98))]",
-  },
-};
-
-const initialProducts: ProductItem[] = [
-  {
-    id: "food-002",
-    code: "FOOD-002",
-    name: "ขนมจีนน้ำยาป่า",
-    category: "อาหาร",
-    price: 52,
-    status: "พร้อมขาย",
-    accent: "noodle",
-    illustration: "ข",
-  },
-  {
-    id: "food-003",
-    code: "FOOD-003",
-    name: "ทอดมันกุ้ง",
-    category: "อาหาร",
-    price: 60,
-    status: "พร้อมขาย",
-    accent: "fried",
-    illustration: "ท",
-  },
-  {
-    id: "bakery-002",
-    code: "BAKERY-002",
-    name: "ไข่หวาน",
-    category: "เบเกอรี",
-    price: 45,
-    status: "พร้อมขาย",
-    accent: "bakery",
-    illustration: "ไข่",
-  },
-  {
-    id: "bakery-001",
-    code: "BAKERY-001",
-    name: "ขนมครก",
-    category: "เบเกอรี",
-    price: 54,
-    status: "พร้อมขาย",
-    accent: "dessert",
-    illustration: "ขค",
-  },
-  {
-    id: "drink-001",
-    code: "DRINK-001",
-    name: "ชาไทยเย็น",
-    category: "เครื่องดื่ม",
-    price: 55,
-    status: "ใกล้หมด",
-    accent: "drink",
-    illustration: "ชา",
-  },
-];
-
-function makeNewProduct(): ProductItem {
-  return {
-    id: `draft-${Date.now()}`,
-    code: "DRAFT-NEW",
-    name: "สินค้าใหม่",
-    category: "อาหาร",
-    price: 0,
-    status: "พร้อมขาย",
-    accent: "noodle",
-    illustration: "ใหม่",
-  };
-}
-
-function formatPrice(value: number) {
-  return `THB ${value}`;
-}
-
-function Field({
-  label,
-  children,
-}: {
-  label: string;
-  children: ReactNode;
-}) {
-  return (
-    <label className="grid gap-[8px] max-[1180px]:gap-[6px]">
-      <span className="text-[0.92rem] font-semibold text-[#6b7a94]">{label}</span>
-      {children}
-    </label>
-  );
-}
+  ACCEPTED_IMAGE_TYPES,
+  clampOffset,
+  createCroppedBlob,
+  CROP_VIEWPORT_SIZE,
+  loadImage,
+  MAX_IMAGE_BYTES,
+  readFileAsDataUrl,
+  requestJson,
+  requestSignedUpload,
+  revokeManagedObjectUrl,
+  uploadBlobToR2,
+} from "@/components/product-management-studio/lib";
+import { ProductListPanel } from "@/components/product-management-studio/list-panel";
+import { categoryOptions, isDraftProduct, makeNewProduct, type CropDraft, type ProductCategory, type ProductItem } from "@/components/product-management-studio/types";
+import { PageHeader, StatusPill } from "@/components/ui-primitives";
 
 export function ProductManagementStudio() {
-  const [products, setProducts] = useState<ProductItem[]>(initialProducts);
+  const { setShellAlert } = useBackofficeShellAlert();
+  const [products, setProducts] = useState<ProductItem[]>([]);
+  const [serverProducts, setServerProducts] = useState<ProductItem[]>([]);
   const [activeCategory, setActiveCategory] = useState<ProductCategory>("ทั้งหมด");
-  const [selectedId, setSelectedId] = useState(initialProducts[0]?.id ?? "");
+  const [selectedId, setSelectedId] = useState("");
   const [page, setPage] = useState(1);
   const [compactMode, setCompactMode] = useState(false);
-  const itemsPerPage = compactMode ? 3 : 4;
+  const [cropDraft, setCropDraft] = useState<CropDraft | null>(null);
+  const [cropZoom, setCropZoom] = useState(1);
+  const [cropOffset, setCropOffset] = useState({ x: 0, y: 0 });
+  const [uploadBusy, setUploadBusy] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [productsLoading, setProductsLoading] = useState(true);
+  const [saveBusy, setSaveBusy] = useState(false);
+  const [deleteBusy, setDeleteBusy] = useState(false);
+
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const objectUrlsRef = useRef<string[]>([]);
+  const itemsPerPage = 3;
 
   useEffect(() => {
     const mediaQuery = window.matchMedia("(min-width: 1181px) and (max-height: 860px)");
@@ -164,9 +53,59 @@ export function ProductManagementStudio() {
     return () => mediaQuery.removeEventListener("change", syncCompactMode);
   }, []);
 
+  useEffect(() => {
+    return () => {
+      objectUrlsRef.current.forEach((url) => URL.revokeObjectURL(url));
+    };
+  }, []);
+
+  useEffect(() => {
+    setShellAlert(uploadError ? { message: uploadError } : null);
+
+    return () => {
+      setShellAlert(null);
+    };
+  }, [setShellAlert, uploadError]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadProducts() {
+      try {
+        setProductsLoading(true);
+        const nextProducts = await requestJson<ProductItem[]>("/api/products");
+        if (cancelled) return;
+
+        if (Array.isArray(nextProducts) && nextProducts.length > 0) {
+          setProducts(nextProducts);
+          setServerProducts(nextProducts);
+          setSelectedId((current) => (nextProducts.some((item) => item.id === current) ? current : nextProducts[0].id));
+          return;
+        }
+
+        setProducts([]);
+        setServerProducts([]);
+        setSelectedId("");
+      } catch (error) {
+        if (!cancelled) {
+          setUploadError(error instanceof Error ? error.message : "โหลดรายการสินค้าไม่สำเร็จ");
+        }
+      } finally {
+        if (!cancelled) {
+          setProductsLoading(false);
+        }
+      }
+    }
+
+    loadProducts();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const selectedProduct = products.find((item) => item.id === selectedId) ?? products[0] ?? null;
-  const filteredProducts =
-    activeCategory === "ทั้งหมด" ? products : products.filter((item) => item.category === activeCategory);
+  const filteredProducts = activeCategory === "ทั้งหมด" ? products : products.filter((item) => item.category === activeCategory);
   const totalPages = Math.max(1, Math.ceil(filteredProducts.length / itemsPerPage));
   const currentPage = Math.min(page, totalPages);
   const visibleProducts = filteredProducts.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
@@ -186,17 +125,216 @@ export function ProductManagementStudio() {
     const next = makeNewProduct();
     setProducts((current) => [next, ...current]);
     setSelectedId(next.id);
-    setActiveCategory("ทั้งหมด");
+    setActiveCategory(categoryOptions[0]);
     setPage(1);
+    setUploadError(null);
   }
 
-  function handleDeleteSelected() {
+  async function handleSaveChanges() {
+    if (!selectedProduct) {
+      return;
+    }
+
+    const trimmedName = selectedProduct.name.trim();
+    if (!trimmedName) {
+      setUploadError("กรุณากรอกชื่อสินค้าก่อนบันทึก");
+      return;
+    }
+
+    if (!Number.isFinite(selectedProduct.price) || selectedProduct.price < 0) {
+      setUploadError("กรุณากรอกราคาให้ถูกต้อง");
+      return;
+    }
+
+    setUploadError(null);
+    setSaveBusy(true);
+
+    try {
+      const payload = {
+        name: trimmedName,
+        category: selectedProduct.category,
+        price: selectedProduct.price,
+        status: selectedProduct.status,
+        imageUrl: selectedProduct.imageUrl?.startsWith("http") ? selectedProduct.imageUrl : null,
+        uploadedKey: selectedProduct.uploadedKey || null,
+      };
+
+      if (isDraftProduct(selectedProduct)) {
+        const created = await requestJson<ProductItem>("/api/products", {
+          method: "POST",
+          body: JSON.stringify(payload),
+        });
+        const clientCreated =
+          !created.imageUrl && selectedProduct.imageUrl?.startsWith("blob:")
+            ? { ...created, imageUrl: selectedProduct.imageUrl, uploadedKey: selectedProduct.uploadedKey }
+            : created;
+
+        setProducts((current) => current.map((item) => (item.id === selectedProduct.id ? clientCreated : item)));
+        setServerProducts((current) => [created, ...current]);
+        setSelectedId(clientCreated.id);
+        return;
+      }
+
+      const updated = await requestJson<ProductItem>(`/api/products/${selectedProduct.id}`, {
+        method: "PATCH",
+        body: JSON.stringify(payload),
+      });
+      const clientUpdated =
+        !updated.imageUrl && selectedProduct.imageUrl?.startsWith("blob:")
+          ? { ...updated, imageUrl: selectedProduct.imageUrl, uploadedKey: selectedProduct.uploadedKey }
+          : updated;
+
+      setProducts((current) => current.map((item) => (item.id === updated.id ? { ...item, ...clientUpdated } : item)));
+      setServerProducts((current) => current.map((item) => (item.id === updated.id ? updated : item)));
+    } catch (error) {
+      setUploadError(error instanceof Error ? error.message : "บันทึกสินค้าไม่สำเร็จ");
+    } finally {
+      setSaveBusy(false);
+    }
+  }
+
+  function handleResetForm() {
     if (!selectedProduct) return;
 
-    const remaining = products.filter((item) => item.id !== selectedProduct.id);
-    setProducts(remaining);
-    setSelectedId(remaining[0]?.id ?? "");
-    setPage(1);
+    if (isDraftProduct(selectedProduct)) {
+      setProducts((current) => current.filter((item) => item.id !== selectedProduct.id));
+      const remaining = products.filter((item) => item.id !== selectedProduct.id);
+      setSelectedId(remaining[0]?.id ?? "");
+      setUploadError(null);
+      return;
+    }
+
+    const original = serverProducts.find((item) => item.id === selectedProduct.id);
+    if (!original) return;
+
+    objectUrlsRef.current = revokeManagedObjectUrl(selectedProduct.imageUrl, objectUrlsRef.current);
+    setProducts((current) => current.map((item) => (item.id === selectedProduct.id ? { ...original } : item)));
+    setUploadError(null);
+  }
+
+  function handleBackToProducts() {
+    setSelectedId("");
+    setUploadError(null);
+  }
+
+  function handleToggleSaleStatus() {
+    if (!selectedProduct) return;
+
+    updateSelectedProduct({
+      status: selectedProduct.status === "พร้อมขาย" ? "ใกล้หมด" : "พร้อมขาย",
+    });
+    setUploadError(null);
+  }
+
+  function handleChooseImageClick() {
+    fileInputRef.current?.click();
+  }
+
+  async function handleFileSelection(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+
+    if (!file) {
+      return;
+    }
+
+    if (!ACCEPTED_IMAGE_TYPES.includes(file.type as (typeof ACCEPTED_IMAGE_TYPES)[number])) {
+      setUploadError("รองรับเฉพาะไฟล์ JPG, PNG และ WEBP");
+      return;
+    }
+
+    if (file.size <= 0 || file.size > MAX_IMAGE_BYTES) {
+      setUploadError("ไฟล์ใหญ่เกิน 5 MB หรือมีขนาดไม่ถูกต้อง");
+      return;
+    }
+
+    try {
+      const dataUrl = await readFileAsDataUrl(file);
+      const image = await loadImage(dataUrl);
+      setCropDraft({ fileName: file.name, dataUrl, image });
+      setCropZoom(1);
+      setCropOffset({ x: 0, y: 0 });
+      setUploadError(null);
+    } catch (error) {
+      setUploadError(error instanceof Error ? error.message : "ไม่สามารถเตรียมรูปภาพสำหรับอัปโหลดได้");
+    }
+  }
+
+  function handleCropZoomChange(nextZoom: number) {
+    if (!cropDraft) return;
+
+    setCropOffset((current) => clampOffset(cropDraft.image, nextZoom, current.x, current.y, CROP_VIEWPORT_SIZE));
+    setCropZoom(nextZoom);
+  }
+
+  function handleCropOffsetChange(nextX: number, nextY: number) {
+    if (!cropDraft) return;
+
+    setCropOffset(clampOffset(cropDraft.image, cropZoom, nextX, nextY, CROP_VIEWPORT_SIZE));
+  }
+
+  async function handleCropConfirm() {
+    if (!cropDraft || !selectedProduct) {
+      return;
+    }
+
+    try {
+      setUploadBusy(true);
+      setUploadError(null);
+
+      const croppedBlob = await createCroppedBlob(cropDraft, cropZoom, cropOffset.x, cropOffset.y);
+      const signedUpload = await requestSignedUpload(`${selectedProduct.code.toLowerCase()}-${Date.now()}.webp`, "image/webp", croppedBlob.size);
+
+      await uploadBlobToR2(signedUpload, croppedBlob);
+
+      objectUrlsRef.current = revokeManagedObjectUrl(selectedProduct.imageUrl, objectUrlsRef.current);
+      const localPreviewUrl = URL.createObjectURL(croppedBlob);
+      objectUrlsRef.current.push(localPreviewUrl);
+
+      updateSelectedProduct({
+        imageUrl: signedUpload.publicUrl || localPreviewUrl,
+        uploadedKey: signedUpload.objectKey,
+      });
+
+      setCropDraft(null);
+    } catch (error) {
+      setUploadError(error instanceof Error ? error.message : "อัปโหลดรูปภาพไม่สำเร็จ");
+    } finally {
+      setUploadBusy(false);
+    }
+  }
+
+  async function handleDeleteConfirmed() {
+    if (!selectedProduct) {
+      return;
+    }
+
+    if (isDraftProduct(selectedProduct)) {
+      objectUrlsRef.current = revokeManagedObjectUrl(selectedProduct.imageUrl, objectUrlsRef.current);
+      const remaining = products.filter((item) => item.id !== selectedProduct.id);
+      setProducts(remaining);
+      setSelectedId(remaining[0]?.id ?? "");
+      setPage(1);
+      return;
+    }
+
+    try {
+      setDeleteBusy(true);
+      await requestJson(`/api/products/${selectedProduct.id}`, {
+        method: "DELETE",
+      });
+
+      objectUrlsRef.current = revokeManagedObjectUrl(selectedProduct.imageUrl, objectUrlsRef.current);
+      const remaining = products.filter((item) => item.id !== selectedProduct.id);
+      setProducts(remaining);
+      setServerProducts((current) => current.filter((item) => item.id !== selectedProduct.id));
+      setSelectedId(remaining[0]?.id ?? "");
+      setPage(1);
+    } catch (error) {
+      setUploadError(error instanceof Error ? error.message : "ลบสินค้าไม่สำเร็จ");
+    } finally {
+      setDeleteBusy(false);
+    }
   }
 
   return (
@@ -208,230 +346,66 @@ export function ProductManagementStudio() {
       }
     >
       {!compactMode ? (
-        <PageHeader
-          eyebrow="Product Studio"
-          title="สินค้า"
-          actions={
-            <>
-              <StatusPill tone="success">พร้อมใช้งานแล้ว</StatusPill>
-              <button type="button" className={primaryButtonClass} onClick={handleCreateNewProduct}>
-                เพิ่มสินค้าใหม่
-              </button>
-            </>
-          }
-        />
+        <PageHeader eyebrow="Product Studio" title="สินค้า" actions={<StatusPill tone="success">พร้อมใช้งานแล้ว</StatusPill>} />
       ) : null}
 
       <div className="grid min-h-0 items-start gap-[12px] [grid-template-columns:minmax(340px,0.96fr)_minmax(0,1.24fr)] max-[1180px]:grid-cols-1">
-        <section className="grid min-h-22 w-[calc(100%+22px)] grid-rows-[auto_minmax(0,1fr)] overflow-hidden rounded-[18px] border border-[var(--border)] bg-[rgba(22,27,38,0.76)] px-5 py-10 shadow-[var(--shadow-soft)] backdrop-blur-[14px] max-[1180px]:w-full max-[1180px]:px-4 max-[1180px]:py-4">
-          <div className="flex items-start justify-between gap-3 max-[720px]:flex-col max-[720px]:items-stretch">
-            <div>
-              <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[#6b7a94]">รายละเอียดสินค้า</p>
-              <h2 className="my-[8px] text-[clamp(1.45rem,2.2vw,2.6rem)] leading-[0.98] tracking-[-0.06em]">แก้ไขสินค้า</h2>
-            </div>
-            <StatusPill>โหมดแก้ไข</StatusPill>
-          </div>
+        <ProductDetailPanel
+          compactMode={compactMode}
+          productsLoading={productsLoading}
+          saveBusy={saveBusy}
+          deleteBusy={deleteBusy}
+          selectedProduct={selectedProduct}
+          onCreateNewProduct={handleCreateNewProduct}
+          onUpdateProduct={updateSelectedProduct}
+          onSaveChanges={handleSaveChanges}
+          onChooseImageClick={handleChooseImageClick}
+          onBackToProducts={handleBackToProducts}
+          onToggleSaleStatus={handleToggleSaleStatus}
+          onResetForm={handleResetForm}
+          onDeleteConfirmed={handleDeleteConfirmed}
+        />
 
-          {selectedProduct ? (
-            <div className="min-h-0 overflow-auto pr-1">
-              <div className={`mt-[10px] min-h-[132px] overflow-hidden rounded-[18px] max-[1180px]:min-h-[108px] ${accentStyles[selectedProduct.accent].banner}`}>
-                <div className="flex h-full items-end bg-[radial-gradient(circle_at_16%_24%,rgba(60,90,50,0.2),transparent_18%),radial-gradient(circle_at_82%_22%,rgba(50,80,55,0.14),transparent_16%),linear-gradient(180deg,rgba(0,0,0,0.05),rgba(0,0,0,0.22))] p-4 max-[1180px]:p-3">
-                  <div className="flex items-center gap-[14px] rounded-[18px] bg-[rgba(22,27,38,0.7)] px-3 py-2.5 shadow-[rgba(0,0,0,0.12)_0_8px_16px] max-[1180px]:gap-[10px] max-[1180px]:rounded-[14px] max-[1180px]:px-[10px] max-[1180px]:py-2">
-                    <div
-                      className={`inline-flex h-[88px] w-[88px] items-center justify-center rounded-[18px] text-[1.55rem] font-extrabold tracking-[-0.04em] text-[#c49870] max-[1180px]:h-[72px] max-[1180px]:w-[72px] max-[1180px]:text-[1.25rem] ${accentStyles[selectedProduct.accent].thumb}`}
-                    >
-                      {selectedProduct.illustration}
-                    </div>
-                    <div>
-                      <strong className="block text-[1.08rem] tracking-[-0.03em] text-white">{selectedProduct.name}</strong>
-                      <p className="mt-1 text-[0.92rem] text-[rgba(255,255,255,0.72)]">{selectedProduct.category}</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-3 grid gap-[10px]">
-                <Field label="ชื่อสินค้า">
-                  <input
-                    className={inputClass}
-                    value={selectedProduct.name}
-                    onChange={(event) => updateSelectedProduct({ name: event.target.value })}
-                  />
-                </Field>
-
-                <Field label="ประเภทสินค้า">
-                  <select
-                    className={inputClass}
-                    value={selectedProduct.category}
-                    onChange={(event) => updateSelectedProduct({ category: event.target.value as ProductItem["category"] })}
-                  >
-                    <option value="อาหาร">อาหาร</option>
-                    <option value="เครื่องดื่ม">เครื่องดื่ม</option>
-                    <option value="เบเกอรี">เบเกอรี</option>
-                  </select>
-                </Field>
-
-                <div className="grid items-start gap-[10px] md:grid-cols-2">
-                  <div className="flex min-w-0 flex-col gap-2">
-                    <Field label="ราคา">
-                      <input
-                        className={inputClass}
-                        type="number"
-                        value={selectedProduct.price}
-                        onChange={(event) => updateSelectedProduct({ price: Number(event.target.value || 0) })}
-                      />
-                    </Field>
-
-                    <button
-                      type="button"
-                      className={`${primaryButtonClass} min-h-[38px] w-full px-3 text-[0.95rem] shadow-none max-[1180px]:text-[0.86rem]`}
-                    >
-                      บันทึกการเปลี่ยนแปลง
-                    </button>
-                  </div>
-
-                  <div className="grid content-start gap-2 rounded-[14px] border border-[var(--border)] bg-[linear-gradient(180deg,rgba(20,25,36,0.78),rgba(16,20,30,0.82))] p-3">
-                    <span className="text-[0.92rem] font-semibold text-[#6b7a94]">รูปภาพสินค้า</span>
-                    <p className="m-0 text-[0.88rem] leading-[1.5] text-[var(--foreground-soft)]">
-                      {compactMode ? "JPG, PNG, WEBP ไม่เกิน 5 MB" : "รูปแบบไฟล์ที่รองรับ JPG, PNG, WEBP และขนาดไม่เกิน 5 MB"}
-                    </p>
-                    <button type="button" className={secondaryButtonClass}>
-                      เลือกรูปภาพใหม่
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-[10px] grid gap-[10px] sm:grid-cols-2 xl:grid-cols-2">
-                <button type="button" className={ghostButtonClass}>
-                  เคลียร์ฟอร์ม
-                </button>
-                <button type="button" className={secondaryButtonClass}>
-                  ปิดขาย
-                </button>
-                <button type="button" className={ghostButtonClass}>
-                  ย้อนกลับ
-                </button>
-                <button type="button" className={dangerButtonClass} onClick={handleDeleteSelected}>
-                  ลบสินค้านี้
-                </button>
-              </div>
-            </div>
-          ) : (
-            <div className="mt-4 grid place-items-center rounded-[16px] border border-dashed border-[var(--border)] bg-[rgba(18,22,34,0.72)] p-6 text-center">
-              <div className="grid gap-3">
-                <strong className="text-[1.08rem] tracking-[-0.03em] text-white">ยังไม่มีสินค้าในรายการ</strong>
-                <p className="m-0 text-[0.92rem] leading-[1.6] text-[var(--foreground-soft)]">
-                  เริ่มต้นด้วยการเพิ่มสินค้าใหม่ แล้วระบบจะเปิดฟอร์มแก้ไขให้อัตโนมัติ
-                </p>
-                <button type="button" className={primaryButtonClass} onClick={handleCreateNewProduct}>
-                  เพิ่มสินค้าใหม่
-                </button>
-              </div>
-            </div>
-          )}
-        </section>
-
-        <section className="ml-auto grid min-h-0 w-[96%] grid-rows-[auto_auto_minmax(0,1fr)_auto] overflow-hidden rounded-[18px] border border-[var(--border)] bg-[rgba(22,27,38,0.76)] px-5 py-[18px] shadow-[var(--shadow-soft)] backdrop-blur-[14px] max-[1180px]:w-full max-[1180px]:px-4 max-[1180px]:py-4">
-          <div className="flex items-start justify-between gap-3 max-[720px]:flex-col max-[720px]:items-stretch">
-            <div>
-              <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[#6b7a94]">รายการสินค้าทั้งหมด</p>
-              <h2 className="mb-0 mt-[8px] text-[clamp(1.45rem,2vw,2rem)] leading-[1.02] tracking-[-0.06em]">เลือกสินค้าเพื่อแก้ไขได้ทันที</h2>
-            </div>
-            <div className="flex shrink-0 flex-wrap justify-end gap-[10px] max-[720px]:justify-stretch">
-              <StatusPill>
-                หน้า {currentPage}/{totalPages}
-              </StatusPill>
-              <StatusPill>{filteredProducts.length} รายการ</StatusPill>
-            </div>
-          </div>
-
-          <div className="flex flex-wrap gap-[10px] pt-3">
-            {categoryOptions.map((category) => {
-              const active = activeCategory === category;
-
-              return (
-                <button
-                  key={category}
-                  type="button"
-                  className={
-                    active
-                      ? "min-h-10 rounded-[10px] border border-[rgba(108,92,231,0.5)] bg-[rgba(108,92,231,0.14)] px-[18px] font-bold text-[var(--brand-strong)] shadow-[rgba(108,92,231,0.1)_0_6px_12px] transition hover:-translate-y-px"
-                      : "min-h-10 rounded-[10px] border border-[var(--border)] bg-[rgba(22,27,38,0.8)] px-[18px] font-bold text-[var(--foreground)] transition hover:-translate-y-px hover:shadow-[var(--shadow-soft)]"
-                  }
-                  onClick={() => handleCategoryChange(category)}
-                >
-                  {category}
-                </button>
-              );
-            })}
-          </div>
-
-          <div className="mt-3 min-h-0 overflow-auto pr-1">
-            <div className="grid gap-[10px]">
-              {visibleProducts.map((item) => {
-                const active = item.id === selectedId;
-
-                return (
-                  <button
-                    key={item.id}
-                    type="button"
-                    className={
-                      active
-                        ? "mx-auto grid min-h-[108px] w-[97%] grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 rounded-[18px] border border-[rgba(108,92,231,0.5)] bg-[rgba(108,92,231,0.08)] px-3 py-3 text-left shadow-[rgba(108,92,231,0.08)_0_6px_12px] transition hover:-translate-y-px"
-                        : "mx-auto grid min-h-[124px] w-[97%] grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 rounded-[18px] border border-[var(--border)] bg-[rgba(22,27,38,0.58)] px-3 py-3 text-left transition hover:-translate-y-px hover:shadow-[rgba(0,0,0,0.1)_0_4px_8px]"
-                    }
-                    onClick={() => setSelectedId(item.id)}
-                  >
-                    <div
-                      className={`inline-flex h-[74px] w-[74px] items-center justify-center rounded-[18px] text-[1.2rem] font-extrabold tracking-[-0.04em] text-[#c49870] max-[1180px]:h-[62px] max-[1180px]:w-[62px] max-[1180px]:text-[1.05rem] ${accentStyles[item.accent].thumb}`}
-                    >
-                      {item.illustration}
-                    </div>
-
-                    <div className="min-w-0 self-start">
-                      <strong className="block text-[1rem] tracking-[-0.03em] text-white">{item.name}</strong>
-                      <div className="mt-1.5 flex flex-wrap items-center gap-2">
-                        <span className="text-[0.92rem] text-[var(--foreground-soft)]">{item.category}</span>
-                        <StatusPill tone={item.status === "พร้อมขาย" ? "success" : "ghost"}>{item.status}</StatusPill>
-                      </div>
-                      <p className="mt-1.5 text-[0.88rem] text-[#6b7a94]">{item.code}</p>
-                    </div>
-
-                    <div className="self-center whitespace-nowrap pl-2 text-[1rem] font-normal text-[#a0b8d8]">{formatPrice(item.price)}</div>
-                  </button>
-                );
-              })}
-
-              {visibleProducts.length === 0 ? (
-                <div className="rounded-[16px] border border-dashed border-[var(--border)] bg-[rgba(18,22,34,0.72)] px-4 py-5 text-[0.92rem] text-[var(--foreground-soft)]">
-                  ยังไม่มีสินค้าในหมวดนี้
-                </div>
-              ) : null}
-            </div>
-          </div>
-
-          <div className="mt-3 flex items-center justify-between gap-3 border-t border-t-[rgba(100,120,160,0.12)] pt-3 max-[720px]:flex-col max-[720px]:items-stretch">
-            <button
-              type="button"
-              className={ghostButtonClass}
-              disabled={currentPage <= 1}
-              onClick={() => setPage((current) => Math.max(1, current - 1))}
-            >
-              ก่อนหน้า
-            </button>
-            <span className="text-[0.92rem] text-[var(--foreground-soft)]">แสดงสูงสุด {itemsPerPage} สินค้าต่อหน้า</span>
-            <button
-              type="button"
-              className={secondaryButtonClass}
-              disabled={currentPage >= totalPages}
-              onClick={() => setPage((current) => Math.min(totalPages, current + 1))}
-            >
-              ถัดไป
-            </button>
-          </div>
-        </section>
+        <ProductListPanel
+          activeCategory={activeCategory}
+          currentPage={currentPage}
+          filteredCount={filteredProducts.length}
+          itemsPerPage={itemsPerPage}
+          productsLoading={productsLoading}
+          selectedId={selectedId}
+          totalPages={totalPages}
+          visibleProducts={visibleProducts}
+          onCategoryChange={handleCategoryChange}
+          onPageChange={setPage}
+          onSelectProduct={setSelectedId}
+        />
       </div>
+
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/jpeg,image/png,image/webp"
+        className="hidden"
+        onChange={handleFileSelection}
+      />
+
+      {cropDraft ? (
+        <CropModal
+          draft={cropDraft}
+          zoom={cropZoom}
+          offsetX={cropOffset.x}
+          offsetY={cropOffset.y}
+          busy={uploadBusy}
+          onClose={() => {
+            if (!uploadBusy) {
+              setCropDraft(null);
+            }
+          }}
+          onConfirm={handleCropConfirm}
+          onZoomChange={handleCropZoomChange}
+          onOffsetChange={handleCropOffsetChange}
+        />
+      ) : null}
     </div>
   );
 }

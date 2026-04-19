@@ -63,3 +63,27 @@ textarea {
 main {
   position: relative;
 }
+
+.app-loader {
+  width: var(--loader-size, 48px);
+  height: var(--loader-size, 48px);
+  border: var(--loader-stroke, 5px) solid;
+  border-color: var(--brand-strong) rgba(108, 92, 231, 0.14);
+  border-radius: 50%;
+  display: inline-block;
+  box-sizing: border-box;
+  animation: app-loader-rotation 1s linear infinite;
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.02),
+    0 8px 22px rgba(108, 92, 231, 0.18);
+}
+
+@keyframes app-loader-rotation {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}

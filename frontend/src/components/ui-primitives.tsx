@@ -21,7 +21,9 @@ export const dangerButtonClass =
   "inline-flex min-h-[42px] items-center justify-center gap-[10px] rounded-[10px] border border-[rgba(232,93,117,0.24)] bg-[rgba(232,93,117,0.1)] px-[18px] font-bold text-[var(--danger)] transition hover:-translate-y-px hover:border-[rgba(232,93,117,0.35)] hover:shadow-[rgba(232,93,117,0.12)_0_5px_10px] disabled:cursor-not-allowed disabled:opacity-[0.62] disabled:shadow-none";
 
 export const inputClass =
-  "h-[46px] w-full rounded-[10px] border border-[rgba(100,120,160,0.22)] bg-[rgba(14,18,28,0.7)] px-[14px] text-[var(--foreground)] outline-none transition placeholder:text-[#556070] focus:border-[rgba(108,92,231,0.5)] focus:shadow-[0_0_0_4px_var(--ring)]";
+  "h-[46px] w-full rounded-[10px] border border-[rgba(100,120,160,0.22)] bg-[rgba(14,18,28,0.7)] px-[14px] pr-[18px] text-[var(--foreground)] outline-none transition placeholder:text-[#556070] focus:border-[rgba(108,92,231,0.55)] focus:shadow-[inset_0_0_0_1px_var(--ring)]";
+
+export const selectClass = `${inputClass} appearance-none pr-[42px]`;
 
 export function StatusPill({
   tone = "ghost",
@@ -53,6 +55,31 @@ export function PageHeader({
         <strong className="mt-2 block text-[1.35rem] leading-none tracking-[-0.04em] text-white">{title}</strong>
       </div>
       {actions ? <div className="flex flex-none items-center gap-3 max-[720px]:w-full">{actions}</div> : null}
+    </div>
+  );
+}
+
+export function Loader({
+  label = "กำลังโหลด",
+  size = 48,
+  className = "",
+}: {
+  label?: string;
+  size?: number;
+  className?: string;
+}) {
+  return (
+    <div className={`inline-flex items-center justify-center ${className}`.trim()} role="status" aria-live="polite" aria-label={label}>
+      <span
+        className="app-loader"
+        style={
+          {
+            "--loader-size": `${size}px`,
+            "--loader-stroke": `${Math.max(3, Math.round(size / 10))}px`,
+          } as React.CSSProperties
+        }
+      />
+      <span className="sr-only">{label}</span>
     </div>
   );
 }

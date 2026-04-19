@@ -1,7 +1,7 @@
 const path = require("node:path");
 const crypto = require("node:crypto");
-const { S3Client } = require("@aws-sdk/client-s3");
-const { createPresignedPost } = require("@aws-sdk/s3-presigned-post");
+const { PutObjectCommand, S3Client } = require("@aws-sdk/client-s3");
+const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 const { env } = require("../config/env");
 const { AppError } = require("../utils/app-error");
 
@@ -20,6 +20,7 @@ function getR2Client() {
   return new S3Client({
     region: "auto",
     endpoint: env.R2_ENDPOINT,
+    forcePathStyle: true,
     credentials: {
       accessKeyId: env.R2_ACCESS_KEY_ID,
       secretAccessKey: env.R2_SECRET_ACCESS_KEY,
@@ -54,25 +55,22 @@ function validateUploadRequest({ fileName, contentType, contentLength }) {
 async function createPresignedUpload({ fileName, contentType, contentLength }) {
   const validated = validateUploadRequest({ fileName, contentType, contentLength });
   const objectKey = `uploads/${crypto.randomUUID()}.${validated.extension}`;
-
-  const post = await createPresignedPost(getR2Client(), {
+  const command = new PutObjectCommand({
     Bucket: env.R2_BUCKET,
     Key: objectKey,
-    Conditions: [
-      ["eq", "$Content-Type", validated.contentType],
-      ["content-length-range", 1, env.MAX_UPLOAD_BYTES],
-      ["starts-with", "$key", "uploads/"],
-    ],
-    Fields: {
-      key: objectKey,
-      "Content-Type": validated.contentType,
-    },
-    Expires: 60,
+    ContentType: validated.contentType,
   });
+  const putUrl = await getSignedUrl(getR2Client(), command, { expiresIn: 60 });
 
   return {
     objectKey,
-    upload: post,
+    upload: {
+      method: "PUT",
+      url: putUrl,
+      headers: {
+        "Content-Type": validated.contentType,
+      },
+    },
     maxUploadBytes: env.MAX_UPLOAD_BYTES,
     publicUrl: env.R2_PUBLIC_BASE_URL ? `${env.R2_PUBLIC_BASE_URL.replace(/\/$/, "")}/${objectKey}` : null,
   };

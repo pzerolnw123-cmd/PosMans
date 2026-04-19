@@ -3,6 +3,7 @@ const cors = require("cors");
 const helmet = require("helmet");
 const cookieParser = require("cookie-parser");
 const authRoutes = require("./routes/auth.routes");
+const productRoutes = require("./routes/product.routes");
 const uploadRoutes = require("./routes/upload.routes");
 const { env } = require("./config/env");
 const { errorHandler } = require("./middleware/error");
@@ -29,6 +30,7 @@ function createApp() {
   });
 
   app.use("/api/auth", authRoutes);
+  app.use("/api/products", productRoutes);
   app.use("/api/uploads", uploadRoutes);
 
   app.use(errorHandler);

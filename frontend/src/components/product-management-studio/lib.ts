@@ -1,0 +1,181 @@
+import { csrfCookieName, ensureCsrfToken, readCookie } from "@/lib/csrf";
+import type { CropDraft, SignedUploadPayload } from "@/components/product-management-studio/types";
+
+export const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
+export const CROP_VIEWPORT_SIZE = 320;
+const CROPPED_EXPORT_SIZE = 1200;
+export const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"] as const;
+
+export function clamp(value: number, min: number, max: number) {
+  return Math.min(Math.max(value, min), max);
+}
+
+export function revokeManagedObjectUrl(url: string | undefined, managedUrls: string[]) {
+  if (!url || !url.startsWith("blob:")) {
+    return managedUrls;
+  }
+
+  URL.revokeObjectURL(url);
+  return managedUrls.filter((entry) => entry !== url);
+}
+
+export async function requestJson<T>(path: string, init?: RequestInit) {
+  const headers = new Headers(init?.headers);
+
+  if (init?.method && init.method !== "GET") {
+    const csrfToken = (await ensureCsrfToken()) || readCookie(csrfCookieName);
+    if (!csrfToken) {
+      throw new Error("ไม่สามารถเริ่มต้น CSRF token ได้");
+    }
+
+    headers.set("x-csrf-token", csrfToken);
+    headers.set("content-type", headers.get("content-type") || "application/json");
+  }
+
+  const response = await fetch(path, {
+    ...init,
+    credentials: "same-origin",
+    headers,
+  });
+
+  if (response.status === 204) {
+    return null as T;
+  }
+
+  const payload = (await response.json().catch(() => null)) as
+    | { error?: string; product?: T; products?: T }
+    | null;
+
+  if (!response.ok) {
+    throw new Error(payload?.error || "เกิดข้อผิดพลาดในการเชื่อมต่อสินค้า");
+  }
+
+  return (payload?.product ?? payload?.products ?? payload) as T;
+}
+
+export function readFileAsDataUrl(file: File) {
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result));
+    reader.onerror = () => reject(new Error("ไม่สามารถอ่านไฟล์รูปภาพได้"));
+    reader.readAsDataURL(file);
+  });
+}
+
+export function loadImage(dataUrl: string) {
+  return new Promise<HTMLImageElement>((resolve, reject) => {
+    const image = new Image();
+    image.onload = () => resolve(image);
+    image.onerror = () => reject(new Error("ไม่สามารถโหลดรูปภาพสำหรับคร็อบได้"));
+    image.src = dataUrl;
+  });
+}
+
+export function buildCropMetrics(image: HTMLImageElement, zoom: number, viewportSize: number) {
+  const baseScale = Math.max(viewportSize / image.width, viewportSize / image.height);
+  const renderWidth = image.width * baseScale * zoom;
+  const renderHeight = image.height * baseScale * zoom;
+
+  return {
+    renderWidth,
+    renderHeight,
+    maxOffsetX: Math.max(0, (renderWidth - viewportSize) / 2),
+    maxOffsetY: Math.max(0, (renderHeight - viewportSize) / 2),
+  };
+}
+
+export function clampOffset(
+  image: HTMLImageElement,
+  zoom: number,
+  offsetX: number,
+  offsetY: number,
+  viewportSize: number,
+) {
+  const metrics = buildCropMetrics(image, zoom, viewportSize);
+
+  return {
+    x: clamp(offsetX, -metrics.maxOffsetX, metrics.maxOffsetX),
+    y: clamp(offsetY, -metrics.maxOffsetY, metrics.maxOffsetY),
+  };
+}
+
+export async function createCroppedBlob(draft: CropDraft, zoom: number, offsetX: number, offsetY: number) {
+  const canvas = document.createElement("canvas");
+  canvas.width = CROPPED_EXPORT_SIZE;
+  canvas.height = CROPPED_EXPORT_SIZE;
+
+  const context = canvas.getContext("2d");
+  if (!context) {
+    throw new Error("ไม่สามารถสร้าง canvas สำหรับคร็อบรูปได้");
+  }
+
+  context.fillStyle = "#0f1420";
+  context.fillRect(0, 0, canvas.width, canvas.height);
+  context.imageSmoothingEnabled = true;
+  context.imageSmoothingQuality = "high";
+
+  const baseScale = Math.max(canvas.width / draft.image.width, canvas.height / draft.image.height);
+  const drawWidth = draft.image.width * baseScale * zoom;
+  const drawHeight = draft.image.height * baseScale * zoom;
+  const offsetScale = CROPPED_EXPORT_SIZE / CROP_VIEWPORT_SIZE;
+  const drawX = (canvas.width - drawWidth) / 2 + offsetX * offsetScale;
+  const drawY = (canvas.height - drawHeight) / 2 + offsetY * offsetScale;
+
+  context.drawImage(draft.image, drawX, drawY, drawWidth, drawHeight);
+
+  const blob = await new Promise<Blob | null>((resolve) => {
+    canvas.toBlob(resolve, "image/webp", 0.92);
+  });
+
+  if (!blob) {
+    throw new Error("ไม่สามารถสร้างไฟล์รูปภาพหลังคร็อบได้");
+  }
+
+  return blob;
+}
+
+export async function requestSignedUpload(fileName: string, contentType: string, contentLength: number) {
+  const csrfToken = (await ensureCsrfToken()) || readCookie(csrfCookieName);
+  if (!csrfToken) {
+    throw new Error("ไม่สามารถเริ่มต้น CSRF token ได้");
+  }
+
+  const response = await fetch("/api/uploads/sign", {
+    method: "POST",
+    credentials: "same-origin",
+    headers: {
+      "content-type": "application/json",
+      "x-csrf-token": csrfToken,
+    },
+    body: JSON.stringify({ fileName, contentType, contentLength }),
+  });
+
+  if (!response.ok) {
+    const payload = (await response.json().catch(() => null)) as { error?: string } | null;
+    throw new Error(payload?.error || "ไม่สามารถขอสิทธิ์อัปโหลดไฟล์ได้");
+  }
+
+  return (await response.json()) as SignedUploadPayload;
+}
+
+export async function uploadBlobToR2(payload: SignedUploadPayload, blob: Blob) {
+  let response: Response;
+
+  try {
+    response = await fetch(payload.upload.url, {
+      method: payload.upload.method,
+      headers: payload.upload.headers,
+      body: blob,
+    });
+  } catch (error) {
+    if (error instanceof TypeError) {
+      throw new Error("อัปโหลดไปที่ R2 ไม่ได้เพราะ CORS ของ bucket ยังไม่อนุญาต localhost:3000");
+    }
+
+    throw error;
+  }
+
+  if (!response.ok) {
+    throw new Error("อัปโหลดไฟล์ไปที่ R2 ไม่สำเร็จ");
+  }
+}

@@ -1,22 +1,19 @@
-import type { ReactNode } from "react";
+﻿import type { ReactNode } from "react";
 import type { SessionPayload } from "@/lib/session";
 import { BackofficeShell, PanelCard } from "@/components/backoffice-shell";
 import { LogoutButton } from "@/components/logout-button";
 import { InteractiveActionGrid } from "@/components/interactive-action-grid";
 import { OwnerPasswordClient, OwnerProfileClient } from "@/components/owner-settings-client";
 import { ProductManagementStudio } from "@/components/product-management-studio";
-import { PageHeader, StatusPill } from "@/components/ui-primitives";
+import { SalesPaginationMockup } from "@/components/sales-pagination-mockup";
+import { PageHeader, StatusPill, ghostButtonClass, inputClass, primaryButtonClass, secondaryButtonClass } from "@/components/ui-primitives";
 
-export type OwnerSectionKey = "sales" | "payments" | "receipts" | "reports" | "menu" | "overview" | "settings";
+export type OwnerSectionKey = "sales" | "payments" | "receipts" | "reports" | "menu" | "overview" | "calculator" | "settings";
 
 type OwnerWorkspaceProps = {
   session: SessionPayload;
   activeSection: OwnerSectionKey;
 };
-
-function SectionGrid({ children }: { children: ReactNode }) {
-  return <div className="grid grid-cols-2 gap-[14px] mt-4 max-[1180px]:grid-cols-1">{children}</div>;
-}
 
 function ThreeUpStats({ items }: { items: Array<[string, string]> }) {
   return (
@@ -68,22 +65,6 @@ function ListStack({ items }: { items: Array<{ title: string; subtitle: string; 
   );
 }
 
-function DataStack({ items }: { items: Array<[string, string]> }) {
-  return (
-    <div className="grid gap-[10px]">
-      {items.map(([label, value]) => (
-        <div
-          key={label}
-          className="flex items-center justify-between gap-[14px] rounded-xl border border-[var(--border)] bg-[rgba(22,27,38,0.72)] px-[14px] py-3"
-        >
-          <span className="text-[var(--foreground-soft)]">{label}</span>
-          <strong className="text-[1rem]">{value}</strong>
-        </div>
-      ))}
-    </div>
-  );
-}
-
 const sectionMeta: Record<OwnerSectionKey, { label: string; href: string }> = {
   sales: { label: "ขาย", href: "/owner/sales" },
   payments: { label: "ชำระเงิน", href: "/owner/payments" },
@@ -91,6 +72,7 @@ const sectionMeta: Record<OwnerSectionKey, { label: string; href: string }> = {
   reports: { label: "รายงาน", href: "/owner/reports" },
   menu: { label: "สินค้า", href: "/owner/menu" },
   overview: { label: "ภาพรวม", href: "/owner/overview" },
+  calculator: { label: "คำนวณ", href: "/owner/calculator" },
   settings: { label: "ตั้งค่า", href: "/owner" },
 };
 
@@ -152,45 +134,7 @@ function renderOwnerScreen(activeSection: OwnerSectionKey, storeName: string, ow
                 </div>
               </div>
 
-              <div className="grid min-h-0 grid-cols-4 gap-4 max-[1180px]:grid-cols-3 max-[720px]:grid-cols-2" aria-label="products">
-                {[
-                  ["ข้าวกะเพราหมู", "เมนูหลัก", "฿65"],
-                  ["ข้าวผัดอเมริกัน", "ขายดี", "฿89"],
-                  ["ผัดไทยกุ้งสด", "ครัวร้อน", "฿79"],
-                  ["ชาไทยเย็น", "เครื่องดื่ม", "฿45"],
-                  ["ต้มยำรวมมิตร", "เมนูแนะนำ", "฿120"],
-                  ["ข้าวหมูทอด", "พร้อมขาย", "฿69"],
-                  ["โค้กไม่มีน้ำตาล", "เครื่องดื่ม", "฿25"],
-                  ["บราวนี่", "ของหวาน", "฿49"],
-                ].map(([name, group, price]) => (
-                  <article
-                    key={name}
-                    className="grid min-h-[172px] content-start gap-3 rounded-[18px] border border-[rgba(100,120,160,0.18)] bg-[linear-gradient(180deg,rgba(26,32,48,0.92),rgba(22,27,38,0.92))] p-[14px]"
-                  >
-                    <div className="min-h-[104px] rounded-2xl border border-[rgba(100,120,160,0.14)] bg-[rgba(255,255,255,0.04)]" />
-                    <div className="grid gap-1.5">
-                      <strong className="text-base leading-[1.2] text-white">{name}</strong>
-                      <span className="m-0 text-[0.95rem] text-[var(--foreground-soft)]">{group}</span>
-                    </div>
-                    <b className="text-base leading-[1.2] text-white">{price}</b>
-                  </article>
-                ))}
-              </div>
-
-              <div className="flex justify-between gap-4 max-[720px]:flex-col">
-                <button
-                  type="button"
-                  className="inline-flex h-[58px] w-[168px] items-center justify-center rounded-2xl border border-[var(--border)] bg-[rgba(22,27,38,0.8)] px-[18px] font-bold text-[var(--foreground)] transition hover:-translate-y-px hover:border-[var(--border-strong)] hover:shadow-[rgba(0,0,0,0.15)_0_5px_10px] max-[720px]:w-full"
-                >
-                  พักบิล
-                </button>
-                <button
-                  type="button"
-                  className="inline-flex h-[58px] w-[168px] items-center justify-center rounded-2xl border border-transparent bg-[linear-gradient(135deg,var(--brand)_0%,#8070f0_100%)] px-[18px] font-bold text-white shadow-[rgba(108,92,231,0.18)_0_6px_14px] transition hover:-translate-y-px max-[720px]:w-full"
-                >
-                  ไปชำระเงิน
-                </button>
-              </div>
+              <SalesPaginationMockup />
             </section>
 
             <aside
@@ -265,23 +209,154 @@ function renderOwnerScreen(activeSection: OwnerSectionKey, storeName: string, ow
       description: "สรุปยอดชำระ วิธีรับเงิน และทางลัดฝั่งแคชเชียร์ในพื้นที่เดียว",
       actions: <StatusPill>บิลล่าสุด 1,280 บาท</StatusPill>,
       body: (
-        <SectionGrid>
-          <PanelCard eyebrow="Bill Summary" title="ยอดที่ต้องรับ" description="ค่าสินค้า ภาษี ส่วนลด และยอดสุทธิ" className="px-[18px] py-4">
-            <DataStack
-              items={[
-                ["ค่าอาหาร", "1,120 บาท"],
-                ["ค่าบริการ", "80 บาท"],
-                ["ส่วนลดสมาชิก", "-40 บาท"],
-                ["ยอดสุทธิ", "1,160 บาท"],
-              ]}
-            />
-          </PanelCard>
+        <section
+          className="grid h-full min-h-0 grid-rows-[156px_minmax(0,1fr)] gap-[18px] max-[1180px]:grid-rows-[auto_minmax(0,1fr)]"
+          aria-label="payment layout"
+        >
+          <PageHeader
+            eyebrow="Checkout"
+            title="ชำระเงิน"
+            actions={
+              <>
+                <StatusPill tone="success">พร้อมรับชำระ</StatusPill>
+                <div className="h-5 w-[124px] rounded-full border border-[var(--border)] bg-[rgba(255,255,255,0.06)] max-[720px]:w-full" />
+              </>
+            }
+          />
 
-          <PanelCard eyebrow="Payment Actions" title="เลือก flow การชำระ" description="ส่วนนี้โต้ตอบได้โดยไม่กระทบ shell หลัก" className="px-[18px] py-4">
-            <InteractiveActionGrid items={["เงินสด", "โอนเงิน", "บัตร", "แยกบิล", "คืนเงิน", "พิมพ์สลิป"]} />
-          </PanelCard>
-        </SectionGrid>
+          <div className="grid h-full min-h-0 grid-cols-[minmax(0,1fr)_minmax(0,1fr)_280px] gap-[18px] max-[1280px]:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] max-[1180px]:grid-cols-1">
+            <section className="grid min-h-0 grid-rows-[auto_auto_1fr_auto] gap-[16px] rounded-[18px] border border-[var(--border)] bg-[rgba(22,27,38,0.76)] px-5 py-[18px] shadow-[var(--shadow-soft)]">
+              <div>
+                <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[#6b7a94]">Bill Summary</p>
+                <strong className="my-[10px] block text-[1.4rem] leading-none tracking-[-0.04em] text-white">ค่าใช้จ่ายบิล A12</strong>
+                <p className="m-0 text-[0.95rem] leading-[1.65] text-[var(--foreground-soft)]">สรุปรายการสินค้า จำนวน และยอดสุทธิก่อนปิดบิล</p>
+              </div>
+
+              <div className="grid gap-3">
+                {[
+                  ["ข้าวกะเพราหมู", "1 x 65", "฿65"],
+                  ["ชาไทยเย็น", "2 x 45", "฿90"],
+                  ["บราวนี่", "1 x 49", "฿49"],
+                ].map(([name, qty, total]) => (
+                  <div key={name} className="grid grid-cols-[52px_minmax(0,1fr)_auto] items-center gap-3 rounded-2xl border border-[rgba(100,120,160,0.14)] bg-[rgba(255,255,255,0.03)] p-3">
+                    <div className="h-[52px] w-[52px] rounded-2xl border border-[rgba(100,120,160,0.14)] bg-[rgba(255,255,255,0.04)]" />
+                    <div className="grid gap-1">
+                      <strong className="text-base leading-[1.2] text-white">{name}</strong>
+                      <span className="text-[0.92rem] text-[var(--foreground-soft)]">{qty}</span>
+                    </div>
+                    <strong className="text-base leading-[1.2] text-white">{total}</strong>
+                  </div>
+                ))}
+              </div>
+
+              <div className="grid gap-3">
+                <label className="grid gap-2">
+                  <span className="text-[0.92rem] text-[var(--foreground-soft)]">ชื่อลูกค้า</span>
+                  <input className={inputClass} defaultValue="Walk-in Customer" />
+                </label>
+                <label className="grid gap-2">
+                  <span className="text-[0.92rem] text-[var(--foreground-soft)]">หมายเหตุบิล</span>
+                  <textarea
+                    className="min-h-[116px] rounded-[14px] border border-[rgba(100,120,160,0.22)] bg-[rgba(14,18,28,0.7)] px-[14px] py-3 text-[var(--foreground)] outline-none transition placeholder:text-[#556070] focus:border-[rgba(108,92,231,0.55)] focus:shadow-[inset_0_0_0_1px_var(--ring)]"
+                    defaultValue="ลูกค้ากลับบ้าน รอออกใบเสร็จย่อ"
+                  />
+                </label>
+              </div>
+
+              <div className="grid gap-3 border-t border-t-[var(--border)] pt-3">
+                {[
+                  ["ยอดอาหาร", "฿204"],
+                  ["ภาษี", "฿14"],
+                  ["ส่วนลด", "฿0"],
+                  ["สุทธิ", "฿218"],
+                ].map(([label, value]) => (
+                  <div key={label} className="flex items-center justify-between gap-3">
+                    <span className="text-[0.95rem] text-[var(--foreground-soft)]">{label}</span>
+                    <strong className="text-base leading-[1.2] text-white">{value}</strong>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            <section className="grid min-h-0 grid-rows-[auto_auto_1fr_auto] gap-[16px] rounded-[18px] border border-[var(--border)] bg-[rgba(22,27,38,0.76)] px-5 py-[18px] shadow-[var(--shadow-soft)]">
+              <div>
+                <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[#6b7a94]">Payment Methods</p>
+                <strong className="my-[10px] block text-[1.4rem] leading-none tracking-[-0.04em] text-white">เลือกวิธีชำระ</strong>
+                <p className="m-0 text-[0.95rem] leading-[1.65] text-[var(--foreground-soft)]">รองรับเงินสด โอน บัตร และการแยกบิล</p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3 max-[720px]:grid-cols-1">
+                {["เงินสด", "QR PromptPay", "บัตร", "โอนเงิน"].map((method, index) => (
+                  <button
+                    key={method}
+                    type="button"
+                    className={index === 0 ? `${primaryButtonClass} min-h-[52px] rounded-2xl` : `${secondaryButtonClass} min-h-[52px] rounded-2xl`}
+                  >
+                    {method}
+                  </button>
+                ))}
+              </div>
+
+              <div className="grid content-start gap-4">
+                <label className="grid gap-2">
+                  <span className="text-[0.92rem] text-[var(--foreground-soft)]">รับเงินจากลูกค้า</span>
+                  <input className={inputClass} defaultValue="500" />
+                </label>
+                <label className="grid gap-2">
+                  <span className="text-[0.92rem] text-[var(--foreground-soft)]">เงินทอน</span>
+                  <input className={inputClass} defaultValue="282" />
+                </label>
+                <label className="grid gap-2">
+                  <span className="text-[0.92rem] text-[var(--foreground-soft)]">Reference / สลิป</span>
+                  <div className="flex min-h-[116px] items-center justify-center rounded-[14px] border border-dashed border-[rgba(100,120,160,0.22)] bg-[rgba(255,255,255,0.03)] text-[0.95rem] text-[var(--foreground-soft)]">
+                    พื้นที่อัปโหลดสลิป / หมายเลขอ้างอิง
+                  </div>
+                </label>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3 max-[720px]:grid-cols-1">
+                <button type="button" className={`${ghostButtonClass} min-h-[52px] rounded-2xl`}>
+                  ยกเลิก
+                </button>
+                <button type="button" className={`${primaryButtonClass} min-h-[52px] rounded-2xl`}>
+                  ยืนยันการชำระ
+                </button>
+              </div>
+            </section>
+
+            <section className="grid h-fit gap-[16px] rounded-[18px] border border-[var(--border)] bg-[rgba(22,27,38,0.76)] px-5 py-[18px] shadow-[var(--shadow-soft)] max-[1280px]:col-span-2 max-[1180px]:col-span-1">
+              <div>
+                <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[#6b7a94]">Quick Panel</p>
+                <strong className="my-[10px] block text-[1.4rem] leading-none tracking-[-0.04em] text-white">ทางลัดแคชเชียร์</strong>
+              </div>
+
+              <div className="grid gap-3">
+                <div className="rounded-2xl border border-[rgba(100,120,160,0.14)] bg-[rgba(255,255,255,0.03)] p-4">
+                  <span className="text-[0.92rem] text-[var(--foreground-soft)]">สถานะบิล</span>
+                  <strong className="mt-2 block text-[1.2rem] leading-[1.1] text-white">รอชำระ โต๊ะ A12</strong>
+                </div>
+                <div className="rounded-2xl border border-[rgba(100,120,160,0.14)] bg-[rgba(255,255,255,0.03)] p-4">
+                  <span className="text-[0.92rem] text-[var(--foreground-soft)]">จำนวนรายการ</span>
+                  <strong className="mt-2 block text-[1.2rem] leading-[1.1] text-white">3 รายการ / 4 ชิ้น</strong>
+                </div>
+              </div>
+
+              <div className="grid gap-3">
+                <button type="button" className={`${secondaryButtonClass} min-h-[48px] rounded-2xl`}>
+                  พิมพ์ใบเสร็จ
+                </button>
+                <button type="button" className={`${secondaryButtonClass} min-h-[48px] rounded-2xl`}>
+                  แยกบิล
+                </button>
+                <button type="button" className={`${secondaryButtonClass} min-h-[48px] rounded-2xl`}>
+                  คืนเงิน
+                </button>
+              </div>
+            </section>
+          </div>
+        </section>
       ),
+      standalone: true,
     },
     receipts: {
       eyebrow: "Receipt Desk",
@@ -289,22 +364,62 @@ function renderOwnerScreen(activeSection: OwnerSectionKey, storeName: string, ow
       description: "รวมการค้นบิล ซ้ำพิมพ์ และส่งสลิปแบบย่อในจอเดียว",
       actions: <StatusPill>พร้อมพิมพ์ 12 รายการ</StatusPill>,
       body: (
-        <SectionGrid>
-          <PanelCard eyebrow="Recent Receipts" title="บิลล่าสุด" description="ค้นบิลได้จากรายการสั้น" className="px-[18px] py-4">
-            <ListStack
-              items={[
-                { title: "RC-1042", subtitle: "โต๊ะ A03", value: "1,280 บาท" },
-                { title: "RC-1041", subtitle: "กลับบ้าน", value: "245 บาท" },
-                { title: "RC-1040", subtitle: "โต๊ะ C01", value: "3,450 บาท" },
-              ]}
-            />
-          </PanelCard>
+        <section className="grid h-full min-h-0 grid-rows-[156px_minmax(0,1fr)] gap-[18px] max-[1180px]:grid-rows-[auto_minmax(0,1fr)]">
+          <PageHeader
+            eyebrow="Receipt Desk"
+            title="ใบเสร็จ"
+            actions={
+              <>
+                <StatusPill>พร้อมพิมพ์ 12 รายการ</StatusPill>
+                <div className="h-5 w-[128px] rounded-full border border-[var(--border)] bg-[rgba(255,255,255,0.06)] max-[720px]:w-full" />
+              </>
+            }
+          />
 
-          <PanelCard eyebrow="Print & Share" title="งานหลังปิดบิล" description="ปุ่มเหล่านี้แยกเป็น client island" className="px-[18px] py-4">
-            <InteractiveActionGrid items={["พิมพ์ซ้ำ", "ส่งอีเมล", "ส่งไลน์", "ดูรายละเอียด"]} columns={2} />
-          </PanelCard>
-        </SectionGrid>
+          <div className="grid min-h-0 grid-cols-[minmax(0,1.25fr)_minmax(320px,0.75fr)] gap-[18px] max-[1180px]:grid-cols-1">
+            <PanelCard eyebrow="Recent Receipts" title="บิลล่าสุด" description="ค้นบิลได้จากรายการสั้น" className="grid min-h-0 content-start px-[18px] py-4">
+              <div className="grid gap-[18px]">
+                <ListStack
+                  items={[
+                    { title: "RC-1042", subtitle: "โต๊ะ A03", value: "1,280 บาท" },
+                    { title: "RC-1041", subtitle: "กลับบ้าน", value: "245 บาท" },
+                    { title: "RC-1040", subtitle: "โต๊ะ C01", value: "3,450 บาท" },
+                  ]}
+                />
+                <div className="grid gap-[10px] rounded-[16px] border border-[var(--border)] bg-[rgba(255,255,255,0.03)] p-4">
+                  <div className="flex items-center justify-between gap-3 rounded-xl border border-[rgba(100,120,160,0.12)] bg-[rgba(22,27,38,0.56)] px-4 py-3">
+                    <span className="text-[var(--foreground-soft)]">ค้นหาจากเลขบิล</span>
+                    <strong>RC-1042</strong>
+                  </div>
+                  <div className="flex items-center justify-between gap-3 rounded-xl border border-[rgba(100,120,160,0.12)] bg-[rgba(22,27,38,0.56)] px-4 py-3">
+                    <span className="text-[var(--foreground-soft)]">ประเภท</span>
+                    <strong>รับประทานที่ร้าน</strong>
+                  </div>
+                </div>
+              </div>
+            </PanelCard>
+
+            <PanelCard eyebrow="Print & Share" title="งานหลังปิดบิล" description="พิมพ์ซ้ำ ส่งต่อ และดูตัวอย่างใบเสร็จ" className="grid min-h-0 content-start px-[18px] py-4">
+              <div className="grid gap-[18px]">
+                <div className="min-h-[240px] rounded-[18px] border border-[rgba(100,120,160,0.14)] bg-[rgba(255,255,255,0.03)] p-4">
+                  <div className="mx-auto max-w-[240px] rounded-[18px] border border-[rgba(100,120,160,0.14)] bg-[rgba(14,18,28,0.72)] p-4 text-center">
+                    <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[#6b7a94]">Receipt Preview</p>
+                    <strong className="mt-3 block text-[1.15rem]">RC-1042</strong>
+                    <p className="mt-2 text-[0.9rem] text-[var(--foreground-soft)]">Main Store · โต๊ะ A03</p>
+                    <div className="mt-4 grid gap-2 text-left text-[0.9rem] text-[var(--foreground-soft)]">
+                      <div className="flex items-center justify-between"><span>ข้าวกะเพรา</span><span>฿65</span></div>
+                      <div className="flex items-center justify-between"><span>ชาไทยเย็น</span><span>฿90</span></div>
+                      <div className="flex items-center justify-between"><span>สุทธิ</span><strong className="text-white">฿155</strong></div>
+                    </div>
+                  </div>
+                </div>
+                <InteractiveActionGrid items={["พิมพ์ซ้ำ", "ส่งอีเมล", "ส่งไลน์", "ดูรายละเอียด"]} columns={2} />
+              </div>
+            </PanelCard>
+          </div>
+        </section>
       ),
+      standalone: true,
     },
     reports: {
       eyebrow: "Reports",
@@ -312,22 +427,59 @@ function renderOwnerScreen(activeSection: OwnerSectionKey, storeName: string, ow
       description: "มุมมองอ่านเร็วสำหรับยอดขาย บิลเฉลี่ย และสิ่งที่ต้องจับตาในวันเดียว",
       actions: <StatusPill tone="success">อัปเดตล่าสุด 5 นาทีที่แล้ว</StatusPill>,
       body: (
-        <SectionGrid>
-          <PanelCard eyebrow="Today" title="ตัวชี้วัดสำคัญวันนี้" description="ตัวเลขหลักที่เจ้าของร้านใช้ตัดสินใจ" className="px-[18px] py-4">
-            <ThreeUpStats items={[["ยอดขาย", "28,450"], ["บิลเฉลี่ย", "412"], ["ช่วงพีค", "12:30"]]} />
-          </PanelCard>
+        <section className="grid h-full min-h-0 grid-rows-[156px_minmax(0,1fr)] gap-[18px] max-[1180px]:grid-rows-[auto_minmax(0,1fr)]">
+          <PageHeader
+            eyebrow="Reports"
+            title="รายงาน"
+            actions={
+              <>
+                <StatusPill tone="success">อัปเดตล่าสุด 5 นาทีที่แล้ว</StatusPill>
+                <div className="h-5 w-[132px] rounded-full border border-[var(--border)] bg-[rgba(255,255,255,0.06)] max-[720px]:w-full" />
+              </>
+            }
+          />
 
-          <PanelCard eyebrow="Highlights" title="สิ่งที่ต้องจับตา" description="แทนกราฟยาวด้วยโน้ตที่อ่านจบเร็ว" className="px-[18px] py-4">
-            <NoteStack
-              items={[
-                "สินค้าขายดีที่สุดวันนี้คือ American Fried Rice",
-                "ยอดขายเครื่องดื่มเพิ่มขึ้น 14% จากเมื่อวาน",
-                "สาขานี้มี 3 บิลที่ยังไม่ปิดเก็บเงิน",
-              ]}
-            />
-          </PanelCard>
-        </SectionGrid>
+          <div className="grid min-h-0 grid-cols-[minmax(0,1.25fr)_minmax(320px,0.75fr)] gap-[18px] max-[1180px]:grid-cols-1">
+            <PanelCard eyebrow="Today" title="ตัวชี้วัดสำคัญวันนี้" description="ตัวเลขหลักที่เจ้าของร้านใช้ตัดสินใจ" className="grid min-h-0 content-start px-[18px] py-4">
+              <div className="grid gap-[18px]">
+                <ThreeUpStats items={[["ยอดขาย", "28,450"], ["บิลเฉลี่ย", "412"], ["ช่วงพีค", "12:30"]]} />
+                <div className="grid gap-[10px] rounded-[16px] border border-[var(--border)] bg-[rgba(255,255,255,0.03)] p-4">
+                  {[
+                    ["ยอดเช้า", "8,450 บาท"],
+                    ["ยอดเที่ยง", "12,280 บาท"],
+                    ["ยอดเย็น", "7,720 บาท"],
+                    ["บิลที่ยังไม่ปิด", "3 บิล"],
+                  ].map(([label, value]) => (
+                    <div key={label} className="flex items-center justify-between gap-3 rounded-xl border border-[rgba(100,120,160,0.12)] bg-[rgba(22,27,38,0.56)] px-4 py-3">
+                      <span className="text-[var(--foreground-soft)]">{label}</span>
+                      <strong>{value}</strong>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </PanelCard>
+
+            <PanelCard eyebrow="Highlights" title="สิ่งที่ต้องจับตา" description="แทนกราฟยาวด้วยโน้ตที่อ่านจบเร็ว" className="grid min-h-0 content-start px-[18px] py-4">
+              <div className="grid gap-[18px]">
+                <NoteStack
+                  items={[
+                    "สินค้าขายดีที่สุดวันนี้คือ American Fried Rice",
+                    "ยอดขายเครื่องดื่มเพิ่มขึ้น 14% จากเมื่อวาน",
+                    "สาขานี้มี 3 บิลที่ยังไม่ปิดเก็บเงิน",
+                  ]}
+                />
+                <ListStack
+                  items={[
+                    { title: "12:30", subtitle: "ช่วงพีคของวัน", value: "67 ออเดอร์" },
+                    { title: "AOV", subtitle: "ค่าเฉลี่ยต่อบิล", value: "412 บาท" },
+                  ]}
+                />
+              </div>
+            </PanelCard>
+          </div>
+        </section>
       ),
+      standalone: true,
     },
     menu: {
       eyebrow: "Product Studio",
@@ -342,22 +494,113 @@ function renderOwnerScreen(activeSection: OwnerSectionKey, storeName: string, ow
       description: "หน้ารวมสำหรับ owner โดยไม่ปะปนเรื่อง platform-level control ของ superadmin",
       actions: <StatusPill>{storeName}</StatusPill>,
       body: (
-        <SectionGrid>
-          <PanelCard eyebrow="Store Pulse" title="สถานะวันนี้" description="ตัวเลขหลักของร้านในวันเดียว" className="px-[18px] py-4">
-            <ThreeUpStats items={[["ออเดอร์เปิด", "8"], ["ยอดขายสด", "28.4K"], ["พนักงานเข้าเวร", "6"]]} />
-          </PanelCard>
+        <section className="grid h-full min-h-0 grid-rows-[156px_minmax(0,1fr)] gap-[18px] max-[1180px]:grid-rows-[auto_minmax(0,1fr)]">
+          <PageHeader
+            eyebrow="Overview"
+            title="ภาพรวมร้าน"
+            actions={
+              <>
+                <StatusPill>{storeName}</StatusPill>
+                <div className="h-5 w-[112px] rounded-full border border-[var(--border)] bg-[rgba(255,255,255,0.06)] max-[720px]:w-full" />
+              </>
+            }
+          />
 
-          <PanelCard eyebrow="Owner Notes" title="สิ่งที่ควรเช็กวันนี้" description="โน้ตสั้นสำหรับผู้ดูแลร้าน" className="px-[18px] py-4">
-            <NoteStack
-              items={[
-                "ตรวจ stock วัตถุดิบที่ใช้กับสินค้าขายดีช่วงเที่ยง",
-                "ตามบิลค้างชำระ 1 บิลจากเดลิเวอรี",
-                "อัปเดตสินค้าโปรโมชั่นก่อนรอบเย็น",
-              ]}
-            />
-          </PanelCard>
-        </SectionGrid>
+          <div className="grid min-h-0 grid-cols-[minmax(0,1.25fr)_minmax(320px,0.75fr)] gap-[18px] max-[1180px]:grid-cols-1">
+            <PanelCard eyebrow="Store Pulse" title="สถานะวันนี้" description="ตัวเลขหลักของร้านในวันเดียว" className="grid min-h-0 content-start px-[18px] py-4">
+              <div className="grid gap-[18px]">
+                <ThreeUpStats items={[["ออเดอร์เปิด", "8"], ["ยอดขายสด", "28.4K"], ["พนักงานเข้าเวร", "6"]]} />
+                <div className="grid gap-[10px] rounded-[16px] border border-[var(--border)] bg-[rgba(255,255,255,0.03)] p-4">
+                  {[
+                    ["โต๊ะที่กำลังใช้งาน", "5 โต๊ะ"],
+                    ["ลูกค้ารอชำระ", "2 บิล"],
+                    ["สินค้าต้องเติม", "4 รายการ"],
+                  ].map(([label, value]) => (
+                    <div key={label} className="flex items-center justify-between gap-3 rounded-xl border border-[rgba(100,120,160,0.12)] bg-[rgba(22,27,38,0.56)] px-4 py-3">
+                      <span className="text-[var(--foreground-soft)]">{label}</span>
+                      <strong>{value}</strong>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </PanelCard>
+
+            <PanelCard eyebrow="Owner Notes" title="สิ่งที่ควรเช็กวันนี้" description="โน้ตสั้นสำหรับผู้ดูแลร้าน" className="grid min-h-0 content-start px-[18px] py-4">
+              <div className="grid gap-[18px]">
+                <NoteStack
+                  items={[
+                    "ตรวจ stock วัตถุดิบที่ใช้กับสินค้าขายดีช่วงเที่ยง",
+                    "ตามบิลค้างชำระ 1 บิลจากเดลิเวอรี",
+                    "อัปเดตสินค้าโปรโมชั่นก่อนรอบเย็น",
+                  ]}
+                />
+                <ListStack
+                  items={[
+                    { title: "5 นาที", subtitle: "อัปเดตรอบล่าสุด", value: "พร้อมใช้งาน" },
+                    { title: "6 คน", subtitle: "พนักงานเข้าเวร", value: "ครบทีม" },
+                  ]}
+                />
+              </div>
+            </PanelCard>
+          </div>
+        </section>
       ),
+      standalone: true,
+    },
+    calculator: {
+      eyebrow: "Cost Calculator",
+      title: "คำนวณ",
+      description: "ช่วยคำนวณต้นทุน ราคาขาย และกำไรขั้นต้นสำหรับสินค้าแต่ละรายการ",
+      actions: <StatusPill tone="success">พร้อมคำนวณ</StatusPill>,
+      body: (
+        <section className="grid h-full min-h-0 grid-rows-[156px_minmax(0,1fr)] gap-[18px] max-[1180px]:grid-rows-[auto_minmax(0,1fr)]">
+          <PageHeader
+            eyebrow="Cost Calculator"
+            title="คำนวณ"
+            actions={
+              <>
+                <StatusPill tone="success">พร้อมคำนวณ</StatusPill>
+                <div className="h-5 w-[120px] rounded-full border border-[var(--border)] bg-[rgba(255,255,255,0.06)] max-[720px]:w-full" />
+              </>
+            }
+          />
+
+          <div className="grid min-h-0 grid-cols-[minmax(0,1.1fr)_minmax(320px,0.9fr)] gap-[18px] max-[1180px]:grid-cols-1">
+            <PanelCard eyebrow="Cost Inputs" title="ข้อมูลต้นทุน" description="กรอกต้นทุนต่อหน่วย ค่าบรรจุภัณฑ์ และราคาขายที่ต้องการ" className="grid min-h-0 content-start px-[18px] py-4">
+              <div className="grid gap-[14px]">
+                {[
+                  ["ต้นทุนวัตถุดิบ", "85"],
+                  ["ค่าบรรจุภัณฑ์", "12"],
+                  ["ค่าแรงเฉลี่ยต่อชิ้น", "18"],
+                  ["ราคาขาย", "159"],
+                ].map(([label, value]) => (
+                  <label key={label} className="grid gap-2">
+                    <span className="text-[0.92rem] text-[var(--foreground-soft)]">{label}</span>
+                    <input className={inputClass} defaultValue={value} />
+                  </label>
+                ))}
+              </div>
+            </PanelCard>
+
+            <PanelCard eyebrow="Profit Snapshot" title="สรุปกำไร" description="คำนวณเบื้องต้นเพื่อใช้ตั้งราคาขายหรือปรับโปรโมชั่น" className="grid min-h-0 content-start px-[18px] py-4">
+              <div className="grid gap-[18px]">
+                <ThreeUpStats items={[["ต้นทุนรวม", "115"], ["กำไรขั้นต้น", "44"], ["Margin", "27.7%"]]} />
+                <div className="grid gap-[10px] rounded-[16px] border border-[var(--border)] bg-[rgba(255,255,255,0.03)] p-4">
+                  <div className="flex items-center justify-between gap-3 rounded-xl border border-[rgba(100,120,160,0.12)] bg-[rgba(22,27,38,0.56)] px-4 py-3">
+                    <span className="text-[var(--foreground-soft)]">ราคาขายแนะนำ</span>
+                    <strong>฿169</strong>
+                  </div>
+                  <div className="flex items-center justify-between gap-3 rounded-xl border border-[rgba(100,120,160,0.12)] bg-[rgba(22,27,38,0.56)] px-4 py-3">
+                    <span className="text-[var(--foreground-soft)]">Break-even</span>
+                    <strong>฿115</strong>
+                  </div>
+                </div>
+              </div>
+            </PanelCard>
+          </div>
+        </section>
+      ),
+      standalone: true,
     },
     settings: {
       eyebrow: "Store Settings",
@@ -365,16 +608,42 @@ function renderOwnerScreen(activeSection: OwnerSectionKey, storeName: string, ow
       description: "หน้า owner settings นี้แยกฟอร์ม interactive ออกเป็น client components โดยคง shell ฝั่ง server ไว้ให้เบา",
       actions: <StatusPill tone="success">พร้อมใช้งานแล้ว</StatusPill>,
       body: (
-        <SectionGrid>
-          <PanelCard eyebrow="ความปลอดภัยของบัญชี" title="เปลี่ยนรหัสผ่าน" description="เฉพาะบล็อกฟอร์มนี้ที่เป็น client-side" className="px-[18px] py-4">
-            <OwnerPasswordClient />
-          </PanelCard>
+        <section className="grid h-full min-h-0 grid-rows-[156px_minmax(0,1fr)] gap-[18px] max-[1180px]:grid-rows-[auto_minmax(0,1fr)]">
+          <PageHeader
+            eyebrow="Store Settings"
+            title="ตั้งค่าร้าน"
+            actions={
+              <>
+                <StatusPill tone="success">พร้อมใช้งานแล้ว</StatusPill>
+                <div className="h-5 w-[120px] rounded-full border border-[var(--border)] bg-[rgba(255,255,255,0.06)] max-[720px]:w-full" />
+              </>
+            }
+          />
 
-          <PanelCard eyebrow="โปรไฟล์ร้านค้า" title="ข้อมูลทั่วไป" description="แก้ชื่อร้านและเจ้าของได้โดยไม่ลากทั้งหน้าไปเป็น client" className="px-[18px] py-4">
-            <OwnerProfileClient storeName={storeName} ownerName={ownerName} />
-          </PanelCard>
-        </SectionGrid>
+          <div className="grid min-h-0 grid-cols-[minmax(0,1.25fr)_minmax(320px,0.75fr)] gap-[18px] max-[1180px]:grid-cols-1">
+            <PanelCard eyebrow="ความปลอดภัยของบัญชี" title="เปลี่ยนรหัสผ่าน" description="เฉพาะบล็อกฟอร์มนี้ที่เป็น client-side" className="grid min-h-0 content-start px-[18px] py-4">
+              <OwnerPasswordClient />
+            </PanelCard>
+
+            <PanelCard eyebrow="โปรไฟล์ร้านค้า" title="ข้อมูลทั่วไป" description="แก้ชื่อร้านและเจ้าของได้โดยไม่ลากทั้งหน้าไปเป็น client" className="grid min-h-0 content-start px-[18px] py-4">
+              <div className="grid gap-[18px]">
+                <OwnerProfileClient storeName={storeName} ownerName={ownerName} />
+                <div className="grid gap-[10px] rounded-[16px] border border-[var(--border)] bg-[rgba(255,255,255,0.03)] p-4">
+                  <div className="flex items-center justify-between gap-3 rounded-xl border border-[rgba(100,120,160,0.12)] bg-[rgba(22,27,38,0.56)] px-4 py-3">
+                    <span className="text-[var(--foreground-soft)]">การเชื่อมต่อเครื่องพิมพ์</span>
+                    <strong>พร้อมใช้งาน</strong>
+                  </div>
+                  <div className="flex items-center justify-between gap-3 rounded-xl border border-[rgba(100,120,160,0.12)] bg-[rgba(22,27,38,0.56)] px-4 py-3">
+                    <span className="text-[var(--foreground-soft)]">รอบอัปเดตล่าสุด</span>
+                    <strong>วันนี้ 10:24</strong>
+                  </div>
+                </div>
+              </div>
+            </PanelCard>
+          </div>
+        </section>
       ),
+      standalone: true,
     },
   };
 
@@ -436,3 +705,4 @@ export function OwnerWorkspace({ session, activeSection }: OwnerWorkspaceProps) 
     </main>
   );
 }
+

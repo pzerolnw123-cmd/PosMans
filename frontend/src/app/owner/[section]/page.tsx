@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { requireOwnerSession } from "@/lib/session";
 import { OwnerWorkspace, type OwnerSectionKey } from "@/components/owner-workspace";
 
-const validSections: OwnerSectionKey[] = ["sales", "payments", "receipts", "reports", "menu", "overview"];
+const validSections: OwnerSectionKey[] = ["sales", "payments", "receipts", "reports", "menu", "overview", "calculator"];
 
 export default async function OwnerSectionPage({
   params,
