@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { FormEvent, useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { csrfCookieName, ensureCsrfToken, readCookie } from "@/lib/csrf";
 import { getWorkspaceHref } from "@/lib/workspace";
@@ -225,6 +225,11 @@ export function LoginForm() {
     setChallengeMode("verify");
   }
 
+  function handlePasswordSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    void submitPasswordStep();
+  }
+
   if (challengeUser) {
     const title = challengeMode === "setup" ? "ตั้งค่า PIN ใหม่" : "ยืนยัน PIN";
     const description =
@@ -336,9 +341,7 @@ export function LoginForm() {
 
   return (
     <form
-      action={async () => {
-        await submitPasswordStep();
-      }}
+      onSubmit={handlePasswordSubmit}
       className="w-[min(100%,460px)] rounded-[22px] border border-[var(--border)] bg-[var(--surface)] p-7 shadow-[var(--shadow-card)] backdrop-blur-[14px]"
     >
       <PillLabel>Step 1 of 2</PillLabel>

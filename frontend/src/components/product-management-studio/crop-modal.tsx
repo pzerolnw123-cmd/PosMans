@@ -1,7 +1,7 @@
 "use client";
 
 import type { PointerEvent as ReactPointerEvent, WheelEvent as ReactWheelEvent } from "react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 import { ghostButtonClass, primaryButtonClass } from "@/components/ui-primitives";
 import { buildCropMetrics, clamp, CROP_VIEWPORT_SIZE } from "@/components/product-management-studio/lib";
@@ -32,12 +32,11 @@ export function CropModal({
 }: CropModalProps) {
   const dragState = useRef<{ startX: number; startY: number } | null>(null);
   const cropMetrics = useMemo(() => buildCropMetrics(draft.image, zoom, CROP_VIEWPORT_SIZE), [draft.image, zoom]);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-    return () => setMounted(false);
-  }, []);
+  const mounted = useSyncExternalStore(
+    () => () => undefined,
+    () => true,
+    () => false,
+  );
 
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
@@ -111,7 +110,7 @@ export function CropModal({
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={draft.dataUrl}
+                src={draft.objectUrl}
                 alt="Crop preview"
                 draggable={false}
                 className="pointer-events-none absolute left-1/2 top-1/2 max-w-none select-none"

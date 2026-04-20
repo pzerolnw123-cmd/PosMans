@@ -4,13 +4,19 @@
   "private": true,
   "main": "server.js",
   "scripts": {
+    "postinstall": "prisma generate",
+    "predev": "prisma generate",
     "dev": "nodemon server.js",
+    "prestart": "prisma generate",
     "start": "node server.js",
+    "pretest": "prisma generate",
     "test": "jest --runInBand",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:studio": "prisma studio",
+    "precreate:admin": "prisma generate",
     "create:admin": "node scripts/create-admin.mjs",
+    "precreate:owner": "prisma generate",
     "create:owner": "node scripts/create-owner.mjs"
   },
   "type": "commonjs",
@@ -18,7 +24,8 @@
     "@aws-sdk/client-s3": "^3.1030.0",
     "@aws-sdk/s3-presigned-post": "^3.1030.0",
     "@aws-sdk/s3-request-presigner": "^3.1030.0",
-    "@prisma/client": "6.7.0",
+    "@prisma/adapter-pg": "7.7.0",
+    "@prisma/client": "7.7.0",
     "bcryptjs": "^3.0.3",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
@@ -32,7 +39,10 @@
   "devDependencies": {
     "jest": "^30.2.0",
     "nodemon": "^3.1.10",
-    "prisma": "6.7.0",
+    "prisma": "7.7.0",
     "supertest": "^7.1.4"
+  },
+  "overrides": {
+    "@hono/node-server": "1.19.13"
   }
 }

@@ -2,6 +2,35 @@ import type { NextConfig } from "next";
 import path from "node:path";
 
 const isDev = process.env.NODE_ENV !== "production";
+const imageRemoteOrigins = [
+  process.env.NEXT_PUBLIC_R2_PUBLIC_BASE_URL,
+  process.env.R2_PUBLIC_BASE_URL,
+  process.env.NEXT_PUBLIC_IMAGE_REMOTE_ORIGINS,
+]
+  .filter(Boolean)
+  .flatMap((value) => String(value).split(","))
+  .map((value) => value.trim())
+  .filter(Boolean);
+
+const imageRemotePatterns = imageRemoteOrigins.flatMap((origin) => {
+  try {
+    const url = new URL(origin);
+    if (!["http:", "https:"].includes(url.protocol)) {
+      return [];
+    }
+
+    return [
+      {
+        protocol: url.protocol.replace(":", "") as "http" | "https",
+        hostname: url.hostname,
+        port: url.port,
+        pathname: "/**",
+      },
+    ];
+  } catch {
+    return [];
+  }
+});
 
 const contentSecurityPolicy = [
   "default-src 'self'",
@@ -27,6 +56,9 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  images: {
+    remotePatterns: imageRemotePatterns,
+  },
   turbopack: {
     root: path.join(__dirname, ".."),
   },

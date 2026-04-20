@@ -100,7 +100,7 @@ export function ProductListPanel({
               );
             })}
 
-            {productsLoading ? (
+            {productsLoading && visibleProducts.length === 0 ? (
               <div className="grid place-items-center rounded-[16px] border border-dashed border-[var(--border)] bg-[rgba(18,22,34,0.72)] px-4 py-6 text-center">
                 <div className="grid gap-3">
                   <Loader className="mx-auto" label="กำลังโหลดสินค้า" />

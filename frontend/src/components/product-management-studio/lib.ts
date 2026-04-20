@@ -43,31 +43,30 @@ export async function requestJson<T>(path: string, init?: RequestInit) {
   }
 
   const payload = (await response.json().catch(() => null)) as
-    | { error?: string; product?: T; products?: T }
+    | { error?: string; product?: T; products?: T; pagination?: unknown }
     | null;
 
   if (!response.ok) {
     throw new Error(payload?.error || "เกิดข้อผิดพลาดในการเชื่อมต่อสินค้า");
   }
 
+  if (payload?.pagination) {
+    return payload as T;
+  }
+
   return (payload?.product ?? payload?.products ?? payload) as T;
 }
 
-export function readFileAsDataUrl(file: File) {
-  return new Promise<string>((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result));
-    reader.onerror = () => reject(new Error("ไม่สามารถอ่านไฟล์รูปภาพได้"));
-    reader.readAsDataURL(file);
-  });
+export function createImageObjectUrl(file: File) {
+  return URL.createObjectURL(file);
 }
 
-export function loadImage(dataUrl: string) {
+export function loadImage(src: string) {
   return new Promise<HTMLImageElement>((resolve, reject) => {
     const image = new Image();
     image.onload = () => resolve(image);
     image.onerror = () => reject(new Error("ไม่สามารถโหลดรูปภาพสำหรับคร็อบได้"));
-    image.src = dataUrl;
+    image.src = src;
   });
 }
 

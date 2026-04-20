@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 import { copyBackendCookies, proxyToBackend } from "@/lib/proxy";
 
-export async function GET() {
-  const response = await proxyToBackend("/api/products", {
+export async function GET(request: Request) {
+  const url = new URL(request.url);
+  const response = await proxyToBackend(`/api/products${url.search}`, {
     method: "GET",
     headers: {
       origin: "http://localhost:3000",

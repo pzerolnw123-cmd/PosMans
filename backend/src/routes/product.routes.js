@@ -1,5 +1,6 @@
 const express = require("express");
 const { z } = require("zod");
+const { Prisma } = require("../generated/prisma");
 const { prisma } = require("../lib/db");
 const { requireStoreRole, loadSession } = require("../middleware/auth");
 const { requireTrustedOrigin, requireCsrf } = require("../middleware/security");
@@ -28,6 +29,14 @@ const productUpdateSchema = z.object({
   imageUrl: safeUrlSchema("imageUrl").optional().nullable(),
   uploadedKey: z.string().max(255).optional().nullable(),
 });
+
+const productListQuerySchema = z.object({
+  category: z.enum(["ทั้งหมด", ...productCategories]).optional().default("ทั้งหมด"),
+  page: z.coerce.number().int().min(1).optional().default(1),
+  pageSize: z.coerce.number().int().min(1).max(50).optional().default(12),
+});
+
+const PRODUCT_CODE_CREATE_ATTEMPTS = 3;
 
 function categoryCodePrefix(category) {
   switch (category) {
@@ -59,6 +68,17 @@ function serializeProduct(product) {
   };
 }
 
+const productSelect = {
+  id: true,
+  code: true,
+  name: true,
+  category: true,
+  price: true,
+  status: true,
+  imageUrl: true,
+  uploadedKey: true,
+};
+
 async function requireOwnerStoreId(req, res) {
   const session = await loadSession(req, res);
   const storeId = session?.user?.storeId;
@@ -72,29 +92,93 @@ async function requireOwnerStoreId(req, res) {
 
 async function createNextProductCode(storeId, category) {
   const prefix = categoryCodePrefix(category);
-  const products = await prisma.product.findMany({
-    where: { storeId, code: { startsWith: `${prefix}-` } },
-    select: { code: true },
-  });
+  const rows = await prisma.$queryRaw(
+    Prisma.sql`
+      SELECT COALESCE(
+        MAX(
+          CASE
+            WHEN substring("code" from ${prefix.length + 2}) ~ '^[0-9]+$'
+              THEN substring("code" from ${prefix.length + 2})::int
+            ELSE 0
+          END
+        ),
+        0
+      ) AS "maxCode"
+      FROM "Product"
+      WHERE "storeId" = ${storeId}
+        AND "code" LIKE ${`${prefix}-%`}
+    `,
+  );
+  const maxCode = Number(rows[0]?.maxCode ?? 0);
 
-  const maxCode = products.reduce((max, product) => {
-    const parsed = Number(product.code.slice(prefix.length + 1));
-    return Number.isFinite(parsed) ? Math.max(max, parsed) : max;
-  }, 0);
+  return `${prefix}-${String((Number.isFinite(maxCode) ? maxCode : 0) + 1).padStart(3, "0")}`;
+}
 
-  return `${prefix}-${String(maxCode + 1).padStart(3, "0")}`;
+function isProductCodeUniqueConflict(error) {
+  return error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002";
+}
+
+async function createProductWithUniqueCode(storeId, parsed) {
+  let lastError;
+
+  for (let attempt = 0; attempt < PRODUCT_CODE_CREATE_ATTEMPTS; attempt += 1) {
+    const code = await createNextProductCode(storeId, parsed.category);
+
+    try {
+      return await prisma.product.create({
+        data: {
+          storeId,
+          code,
+          name: parsed.name,
+          category: parsed.category,
+          price: parsed.price,
+          status: parsed.status,
+          imageUrl: parsed.imageUrl || null,
+          uploadedKey: parsed.uploadedKey || null,
+        },
+        select: productSelect,
+      });
+    } catch (error) {
+      if (!isProductCodeUniqueConflict(error)) {
+        throw error;
+      }
+
+      lastError = error;
+    }
+  }
+
+  throw new AppError("Could not allocate product code", 409, { code: "PRODUCT_CODE_CONFLICT", cause: lastError });
 }
 
 router.get("/", requireStoreRole(["OWNER"]), async (req, res, next) => {
   try {
     const storeId = await requireOwnerStoreId(req, res);
+    const query = productListQuerySchema.parse(req.query);
+    const where = {
+      storeId,
+      ...(query.category === "ทั้งหมด" ? {} : { category: query.category }),
+    };
+    const totalItems = await prisma.product.count({ where });
+    const totalPages = Math.max(1, Math.ceil(totalItems / query.pageSize));
+    const page = Math.min(query.page, totalPages);
     const products = await prisma.product.findMany({
-      where: { storeId },
+      where,
+      select: productSelect,
       orderBy: [{ updatedAt: "desc" }, { createdAt: "desc" }],
+      skip: (page - 1) * query.pageSize,
+      take: query.pageSize,
     });
 
     res.set("Cache-Control", "no-store");
-    res.json({ products: products.map(serializeProduct) });
+    res.json({
+      products: products.map(serializeProduct),
+      pagination: {
+        page,
+        pageSize: query.pageSize,
+        totalItems,
+        totalPages,
+      },
+    });
   } catch (error) {
     next(error);
   }
@@ -104,20 +188,7 @@ router.post("/", requireTrustedOrigin, requireCsrf, requireStoreRole(["OWNER"]),
   try {
     const storeId = await requireOwnerStoreId(req, res);
     const parsed = productCreateSchema.parse(req.body);
-    const code = await createNextProductCode(storeId, parsed.category);
-
-    const product = await prisma.product.create({
-      data: {
-        storeId,
-        code,
-        name: parsed.name,
-        category: parsed.category,
-        price: parsed.price,
-        status: parsed.status,
-        imageUrl: parsed.imageUrl || null,
-        uploadedKey: parsed.uploadedKey || null,
-      },
-    });
+    const product = await createProductWithUniqueCode(storeId, parsed);
 
     res.status(201).json({ product: serializeProduct(product) });
   } catch (error) {
@@ -132,6 +203,7 @@ router.patch("/:productId", requireTrustedOrigin, requireCsrf, requireStoreRole(
 
     const existingProduct = await prisma.product.findFirst({
       where: { id: req.params.productId, storeId },
+      select: { id: true },
     });
 
     if (!existingProduct) {
@@ -148,6 +220,7 @@ router.patch("/:productId", requireTrustedOrigin, requireCsrf, requireStoreRole(
         ...(parsed.imageUrl !== undefined ? { imageUrl: parsed.imageUrl || null } : {}),
         ...(parsed.uploadedKey !== undefined ? { uploadedKey: parsed.uploadedKey || null } : {}),
       },
+      select: productSelect,
     });
 
     res.json({ product: serializeProduct(product) });

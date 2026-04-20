@@ -85,7 +85,7 @@ export async function requireSuperAdminSession() {
   }
 
   if (session.user.storeRole === "OWNER") {
-    redirect("/owner");
+    redirect("/owner/sales");
   }
 
   redirect("/login");

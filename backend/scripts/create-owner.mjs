@@ -1,8 +1,11 @@
 import "dotenv/config";
-import { PlatformRole, PrismaClient, StoreRole } from "@prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
+import prismaClient from "../src/generated/prisma/index.js";
 import passwordUtils from "../src/utils/password.js";
 
-const prisma = new PrismaClient();
+const { PlatformRole, PrismaClient, StoreRole } = prismaClient;
+const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
+const prisma = new PrismaClient({ adapter });
 const { hashPassword, hashPin, isValidPin, isValidUsername, normalizeUsername } = passwordUtils;
 
 const storeSlug = process.argv[2] || process.env.STORE_OWNER_STORE_SLUG;

@@ -1,3 +1,5 @@
+import { useState } from "react";
+import Image from "next/image";
 import {
   dangerButtonClass,
   ghostButtonClass,
@@ -8,7 +10,7 @@ import {
   selectClass,
   StatusPill,
 } from "@/components/ui-primitives";
-import { Field } from "@/components/product-management-studio/shared";
+import { canUseNextImage, Field } from "@/components/product-management-studio/shared";
 import type { ProductItem } from "@/components/product-management-studio/types";
 
 type ProductDetailPanelProps = {
@@ -42,6 +44,10 @@ export function ProductDetailPanel({
   onResetForm,
   onDeleteConfirmed,
 }: ProductDetailPanelProps) {
+  const [priceDraft, setPriceDraft] = useState<{ productId: string; value: string } | null>(null);
+  const priceInput =
+    selectedProduct && priceDraft?.productId === selectedProduct.id ? priceDraft.value : selectedProduct ? String(selectedProduct.price) : "";
+
   return (
     <section className="grid w-[calc(100%+22px)] min-h-full grid-rows-[auto_minmax(0,1fr)] overflow-hidden rounded-[18px] border border-[var(--border)] bg-[rgba(22,27,38,0.76)] px-5 py-5 shadow-[var(--shadow-soft)] backdrop-blur-[14px] max-[1180px]:w-full max-[1180px]:px-4 max-[1180px]:py-4">
       <div className="flex items-start justify-between gap-3 max-[720px]:flex-col max-[720px]:items-stretch">
@@ -55,9 +61,18 @@ export function ProductDetailPanel({
       {selectedProduct ? (
         <div className="min-h-0 overflow-auto pr-1">
           <div className="mt-[10px] h-[178px] overflow-hidden rounded-[18px] border border-[rgba(100,120,160,0.14)] bg-[rgba(255,255,255,0.04)] max-[1180px]:h-[108px]">
-            {selectedProduct.imageUrl ? (
+            {selectedProduct.imageUrl && canUseNextImage(selectedProduct.imageUrl) ? (
+              <Image
+                src={selectedProduct.imageUrl}
+                alt={selectedProduct.name}
+                width={900}
+                height={360}
+                sizes="(max-width: 1180px) 100vw, 48vw"
+                className="block h-full w-full object-cover object-center"
+              />
+            ) : selectedProduct.imageUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={selectedProduct.imageUrl} alt={selectedProduct.name} className="block h-full w-full object-cover object-center" />
+              <img src={selectedProduct.imageUrl} alt={selectedProduct.name} className="block h-full w-full object-cover object-center" decoding="async" />
             ) : (
               <div className="h-full w-full bg-[rgba(255,255,255,0.02)]" />
             )}
@@ -99,8 +114,21 @@ export function ProductDetailPanel({
                   <input
                     className={inputClass}
                     type="number"
-                    value={selectedProduct.price}
-                    onChange={(event) => onUpdateProduct({ price: Number(event.target.value || 0) })}
+                    value={priceInput}
+                    onChange={(event) => {
+                      const nextValue = event.target.value;
+                      setPriceDraft({ productId: selectedProduct.id, value: nextValue });
+
+                      if (nextValue === "") {
+                        return;
+                      }
+
+                      const nextPrice = Number(nextValue);
+                      if (Number.isFinite(nextPrice)) {
+                        onUpdateProduct({ price: nextPrice });
+                        setPriceDraft(null);
+                      }
+                    }}
                   />
                 </Field>
 

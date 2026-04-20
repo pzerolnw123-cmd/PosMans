@@ -20,6 +20,15 @@ jest.mock("../src/lib/db", () => ({
     auditLog: {
       create: jest.fn(),
     },
+    product: {
+      count: jest.fn(),
+      findMany: jest.fn(),
+      findFirst: jest.fn(),
+      create: jest.fn(),
+      update: jest.fn(),
+      delete: jest.fn(),
+    },
+    $queryRaw: jest.fn(),
   },
 }));
 
@@ -34,6 +43,7 @@ const { prisma } = require("../src/lib/db");
 const { hashPin, verifyPassword, verifyPin } = require("../src/utils/password");
 const { createApp } = require("../src/app");
 const { assertSafeHttpUrl, sanitizeRichText } = require("../src/utils/xss");
+const { Prisma } = require("../src/generated/prisma");
 
 function buildSessionUser(overrides = {}) {
   return {
@@ -65,6 +75,37 @@ function buildChallenge(userOverrides = {}) {
   };
 }
 
+function buildProduct(overrides = {}) {
+  return {
+    id: "product-1",
+    code: "FOOD-001",
+    name: "ข้าวกะเพรา",
+    category: "อาหาร",
+    price: 65,
+    status: "พร้อมขาย",
+    imageUrl: null,
+    uploadedKey: null,
+    ...overrides,
+  };
+}
+
+function mockOwnerSession(userOverrides = {}) {
+  prisma.session.findUnique.mockResolvedValue({
+    id: "session-1",
+    createdAt: new Date(Date.now() - 10 * 60_000),
+    expiresAt: new Date(Date.now() + 60_000),
+    user: buildSessionUser(userOverrides),
+  });
+}
+
+function makeUniqueConflictError() {
+  return new Prisma.PrismaClientKnownRequestError("Unique constraint failed", {
+    code: "P2002",
+    clientVersion: "6.7.0",
+    meta: { target: ["storeId", "code"] },
+  });
+}
+
 describe("backend security hardening", () => {
   const originalEnv = process.env;
 
@@ -73,6 +114,13 @@ describe("backend security hardening", () => {
     prisma.session.deleteMany.mockResolvedValue({ count: 0 });
     prisma.loginChallenge.deleteMany.mockResolvedValue({ count: 0 });
     prisma.auditLog.create.mockResolvedValue({ id: "audit" });
+    prisma.product.count.mockResolvedValue(0);
+    prisma.product.findMany.mockResolvedValue([]);
+    prisma.product.findFirst.mockResolvedValue(null);
+    prisma.product.create.mockResolvedValue({});
+    prisma.product.update.mockResolvedValue({});
+    prisma.product.delete.mockResolvedValue({});
+    prisma.$queryRaw.mockResolvedValue([{ maxCode: 0 }]);
     prisma.session.update.mockResolvedValue({
       id: "session-1",
       createdAt: new Date(Date.now() - 10 * 60_000),
@@ -344,6 +392,145 @@ describe("backend security hardening", () => {
       });
 
     expect(response.status).toBe(503);
+  });
+
+  test("returns paginated products for owner store", async () => {
+    const app = createApp();
+    mockOwnerSession();
+    prisma.product.count.mockResolvedValue(4);
+    prisma.product.findMany.mockResolvedValue([buildProduct(), buildProduct({ id: "product-2", code: "FOOD-002", name: "ข้าวผัด", price: 70 })]);
+
+    const response = await request(app)
+      .get("/api/products?page=2&pageSize=2&category=อาหาร")
+      .set("Cookie", ["pos_mans_session=session-token"]);
+
+    expect(response.status).toBe(200);
+    expect(prisma.product.count).toHaveBeenCalledWith({ where: { storeId: "store-1", category: "อาหาร" } });
+    expect(prisma.product.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        skip: 2,
+        take: 2,
+      }),
+    );
+    expect(response.body.products).toHaveLength(2);
+    expect(response.body.pagination).toEqual({
+      page: 2,
+      pageSize: 2,
+      totalItems: 4,
+      totalPages: 2,
+    });
+  });
+
+  test("creates product and retries when generated code collides", async () => {
+    const app = createApp();
+    mockOwnerSession();
+    prisma.$queryRaw.mockResolvedValueOnce([{ maxCode: 1 }]).mockResolvedValueOnce([{ maxCode: 2 }]);
+    prisma.product.create
+      .mockRejectedValueOnce(makeUniqueConflictError())
+      .mockResolvedValueOnce(buildProduct({ id: "product-2", code: "DRINK-003", name: "ชาไทย", category: "เครื่องดื่ม", price: 45 }));
+
+    const response = await request(app)
+      .post("/api/products")
+      .set("Origin", "http://localhost:3000")
+      .set("Cookie", ["pos_mans_session=session-token", "pos_mans_session_csrf=csrf-token"])
+      .set("x-csrf-token", "csrf-token")
+      .send({
+        name: "ชาไทย",
+        category: "เครื่องดื่ม",
+        price: 45,
+        status: "พร้อมขาย",
+      });
+
+    expect(response.status).toBe(201);
+    expect(prisma.product.create).toHaveBeenCalledTimes(2);
+    expect(response.body.product.code).toBe("DRINK-003");
+  });
+
+  test("rejects product create with invalid price", async () => {
+    const app = createApp();
+    mockOwnerSession();
+
+    const response = await request(app)
+      .post("/api/products")
+      .set("Origin", "http://localhost:3000")
+      .set("Cookie", ["pos_mans_session=session-token", "pos_mans_session_csrf=csrf-token"])
+      .set("x-csrf-token", "csrf-token")
+      .send({
+        name: "ราคาผิด",
+        category: "อาหาร",
+        price: -1,
+        status: "พร้อมขาย",
+      });
+
+    expect(response.status).toBe(400);
+    expect(prisma.product.create).not.toHaveBeenCalled();
+  });
+
+  test("updates only products owned by the current store", async () => {
+    const app = createApp();
+    mockOwnerSession();
+    prisma.product.findFirst.mockResolvedValue({ id: "product-1" });
+    prisma.product.update.mockResolvedValue(buildProduct({ name: "ข้าวกะเพราพิเศษ", price: 75 }));
+
+    const response = await request(app)
+      .patch("/api/products/product-1")
+      .set("Origin", "http://localhost:3000")
+      .set("Cookie", ["pos_mans_session=session-token", "pos_mans_session_csrf=csrf-token"])
+      .set("x-csrf-token", "csrf-token")
+      .send({
+        name: "ข้าวกะเพราพิเศษ",
+        price: 75,
+      });
+
+    expect(response.status).toBe(200);
+    expect(prisma.product.findFirst).toHaveBeenCalledWith({
+      where: { id: "product-1", storeId: "store-1" },
+      select: { id: true },
+    });
+    expect(prisma.product.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: "product-1" },
+        data: expect.objectContaining({ name: "ข้าวกะเพราพิเศษ", price: 75 }),
+      }),
+    );
+  });
+
+  test("returns 404 when updating product outside current store", async () => {
+    const app = createApp();
+    mockOwnerSession();
+    prisma.product.findFirst.mockResolvedValue(null);
+
+    const response = await request(app)
+      .patch("/api/products/product-other-store")
+      .set("Origin", "http://localhost:3000")
+      .set("Cookie", ["pos_mans_session=session-token", "pos_mans_session_csrf=csrf-token"])
+      .set("x-csrf-token", "csrf-token")
+      .send({
+        name: "ไม่ควรแก้ได้",
+      });
+
+    expect(response.status).toBe(404);
+    expect(prisma.product.update).not.toHaveBeenCalled();
+  });
+
+  test("deletes only products owned by the current store", async () => {
+    const app = createApp();
+    mockOwnerSession();
+    prisma.product.findFirst.mockResolvedValue({ id: "product-1" });
+    prisma.product.delete.mockResolvedValue(buildProduct());
+
+    const response = await request(app)
+      .delete("/api/products/product-1")
+      .set("Origin", "http://localhost:3000")
+      .set("Cookie", ["pos_mans_session=session-token", "pos_mans_session_csrf=csrf-token"])
+      .set("x-csrf-token", "csrf-token");
+
+    expect(response.status).toBe(204);
+    expect(prisma.product.findFirst).toHaveBeenCalledWith({
+      where: { id: "product-1", storeId: "store-1" },
+      select: { id: true },
+    });
+    expect(prisma.product.delete).toHaveBeenCalledWith({ where: { id: "product-1" } });
   });
 
   test("rejects javascript urls", () => {

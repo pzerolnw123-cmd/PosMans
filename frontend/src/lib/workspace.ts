@@ -8,5 +8,5 @@ export function getWorkspaceHref(user: WorkspaceRouteUser) {
     return "/superadmin";
   }
 
-  return "/owner";
+  return "/owner/sales";
 }

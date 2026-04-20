@@ -21,8 +21,18 @@ export type ProductItem = {
 
 export type CropDraft = {
   fileName: string;
-  dataUrl: string;
+  objectUrl: string;
   image: HTMLImageElement;
+};
+
+export type ProductListResponse = {
+  products: ProductItem[];
+  pagination: {
+    page: number;
+    pageSize: number;
+    totalItems: number;
+    totalPages: number;
+  };
 };
 
 export type SignedUploadPayload = {

@@ -12,12 +12,18 @@ const allowedMimeTypes = new Map([
   ["application/pdf", ["pdf"]],
 ]);
 
+let r2Client = null;
+
 function isR2Configured() {
   return Boolean(env.R2_ACCESS_KEY_ID && env.R2_SECRET_ACCESS_KEY && env.R2_BUCKET && env.R2_ENDPOINT);
 }
 
 function getR2Client() {
-  return new S3Client({
+  if (r2Client) {
+    return r2Client;
+  }
+
+  r2Client = new S3Client({
     region: "auto",
     endpoint: env.R2_ENDPOINT,
     forcePathStyle: true,
@@ -26,6 +32,8 @@ function getR2Client() {
       secretAccessKey: env.R2_SECRET_ACCESS_KEY,
     },
   });
+
+  return r2Client;
 }
 
 function validateUploadRequest({ fileName, contentType, contentLength }) {

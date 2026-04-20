@@ -1,10 +1,14 @@
-const { PrismaClient } = require("@prisma/client");
+const { PrismaPg } = require("@prisma/adapter-pg");
+const { PrismaClient } = require("../generated/prisma");
+const { env } = require("../config/env");
 
 const globalForPrisma = global;
+const adapter = new PrismaPg({ connectionString: env.DATABASE_URL });
 
 const prisma =
   globalForPrisma.prisma ||
   new PrismaClient({
+    adapter,
     log: process.env.NODE_ENV === "development" ? ["warn", "error"] : ["error"],
   });
 

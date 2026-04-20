@@ -10,16 +10,24 @@ import {
   clampOffset,
   createCroppedBlob,
   CROP_VIEWPORT_SIZE,
+  createImageObjectUrl,
   loadImage,
   MAX_IMAGE_BYTES,
-  readFileAsDataUrl,
   requestJson,
   requestSignedUpload,
   revokeManagedObjectUrl,
   uploadBlobToR2,
 } from "@/components/product-management-studio/lib";
 import { ProductListPanel } from "@/components/product-management-studio/list-panel";
-import { categoryOptions, isDraftProduct, makeNewProduct, type CropDraft, type ProductCategory, type ProductItem } from "@/components/product-management-studio/types";
+import {
+  categoryOptions,
+  isDraftProduct,
+  makeNewProduct,
+  type CropDraft,
+  type ProductCategory,
+  type ProductItem,
+  type ProductListResponse,
+} from "@/components/product-management-studio/types";
 import { PageHeader, StatusPill } from "@/components/ui-primitives";
 
 export function ProductManagementStudio() {
@@ -38,10 +46,17 @@ export function ProductManagementStudio() {
   const [productsLoading, setProductsLoading] = useState(true);
   const [saveBusy, setSaveBusy] = useState(false);
   const [deleteBusy, setDeleteBusy] = useState(false);
+  const [pagination, setPagination] = useState({
+    page: 1,
+    pageSize: 3,
+    totalItems: 0,
+    totalPages: 1,
+  });
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const objectUrlsRef = useRef<string[]>([]);
-  const itemsPerPage = 3;
+  const pendingDraftRef = useRef<ProductItem | null>(null);
+  const itemsPerPage = pagination.pageSize;
 
   useEffect(() => {
     const mediaQuery = window.matchMedia("(min-width: 1181px) and (max-height: 860px)");
@@ -73,12 +88,28 @@ export function ProductManagementStudio() {
     async function loadProducts() {
       try {
         setProductsLoading(true);
-        const nextProducts = await requestJson<ProductItem[]>("/api/products");
+        const params = new URLSearchParams({
+          page: String(page),
+          pageSize: String(itemsPerPage),
+          category: activeCategory,
+        });
+        const response = await requestJson<ProductListResponse>(`/api/products?${params.toString()}`);
         if (cancelled) return;
 
-        if (Array.isArray(nextProducts) && nextProducts.length > 0) {
+        setPagination(response.pagination);
+
+        if (response.pagination.page !== page) {
+          setPage(response.pagination.page);
+        }
+
+        const pendingDraft = pendingDraftRef.current;
+        const nextProducts = pendingDraft
+          ? [pendingDraft, ...response.products.filter((item) => item.id !== pendingDraft.id)]
+          : response.products;
+
+        if (nextProducts.length > 0) {
           setProducts(nextProducts);
-          setServerProducts(nextProducts);
+          setServerProducts(response.products);
           setSelectedId((current) => (nextProducts.some((item) => item.id === current) ? current : nextProducts[0].id));
           return;
         }
@@ -102,13 +133,12 @@ export function ProductManagementStudio() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [activeCategory, itemsPerPage, page]);
 
   const selectedProduct = products.find((item) => item.id === selectedId) ?? products[0] ?? null;
-  const filteredProducts = activeCategory === "ทั้งหมด" ? products : products.filter((item) => item.category === activeCategory);
-  const totalPages = Math.max(1, Math.ceil(filteredProducts.length / itemsPerPage));
-  const currentPage = Math.min(page, totalPages);
-  const visibleProducts = filteredProducts.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const totalPages = pagination.totalPages;
+  const currentPage = pagination.page;
+  const visibleProducts = products;
 
   function updateSelectedProduct(patch: Partial<ProductItem>) {
     if (!selectedProduct) return;
@@ -123,6 +153,7 @@ export function ProductManagementStudio() {
 
   function handleCreateNewProduct() {
     const next = makeNewProduct();
+    pendingDraftRef.current = next;
     setProducts((current) => [next, ...current]);
     setSelectedId(next.id);
     setActiveCategory(categoryOptions[0]);
@@ -172,6 +203,15 @@ export function ProductManagementStudio() {
         setProducts((current) => current.map((item) => (item.id === selectedProduct.id ? clientCreated : item)));
         setServerProducts((current) => [created, ...current]);
         setSelectedId(clientCreated.id);
+        pendingDraftRef.current = null;
+        setPagination((current) => {
+          const totalItems = current.totalItems + 1;
+          return {
+            ...current,
+            totalItems,
+            totalPages: Math.max(1, Math.ceil(totalItems / current.pageSize)),
+          };
+        });
         return;
       }
 
@@ -197,6 +237,7 @@ export function ProductManagementStudio() {
     if (!selectedProduct) return;
 
     if (isDraftProduct(selectedProduct)) {
+      pendingDraftRef.current = null;
       setProducts((current) => current.filter((item) => item.id !== selectedProduct.id));
       const remaining = products.filter((item) => item.id !== selectedProduct.id);
       setSelectedId(remaining[0]?.id ?? "");
@@ -248,14 +289,18 @@ export function ProductManagementStudio() {
       return;
     }
 
+    let objectUrl = "";
+
     try {
-      const dataUrl = await readFileAsDataUrl(file);
-      const image = await loadImage(dataUrl);
-      setCropDraft({ fileName: file.name, dataUrl, image });
+      objectUrl = createImageObjectUrl(file);
+      objectUrlsRef.current.push(objectUrl);
+      const image = await loadImage(objectUrl);
+      setCropDraft({ fileName: file.name, objectUrl, image });
       setCropZoom(1);
       setCropOffset({ x: 0, y: 0 });
       setUploadError(null);
     } catch (error) {
+      objectUrlsRef.current = revokeManagedObjectUrl(objectUrl, objectUrlsRef.current);
       setUploadError(error instanceof Error ? error.message : "ไม่สามารถเตรียมรูปภาพสำหรับอัปโหลดได้");
     }
   }
@@ -288,6 +333,7 @@ export function ProductManagementStudio() {
       await uploadBlobToR2(signedUpload, croppedBlob);
 
       objectUrlsRef.current = revokeManagedObjectUrl(selectedProduct.imageUrl, objectUrlsRef.current);
+      objectUrlsRef.current = revokeManagedObjectUrl(cropDraft.objectUrl, objectUrlsRef.current);
       const localPreviewUrl = URL.createObjectURL(croppedBlob);
       objectUrlsRef.current.push(localPreviewUrl);
 
@@ -304,12 +350,22 @@ export function ProductManagementStudio() {
     }
   }
 
+  function handleCropClose() {
+    if (!cropDraft || uploadBusy) {
+      return;
+    }
+
+    objectUrlsRef.current = revokeManagedObjectUrl(cropDraft.objectUrl, objectUrlsRef.current);
+    setCropDraft(null);
+  }
+
   async function handleDeleteConfirmed() {
     if (!selectedProduct) {
       return;
     }
 
     if (isDraftProduct(selectedProduct)) {
+      pendingDraftRef.current = null;
       objectUrlsRef.current = revokeManagedObjectUrl(selectedProduct.imageUrl, objectUrlsRef.current);
       const remaining = products.filter((item) => item.id !== selectedProduct.id);
       setProducts(remaining);
@@ -329,7 +385,16 @@ export function ProductManagementStudio() {
       setProducts(remaining);
       setServerProducts((current) => current.filter((item) => item.id !== selectedProduct.id));
       setSelectedId(remaining[0]?.id ?? "");
-      setPage(1);
+      setPagination((current) => {
+        const totalItems = Math.max(0, current.totalItems - 1);
+        const totalPages = Math.max(1, Math.ceil(totalItems / current.pageSize));
+        return {
+          ...current,
+          totalItems,
+          totalPages,
+        };
+      });
+      setPage((current) => (remaining.length === 0 ? Math.max(1, current - 1) : current));
     } catch (error) {
       setUploadError(error instanceof Error ? error.message : "ลบสินค้าไม่สำเร็จ");
     } finally {
@@ -369,7 +434,7 @@ export function ProductManagementStudio() {
         <ProductListPanel
           activeCategory={activeCategory}
           currentPage={currentPage}
-          filteredCount={filteredProducts.length}
+          filteredCount={pagination.totalItems}
           itemsPerPage={itemsPerPage}
           productsLoading={productsLoading}
           selectedId={selectedId}
@@ -396,11 +461,7 @@ export function ProductManagementStudio() {
           offsetX={cropOffset.x}
           offsetY={cropOffset.y}
           busy={uploadBusy}
-          onClose={() => {
-            if (!uploadBusy) {
-              setCropDraft(null);
-            }
-          }}
+          onClose={handleCropClose}
           onConfirm={handleCropConfirm}
           onZoomChange={handleCropZoomChange}
           onOffsetChange={handleCropOffsetChange}

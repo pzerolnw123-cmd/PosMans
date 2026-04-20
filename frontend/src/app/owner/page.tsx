@@ -1,8 +1,5 @@
-import { requireOwnerSession } from "@/lib/session";
-import { OwnerWorkspace } from "@/components/owner-workspace";
+import { redirect } from "next/navigation";
 
 export default async function OwnerPage() {
-  const session = await requireOwnerSession();
-
-  return <OwnerWorkspace session={session} activeSection="settings" />;
+  redirect("/owner/sales");
 }
