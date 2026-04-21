@@ -414,6 +414,10 @@ export function ProductManagementStudio() {
       setSelectedId(remaining[0]?.id ?? "");
       setPage(1);
       setIsDeleteModalOpen(false);
+      
+      // แจ้งเตือนเมื่อลบ Draft สำเร็จ
+      setShellAlert({ message: "ยกเลิกรายการสินค้าสำเร็จ", tone: "success" });
+      setTimeout(() => setShellAlert(null), 3000);
       return;
     }
 
@@ -438,6 +442,10 @@ export function ProductManagementStudio() {
         };
       });
       setPage((current) => (remaining.length === 0 ? Math.max(1, current - 1) : current));
+
+      // แจ้งเตือนเมื่อลบสินค้าในฐานข้อมูลสำเร็จ
+      setShellAlert({ message: "ลบสินค้าออกจากระบบเรียบร้อยแล้ว", tone: "success" });
+      setTimeout(() => setShellAlert(null), 3000);
     } catch (error) {
       setUploadError(error instanceof Error ? error.message : "ลบสินค้าไม่สำเร็จ");
     } finally {
