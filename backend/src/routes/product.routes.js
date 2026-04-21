@@ -10,12 +10,12 @@ const { safeTextSchema, safeUrlSchema } = require("../utils/xss");
 const router = express.Router();
 
 const productCategories = ["อาหาร", "เครื่องดื่ม", "ของหวาน/ขนม", "รองเท้า", "อะไหล่ / อุปกรณ์เสริม"];
-const productStatuses = ["พร้อมขาย", "ใกล้หมด"];
+const productStatuses = ["พร้อมขาย", "ปิดขาย"];
 
 const productCreateSchema = z.object({
   name: safeTextSchema("name", 120),
   category: z.enum(productCategories),
-  price: z.number().int().min(0).max(1_000_000),
+  price: z.number().int().min(1).max(1_000_000),
   status: z.enum(productStatuses).default("พร้อมขาย"),
   imageUrl: safeUrlSchema("imageUrl").optional().nullable(),
   uploadedKey: z.string().max(255).optional().nullable(),
@@ -24,7 +24,7 @@ const productCreateSchema = z.object({
 const productUpdateSchema = z.object({
   name: safeTextSchema("name", 120).optional(),
   category: z.enum(productCategories).optional(),
-  price: z.number().int().min(0).max(1_000_000).optional(),
+  price: z.number().int().min(1).max(1_000_000).optional(),
   status: z.enum(productStatuses).optional(),
   imageUrl: safeUrlSchema("imageUrl").optional().nullable(),
   uploadedKey: z.string().max(255).optional().nullable(),
@@ -90,28 +90,27 @@ async function requireOwnerStoreId(req, res) {
   return storeId;
 }
 
-async function createNextProductCode(storeId, category) {
+async function createNextProductCode(storeId, category, offset = 0) {
   const prefix = categoryCodePrefix(category);
   const rows = await prisma.$queryRaw(
     Prisma.sql`
-      SELECT COALESCE(
-        MAX(
-          CASE
-            WHEN substring("code" from ${prefix.length + 2}) ~ '^[0-9]+$'
-              THEN substring("code" from ${prefix.length + 2})::int
-            ELSE 0
-          END
-        ),
-        0
+      SELECT MAX(
+        CASE
+          WHEN substring("code" from ${prefix.length + 2}) ~ '^[0-9]+$'
+            THEN substring("code" from ${prefix.length + 2})::int
+          ELSE 0
+        END
       ) AS "maxCode"
       FROM "Product"
       WHERE "storeId" = ${storeId}
         AND "code" LIKE ${`${prefix}-%`}
     `,
   );
+  
   const maxCode = Number(rows[0]?.maxCode ?? 0);
+  const nextNumber = (Number.isFinite(maxCode) ? maxCode : 0) + 1 + offset;
 
-  return `${prefix}-${String((Number.isFinite(maxCode) ? maxCode : 0) + 1).padStart(3, "0")}`;
+  return `${prefix}-${String(nextNumber).padStart(3, "0")}`;
 }
 
 function isProductCodeUniqueConflict(error) {
@@ -122,7 +121,7 @@ async function createProductWithUniqueCode(storeId, parsed) {
   let lastError;
 
   for (let attempt = 0; attempt < PRODUCT_CODE_CREATE_ATTEMPTS; attempt += 1) {
-    const code = await createNextProductCode(storeId, parsed.category);
+    const code = await createNextProductCode(storeId, parsed.category, attempt);
 
     try {
       return await prisma.product.create({
@@ -147,7 +146,10 @@ async function createProductWithUniqueCode(storeId, parsed) {
     }
   }
 
-  throw new AppError("Could not allocate product code", 409, { code: "PRODUCT_CODE_CONFLICT", cause: lastError });
+  throw new AppError("Could not allocate product code after multiple attempts", 409, { 
+    code: "PRODUCT_CODE_CONFLICT", 
+    cause: lastError 
+  });
 }
 
 router.get("/", requireStoreRole(["OWNER"]), async (req, res, next) => {

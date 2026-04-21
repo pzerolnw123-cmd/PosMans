@@ -3,6 +3,7 @@
 import type { ChangeEvent } from "react";
 import { useEffect, useRef, useState } from "react";
 import { useBackofficeShellAlert } from "@/components/backoffice-shell";
+import { ConfirmDeleteModal } from "@/components/product-management-studio/confirm-delete-modal";
 import { CropModal } from "@/components/product-management-studio/crop-modal";
 import { ProductDetailPanel } from "@/components/product-management-studio/detail-panel";
 import {
@@ -46,6 +47,7 @@ export function ProductManagementStudio() {
   const [productsLoading, setProductsLoading] = useState(true);
   const [saveBusy, setSaveBusy] = useState(false);
   const [deleteBusy, setDeleteBusy] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [pagination, setPagination] = useState({
     page: 1,
     pageSize: 3,
@@ -139,6 +141,21 @@ export function ProductManagementStudio() {
   const totalPages = pagination.totalPages;
   const currentPage = pagination.page;
   const visibleProducts = products;
+  const isDirty = selectedProduct ? (
+    isDraftProduct(selectedProduct) ||
+    !serverProducts.find((p) => p.id === selectedProduct.id) ||
+    (() => {
+      const original = serverProducts.find((p) => p.id === selectedProduct.id)!;
+      return (
+        selectedProduct.name !== original.name ||
+        selectedProduct.category !== original.category ||
+        selectedProduct.price !== original.price ||
+        selectedProduct.status !== original.status ||
+        selectedProduct.imageUrl !== original.imageUrl ||
+        selectedProduct.uploadedKey !== original.uploadedKey
+      );
+    })()
+  ) : false;
 
   function updateSelectedProduct(patch: Partial<ProductItem>) {
     if (!selectedProduct) return;
@@ -212,6 +229,10 @@ export function ProductManagementStudio() {
             totalPages: Math.max(1, Math.ceil(totalItems / current.pageSize)),
           };
         });
+
+        // แสดงแจ้งเตือนเมื่อเพิ่มสินค้าสำเร็จ
+        setShellAlert({ message: "เพิ่มสินค้าใหม่เข้าสู่ระบบเรียบร้อยแล้ว", tone: "success" });
+        setTimeout(() => setShellAlert(null), 3000);
         return;
       }
 
@@ -226,6 +247,10 @@ export function ProductManagementStudio() {
 
       setProducts((current) => current.map((item) => (item.id === updated.id ? { ...item, ...clientUpdated } : item)));
       setServerProducts((current) => current.map((item) => (item.id === updated.id ? updated : item)));
+      
+      // แสดงแจ้งเตือนเมื่อบันทึกสำเร็จ
+      setShellAlert({ message: "บันทึกการเปลี่ยนแปลงสินค้าเรียบร้อยแล้ว", tone: "success" });
+      setTimeout(() => setShellAlert(null), 3000);
     } catch (error) {
       setUploadError(error instanceof Error ? error.message : "บันทึกสินค้าไม่สำเร็จ");
     } finally {
@@ -237,10 +262,10 @@ export function ProductManagementStudio() {
     if (!selectedProduct) return;
 
     if (isDraftProduct(selectedProduct)) {
-      pendingDraftRef.current = null;
-      setProducts((current) => current.filter((item) => item.id !== selectedProduct.id));
-      const remaining = products.filter((item) => item.id !== selectedProduct.id);
-      setSelectedId(remaining[0]?.id ?? "");
+      const resetDraft = makeNewProduct();
+      setProducts((current) =>
+        current.map((item) => (item.id === selectedProduct.id ? { ...resetDraft, id: selectedProduct.id } : item))
+      );
       setUploadError(null);
       return;
     }
@@ -254,6 +279,18 @@ export function ProductManagementStudio() {
   }
 
   function handleBackToProducts() {
+    if (selectedProduct) {
+      if (isDraftProduct(selectedProduct)) {
+        pendingDraftRef.current = null;
+        setProducts((current) => current.filter((item) => item.id !== selectedProduct.id));
+      } else {
+        // หากเป็นสินค้าเดิม ให้ย้อนคืนข้อมูลล่าสุดจาก Server เผื่อมีการแก้ค้างไว้
+        const original = serverProducts.find((p) => p.id === selectedProduct.id);
+        if (original) {
+          setProducts((current) => current.map((item) => (item.id === selectedProduct.id ? { ...original } : item)));
+        }
+      }
+    }
     setSelectedId("");
     setUploadError(null);
   }
@@ -262,7 +299,7 @@ export function ProductManagementStudio() {
     if (!selectedProduct) return;
 
     updateSelectedProduct({
-      status: selectedProduct.status === "พร้อมขาย" ? "ใกล้หมด" : "พร้อมขาย",
+      status: selectedProduct.status === "พร้อมขาย" ? "ปิดขาย" : "พร้อมขาย",
     });
     setUploadError(null);
   }
@@ -359,7 +396,12 @@ export function ProductManagementStudio() {
     setCropDraft(null);
   }
 
-  async function handleDeleteConfirmed() {
+  function handleDeleteRequest() {
+    if (!selectedProduct) return;
+    setIsDeleteModalOpen(true);
+  }
+
+  async function handleFinalDelete() {
     if (!selectedProduct) {
       return;
     }
@@ -371,6 +413,7 @@ export function ProductManagementStudio() {
       setProducts(remaining);
       setSelectedId(remaining[0]?.id ?? "");
       setPage(1);
+      setIsDeleteModalOpen(false);
       return;
     }
 
@@ -399,6 +442,7 @@ export function ProductManagementStudio() {
       setUploadError(error instanceof Error ? error.message : "ลบสินค้าไม่สำเร็จ");
     } finally {
       setDeleteBusy(false);
+      setIsDeleteModalOpen(false);
     }
   }
 
@@ -414,12 +458,13 @@ export function ProductManagementStudio() {
         <PageHeader eyebrow="Product Studio" title="สินค้า" actions={<StatusPill tone="success">พร้อมใช้งานแล้ว</StatusPill>} />
       ) : null}
 
-      <div className="grid min-h-0 items-start gap-[12px] [grid-template-columns:minmax(340px,0.96fr)_minmax(0,1.24fr)] max-[1180px]:grid-cols-1">
+      <div className="grid min-h-0 items-start gap-[18px] [grid-template-columns:minmax(400px,1fr)_minmax(0,1.3fr)] max-[1180px]:grid-cols-1">
         <ProductDetailPanel
           compactMode={compactMode}
           productsLoading={productsLoading}
           saveBusy={saveBusy}
           deleteBusy={deleteBusy}
+          isDirty={isDirty}
           selectedProduct={selectedProduct}
           onCreateNewProduct={handleCreateNewProduct}
           onUpdateProduct={updateSelectedProduct}
@@ -428,7 +473,7 @@ export function ProductManagementStudio() {
           onBackToProducts={handleBackToProducts}
           onToggleSaleStatus={handleToggleSaleStatus}
           onResetForm={handleResetForm}
-          onDeleteConfirmed={handleDeleteConfirmed}
+          onDeleteConfirmed={handleDeleteRequest}
         />
 
         <ProductListPanel
@@ -465,6 +510,15 @@ export function ProductManagementStudio() {
           onConfirm={handleCropConfirm}
           onZoomChange={handleCropZoomChange}
           onOffsetChange={handleCropOffsetChange}
+        />
+      ) : null}
+
+      {isDeleteModalOpen && selectedProduct ? (
+        <ConfirmDeleteModal
+          product={selectedProduct}
+          busy={deleteBusy}
+          onClose={() => setIsDeleteModalOpen(false)}
+          onConfirm={handleFinalDelete}
         />
       ) : null}
     </div>

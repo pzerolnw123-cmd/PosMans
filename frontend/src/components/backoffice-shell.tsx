@@ -31,6 +31,7 @@ type BackofficeShellProps = {
 
 type ShellAlert = {
   message: string;
+  tone?: "danger" | "success" | "info";
 };
 
 type BackofficeShellAlertContextValue = {
@@ -87,7 +88,7 @@ export function BackofficeShell({
   return (
     <BackofficeShellAlertContext.Provider value={contextValue}>
       <div
-        className={`relative mx-auto grid h-full min-h-0 w-full max-w-[1600px] translate-x-[-149px] grid-cols-[304px_minmax(0,1fr)] items-start gap-[18px] max-[1380px]:translate-x-0 max-[1180px]:grid-cols-1 ${className}`.trim()}
+        className={`relative mx-auto grid h-full min-h-0 w-full max-w-[1600px] grid-cols-[304px_minmax(0,1fr)] items-start gap-[18px] max-[1180px]:grid-cols-1 ${className}`.trim()}
       >
         <div className="grid gap-[14px]">
           <aside className="h-fit overflow-hidden rounded-[20px] border border-[var(--border)] bg-[var(--surface)] p-3 shadow-[var(--shadow-card)] backdrop-blur-[14px]">
@@ -116,9 +117,33 @@ export function BackofficeShell({
           </aside>
 
           {shellAlert ? (
-            <section className="rounded-[18px] border border-[rgba(232,93,117,0.26)] bg-[linear-gradient(180deg,rgba(52,20,30,0.88),rgba(30,14,22,0.94))] px-4 py-3 shadow-[rgba(0,0,0,0.16)_0_8px_18px]">
-              <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.24em] text-[rgba(255,178,194,0.72)]">System Alert</p>
-              <p className="mt-2 text-[0.95rem] leading-[1.55] text-[#ff9db0]">{shellAlert.message}</p>
+            <section
+              className={`rounded-[18px] border px-4 py-3 shadow-[rgba(0,0,0,0.16)_0_8px_18px] ${
+                shellAlert.tone === "success"
+                  ? "border-[rgba(46,212,122,0.26)] bg-[linear-gradient(180deg,rgba(20,52,36,0.88),rgba(14,30,22,0.94))]"
+                  : shellAlert.tone === "info"
+                  ? "border-[rgba(108,92,231,0.26)] bg-[linear-gradient(180deg,rgba(30,20,52,0.88),rgba(22,14,30,0.94))]"
+                  : "border-[rgba(232,93,117,0.26)] bg-[linear-gradient(180deg,rgba(52,20,30,0.88),rgba(30,14,22,0.94))]"
+              }`}
+            >
+              <p
+                className={`m-0 text-[0.72rem] font-bold uppercase tracking-[0.24em] ${
+                  shellAlert.tone === "success"
+                    ? "text-[rgba(178,255,212,0.72)]"
+                    : shellAlert.tone === "info"
+                    ? "text-[rgba(200,178,255,0.72)]"
+                    : "text-[rgba(255,178,194,0.72)]"
+                }`}
+              >
+                {shellAlert.tone === "success" ? "Success" : shellAlert.tone === "info" ? "Information" : "System Alert"}
+              </p>
+              <p
+                className={`mt-2 text-[0.95rem] leading-[1.55] ${
+                  shellAlert.tone === "success" ? "text-[#9dffc8]" : shellAlert.tone === "info" ? "text-[#c89dff]" : "text-[#ff9db0]"
+                }`}
+              >
+                {shellAlert.message}
+              </p>
             </section>
           ) : null}
         </div>

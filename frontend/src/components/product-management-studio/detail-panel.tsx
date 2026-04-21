@@ -18,6 +18,7 @@ type ProductDetailPanelProps = {
   productsLoading: boolean;
   saveBusy: boolean;
   deleteBusy: boolean;
+  isDirty: boolean;
   selectedProduct: ProductItem | null;
   onCreateNewProduct: () => void;
   onUpdateProduct: (patch: Partial<ProductItem>) => void;
@@ -34,6 +35,7 @@ export function ProductDetailPanel({
   productsLoading,
   saveBusy,
   deleteBusy,
+  isDirty,
   selectedProduct,
   onCreateNewProduct,
   onUpdateProduct,
@@ -47,13 +49,16 @@ export function ProductDetailPanel({
   const [priceDraft, setPriceDraft] = useState<{ productId: string; value: string } | null>(null);
   const priceInput =
     selectedProduct && priceDraft?.productId === selectedProduct.id ? priceDraft.value : selectedProduct ? String(selectedProduct.price) : "";
+  const isSaveDisabled = saveBusy || deleteBusy || !isDirty || !selectedProduct?.name?.trim() || (selectedProduct?.price ?? 0) <= 0;
 
   return (
     <section className="grid w-[calc(100%+22px)] min-h-full grid-rows-[auto_minmax(0,1fr)] overflow-hidden rounded-[18px] border border-[var(--border)] bg-[rgba(22,27,38,0.76)] px-5 py-5 shadow-[var(--shadow-soft)] backdrop-blur-[14px] max-[1180px]:w-full max-[1180px]:px-4 max-[1180px]:py-4">
       <div className="flex items-start justify-between gap-3 max-[720px]:flex-col max-[720px]:items-stretch">
         <div>
           <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[#6b7a94]">รายละเอียดสินค้า</p>
-          <h2 className="my-[8px] text-[clamp(1.45rem,2.2vw,2.6rem)] leading-[0.98] tracking-[-0.06em]">แก้ไขสินค้า</h2>
+          <h2 className="my-[8px] text-[clamp(1.45rem,2.2vw,2.6rem)] leading-[0.98] tracking-[-0.06em]">
+            {selectedProduct && selectedProduct.code === "DRAFT-NEW" ? "เพิ่มสินค้าใหม่" : "แก้ไขสินค้า"}
+          </h2>
         </div>
         <StatusPill>โหมดแก้ไข</StatusPill>
       </div>
@@ -135,9 +140,9 @@ export function ProductDetailPanel({
                 <div className="mt-auto">
                   <button
                     type="button"
-                    className={`${primaryButtonClass} mb-3 min-h-[40px] w-full px-3 text-[0.95rem] shadow-none max-[1180px]:text-[0.86rem]`}
+                    className={`${primaryButtonClass} mb-3 min-h-[40px] w-full px-3 text-[0.95rem] shadow-none max-[1180px]:text-[0.86rem] disabled:opacity-50 disabled:cursor-not-allowed`}
                     onClick={onSaveChanges}
-                    disabled={saveBusy || deleteBusy}
+                    disabled={isSaveDisabled}
                   >
                     {saveBusy ? "กำลังบันทึก..." : selectedProduct.code === "DRAFT-NEW" ? "บันทึกสินค้าใหม่" : "บันทึกการเปลี่ยนแปลง"}
                   </button>
@@ -152,7 +157,7 @@ export function ProductDetailPanel({
 
                 <div className="mt-auto grid">
                   <button type="button" className={`${secondaryButtonClass} mt-auto`} onClick={onChooseImageClick}>
-                    เลือกรูปภาพใหม่
+                    เลือกรูปภาพสินค้า
                   </button>
                 </div>
               </div>
@@ -160,16 +165,31 @@ export function ProductDetailPanel({
           </div>
 
           <div className="mt-[10px] grid gap-[10px] sm:grid-cols-2 xl:grid-cols-2">
-            <button type="button" className={ghostButtonClass} onClick={onBackToProducts}>
+            <button
+              type="button"
+              className={`${secondaryButtonClass} disabled:opacity-40`}
+              onClick={onBackToProducts}
+              disabled={!isDirty}
+            >
               ย้อนกลับ
             </button>
             <button type="button" className={secondaryButtonClass} onClick={onToggleSaleStatus}>
               {selectedProduct.status === "พร้อมขาย" ? "ปิดขาย" : "เปิดขาย"}
             </button>
-            <button type="button" className={ghostButtonClass} onClick={onResetForm}>
+            <button
+              type="button"
+              className={`${secondaryButtonClass} disabled:opacity-40`}
+              onClick={onResetForm}
+              disabled={selectedProduct && selectedProduct.code !== "DRAFT-NEW"}
+            >
               เคลียร์ฟอร์ม
             </button>
-            <button type="button" className={dangerButtonClass} onClick={onDeleteConfirmed} disabled={deleteBusy || saveBusy}>
+            <button
+              type="button"
+              className={`${dangerButtonClass} disabled:opacity-40`}
+              onClick={onDeleteConfirmed}
+              disabled={deleteBusy || saveBusy || (selectedProduct && selectedProduct.code === "DRAFT-NEW")}
+            >
               ลบสินค้านี้
             </button>
           </div>

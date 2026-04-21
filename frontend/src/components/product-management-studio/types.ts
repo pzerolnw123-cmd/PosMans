@@ -6,7 +6,7 @@ export type ProductCategory =
   | "รองเท้า"
   | "อะไหล่ / อุปกรณ์เสริม";
 
-export type ProductStatus = "พร้อมขาย" | "ใกล้หมด";
+export type ProductStatus = "พร้อมขาย" | "ปิดขาย";
 
 export type ProductItem = {
   id: string;

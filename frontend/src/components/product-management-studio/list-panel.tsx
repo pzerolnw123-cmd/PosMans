@@ -86,17 +86,20 @@ export function ProductListPanel({
                     fallbackClassName="grid h-[74px] w-[74px] place-items-center rounded-[18px] border border-[rgba(100,120,160,0.14)] bg-[rgba(255,255,255,0.04)] max-[1180px]:h-[62px] max-[1180px]:w-[62px]"
                   />
 
-                  <div className="min-w-0 self-start">
+                  <div className="min-w-0 self-center">
                     <strong className="block text-[1rem] tracking-[-0.03em] text-white">{item.name}</strong>
                     <div className="mt-1.5 flex flex-wrap items-center gap-2">
                       <span className="text-[0.92rem] text-[var(--foreground-soft)]">{item.category}</span>
-                      <StatusPill tone={item.status === "พร้อมขาย" ? "success" : "ghost"}>{item.status}</StatusPill>
                     </div>
                     <p className="mt-1.5 text-[0.88rem] text-[#6b7a94]">{item.code}</p>
                   </div>
 
-                  <div className="self-center whitespace-nowrap pl-2 text-[1rem] font-normal text-[#a0b8d8]">{formatPrice(item.price)}</div>
-                </button>
+                  <div className="flex flex-col items-end self-center whitespace-nowrap pl-2">
+                    <div className="text-[1.05rem] font-bold text-[#a0b8d8]">{formatPrice(item.price)}</div>
+                    <div className="mt-2">
+                      <StatusPill tone={item.status === "พร้อมขาย" ? "success" : "ghost"}>{item.status}</StatusPill>
+                    </div>
+                  </div>                </button>
               );
             })}
 
