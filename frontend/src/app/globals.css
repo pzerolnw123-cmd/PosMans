@@ -60,6 +60,11 @@ textarea {
   font: inherit;
 }
 
+input::-ms-reveal,
+input::-ms-clear {
+  display: none;
+}
+
 main {
   position: relative;
 }

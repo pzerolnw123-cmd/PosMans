@@ -6,6 +6,9 @@ jest.mock("../src/lib/db", () => ({
       findUnique: jest.fn(),
       update: jest.fn(),
     },
+    store: {
+      update: jest.fn(),
+    },
     session: {
       create: jest.fn(),
       deleteMany: jest.fn(),
@@ -29,18 +32,20 @@ jest.mock("../src/lib/db", () => ({
       delete: jest.fn(),
     },
     $queryRaw: jest.fn(),
+    $transaction: jest.fn((operations) => Promise.all(operations)),
   },
 }));
 
 jest.mock("../src/utils/password", () => ({
   normalizeUsername: jest.fn((value) => String(value || "").trim().toLowerCase()),
+  hashPassword: jest.fn().mockResolvedValue("new-password-hash"),
   hashPin: jest.fn().mockResolvedValue("new-pin-hash"),
   verifyPassword: jest.fn(),
   verifyPin: jest.fn(),
 }));
 
 const { prisma } = require("../src/lib/db");
-const { hashPin, verifyPassword, verifyPin } = require("../src/utils/password");
+const { hashPassword, hashPin, verifyPassword, verifyPin } = require("../src/utils/password");
 const { createApp } = require("../src/app");
 const { assertSafeHttpUrl, sanitizeRichText } = require("../src/utils/xss");
 const { Prisma } = require("../src/generated/prisma");
@@ -120,7 +125,9 @@ describe("backend security hardening", () => {
     prisma.product.create.mockResolvedValue({});
     prisma.product.update.mockResolvedValue({});
     prisma.product.delete.mockResolvedValue({});
+    prisma.store.update.mockResolvedValue({ id: "store-1", name: "Demo Store", slug: "demo-store" });
     prisma.$queryRaw.mockResolvedValue([{ maxCode: 0 }]);
+    prisma.$transaction.mockImplementation((operations) => Promise.all(operations));
     prisma.session.update.mockResolvedValue({
       id: "session-1",
       createdAt: new Date(Date.now() - 10 * 60_000),
@@ -333,6 +340,88 @@ describe("backend security hardening", () => {
     expect(prisma.session.update).not.toHaveBeenCalled();
   });
 
+  test("lets an authenticated user change password with the current password", async () => {
+    const app = createApp();
+    mockOwnerSession();
+    prisma.user.findUnique.mockResolvedValue({
+      id: "user-1",
+      passwordHash: "old-password-hash",
+      isActive: true,
+    });
+    verifyPassword.mockResolvedValue(true);
+    hashPassword.mockResolvedValue("new-password-hash");
+    prisma.user.update.mockResolvedValue({ id: "user-1" });
+
+    const response = await request(app)
+      .patch("/api/auth/password")
+      .set("Origin", "http://localhost:3000")
+      .set("Cookie", ["pos_mans_session=session-token", "pos_mans_session_csrf=csrf-token"])
+      .set("x-csrf-token", "csrf-token")
+      .send({
+        currentPassword: "Password123!",
+        newPassword: "NewPassword123!",
+        confirmPassword: "NewPassword123!",
+      });
+
+    expect(response.status).toBe(200);
+    expect(verifyPassword).toHaveBeenCalledWith("Password123!", "old-password-hash");
+    expect(hashPassword).toHaveBeenCalledWith("NewPassword123!");
+    expect(prisma.user.update).toHaveBeenCalledWith({
+      where: { id: "user-1" },
+      data: { passwordHash: "new-password-hash" },
+    });
+  });
+
+  test("rejects owner profile updates containing markup", async () => {
+    const app = createApp();
+    mockOwnerSession();
+
+    const response = await request(app)
+      .patch("/api/auth/owner-profile")
+      .set("Origin", "http://localhost:3000")
+      .set("Cookie", ["pos_mans_session=session-token", "pos_mans_session_csrf=csrf-token"])
+      .set("x-csrf-token", "csrf-token")
+      .send({
+        storeName: "<script>alert(1)</script>",
+        ownerName: "Owner",
+      });
+
+    expect(response.status).toBe(400);
+    expect(prisma.store.update).not.toHaveBeenCalled();
+    expect(prisma.user.update).not.toHaveBeenCalled();
+  });
+
+  test("updates owner store name and display name for the current store", async () => {
+    const app = createApp();
+    mockOwnerSession();
+    prisma.store.update.mockResolvedValue({ id: "store-1", name: "New Store", slug: "demo-store" });
+    prisma.user.update.mockResolvedValue({ id: "user-1", displayName: "New Owner" });
+
+    const response = await request(app)
+      .patch("/api/auth/owner-profile")
+      .set("Origin", "http://localhost:3000")
+      .set("Cookie", ["pos_mans_session=session-token", "pos_mans_session_csrf=csrf-token"])
+      .set("x-csrf-token", "csrf-token")
+      .send({
+        storeName: "New Store",
+        ownerName: "New Owner",
+      });
+
+    expect(response.status).toBe(200);
+    expect(prisma.store.update).toHaveBeenCalledWith({
+      where: { id: "store-1" },
+      data: { name: "New Store" },
+      select: { id: true, name: true, slug: true },
+    });
+    expect(prisma.user.update).toHaveBeenCalledWith({
+      where: { id: "user-1" },
+      data: { displayName: "New Owner" },
+      select: { id: true, displayName: true },
+    });
+    expect(response.body.user.displayName).toBe("New Owner");
+    expect(response.body.user.store.name).toBe("New Store");
+  });
+
   test("rejects sessions that exceed the absolute timeout", async () => {
     const app = createApp();
     prisma.session.findUnique.mockResolvedValue({
@@ -485,7 +574,7 @@ describe("backend security hardening", () => {
     expect(response.status).toBe(200);
     expect(prisma.product.findFirst).toHaveBeenCalledWith({
       where: { id: "product-1", storeId: "store-1" },
-      select: { id: true },
+      select: { id: true, uploadedKey: true },
     });
     expect(prisma.product.update).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -528,7 +617,7 @@ describe("backend security hardening", () => {
     expect(response.status).toBe(204);
     expect(prisma.product.findFirst).toHaveBeenCalledWith({
       where: { id: "product-1", storeId: "store-1" },
-      select: { id: true },
+      select: { id: true, uploadedKey: true },
     });
     expect(prisma.product.delete).toHaveBeenCalledWith({ where: { id: "product-1" } });
   });

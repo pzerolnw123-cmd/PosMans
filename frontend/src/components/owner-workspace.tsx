@@ -3,7 +3,7 @@ import type { SessionPayload } from "@/lib/session";
 import { BackofficeShell, PanelCard } from "@/components/backoffice-shell";
 import { LogoutButton } from "@/components/logout-button";
 import { InteractiveActionGrid } from "@/components/interactive-action-grid";
-import { OwnerPasswordClient, OwnerProfileClient } from "@/components/owner-settings-client";
+import { OwnerLogoClient, OwnerLogoProvider, OwnerLogoStatusPill, OwnerLogoStatusPreview, OwnerPasswordClient, OwnerProfileClient } from "@/components/owner-settings-client";
 import { ProductManagementStudio } from "@/components/product-management-studio";
 import { ListStack, NoteStack, ThreeUpStats } from "@/components/owner-workspace/shared";
 import { SalesPaginationMockup } from "@/components/sales-pagination-mockup";
@@ -15,6 +15,11 @@ type OwnerWorkspaceProps = {
   session: SessionPayload;
   activeSection: OwnerSectionKey;
 };
+
+const storeNamePrompt = "กรอกชื่อร้าน";
+const ownerNamePrompt = "กรอกชื่อของคุณ (เจ้าของ)";
+const unsetStoreNames = new Set(["", "Main Store", "FastManFoods"]);
+const unsetOwnerNames = new Set(["", "Store Owner"]);
 
 const sectionMeta: Record<OwnerSectionKey, { label: string; href: string }> = {
   sales: { label: "ขาย", href: "/owner/sales" },
@@ -35,7 +40,7 @@ function formatRoleLabel(session: SessionPayload) {
   return "Owner";
 }
 
-function renderOwnerScreen(activeSection: OwnerSectionKey, storeName: string, ownerName: string) {
+function renderOwnerScreen(activeSection: OwnerSectionKey, storeName: string, ownerName: string, formStoreName: string, formOwnerName: string) {
   const screens: Record<
     OwnerSectionKey,
     {
@@ -556,39 +561,52 @@ function renderOwnerScreen(activeSection: OwnerSectionKey, storeName: string, ow
     settings: {
       eyebrow: "Store Settings",
       title: "ตั้งค่าร้าน",
-      description: "หน้า owner settings นี้แยกฟอร์ม interactive ออกเป็น client components โดยคง shell ฝั่ง server ไว้ให้เบา",
-      actions: <StatusPill tone="success">พร้อมใช้งานแล้ว</StatusPill>,
+      description: "จัดการข้อมูลร้าน เจ้าของร้าน และรหัสผ่านของบัญชีนี้",
+      actions: <StatusPill tone="success">พร้อมตั้งค่าแล้ว</StatusPill>,
       body: (
         <section className="grid h-full min-h-0 grid-rows-[156px_minmax(0,1fr)] gap-[18px] max-[1180px]:grid-rows-[auto_minmax(0,1fr)]">
           <PageHeader
             eyebrow="Store Settings"
             title="ตั้งค่าร้าน"
+            description="จัดการชื่อร้าน ชื่อเจ้าของร้าน และรหัสผ่านของบัญชีเจ้าของร้าน"
             actions={
-              <>
-                <StatusPill tone="success">พร้อมใช้งานแล้ว</StatusPill>
-                <div className="h-5 w-[120px] rounded-full border border-[var(--border)] bg-[rgba(255,255,255,0.06)] max-[720px]:w-full" />
-              </>
+              <StatusPill tone="success">พร้อมตั้งค่าแล้ว</StatusPill>
             }
           />
 
-          <div className="grid min-h-0 grid-cols-[minmax(0,1.25fr)_minmax(320px,0.75fr)] gap-[18px] max-[1180px]:grid-cols-1">
-            <PanelCard eyebrow="ความปลอดภัยของบัญชี" title="เปลี่ยนรหัสผ่าน" description="เฉพาะบล็อกฟอร์มนี้ที่เป็น client-side" className="grid min-h-0 content-start px-[18px] py-4">
+          <div className="grid min-h-0 grid-cols-[minmax(280px,1fr)_minmax(280px,1fr)_minmax(280px,1fr)] items-start gap-[18px] max-[1180px]:grid-cols-[repeat(2,minmax(280px,1fr))] max-[760px]:grid-cols-1">
+            <PanelCard
+              eyebrow="ความปลอดภัยของบัญชี"
+              title="เปลี่ยนรหัสผ่าน"
+              titleClassName="my-[10px] text-[clamp(1.65rem,2.1vw,2.35rem)] leading-[1.05] tracking-[-0.045em]"
+              className="grid h-fit min-h-0 content-start px-5 py-5"
+            >
               <OwnerPasswordClient />
             </PanelCard>
 
-            <PanelCard eyebrow="โปรไฟล์ร้านค้า" title="ข้อมูลทั่วไป" description="แก้ชื่อร้านและเจ้าของได้โดยไม่ลากทั้งหน้าไปเป็น client" className="grid min-h-0 content-start px-[18px] py-4">
+            <PanelCard
+              eyebrow="สัญลักษณ์"
+              title="โลโก้ร้าน"
+              actions={<OwnerLogoStatusPill />}
+              titleClassName="my-[10px] text-[clamp(1.65rem,2.1vw,2.35rem)] leading-[1.05] tracking-[-0.045em]"
+              className="grid h-fit min-h-0 content-start px-5 py-5"
+            >
+              <OwnerLogoClient />
+            </PanelCard>
+
+            <PanelCard
+              eyebrow="โปรไฟล์ร้านค้า"
+              title="ข้อมูลทั่วไป"
+              titleClassName="my-[10px] text-[clamp(1.65rem,2.1vw,2.35rem)] leading-[1.05] tracking-[-0.045em]"
+              className="grid h-fit min-h-0 content-start px-5 py-5"
+            >
               <div className="grid gap-[18px]">
-                <OwnerProfileClient storeName={storeName} ownerName={ownerName} />
-                <div className="grid gap-[10px] rounded-[16px] border border-[var(--border)] bg-[rgba(255,255,255,0.03)] p-4">
-                  <div className="flex items-center justify-between gap-3 rounded-xl border border-[rgba(100,120,160,0.12)] bg-[rgba(22,27,38,0.56)] px-4 py-3">
-                    <span className="text-[var(--foreground-soft)]">การเชื่อมต่อเครื่องพิมพ์</span>
-                    <strong>พร้อมใช้งาน</strong>
-                  </div>
-                  <div className="flex items-center justify-between gap-3 rounded-xl border border-[rgba(100,120,160,0.12)] bg-[rgba(22,27,38,0.56)] px-4 py-3">
-                    <span className="text-[var(--foreground-soft)]">รอบอัปเดตล่าสุด</span>
-                    <strong>วันนี้ 10:24</strong>
-                  </div>
-                </div>
+                <OwnerProfileClient
+                  storeName={formStoreName}
+                  ownerName={formOwnerName}
+                  storeNamePlaceholder={storeNamePrompt}
+                  ownerNamePlaceholder={ownerNamePrompt}
+                />
               </div>
             </PanelCard>
           </div>
@@ -602,58 +620,66 @@ function renderOwnerScreen(activeSection: OwnerSectionKey, storeName: string, ow
 }
 
 export function OwnerWorkspace({ session, activeSection }: OwnerWorkspaceProps) {
-  const storeName = session.user.store?.name || "FastManFoods";
-  const ownerName = session.user.displayName;
+  const rawStoreName = session.user.store?.name?.trim() || "";
+  const rawOwnerName = session.user.displayName.trim();
+  const formStoreName = unsetStoreNames.has(rawStoreName) ? "" : rawStoreName;
+  const formOwnerName = unsetOwnerNames.has(rawOwnerName) ? "" : rawOwnerName;
+  const storeName = formStoreName || storeNamePrompt;
+  const ownerName = formOwnerName || ownerNamePrompt;
   const roleLabel = formatRoleLabel(session);
-  const screen = renderOwnerScreen(activeSection, storeName, ownerName);
+  const screen = renderOwnerScreen(activeSection, storeName, ownerName, formStoreName, formOwnerName);
   const showFooterCards = !screen.standalone;
+  const shell = (
+    <BackofficeShell
+      className="h-[calc(100vh-24px)] max-[1180px]:h-auto"
+      brandName="Menu Store"
+      brandSubtitle="โหมดใช้งานหลักสำหรับเจ้าของร้านที่ต้องการขาย จัดการสินค้า ดูรายงาน และควบคุมภาพหน้าร้านได้จากบัญชีเดียว"
+      eyebrow="OWNER WORKSPACE"
+      sidebarItems={(Object.keys(sectionMeta) as OwnerSectionKey[]).map((key) => ({
+        label: sectionMeta[key].label,
+        href: sectionMeta[key].href,
+        active: key === activeSection,
+      }))}
+      profileName={storeName}
+      profileSubtitle="เจ้าของร้าน"
+      profileMeta={ownerName}
+      profileRole={roleLabel}
+      profileStatus="ออนไลน์"
+      profileAction={<LogoutButton />}
+      statusStoreContent={<OwnerLogoStatusPreview />}
+    >
+      {screen.standalone ? (
+        screen.body
+      ) : (
+        <PanelCard eyebrow={screen.eyebrow} title={screen.title} description={screen.description} actions={screen.actions}>
+          {screen.body}
+        </PanelCard>
+      )}
+
+      {showFooterCards ? (
+        <div className="grid grid-cols-2 gap-[18px] max-[1180px]:grid-cols-1">
+          <PanelCard eyebrow="Store Snapshot" title="สถานะการใช้งาน" description="ข้อมูลของร้านเท่านั้น ไม่ปะปนงานระดับ platform" className="px-[18px] py-4">
+            <ThreeUpStats items={[["ร้าน", storeName], ["ผู้ใช้", ownerName], ["Session", "Secure"]]} />
+          </PanelCard>
+
+          <PanelCard eyebrow="Render Strategy" title="Owner Interactive Islands" description="เฉพาะปุ่มและฟอร์มที่ต้องโต้ตอบถูกแยกเป็น client components" className="px-[18px] py-4">
+            <NoteStack
+              items={[
+                "shell หลัก, nav และ data summary ยัง render ฝั่ง server",
+                "action grid และ forms ย้ายไปเป็น client islands เพื่อแยก logic ให้ดูแลง่าย",
+              ]}
+            />
+          </PanelCard>
+        </div>
+      ) : null}
+    </BackofficeShell>
+  );
 
   return (
     <main className="h-screen overflow-hidden max-[1180px]:h-auto max-[1180px]:overflow-auto">
       <div className="mx-auto h-screen w-[min(1400px,calc(100%-32px))] px-0 py-3 max-[1180px]:h-auto max-[1180px]:py-3 max-[720px]:w-[min(100%-20px,100%)] max-[720px]:pt-2.5">
-        <BackofficeShell
-          className="h-[calc(100vh-24px)] max-[1180px]:h-auto"
-          brandName={storeName}
-          brandSubtitle="โหมดใช้งานหลักสำหรับเจ้าของร้านที่ต้องการขาย จัดการสินค้า ดูรายงาน และควบคุมภาพหน้าร้านได้จากบัญชีเดียว"
-          eyebrow="OWNER WORKSPACE"
-          sidebarItems={(Object.keys(sectionMeta) as OwnerSectionKey[]).map((key) => ({
-            label: sectionMeta[key].label,
-            href: sectionMeta[key].href,
-            active: key === activeSection,
-          }))}
-          profileName={storeName}
-          profileSubtitle="เจ้าของร้าน"
-          profileMeta={`${ownerName} · ${roleLabel}`}
-          profileStatus="ออนไลน์"
-          profileAction={<LogoutButton />}
-        >
-          {screen.standalone ? (
-            screen.body
-          ) : (
-            <PanelCard eyebrow={screen.eyebrow} title={screen.title} description={screen.description} actions={screen.actions}>
-              {screen.body}
-            </PanelCard>
-          )}
-
-          {showFooterCards ? (
-            <div className="grid grid-cols-2 gap-[18px] max-[1180px]:grid-cols-1">
-              <PanelCard eyebrow="Store Snapshot" title="สถานะการใช้งาน" description="ข้อมูลของร้านเท่านั้น ไม่ปะปนงานระดับ platform" className="px-[18px] py-4">
-                <ThreeUpStats items={[["ร้าน", storeName], ["ผู้ใช้", ownerName], ["Session", "Secure"]]} />
-              </PanelCard>
-
-              <PanelCard eyebrow="Render Strategy" title="Owner Interactive Islands" description="เฉพาะปุ่มและฟอร์มที่ต้องโต้ตอบถูกแยกเป็น client components" className="px-[18px] py-4">
-                <NoteStack
-                  items={[
-                    "shell หลัก, nav และ data summary ยัง render ฝั่ง server",
-                    "action grid และ forms ย้ายไปเป็น client islands เพื่อแยก logic ให้ดูแลง่าย",
-                  ]}
-                />
-              </PanelCard>
-            </div>
-          ) : null}
-        </BackofficeShell>
+        <OwnerLogoProvider>{shell}</OwnerLogoProvider>
       </div>
     </main>
   );
 }
-

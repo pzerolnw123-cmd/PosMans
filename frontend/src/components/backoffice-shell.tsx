@@ -4,8 +4,11 @@ import Link from "next/link";
 import {
   createContext,
   type ReactNode,
+  useCallback,
   useContext,
+  useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 
@@ -24,7 +27,9 @@ type BackofficeShellProps = {
   profileSubtitle: string;
   profileStatus: string;
   profileMeta: string;
+  profileRole: string;
   profileAction?: ReactNode;
+  statusStoreContent?: ReactNode;
   className?: string;
   children: ReactNode;
 };
@@ -47,10 +52,11 @@ function ProfileSummaryCard({
   profileSubtitle,
   profileStatus,
   profileMeta,
+  profileRole,
   profileAction,
 }: Pick<
   BackofficeShellProps,
-  "profileName" | "profileSubtitle" | "profileStatus" | "profileMeta" | "profileAction"
+  "profileName" | "profileSubtitle" | "profileStatus" | "profileMeta" | "profileRole" | "profileAction"
 >) {
   return (
     <div className="border-t border-t-[var(--border)] px-1 py-3">
@@ -58,13 +64,30 @@ function ProfileSummaryCard({
         <div>
           <h2 className="m-0 text-[1.08rem] font-bold tracking-[-0.03em]">{profileName}</h2>
           <p className="mt-1 text-[0.92rem] text-[var(--foreground-soft)]">{profileSubtitle}</p>
-          <p className="mt-1 text-[0.88rem] text-[var(--foreground-soft)]">{profileMeta}</p>
         </div>
-        <span className="inline-flex items-center gap-2 whitespace-nowrap rounded-[10px] border border-[rgba(46,212,122,0.24)] bg-[var(--success-soft)] px-[10px] py-[6px] text-[0.78rem] font-bold text-[var(--success)] before:h-[7px] before:w-[7px] before:rounded-full before:bg-current before:content-['']">
+        <span className="inline-flex items-center whitespace-nowrap rounded-[8px] border border-[rgba(46,212,122,0.24)] bg-[var(--success-soft)] px-[8px] py-[4px] text-[0.7rem] font-bold text-[var(--success)]">
           {profileStatus}
         </span>
       </div>
+      <div className="mt-1 flex items-center justify-between gap-3 text-[0.88rem] text-[var(--foreground-soft)]">
+        <span>{profileMeta}</span>
+        <span className="whitespace-nowrap text-right">{profileRole}</span>
+      </div>
       {profileAction}
+    </div>
+  );
+}
+
+function StoreStatusSummary({
+  brandName,
+  statusStoreContent,
+}: Pick<BackofficeShellProps, "brandName" | "statusStoreContent">) {
+  return (
+    <div className="px-[10px] pb-[18px] pt-[14px]">
+      <p className={eyebrowClass}>STATUS STORE</p>
+      <h2 className="my-[10px] text-[clamp(1.55rem,1.8vw,2rem)] leading-[1.02] tracking-[-0.045em]">{brandName}</h2>
+      <div className="h-px w-full bg-[var(--border)]" />
+      {statusStoreContent ? <div className="mt-4">{statusStoreContent}</div> : null}
     </div>
   );
 }
@@ -78,12 +101,40 @@ export function BackofficeShell({
   profileSubtitle,
   profileStatus,
   profileMeta,
+  profileRole,
   profileAction,
+  statusStoreContent,
   className = "",
   children,
 }: BackofficeShellProps) {
   const [shellAlert, setShellAlert] = useState<ShellAlert | null>(null);
-  const contextValue = useMemo(() => ({ setShellAlert }), []);
+  const alertTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const setTimedShellAlert = useCallback((alert: ShellAlert | null) => {
+    if (alertTimeoutRef.current) {
+      clearTimeout(alertTimeoutRef.current);
+      alertTimeoutRef.current = null;
+    }
+
+    setShellAlert(alert);
+
+    if (alert) {
+      alertTimeoutRef.current = setTimeout(() => {
+        setShellAlert(null);
+        alertTimeoutRef.current = null;
+      }, 4000);
+    }
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (alertTimeoutRef.current) {
+        clearTimeout(alertTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  const contextValue = useMemo(() => ({ setShellAlert: setTimedShellAlert }), [setTimedShellAlert]);
 
   return (
     <BackofficeShellAlertContext.Provider value={contextValue}>
@@ -150,15 +201,19 @@ export function BackofficeShell({
 
         <div className="grid h-full min-h-0 gap-[18px] overflow-hidden">{children}</div>
 
-        <aside className="absolute bottom-0 left-full top-0 ml-[18px] flex w-[280px] rounded-[20px] border border-[var(--border)] bg-[var(--surface)] p-3 shadow-[var(--shadow-card)] backdrop-blur-[14px] max-[1380px]:hidden">
-          <div className="mt-auto w-full">
-            <ProfileSummaryCard
-              profileName={profileName}
-              profileSubtitle={profileSubtitle}
-              profileStatus={profileStatus}
-              profileMeta={profileMeta}
-              profileAction={profileAction}
-            />
+        <aside className="absolute left-full top-0 ml-[18px] flex h-fit w-[280px] rounded-[20px] border border-[var(--border)] bg-[var(--surface)] p-3 shadow-[var(--shadow-card)] backdrop-blur-[14px] max-[1380px]:hidden">
+          <div className="flex w-full flex-col">
+            <StoreStatusSummary brandName={profileName} statusStoreContent={statusStoreContent} />
+            <div className="mt-4">
+              <ProfileSummaryCard
+                profileName={profileName}
+                profileSubtitle={profileSubtitle}
+                profileStatus={profileStatus}
+                profileMeta={profileMeta}
+                profileRole={profileRole}
+                profileAction={profileAction}
+              />
+            </div>
           </div>
         </aside>
       </div>
@@ -183,6 +238,7 @@ export function PanelCard({
   actions,
   children,
   className = "",
+  titleClassName = "my-[10px] text-[clamp(2rem,2.9vw,3.3rem)] leading-[0.98] tracking-[-0.065em]",
 }: {
   eyebrow?: string;
   title: string;
@@ -190,6 +246,7 @@ export function PanelCard({
   actions?: ReactNode;
   children?: ReactNode;
   className?: string;
+  titleClassName?: string;
 }) {
   return (
     <section
@@ -198,7 +255,7 @@ export function PanelCard({
       <div className="flex items-start justify-between gap-4 max-[720px]:flex-col max-[720px]:items-stretch">
         <div>
           {eyebrow ? <p className={eyebrowClass}>{eyebrow}</p> : null}
-          <h2 className="my-[10px] text-[clamp(2rem,2.9vw,3.3rem)] leading-[0.98] tracking-[-0.065em]">{title}</h2>
+          <h2 className={titleClassName}>{title}</h2>
           {description ? <p className="m-0 max-w-[72ch] leading-[1.65] text-[var(--foreground-soft)]">{description}</p> : null}
         </div>
         {actions ? <div className="flex flex-wrap justify-end gap-[10px] max-[720px]:justify-stretch max-[720px]:[&>*]:w-full">{actions}</div> : null}

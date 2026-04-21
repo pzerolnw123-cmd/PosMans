@@ -17,6 +17,10 @@ type CropModalProps = {
   onConfirm: () => void;
   onZoomChange: (value: number) => void;
   onOffsetChange: (x: number, y: number) => void;
+  title?: string;
+  description?: string;
+  confirmLabel?: string;
+  busyLabel?: string;
 };
 
 export function CropModal({
@@ -29,6 +33,10 @@ export function CropModal({
   onConfirm,
   onZoomChange,
   onOffsetChange,
+  title = "ครอปรูปภาพสินค้า",
+  description = "ลากภาพเพื่อจัดตำแหน่ง และใช้ตัวเลื่อนเพื่อซูมก่อนอัปโหลดขึ้น R2",
+  confirmLabel = "ยืนยันอัปโหลด",
+  busyLabel = "อัปโหลด...",
 }: CropModalProps) {
   const dragState = useRef<{ startX: number; startY: number } | null>(null);
   const cropMetrics = useMemo(() => buildCropMetrics(draft.image, zoom, CROP_VIEWPORT_SIZE), [draft.image, zoom]);
@@ -88,9 +96,9 @@ export function CropModal({
         <div className="flex items-start justify-between gap-4 max-[720px]:flex-col max-[720px]:items-stretch">
           <div>
             <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[#6b7a94]">Image Crop</p>
-            <h2 className="mt-2 text-[1.5rem] leading-none tracking-[-0.04em] text-white">ครอปรูปภาพสินค้า</h2>
+            <h2 className="mt-2 text-[1.5rem] leading-none tracking-[-0.04em] text-white">{title}</h2>
             <p className="mt-3 text-[0.95rem] leading-[1.65] text-[var(--foreground-soft)]">
-              ลากภาพเพื่อจัดตำแหน่ง และใช้ตัวเลื่อนเพื่อซูมก่อนอัปโหลดขึ้น R2
+              {description}
             </p>
           </div>
           <button type="button" className={ghostButtonClass} onClick={onClose} disabled={busy}>
@@ -155,7 +163,7 @@ export function CropModal({
                   ยกเลิก
                 </button>
                 <button type="button" className={primaryButtonClass} onClick={onConfirm} disabled={busy}>
-                  {busy ? "อัปโหลด..." : "ยืนยันอัปโหลด"}
+                  {busy ? busyLabel : confirmLabel}
                 </button>
               </div>
             </div>

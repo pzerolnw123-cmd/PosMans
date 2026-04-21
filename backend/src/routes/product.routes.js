@@ -93,12 +93,13 @@ async function requireOwnerStoreId(req, res) {
 
 async function createNextProductCode(storeId, category, offset = 0) {
   const prefix = categoryCodePrefix(category);
+  const startIdx = prefix.length + 2;
   const rows = await prisma.$queryRaw(
     Prisma.sql`
       SELECT MAX(
         CASE
-          WHEN substring("code" from ${prefix.length + 2}) ~ '^[0-9]+$'
-            THEN substring("code" from ${prefix.length + 2})::int
+          WHEN SUBSTR("code", ${startIdx}) ~ '^[0-9]+$'
+            THEN SUBSTR("code", ${startIdx})::int
           ELSE 0
         END
       ) AS "maxCode"

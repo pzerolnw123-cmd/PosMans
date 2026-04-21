@@ -3,7 +3,7 @@ const express = require("express");
 const rateLimit = require("express-rate-limit");
 const { z } = require("zod");
 const { prisma } = require("../lib/db");
-const { hashPin, normalizeUsername, verifyPassword, verifyPin } = require("../utils/password");
+const { hashPassword, hashPin, normalizeUsername, verifyPassword, verifyPin } = require("../utils/password");
 const {
   createSession,
   deleteSession,
@@ -14,8 +14,9 @@ const {
 } = require("../utils/session");
 const { issueCsrfToken, setCsrfCookie, clearCsrfCookie } = require("../utils/csrf");
 const { writeAuditLog } = require("../utils/audit");
-const { requireAuth } = require("../middleware/auth");
+const { requireAuth, requireStoreRole } = require("../middleware/auth");
 const { requireTrustedOrigin, requireCsrf } = require("../middleware/security");
+const { assertSafePlainText } = require("../utils/xss");
 const { env } = require("../config/env");
 
 const router = express.Router();
@@ -35,6 +36,31 @@ const pinSetupSchema = z.object({
   pin: z.string().regex(/^\d{6}$/),
   confirmPin: z.string().regex(/^\d{6}$/),
 });
+
+const passwordChangeSchema = z
+  .object({
+    currentPassword: z.string().min(8).max(128),
+    newPassword: z.string().min(8).max(128),
+    confirmPassword: z.string().min(8).max(128),
+  })
+  .strict();
+
+const ownerProfileSchema = z
+  .object({
+    storeName: z
+      .string()
+      .trim()
+      .min(1)
+      .max(80)
+      .transform((value) => assertSafePlainText(value, "storeName")),
+    ownerName: z
+      .string()
+      .trim()
+      .min(1)
+      .max(80)
+      .transform((value) => assertSafePlainText(value, "ownerName")),
+  })
+  .strict();
 
 function loginChallengeCookieOptions(expiresAt) {
   return {
@@ -417,6 +443,75 @@ router.post("/logout-all", requireTrustedOrigin, requireCsrf, requireAuth, async
     });
     res.set("Cache-Control", "no-store");
     res.json({ success: true });
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.patch("/password", requireTrustedOrigin, requireCsrf, requireAuth, async (req, res, next) => {
+  try {
+    const parsed = passwordChangeSchema.parse(req.body);
+    if (parsed.newPassword !== parsed.confirmPassword) {
+      return res.status(400).json({ error: "Password confirmation does not match." });
+    }
+
+    if (parsed.currentPassword === parsed.newPassword) {
+      return res.status(400).json({ error: "New password must be different from the current password." });
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: req.session.user.id },
+      select: { id: true, passwordHash: true, isActive: true },
+    });
+
+    if (!user || !user.isActive) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    const validPassword = await verifyPassword(parsed.currentPassword, user.passwordHash);
+    if (!validPassword) {
+      return res.status(401).json({ error: "Current password is incorrect." });
+    }
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { passwordHash: await hashPassword(parsed.newPassword) },
+    });
+
+    res.set("Cache-Control", "no-store");
+    res.json({ success: true });
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.patch("/owner-profile", requireTrustedOrigin, requireCsrf, requireStoreRole(["OWNER"]), async (req, res, next) => {
+  try {
+    const parsed = ownerProfileSchema.parse(req.body);
+    const storeId = req.session.user.storeId;
+
+    const [store, user] = await prisma.$transaction([
+      prisma.store.update({
+        where: { id: storeId },
+        data: { name: parsed.storeName },
+        select: { id: true, name: true, slug: true },
+      }),
+      prisma.user.update({
+        where: { id: req.session.user.id },
+        data: { displayName: parsed.ownerName },
+        select: { id: true, displayName: true },
+      }),
+    ]);
+
+    res.set("Cache-Control", "no-store");
+    res.json({
+      success: true,
+      user: {
+        id: user.id,
+        displayName: user.displayName,
+        store,
+      },
+    });
   } catch (error) {
     next(error);
   }

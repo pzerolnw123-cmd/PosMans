@@ -165,13 +165,14 @@ export function ProductDetailPanel({
                     value={priceInput}
                     min="0"
                     onChange={(e) => {
-                      setPriceDraft({ productId: selectedProduct ? selectedProduct.id : "", value: e.target.value });
-                    }}
-                    onBlur={() => {
-                      const parsed = Number(priceDraft?.value);
-                      if (!isNaN(parsed) && priceDraft) {
+                      const val = e.target.value;
+                      setPriceDraft({ productId: selectedProduct ? selectedProduct.id : "", value: val });
+                      const parsed = Number(val);
+                      if (!isNaN(parsed)) {
                         onUpdateProduct({ price: parsed });
                       }
+                    }}
+                    onBlur={() => {
                       setPriceDraft(null);
                     }}
                     className="w-full rounded-xl border border-[rgba(100,120,160,0.12)] bg-[rgba(22,27,38,0.56)] px-4 py-3 text-[0.96rem] text-white outline-none transition-all focus:border-[var(--primary)] focus:bg-[rgba(22,27,38,0.8)] focus:shadow-[0_0_0_4px_rgba(108,92,231,0.1)] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"

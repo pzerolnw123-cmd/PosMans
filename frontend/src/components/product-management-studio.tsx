@@ -210,7 +210,7 @@ export function ProductManagementStudio() {
         );
         await uploadBlobToR2(signedUpload, pendingUploadBlob);
         finalUploadedKey = signedUpload.objectKey;
-        finalImageUrl = signedUpload.publicUrl;
+        finalImageUrl = signedUpload.publicUrl ?? undefined;
       }
 
       const payload = {
@@ -246,9 +246,7 @@ export function ProductManagementStudio() {
           };
         });
 
-        // แสดงแจ้งเตือนเมื่อเพิ่มสินค้าสำเร็จ
         setShellAlert({ message: "เพิ่มสินค้าใหม่เข้าสู่ระบบเรียบร้อยแล้ว", tone: "success" });
-        setTimeout(() => setShellAlert(null), 3000);
         return;
       }
 
@@ -265,9 +263,7 @@ export function ProductManagementStudio() {
       setServerProducts((current) => current.map((item) => (item.id === updated.id ? updated : item)));
       setPendingUploadBlob(null);
       
-      // แสดงแจ้งเตือนเมื่อบันทึกสำเร็จ
       setShellAlert({ message: "บันทึกการเปลี่ยนแปลงสินค้าเรียบร้อยแล้ว", tone: "success" });
-      setTimeout(() => setShellAlert(null), 3000);
     } catch (error) {
       setUploadError(error instanceof Error ? error.message : "บันทึกสินค้าไม่สำเร็จ");
     } finally {
@@ -437,9 +433,7 @@ export function ProductManagementStudio() {
       setPage(1);
       setIsDeleteModalOpen(false);
       
-      // แจ้งเตือนเมื่อลบ Draft สำเร็จ
       setShellAlert({ message: "ยกเลิกรายการสินค้าสำเร็จ", tone: "success" });
-      setTimeout(() => setShellAlert(null), 3000);
       return;
     }
 
@@ -465,9 +459,7 @@ export function ProductManagementStudio() {
       });
       setPage((current) => (remaining.length === 0 ? Math.max(1, current - 1) : current));
 
-      // แจ้งเตือนเมื่อลบสินค้าในฐานข้อมูลสำเร็จ
       setShellAlert({ message: "ลบสินค้าออกจากระบบเรียบร้อยแล้ว", tone: "success" });
-      setTimeout(() => setShellAlert(null), 3000);
     } catch (error) {
       setUploadError(error instanceof Error ? error.message : "ลบสินค้าไม่สำเร็จ");
     } finally {
