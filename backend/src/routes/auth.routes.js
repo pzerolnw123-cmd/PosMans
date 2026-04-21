@@ -470,7 +470,7 @@ router.patch("/password", requireTrustedOrigin, requireCsrf, requireAuth, async 
 
     const validPassword = await verifyPassword(parsed.currentPassword, user.passwordHash);
     if (!validPassword) {
-      return res.status(401).json({ error: "Current password is incorrect." });
+      return res.status(401).json({ error: "รหัสผ่านปัจจุบันไม่ถูกต้อง" });
     }
 
     await prisma.user.update({

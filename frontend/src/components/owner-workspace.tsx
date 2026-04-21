@@ -1,4 +1,4 @@
-﻿import type { ReactNode } from "react";
+import type { ReactNode } from "react";
 import type { SessionPayload } from "@/lib/session";
 import { BackofficeShell, PanelCard } from "@/components/backoffice-shell";
 import { LogoutButton } from "@/components/logout-button";
@@ -678,7 +678,7 @@ export function OwnerWorkspace({ session, activeSection }: OwnerWorkspaceProps) 
   return (
     <main className="h-screen overflow-hidden max-[1180px]:h-auto max-[1180px]:overflow-auto">
       <div className="mx-auto h-screen w-[min(1400px,calc(100%-32px))] px-0 py-3 max-[1180px]:h-auto max-[1180px]:py-3 max-[720px]:w-[min(100%-20px,100%)] max-[720px]:pt-2.5">
-        <OwnerLogoProvider>{shell}</OwnerLogoProvider>
+        <OwnerLogoProvider userId={session.user.id}>{shell}</OwnerLogoProvider>
       </div>
     </main>
   );

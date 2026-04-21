@@ -46,23 +46,18 @@ const OwnerLogoContext = createContext<OwnerLogoContextValue | null>(null);
 
 const logoFileTypes = new Set(["image/png", "image/jpeg", "image/webp"]);
 const maxLogoFileSize = 2 * 1024 * 1024;
-const ownerLogoStorageKey = "owner-store-logo-preview";
+export function OwnerLogoProvider({ children, userId }: { children: ReactNode; userId: string }) {
+  const storageKey = `owner-store-logo-preview-${userId}`;
+  const [previewUrl, setPreviewUrl] = useState("");
+  const [saved, setSaved] = useState(false);
 
-export function OwnerLogoProvider({ children }: { children: ReactNode }) {
-  const [previewUrl, setPreviewUrl] = useState(() => {
-    if (typeof window === "undefined") {
-      return "";
+  useEffect(() => {
+    const stored = window.localStorage.getItem(storageKey);
+    if (stored) {
+      setPreviewUrl(stored);
+      setSaved(true);
     }
-
-    return window.localStorage.getItem(ownerLogoStorageKey) || "";
-  });
-  const [saved, setSaved] = useState(() => {
-    if (typeof window === "undefined") {
-      return false;
-    }
-
-    return Boolean(window.localStorage.getItem(ownerLogoStorageKey));
-  });
+  }, [storageKey]);
 
   useEffect(() => {
     return () => {
@@ -77,12 +72,16 @@ export function OwnerLogoProvider({ children }: { children: ReactNode }) {
       return false;
     }
 
-    window.localStorage.setItem(ownerLogoStorageKey, previewUrl);
+    window.localStorage.setItem(storageKey, previewUrl);
     setSaved(true);
     return true;
   }
 
-  return <OwnerLogoContext.Provider value={{ previewUrl, setPreviewUrl, saved, setSaved, savePreviewUrl }}>{children}</OwnerLogoContext.Provider>;
+  return (
+    <OwnerLogoContext.Provider value={{ previewUrl, setPreviewUrl, saved, setSaved, savePreviewUrl }}>
+      {children}
+    </OwnerLogoContext.Provider>
+  );
 }
 
 function useOwnerLogo() {
@@ -131,13 +130,13 @@ function EyeIcon({ open }: { open: boolean }) {
   );
 }
 
-function SelectedLogoStatus() {
+function SelectedLogoStatus({ saved }: { saved: boolean }) {
   return (
     <p className="inline-flex items-center gap-2 text-[0.86rem] leading-[1.5] text-[var(--foreground-soft)]">
       <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" className="opacity-80 text-[var(--success)]" aria-hidden="true">
         <path fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="2" d="m7 12l3.488 3.837a.2.2 0 0 0 .296 0L17 9" />
       </svg>
-      เลือกรูปภาพแล้ว
+      {saved ? "คุณมีรูปภาพโลโก้แล้ว" : "เลือกรูปภาพแล้ว"}
     </p>
   );
 }
@@ -145,11 +144,11 @@ function SelectedLogoStatus() {
 export function OwnerLogoStatusPill() {
   const { previewUrl, saved } = useOwnerLogo();
 
-  if (!previewUrl || saved) {
+  if (!previewUrl) {
     return null;
   }
 
-  return <SelectedLogoStatus />;
+  return <SelectedLogoStatus saved={saved} />;
 }
 
 function PasswordField({
@@ -225,8 +224,14 @@ export function OwnerPasswordClient() {
   }
 
   function validatePasswordForm() {
-    if (!form.currentPassword || !form.newPassword || !form.confirmPassword) {
-      return "กรอกรหัสผ่านให้ครบทั้ง 3 ช่อง";
+    if (!form.currentPassword) {
+      return "กรุณาระบุรหัสผ่านปัจจุบัน";
+    }
+    if (!form.newPassword) {
+      return "กรุณาระบุรหัสผ่านใหม่";
+    }
+    if (!form.confirmPassword) {
+      return "กรุณายืนยันรหัสผ่านใหม่";
     }
 
     if (form.currentPassword.length < 8 || form.newPassword.length < 8 || form.confirmPassword.length < 8) {
