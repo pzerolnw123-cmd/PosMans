@@ -1,6 +1,6 @@
 const path = require("node:path");
 const crypto = require("node:crypto");
-const { PutObjectCommand, S3Client } = require("@aws-sdk/client-s3");
+const { PutObjectCommand, DeleteObjectCommand, S3Client } = require("@aws-sdk/client-s3");
 const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 const { env } = require("../config/env");
 const { AppError } = require("../utils/app-error");
@@ -84,4 +84,26 @@ async function createPresignedUpload({ fileName, contentType, contentLength }) {
   };
 }
 
-module.exports = { isR2Configured, createPresignedUpload, validateUploadRequest };
+async function deleteR2Object(objectKey) {
+  if (!objectKey || !isR2Configured()) {
+    return;
+  }
+
+  try {
+    const command = new DeleteObjectCommand({
+      Bucket: env.R2_BUCKET,
+      Key: objectKey,
+    });
+    await getR2Client().send(command);
+  } catch (error) {
+    // Log error but don't fail the request - orphan files are less critical than broken business logic
+    console.error(`[R2] Failed to delete object ${objectKey}:`, error);
+  }
+}
+
+module.exports = { 
+  isR2Configured, 
+  createPresignedUpload, 
+  validateUploadRequest,
+  deleteR2Object,
+};

@@ -6,6 +6,7 @@ const { requireStoreRole, loadSession } = require("../middleware/auth");
 const { requireTrustedOrigin, requireCsrf } = require("../middleware/security");
 const { AppError } = require("../utils/app-error");
 const { safeTextSchema, safeUrlSchema } = require("../utils/xss");
+const { deleteR2Object } = require("../lib/r2");
 
 const router = express.Router();
 
@@ -205,7 +206,7 @@ router.patch("/:productId", requireTrustedOrigin, requireCsrf, requireStoreRole(
 
     const existingProduct = await prisma.product.findFirst({
       where: { id: req.params.productId, storeId },
-      select: { id: true },
+      select: { id: true, uploadedKey: true },
     });
 
     if (!existingProduct) {
@@ -225,6 +226,10 @@ router.patch("/:productId", requireTrustedOrigin, requireCsrf, requireStoreRole(
       select: productSelect,
     });
 
+    if (parsed.uploadedKey !== undefined && existingProduct.uploadedKey && existingProduct.uploadedKey !== parsed.uploadedKey) {
+      await deleteR2Object(existingProduct.uploadedKey);
+    }
+
     res.json({ product: serializeProduct(product) });
   } catch (error) {
     next(error);
@@ -237,11 +242,15 @@ router.delete("/:productId", requireTrustedOrigin, requireCsrf, requireStoreRole
 
     const existingProduct = await prisma.product.findFirst({
       where: { id: req.params.productId, storeId },
-      select: { id: true },
+      select: { id: true, uploadedKey: true },
     });
 
     if (!existingProduct) {
       throw new AppError("Product not found", 404, { code: "PRODUCT_NOT_FOUND" });
+    }
+
+    if (existingProduct.uploadedKey) {
+      await deleteR2Object(existingProduct.uploadedKey);
     }
 
     await prisma.product.delete({

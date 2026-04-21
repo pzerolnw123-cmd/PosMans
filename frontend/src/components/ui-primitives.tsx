@@ -20,6 +20,12 @@ export const ghostButtonClass =
 export const dangerButtonClass =
   "inline-flex min-h-[42px] items-center justify-center gap-[10px] rounded-[10px] border border-[rgba(232,93,117,0.24)] bg-[rgba(232,93,117,0.1)] px-[18px] font-bold text-[var(--danger)] transition hover:-translate-y-px hover:border-[rgba(232,93,117,0.35)] hover:shadow-[rgba(232,93,117,0.12)_0_5px_10px] disabled:cursor-not-allowed disabled:opacity-[0.62] disabled:shadow-none";
 
+export const successButtonClass =
+  "inline-flex min-h-[42px] items-center justify-center gap-[10px] rounded-[10px] border border-[rgba(46,212,122,0.24)] bg-[rgba(46,212,122,0.1)] px-[18px] font-bold text-[var(--success)] transition hover:-translate-y-px hover:border-[rgba(46,212,122,0.35)] hover:shadow-[rgba(46,212,122,0.12)_0_5px_10px] disabled:cursor-not-allowed disabled:opacity-[0.62] disabled:shadow-none";
+
+export const whiteButtonClass =
+  "inline-flex min-h-[42px] items-center justify-center gap-[10px] rounded-[10px] border border-[rgba(255,255,255,0.14)] bg-[rgba(255,255,255,0.04)] px-[18px] font-bold text-white transition hover:-translate-y-px hover:border-[rgba(255,255,255,0.25)] hover:bg-[rgba(255,255,255,0.08)] hover:shadow-[rgba(255,255,255,0.05)_0_5px_15px] disabled:cursor-not-allowed disabled:opacity-[0.62] disabled:shadow-none";
+
 export const inputClass =
   "h-[46px] w-full rounded-[10px] border border-[rgba(100,120,160,0.22)] bg-[rgba(14,18,28,0.7)] px-[14px] pr-[18px] text-[var(--foreground)] outline-none transition placeholder:text-[#556070] focus:border-[rgba(108,92,231,0.55)] focus:shadow-[inset_0_0_0_1px_var(--ring)]";
 
@@ -38,11 +44,13 @@ export function StatusPill({
 export function PageHeader({
   eyebrow,
   title,
+  description,
   actions,
   className = "",
 }: {
   eyebrow: string;
   title: string;
+  description?: ReactNode;
   actions?: ReactNode;
   className?: string;
 }) {
@@ -52,7 +60,8 @@ export function PageHeader({
     >
       <div>
         <p className={eyebrowTextClass}>{eyebrow}</p>
-        <strong className="mt-2 block text-[1.35rem] leading-none tracking-[-0.04em] text-white">{title}</strong>
+        <strong className="mt-2 block text-[clamp(1.8rem,3vw,2.4rem)] leading-none tracking-[-0.06em] text-white">{title}</strong>
+        {description ? <p className="mt-3 m-0 text-[0.95rem] leading-[1.6] text-[var(--foreground-soft)] max-w-[600px]">{description}</p> : null}
       </div>
       {actions ? <div className="flex flex-none items-center gap-3 max-[720px]:w-full">{actions}</div> : null}
     </div>

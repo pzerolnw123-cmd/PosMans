@@ -84,7 +84,7 @@ export function CropModal({
     <div className="fixed inset-0 z-[200] grid place-items-center bg-[rgba(7,10,16,0.5)] p-4 backdrop-blur-[14px]">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(108,92,231,0.12),transparent_40%)]" />
 
-      <div className="relative z-[1] grid w-[min(92vw,860px)] max-h-[calc(100vh-32px)] gap-5 overflow-y-auto rounded-[24px] border border-[var(--border)] bg-[linear-gradient(180deg,rgba(22,27,38,0.98),rgba(15,19,28,0.96))] p-5 shadow-[rgba(0,0,0,0.46)_0_30px_80px] max-[720px]:w-[min(94vw,560px)]">
+      <div className="relative z-[1] grid w-[min(92vw,740px)] max-h-[calc(100vh-32px)] gap-6 overflow-y-auto rounded-[24px] border border-[var(--border)] bg-[linear-gradient(180deg,rgba(22,27,38,0.98),rgba(15,19,28,0.96))] p-6 shadow-[rgba(0,0,0,0.46)_0_30px_80px] max-[720px]:w-[min(94vw,560px)]">
         <div className="flex items-start justify-between gap-4 max-[720px]:flex-col max-[720px]:items-stretch">
           <div>
             <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[#6b7a94]">Image Crop</p>
@@ -94,14 +94,15 @@ export function CropModal({
             </p>
           </div>
           <button type="button" className={ghostButtonClass} onClick={onClose} disabled={busy}>
-            ปิด
+            ออก
           </button>
         </div>
 
-        <div className="grid items-start gap-5 lg:grid-cols-[320px_minmax(0,1fr)]">
-          <div className="grid gap-4 self-start">
+        <div className="grid items-start gap-6 lg:grid-cols-[320px_minmax(0,1fr)] max-[800px]:grid-cols-1">
+          {/* Left Column: Image Preview */}
+          <div className="grid gap-4 self-start justify-center w-full">
             <div
-              className="relative mx-auto aspect-square w-full max-w-[320px] overflow-hidden rounded-[24px] border border-[rgba(100,120,160,0.18)] bg-[rgba(255,255,255,0.04)] shadow-[rgba(0,0,0,0.25)_0_10px_24px_inset] cursor-grab active:cursor-grabbing"
+              className="relative aspect-square w-[320px] overflow-hidden rounded-[24px] border border-[rgba(100,120,160,0.18)] bg-[rgba(255,255,255,0.04)] shadow-[rgba(0,0,0,0.25)_0_10px_24px_inset] cursor-grab active:cursor-grabbing"
               onPointerDown={handlePointerDown}
               onPointerMove={handlePointerMove}
               onPointerUp={handlePointerUp}
@@ -122,42 +123,41 @@ export function CropModal({
               />
               <div className="pointer-events-none absolute inset-0 rounded-[24px] ring-1 ring-inset ring-[rgba(255,255,255,0.08)]" />
             </div>
+          </div>
 
-            <div className="grid gap-3 rounded-[18px] border border-[var(--border)] bg-[rgba(255,255,255,0.03)] p-4">
+          {/* Right Column: Controls */}
+          <div className="grid gap-4 self-start w-full">
+            <div className="grid gap-3 rounded-[18px] border border-[var(--border)] bg-[rgba(255,255,255,0.03)] p-5">
+              <div className="mb-1 pb-4 border-b border-[var(--border)] text-center">
+                <span className="text-[0.78rem] font-bold uppercase tracking-widest text-[#6b7a94]">ไฟล์ที่เลือก</span>
+                <p className="mt-1 break-words text-[0.92rem] text-white opacity-90">{draft.fileName}</p>
+              </div>
+
               <label className="grid gap-2">
-                <span className="text-[0.92rem] text-[var(--foreground-soft)]">ซูม</span>
+                <div className="flex items-center justify-between">
+                  <span className="text-[0.92rem] text-[var(--foreground-soft)]">ซูม</span>
+                  <span className="text-[0.88rem] font-medium text-white">{zoom.toFixed(2)}x</span>
+                </div>
                 <input type="range" min="1" max="3" step="0.01" value={zoom} onChange={(event) => onZoomChange(Number(event.target.value))} />
               </label>
 
               <div className="grid grid-cols-2 gap-3 text-[0.88rem] text-[var(--foreground-soft)]">
                 <div className="rounded-xl border border-[rgba(100,120,160,0.12)] bg-[rgba(22,27,38,0.56)] px-3 py-2">
-                  X Offset: {Math.round(offsetX)} px
+                  X: {Math.round(offsetX)} px
                 </div>
                 <div className="rounded-xl border border-[rgba(100,120,160,0.12)] bg-[rgba(22,27,38,0.56)] px-3 py-2">
-                  Y Offset: {Math.round(offsetY)} px
+                  Y: {Math.round(offsetY)} px
                 </div>
               </div>
-            </div>
-          </div>
 
-          <div className="grid h-fit content-start gap-4 self-start rounded-[18px] border border-[var(--border)] bg-[rgba(255,255,255,0.03)] p-4">
-            <div className="grid gap-2">
-              <span className="text-[0.92rem] font-semibold text-[#6b7a94]">ไฟล์ที่เลือก</span>
-              <strong className="break-words text-white">{draft.fileName}</strong>
-            </div>
-
-            <div className="grid gap-2 text-[0.92rem] leading-[1.6] text-[var(--foreground-soft)]">
-              <p className="m-0">ระบบจะบันทึกรูปเป็น WEBP หลังครอป เพื่อลดขนาดไฟล์และเหมาะกับงานเว็บมากขึ้น</p>
-              <p className="m-0">อัปโหลดผ่าน presigned upload ไปยัง Cloudflare R2 โดยตรง ฝั่ง backend จะเป็นคนออก policy ให้อย่างปลอดภัย</p>
-            </div>
-
-            <div className="grid gap-3 pt-2 sm:grid-cols-2">
-              <button type="button" className={ghostButtonClass} onClick={onClose} disabled={busy}>
-                ยกเลิก
-              </button>
-              <button type="button" className={primaryButtonClass} onClick={onConfirm} disabled={busy}>
-                {busy ? "กำลังอัปโหลด..." : "ครอปและอัปโหลด"}
-              </button>
+              <div className="mt-2 grid grid-cols-2 gap-3 border-t border-[var(--border)] pt-4">
+                <button type="button" className={ghostButtonClass} onClick={onClose} disabled={busy}>
+                  ยกเลิก
+                </button>
+                <button type="button" className={primaryButtonClass} onClick={onConfirm} disabled={busy}>
+                  {busy ? "อัปโหลด..." : "ยืนยันอัปโหลด"}
+                </button>
+              </div>
             </div>
           </div>
         </div>

@@ -48,6 +48,7 @@ export function ProductManagementStudio() {
   const [saveBusy, setSaveBusy] = useState(false);
   const [deleteBusy, setDeleteBusy] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [pendingUploadBlob, setPendingUploadBlob] = useState<Blob | null>(null);
   const [pagination, setPagination] = useState({
     page: 1,
     pageSize: 3,
@@ -110,9 +111,10 @@ export function ProductManagementStudio() {
           : response.products;
 
         if (nextProducts.length > 0) {
-          setProducts(nextProducts);
+          const limitedProducts = nextProducts.slice(0, itemsPerPage);
+          setProducts(limitedProducts);
           setServerProducts(response.products);
-          setSelectedId((current) => (nextProducts.some((item) => item.id === current) ? current : nextProducts[0].id));
+          setSelectedId((current) => (limitedProducts.some((item) => item.id === current) ? current : limitedProducts[0].id));
           return;
         }
 
@@ -171,7 +173,7 @@ export function ProductManagementStudio() {
   function handleCreateNewProduct() {
     const next = makeNewProduct();
     pendingDraftRef.current = next;
-    setProducts((current) => [next, ...current]);
+    setProducts((current) => [next, ...current].slice(0, itemsPerPage));
     setSelectedId(next.id);
     setActiveCategory(categoryOptions[0]);
     setPage(1);
@@ -196,15 +198,28 @@ export function ProductManagementStudio() {
 
     setUploadError(null);
     setSaveBusy(true);
-
     try {
+      let finalUploadedKey = selectedProduct.uploadedKey;
+      let finalImageUrl = selectedProduct.imageUrl;
+
+      if (pendingUploadBlob) {
+        const signedUpload = await requestSignedUpload(
+          `${selectedProduct.code.toLowerCase()}-${Date.now()}.webp`,
+          "image/webp",
+          pendingUploadBlob.size
+        );
+        await uploadBlobToR2(signedUpload, pendingUploadBlob);
+        finalUploadedKey = signedUpload.objectKey;
+        finalImageUrl = signedUpload.publicUrl;
+      }
+
       const payload = {
         name: trimmedName,
         category: selectedProduct.category,
         price: selectedProduct.price,
         status: selectedProduct.status,
-        imageUrl: selectedProduct.imageUrl?.startsWith("http") ? selectedProduct.imageUrl : null,
-        uploadedKey: selectedProduct.uploadedKey || null,
+        imageUrl: finalImageUrl?.startsWith("http") ? finalImageUrl : null,
+        uploadedKey: finalUploadedKey || null,
       };
 
       if (isDraftProduct(selectedProduct)) {
@@ -221,6 +236,7 @@ export function ProductManagementStudio() {
         setServerProducts((current) => [created, ...current]);
         setSelectedId(clientCreated.id);
         pendingDraftRef.current = null;
+        setPendingUploadBlob(null);
         setPagination((current) => {
           const totalItems = current.totalItems + 1;
           return {
@@ -247,6 +263,7 @@ export function ProductManagementStudio() {
 
       setProducts((current) => current.map((item) => (item.id === updated.id ? { ...item, ...clientUpdated } : item)));
       setServerProducts((current) => current.map((item) => (item.id === updated.id ? updated : item)));
+      setPendingUploadBlob(null);
       
       // แสดงแจ้งเตือนเมื่อบันทึกสำเร็จ
       setShellAlert({ message: "บันทึกการเปลี่ยนแปลงสินค้าเรียบร้อยแล้ว", tone: "success" });
@@ -264,7 +281,11 @@ export function ProductManagementStudio() {
     if (isDraftProduct(selectedProduct)) {
       const resetDraft = makeNewProduct();
       setProducts((current) =>
-        current.map((item) => (item.id === selectedProduct.id ? { ...resetDraft, id: selectedProduct.id } : item))
+        current.map((item) =>
+          item.id === selectedProduct.id
+            ? { ...resetDraft, id: selectedProduct.id, imageUrl: selectedProduct.imageUrl, uploadedKey: selectedProduct.uploadedKey ?? "" }
+            : item
+        )
       );
       setUploadError(null);
       return;
@@ -276,13 +297,14 @@ export function ProductManagementStudio() {
     objectUrlsRef.current = revokeManagedObjectUrl(selectedProduct.imageUrl, objectUrlsRef.current);
     setProducts((current) => current.map((item) => (item.id === selectedProduct.id ? { ...original } : item)));
     setUploadError(null);
+    setPendingUploadBlob(null);
   }
 
   function handleBackToProducts() {
     if (selectedProduct) {
       if (isDraftProduct(selectedProduct)) {
         pendingDraftRef.current = null;
-        setProducts((current) => current.filter((item) => item.id !== selectedProduct.id));
+        setProducts(serverProducts.slice(0, itemsPerPage));
       } else {
         // หากเป็นสินค้าเดิม ให้ย้อนคืนข้อมูลล่าสุดจาก Server เผื่อมีการแก้ค้างไว้
         const original = serverProducts.find((p) => p.id === selectedProduct.id);
@@ -293,6 +315,7 @@ export function ProductManagementStudio() {
     }
     setSelectedId("");
     setUploadError(null);
+    setPendingUploadBlob(null);
   }
 
   function handleToggleSaleStatus() {
@@ -365,23 +388,22 @@ export function ProductManagementStudio() {
       setUploadError(null);
 
       const croppedBlob = await createCroppedBlob(cropDraft, cropZoom, cropOffset.x, cropOffset.y);
-      const signedUpload = await requestSignedUpload(`${selectedProduct.code.toLowerCase()}-${Date.now()}.webp`, "image/webp", croppedBlob.size);
-
-      await uploadBlobToR2(signedUpload, croppedBlob);
-
+      
       objectUrlsRef.current = revokeManagedObjectUrl(selectedProduct.imageUrl, objectUrlsRef.current);
       objectUrlsRef.current = revokeManagedObjectUrl(cropDraft.objectUrl, objectUrlsRef.current);
       const localPreviewUrl = URL.createObjectURL(croppedBlob);
       objectUrlsRef.current.push(localPreviewUrl);
 
+      setPendingUploadBlob(croppedBlob);
+
       updateSelectedProduct({
-        imageUrl: signedUpload.publicUrl || localPreviewUrl,
-        uploadedKey: signedUpload.objectKey,
+        imageUrl: localPreviewUrl,
+        uploadedKey: "",
       });
 
       setCropDraft(null);
     } catch (error) {
-      setUploadError(error instanceof Error ? error.message : "อัปโหลดรูปภาพไม่สำเร็จ");
+      setUploadError(error instanceof Error ? error.message : "เตรียมรูปภาพไม่สำเร็จ");
     } finally {
       setUploadBusy(false);
     }
@@ -463,7 +485,16 @@ export function ProductManagementStudio() {
       }
     >
       {!compactMode ? (
-        <PageHeader eyebrow="Product Studio" title="สินค้า" actions={<StatusPill tone="success">พร้อมใช้งานแล้ว</StatusPill>} />
+        <PageHeader
+          eyebrow="Product Studio"
+          title="สินค้า"
+          description={
+            <>
+              จัดการรายการสินค้าของคุณ ทั้งการแก้ไขราคา หมวดหมู่ และสถานะการขาย <br /> พร้อมระบบอัปโหลดรูปภาพที่รวดเร็ว
+            </>
+          }
+          actions={<StatusPill tone="success">พร้อมใช้งานแล้ว</StatusPill>}
+        />
       ) : null}
 
       <div className="grid min-h-0 items-start gap-[18px] [grid-template-columns:minmax(400px,1fr)_minmax(0,1.3fr)] max-[1180px]:grid-cols-1">
