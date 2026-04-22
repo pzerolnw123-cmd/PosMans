@@ -213,14 +213,19 @@ export function ProductManagementStudio() {
         finalImageUrl = signedUpload.publicUrl ?? undefined;
       }
 
-      const payload = {
+      const basePayload = {
         name: trimmedName,
         category: selectedProduct.category,
         price: selectedProduct.price,
         status: selectedProduct.status,
-        imageUrl: finalImageUrl?.startsWith("http") ? finalImageUrl : null,
-        uploadedKey: finalUploadedKey || null,
       };
+      const uploadPayload = pendingUploadBlob || isDraftProduct(selectedProduct)
+        ? {
+            imageUrl: finalImageUrl?.startsWith("http") ? finalImageUrl : null,
+            uploadedKey: finalUploadedKey || null,
+          }
+        : {};
+      const payload = { ...basePayload, ...uploadPayload };
 
       if (isDraftProduct(selectedProduct)) {
         const created = await requestJson<ProductItem>("/api/products", {

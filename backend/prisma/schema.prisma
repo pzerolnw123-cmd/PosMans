@@ -23,17 +23,40 @@ enum AuditAction {
   LOGOUT
   LOGOUT_ALL
   UPLOAD_POLICY_ISSUED
+  PRODUCT_CREATED
+  PRODUCT_UPDATED
+  PRODUCT_DELETED
+  STORE_PROFILE_UPDATED
+  STORE_LOGO_UPDATED
+  SALE_CREATED
+  SALE_CANCELLED
+}
+
+enum SaleStatus {
+  PAID
+  CANCELLED
+}
+
+enum PaymentMethod {
+  CASH
+  QR
+  CARD
+  TRANSFER
+  OTHER
 }
 
 model Store {
-  id        String   @id @default(cuid())
-  slug      String   @unique
-  name      String
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  users     User[]
-  products  Product[]
+  id              String    @id @default(cuid())
+  slug            String    @unique
+  name            String
+  logoUrl         String?
+  logoUploadedKey String?
+  isActive        Boolean   @default(true)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  users           User[]
+  products        Product[]
+  saleOrders      SaleOrder[]
 }
 
 model Product {
@@ -49,6 +72,7 @@ model Product {
   updatedAt   DateTime @updatedAt
   storeId     String
   store       Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  saleItems   SaleOrderItem[]
 
   @@unique([storeId, code])
   @@index([storeId, updatedAt])
@@ -72,9 +96,50 @@ model User {
   sessions        Session[]
   auditLogs       AuditLog[]
   loginChallenges LoginChallenge[]
+  saleOrders      SaleOrder[]
 
   @@index([platformRole])
   @@index([storeId, storeRole])
+}
+
+model SaleOrder {
+  id              String          @id @default(cuid())
+  code            String
+  status          SaleStatus      @default(PAID)
+  paymentMethod   PaymentMethod
+  subtotal        Int
+  discount        Int             @default(0)
+  tax             Int             @default(0)
+  total           Int
+  note            String?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  storeId         String
+  store           Store           @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  createdByUserId String
+  createdBy       User            @relation(fields: [createdByUserId], references: [id], onDelete: Restrict)
+  items           SaleOrderItem[]
+
+  @@unique([storeId, code])
+  @@index([storeId, createdAt])
+  @@index([createdByUserId, createdAt])
+}
+
+model SaleOrderItem {
+  id              String    @id @default(cuid())
+  quantity        Int
+  unitPrice       Int
+  lineTotal       Int
+  productId       String?
+  product         Product?  @relation(fields: [productId], references: [id], onDelete: SetNull)
+  productCode     String
+  productName     String
+  productCategory String
+  orderId         String
+  order           SaleOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+  @@index([productId])
 }
 
 model Session {

@@ -60,9 +60,22 @@ function validateUploadRequest({ fileName, contentType, contentLength }) {
   };
 }
 
-async function createPresignedUpload({ fileName, contentType, contentLength }) {
+function normalizeObjectPrefix(prefix) {
+  if (!prefix) {
+    return "uploads";
+  }
+
+  return prefix
+    .split("/")
+    .map((part) => part.trim())
+    .filter(Boolean)
+    .join("/");
+}
+
+async function createPresignedUpload({ fileName, contentType, contentLength }, { prefix } = {}) {
   const validated = validateUploadRequest({ fileName, contentType, contentLength });
-  const objectKey = `uploads/${crypto.randomUUID()}.${validated.extension}`;
+  const objectPrefix = normalizeObjectPrefix(prefix);
+  const objectKey = `${objectPrefix}/${crypto.randomUUID()}.${validated.extension}`;
   const command = new PutObjectCommand({
     Bucket: env.R2_BUCKET,
     Key: objectKey,
@@ -105,5 +118,6 @@ module.exports = {
   isR2Configured, 
   createPresignedUpload, 
   validateUploadRequest,
+  normalizeObjectPrefix,
   deleteR2Object,
 };

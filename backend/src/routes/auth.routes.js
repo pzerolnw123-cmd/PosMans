@@ -16,7 +16,9 @@ const { issueCsrfToken, setCsrfCookie, clearCsrfCookie } = require("../utils/csr
 const { writeAuditLog } = require("../utils/audit");
 const { requireAuth, requireStoreRole } = require("../middleware/auth");
 const { requireTrustedOrigin, requireCsrf } = require("../middleware/security");
-const { assertSafePlainText } = require("../utils/xss");
+const { deleteR2Object } = require("../lib/r2");
+const { AppError } = require("../utils/app-error");
+const { assertSafePlainText, safeUrlSchema } = require("../utils/xss");
 const { env } = require("../config/env");
 
 const router = express.Router();
@@ -61,6 +63,34 @@ const ownerProfileSchema = z
       .transform((value) => assertSafePlainText(value, "ownerName")),
   })
   .strict();
+
+const ownerLogoSchema = z
+  .object({
+    logoUrl: safeUrlSchema("logoUrl"),
+    uploadedKey: z.string().min(1).max(255),
+  })
+  .strict();
+
+function ownerUploadPrefix(storeId) {
+  return `stores/${storeId}/uploads/`;
+}
+
+function assertOwnedUploadedKey(storeId, uploadedKey) {
+  if (!uploadedKey.startsWith(ownerUploadPrefix(storeId))) {
+    throw new AppError("Uploaded file does not belong to this store", 403, { code: "UPLOAD_SCOPE_MISMATCH" });
+  }
+}
+
+function assertUrlMatchesUploadedKey(uploadedKey, publicUrl) {
+  if (!env.R2_PUBLIC_BASE_URL) {
+    return;
+  }
+
+  const expectedUrl = `${env.R2_PUBLIC_BASE_URL.replace(/\/$/, "")}/${uploadedKey}`;
+  if (publicUrl !== expectedUrl) {
+    throw new AppError("Logo URL does not match uploaded file", 400, { code: "UPLOAD_URL_MISMATCH" });
+  }
+}
 
 function loginChallengeCookieOptions(expiresAt) {
   return {
@@ -112,6 +142,8 @@ async function getLoginChallenge(token) {
               id: true,
               name: true,
               slug: true,
+              logoUrl: true,
+              logoUploadedKey: true,
               isActive: true,
             },
           },
@@ -154,6 +186,8 @@ function buildPublicUser(user) {
           id: user.store.id,
           name: user.store.name,
           slug: user.store.slug,
+          logoUrl: user.store.logoUrl,
+          logoUploadedKey: user.store.logoUploadedKey,
         }
       : null,
   };
@@ -214,6 +248,8 @@ router.post("/login", requireTrustedOrigin, requireCsrf, ipLoginLimiter, account
             id: true,
             name: true,
             slug: true,
+            logoUrl: true,
+            logoUploadedKey: true,
             isActive: true,
           },
         },
@@ -494,7 +530,7 @@ router.patch("/owner-profile", requireTrustedOrigin, requireCsrf, requireStoreRo
       prisma.store.update({
         where: { id: storeId },
         data: { name: parsed.storeName },
-        select: { id: true, name: true, slug: true },
+        select: { id: true, name: true, slug: true, logoUrl: true, logoUploadedKey: true },
       }),
       prisma.user.update({
         where: { id: req.session.user.id },
@@ -502,6 +538,17 @@ router.patch("/owner-profile", requireTrustedOrigin, requireCsrf, requireStoreRo
         select: { id: true, displayName: true },
       }),
     ]);
+
+    await writeAuditLog({
+      action: "STORE_PROFILE_UPDATED",
+      actorUserId: req.session.user.id,
+      status: "success",
+      ipAddress: req.ip,
+      userAgent: req.get("user-agent") || null,
+      targetType: "store",
+      targetId: storeId,
+      metadata: { storeName: store.name, ownerUserId: user.id },
+    });
 
     res.set("Cache-Control", "no-store");
     res.json({
@@ -512,6 +559,53 @@ router.patch("/owner-profile", requireTrustedOrigin, requireCsrf, requireStoreRo
         store,
       },
     });
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.patch("/owner-logo", requireTrustedOrigin, requireCsrf, requireStoreRole(["OWNER"]), async (req, res, next) => {
+  try {
+    const parsed = ownerLogoSchema.parse(req.body);
+    const storeId = req.session.user.storeId;
+    assertOwnedUploadedKey(storeId, parsed.uploadedKey);
+    assertUrlMatchesUploadedKey(parsed.uploadedKey, parsed.logoUrl);
+
+    const existingStore = await prisma.store.findUnique({
+      where: { id: storeId },
+      select: { id: true, logoUploadedKey: true },
+    });
+
+    if (!existingStore) {
+      return res.status(404).json({ error: "Store not found" });
+    }
+
+    const store = await prisma.store.update({
+      where: { id: storeId },
+      data: {
+        logoUrl: parsed.logoUrl,
+        logoUploadedKey: parsed.uploadedKey,
+      },
+      select: { id: true, name: true, slug: true, logoUrl: true, logoUploadedKey: true },
+    });
+
+    if (existingStore.logoUploadedKey && existingStore.logoUploadedKey !== parsed.uploadedKey) {
+      await deleteR2Object(existingStore.logoUploadedKey);
+    }
+
+    await writeAuditLog({
+      action: "STORE_LOGO_UPDATED",
+      actorUserId: req.session.user.id,
+      status: "success",
+      ipAddress: req.ip,
+      userAgent: req.get("user-agent") || null,
+      targetType: "store",
+      targetId: storeId,
+      metadata: { uploadedKey: parsed.uploadedKey },
+    });
+
+    res.set("Cache-Control", "no-store");
+    res.json({ success: true, store });
   } catch (error) {
     next(error);
   }

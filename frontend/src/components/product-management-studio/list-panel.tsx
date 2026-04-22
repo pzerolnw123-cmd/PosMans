@@ -31,7 +31,7 @@ export function ProductListPanel({
 }: ProductListPanelProps) {
   return (
     <div className="ml-auto grid w-[96%] gap-3 self-start max-[1180px]:w-full">
-      <section className="grid grid-rows-[auto_auto_auto] self-start overflow-hidden rounded-[18px] border border-[var(--border)] bg-[rgba(22,27,38,0.76)] px-5 py-[18px] shadow-[var(--shadow-soft)] backdrop-blur-[14px] max-[1180px]:px-4 max-[1180px]:py-4">
+      <section className="grid grid-rows-[auto_auto_auto] self-start overflow-hidden rounded-none border border-[var(--border)] bg-[rgba(22,27,38,0.76)] px-5 py-[18px] shadow-[var(--shadow-soft)] backdrop-blur-[14px] max-[1180px]:px-4 max-[1180px]:py-4">
         <div className="flex items-start justify-between gap-3 max-[720px]:flex-col max-[720px]:items-stretch">
           <div>
             <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[#6b7a94]">รายการสินค้าทั้งหมด</p>

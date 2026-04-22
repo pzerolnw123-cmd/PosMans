@@ -2,6 +2,7 @@ const express = require("express");
 const { z } = require("zod");
 const { requireAccess } = require("../middleware/auth");
 const { requireTrustedOrigin, requireCsrf } = require("../middleware/security");
+const { uploadSigningLimiter } = require("../middleware/rate-limiters");
 const { createPresignedUpload, isR2Configured } = require("../lib/r2");
 const { writeAuditLog } = require("../utils/audit");
 const { safeTextSchema } = require("../utils/xss");
@@ -14,8 +15,21 @@ const uploadSchema = z.object({
   contentLength: z.number().int().positive(),
 });
 
+function uploadPrefixForSession(session) {
+  if (session.user.storeRole === "OWNER" && session.user.storeId) {
+    return `stores/${session.user.storeId}/uploads`;
+  }
+
+  if (session.user.platformRole === "SUPER_ADMIN") {
+    return `platform/super-admin/${session.user.id}/uploads`;
+  }
+
+  return null;
+}
+
 router.post(
   "/sign",
+  uploadSigningLimiter,
   requireTrustedOrigin,
   requireCsrf,
   requireAccess({ platformRoles: ["SUPER_ADMIN"], storeRoles: ["OWNER"] }),
@@ -27,7 +41,12 @@ router.post(
         return res.status(503).json({ error: "R2 is not configured" });
       }
 
-      const signedUpload = await createPresignedUpload(parsed);
+      const prefix = uploadPrefixForSession(req.session);
+      if (!prefix) {
+        return res.status(403).json({ error: "Upload scope is required" });
+      }
+
+      const signedUpload = await createPresignedUpload(parsed, { prefix });
       await writeAuditLog({
         action: "UPLOAD_POLICY_ISSUED",
         actorUserId: req.session.user.id,
@@ -37,6 +56,8 @@ router.post(
         targetType: "upload",
         targetId: signedUpload.objectKey,
         metadata: {
+          scope: prefix,
+          storeId: req.session.user.storeId || null,
           contentType: parsed.contentType,
           contentLength: parsed.contentLength,
         },

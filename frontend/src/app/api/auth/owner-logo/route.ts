@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
 import { buildBackendHeaders, copyBackendCookies, proxyToBackend } from "@/lib/proxy";
 
-export async function POST(request: Request) {
+export async function PATCH(request: Request) {
   const body = await request.text();
-  const response = await proxyToBackend("/api/uploads/sign", {
-    method: "POST",
-    headers: buildBackendHeaders(request, { csrf: true, contentType: true, refererPath: "/owner" }),
+  const response = await proxyToBackend("/api/auth/owner-logo", {
+    method: "PATCH",
+    headers: buildBackendHeaders(request, { csrf: true, contentType: true, refererPath: "/owner/settings" }),
     body,
   });
 

@@ -1,14 +1,11 @@
 import { NextResponse } from "next/server";
-import { copyBackendCookies, proxyToBackend } from "@/lib/proxy";
+import { buildBackendHeaders, copyBackendCookies, proxyToBackend } from "@/lib/proxy";
 
 export async function GET(request: Request) {
   const url = new URL(request.url);
   const response = await proxyToBackend(`/api/products${url.search}`, {
     method: "GET",
-    headers: {
-      origin: "http://localhost:3000",
-      referer: "http://localhost:3000/owner/menu",
-    },
+    headers: buildBackendHeaders(request, { refererPath: "/owner/menu" }),
   });
 
   const text = await response.text();
@@ -28,12 +25,7 @@ export async function POST(request: Request) {
   const body = await request.text();
   const response = await proxyToBackend("/api/products", {
     method: "POST",
-    headers: {
-      "content-type": request.headers.get("content-type") || "application/json",
-      "x-csrf-token": request.headers.get("x-csrf-token") || "",
-      origin: request.headers.get("origin") || "http://localhost:3000",
-      referer: request.headers.get("referer") || "http://localhost:3000/owner/menu",
-    },
+    headers: buildBackendHeaders(request, { csrf: true, contentType: true, refererPath: "/owner/menu" }),
     body,
   });
 

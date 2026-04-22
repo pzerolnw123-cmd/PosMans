@@ -197,3 +197,18 @@ Before merging a security-relevant change, check:
 - dependencies are justified
 - tests cover the changed behavior
 - risky assumptions are documented
+
+## 17. POS Production Hardening Checklist
+
+Before deploying the POS app for real stores:
+- Use HTTPS for the frontend and backend, and set `FRONTEND_URL` / `BACKEND_URL` to production HTTPS origins.
+- Use a unique `SESSION_SECRET` with at least 32 random characters; never reuse the development example value.
+- Keep session cookies `httpOnly`, `sameSite=lax`, and `secure` in production.
+- Keep CORS and CSP allowlists limited to the production frontend, backend, R2 endpoint, and public image host.
+- Configure R2 completely: endpoint, bucket, access key, secret key, and public base URL. Do not allow direct public writes; writes must go through short-lived signed upload URLs.
+- Store tenant uploads under scoped prefixes such as `stores/{storeId}/uploads/...`.
+- Keep sale validation on the backend. Do not trust client subtotal, price, product status, discount, or tax.
+- Configure sale and upload rate limits with environment variables appropriate for the deployment size.
+- Keep audit logs enabled and set `AUDIT_LOG_RETENTION_DAYS` to the retention policy required by the business.
+- Enable database backups and restore testing with the hosting provider. Verify that backups include the production database and that restores are periodically tested.
+- Add deployment monitoring for failed login spikes, upload spikes, checkout errors, backend 5xx rates, database errors, and audit-log write failures.

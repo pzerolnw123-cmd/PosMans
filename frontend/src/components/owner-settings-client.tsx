@@ -5,7 +5,15 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useBackofficeShellAlert } from "@/components/backoffice-shell";
 import { CropModal } from "@/components/product-management-studio/crop-modal";
-import { clampOffset, createCroppedBlob, createImageObjectUrl, CROP_VIEWPORT_SIZE, loadImage } from "@/components/product-management-studio/lib";
+import {
+  clampOffset,
+  createCroppedBlob,
+  createImageObjectUrl,
+  CROP_VIEWPORT_SIZE,
+  loadImage,
+  requestSignedUpload,
+  uploadBlobToR2,
+} from "@/components/product-management-studio/lib";
 import type { CropDraft } from "@/components/product-management-studio/types";
 import { ensureCsrfToken } from "@/lib/csrf";
 
@@ -39,25 +47,22 @@ type OwnerLogoContextValue = {
   setPreviewUrl: (url: string) => void;
   saved: boolean;
   setSaved: (saved: boolean) => void;
-  savePreviewUrl: () => boolean;
+  setSavedLogo: (url: string) => void;
 };
 
 const OwnerLogoContext = createContext<OwnerLogoContextValue | null>(null);
 
 const logoFileTypes = new Set(["image/png", "image/jpeg", "image/webp"]);
 const maxLogoFileSize = 2 * 1024 * 1024;
-export function OwnerLogoProvider({ children, userId }: { children: ReactNode; userId: string }) {
-  const storageKey = `owner-store-logo-preview-${userId}`;
-  const [previewUrl, setPreviewUrl] = useState("");
-  const [saved, setSaved] = useState(false);
+export function OwnerLogoProvider({ children, initialLogoUrl = "" }: { children: ReactNode; initialLogoUrl?: string | null }) {
+  const normalizedInitialLogoUrl = initialLogoUrl || "";
+  const [previewUrl, setPreviewUrl] = useState(normalizedInitialLogoUrl);
+  const [saved, setSaved] = useState(Boolean(normalizedInitialLogoUrl));
 
   useEffect(() => {
-    const stored = window.localStorage.getItem(storageKey);
-    if (stored) {
-      setPreviewUrl(stored);
-      setSaved(true);
-    }
-  }, [storageKey]);
+    setPreviewUrl(normalizedInitialLogoUrl);
+    setSaved(Boolean(normalizedInitialLogoUrl));
+  }, [normalizedInitialLogoUrl]);
 
   useEffect(() => {
     return () => {
@@ -67,18 +72,13 @@ export function OwnerLogoProvider({ children, userId }: { children: ReactNode; u
     };
   }, [previewUrl]);
 
-  function savePreviewUrl() {
-    if (!previewUrl) {
-      return false;
-    }
-
-    window.localStorage.setItem(storageKey, previewUrl);
+  function setSavedLogo(url: string) {
+    setPreviewUrl(url);
     setSaved(true);
-    return true;
   }
 
   return (
-    <OwnerLogoContext.Provider value={{ previewUrl, setPreviewUrl, saved, setSaved, savePreviewUrl }}>
+    <OwnerLogoContext.Provider value={{ previewUrl, setPreviewUrl, saved, setSaved, setSavedLogo }}>
       {children}
     </OwnerLogoContext.Provider>
   );
@@ -325,13 +325,15 @@ export function OwnerPasswordClient() {
 
 export function OwnerLogoClient({ compact = false }: { compact?: boolean }) {
   const { setShellAlert } = useBackofficeShellAlert();
-  const { previewUrl, setPreviewUrl, saved, setSaved, savePreviewUrl } = useOwnerLogo();
+  const router = useRouter();
+  const { previewUrl, setPreviewUrl, saved, setSaved, setSavedLogo } = useOwnerLogo();
   const [fileName, setFileName] = useState("");
   const [message, setMessage] = useState("");
   const [cropDraft, setCropDraft] = useState<CropDraft | null>(null);
   const [cropZoom, setCropZoom] = useState(1);
   const [cropOffset, setCropOffset] = useState({ x: 0, y: 0 });
   const [cropBusy, setCropBusy] = useState(false);
+  const [pendingLogoBlob, setPendingLogoBlob] = useState<Blob | null>(null);
 
   useEffect(() => {
     return () => {
@@ -406,6 +408,7 @@ export function OwnerLogoClient({ compact = false }: { compact?: boolean }) {
       const nextPreviewUrl = await readBlobAsDataUrl(croppedBlob);
       setPreviewUrl(nextPreviewUrl);
       setSaved(false);
+      setPendingLogoBlob(croppedBlob);
       setFileName(cropDraft.fileName);
       setCropDraft(null);
       setMessage("");
@@ -424,16 +427,47 @@ export function OwnerLogoClient({ compact = false }: { compact?: boolean }) {
     setCropDraft(null);
   }
 
-  function handleLogoSave() {
+  async function handleLogoSave() {
     try {
-      if (!savePreviewUrl()) {
+      if (!previewUrl || !pendingLogoBlob) {
         setShellAlert({ message: "เลือกรูปภาพโลโก้ก่อนบันทึก", tone: "danger" });
         return;
       }
 
+      const signedUpload = await requestSignedUpload(`store-logo-${Date.now()}.webp`, "image/webp", pendingLogoBlob.size);
+      await uploadBlobToR2(signedUpload, pendingLogoBlob);
+
+      if (!signedUpload.publicUrl) {
+        throw new Error("ยังไม่มี public URL สำหรับโลโก้ร้าน");
+      }
+
+      const csrfToken = await ensureCsrfToken();
+      const response = await fetch("/api/auth/owner-logo", {
+        method: "PATCH",
+        credentials: "same-origin",
+        headers: {
+          "content-type": "application/json",
+          "x-csrf-token": csrfToken || "",
+        },
+        body: JSON.stringify({
+          logoUrl: signedUpload.publicUrl,
+          uploadedKey: signedUpload.objectKey,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(await readApiMessage(response, "บันทึกรูปภาพโลโก้ร้านไม่สำเร็จ"));
+      }
+
+      setSavedLogo(signedUpload.publicUrl);
+      setPendingLogoBlob(null);
       setShellAlert({ message: "บันทึกรูปภาพโลโก้ร้านแล้ว", tone: "success" });
-    } catch {
-      setShellAlert({ message: "บันทึกรูปภาพโลโก้ร้านในเครื่องนี้ไม่สำเร็จ", tone: "danger" });
+      router.refresh();
+    } catch (error) {
+      setShellAlert({
+        message: error instanceof Error ? error.message : "บันทึกรูปภาพโลโก้ร้านไม่สำเร็จ",
+        tone: "danger",
+      });
     }
   }
 

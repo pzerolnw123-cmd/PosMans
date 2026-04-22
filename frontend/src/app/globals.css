@@ -69,6 +69,23 @@ main {
   position: relative;
 }
 
+.sales-cart-scroll {
+  scrollbar-width: none;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+  overflow-x: hidden;
+}
+
+.sales-cart-scroll::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+.sales-cart-scroll[data-dragging="true"] {
+  cursor: grabbing;
+  scroll-behavior: auto;
+}
+
 .app-loader {
   width: var(--loader-size, 48px);
   height: var(--loader-size, 48px);
@@ -90,5 +107,75 @@ main {
 
   100% {
     transform: rotate(360deg);
+  }
+}
+
+@keyframes cart-card-pop {
+  0% {
+    transform: translateY(0) scale(1);
+    box-shadow: rgba(240, 106, 223, 0) 0 0 0 0;
+  }
+
+  38% {
+    transform: translateY(-5px) scale(1.018);
+    box-shadow: rgba(240, 106, 223, 0.28) 0 18px 34px;
+  }
+
+  100% {
+    transform: translateY(0) scale(1);
+    box-shadow: rgba(240, 106, 223, 0.12) 0 10px 24px;
+  }
+}
+
+@keyframes cart-float {
+  0% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.86);
+  }
+
+  22% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateY(-26px) scale(0.96);
+  }
+}
+
+@keyframes cart-panel-pulse {
+  0% {
+    box-shadow: rgba(240, 106, 223, 0) 0 0 0 0;
+  }
+
+  44% {
+    box-shadow:
+      rgba(240, 106, 223, 0.2) 0 0 0 1px,
+      rgba(240, 106, 223, 0.2) 0 18px 42px;
+  }
+
+  100% {
+    box-shadow: var(--shadow-soft);
+  }
+}
+
+@keyframes cart-row-enter {
+  0% {
+    opacity: 0;
+    transform: translateY(8px);
+    box-shadow: rgba(240, 106, 223, 0) 0 0 0;
+  }
+
+  55% {
+    opacity: 1;
+    transform: translateY(0);
+    box-shadow: rgba(240, 106, 223, 0.16) 0 10px 22px;
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+    box-shadow: rgba(240, 106, 223, 0.1) 0 6px 16px;
   }
 }

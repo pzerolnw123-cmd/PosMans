@@ -93,7 +93,7 @@ function renderSuperAdminScreen(activeSection: SuperAdminSectionKey) {
       body: (
         <SectionGrid>
           <PanelCard eyebrow="Core Metrics" title="ตัวชี้วัดระบบ" description="สรุปภาพกว้างของ platform" className="px-[18px] py-4">
-            <ThreeUpStats items={[["ร้านทั้งหมด", "48"], ["Owner accounts", "61"], ["Active sessions", "132"]]} />
+            <ThreeUpStats items={[["ร้านทั้งหมด", "รอเชื่อม API"], ["Owner accounts", "รอเชื่อม API"], ["Active sessions", "รอเชื่อม API"]]} />
           </PanelCard>
 
           <PanelCard eyebrow="Watch List" title="สิ่งที่ควรจับตา" description="รายการที่เกี่ยวกับ platform ไม่ปนกับ workflow หน้าร้าน" className="px-[18px] py-4">
@@ -118,9 +118,7 @@ function renderSuperAdminScreen(activeSection: SuperAdminSectionKey) {
           <PanelCard eyebrow="Store Status" title="สถานะร้านล่าสุด" description="รายการร้านที่ต้องติดตาม" className="px-[18px] py-4">
             <ListStack
               items={[
-                { title: "FastManFoods", subtitle: "Owner 1", value: <StatusPill tone="success">Active</StatusPill> },
-                { title: "Noodle Lab", subtitle: "Owner 2", value: <StatusPill>Pending</StatusPill> },
-                { title: "Rice Story", subtitle: "Owner 1", value: <StatusPill>Suspended</StatusPill> },
+                { title: "Store directory", subtitle: "ยังไม่เชื่อม API รายการร้านจริง", value: <StatusPill>Pending API</StatusPill> },
               ]}
             />
           </PanelCard>
@@ -135,15 +133,13 @@ function renderSuperAdminScreen(activeSection: SuperAdminSectionKey) {
       eyebrow: "Identity Control",
       title: "เจ้าของร้าน",
       description: "ใช้จัดการ owner account, role binding และการเข้าถึงร้านในระดับ platform",
-      actions: <StatusPill>61 owner accounts</StatusPill>,
+      actions: <StatusPill>Pending API</StatusPill>,
       body: (
         <SectionGrid>
           <PanelCard eyebrow="Owner Accounts" title="บัญชีล่าสุด" description="ตัวอย่างบัญชีที่ผูกกับ tenant ต่าง ๆ" className="px-[18px] py-4">
             <ListStack
               items={[
-                { title: "owner.fastmanfoods", subtitle: "FastManFoods", value: <StatusPill>Active</StatusPill> },
-                { title: "owner.noodlelab", subtitle: "Noodle Lab", value: <StatusPill>Invite pending</StatusPill> },
-                { title: "owner.ricestory", subtitle: "Rice Story", value: <StatusPill>Active</StatusPill> },
+                { title: "Owner directory", subtitle: "ยังไม่เชื่อม API บัญชีเจ้าของร้านจริง", value: <StatusPill>Pending API</StatusPill> },
               ]}
             />
           </PanelCard>
@@ -193,9 +189,7 @@ function renderSuperAdminScreen(activeSection: SuperAdminSectionKey) {
           <PanelCard eyebrow="Latest Events" title="เหตุการณ์ล่าสุด" description="ดู action ที่สำคัญแบบย่อ" className="px-[18px] py-4">
             <ListStack
               items={[
-                { title: "LOGIN_SUCCEEDED", subtitle: "owner.fastmanfoods", value: <StatusPill>success</StatusPill> },
-                { title: "UPLOAD_POLICY_ISSUED", subtitle: "superadmin", value: <StatusPill>success</StatusPill> },
-                { title: "LOGIN_FAILED", subtitle: "owner.noodlelab", value: <StatusPill>denied</StatusPill> },
+                { title: "Audit API", subtitle: "ยังไม่เชื่อม endpoint สำหรับอ่าน audit log จริง", value: <StatusPill>Pending API</StatusPill> },
               ]}
             />
           </PanelCard>
@@ -260,6 +254,7 @@ export function SuperAdminWorkspace({ session, activeSection }: SuperAdminWorksp
           profileName={displayName}
           profileSubtitle="Superadmin"
           profileMeta="Platform access · Root control"
+          profileRole="SUPER ADMIN"
           profileStatus="ออนไลน์"
           profileAction={<LogoutButton />}
         >

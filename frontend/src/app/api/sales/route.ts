@@ -3,9 +3,9 @@ import { buildBackendHeaders, copyBackendCookies, proxyToBackend } from "@/lib/p
 
 export async function POST(request: Request) {
   const body = await request.text();
-  const response = await proxyToBackend("/api/uploads/sign", {
+  const response = await proxyToBackend("/api/sales", {
     method: "POST",
-    headers: buildBackendHeaders(request, { csrf: true, contentType: true, refererPath: "/owner" }),
+    headers: buildBackendHeaders(request, { csrf: true, contentType: true, refererPath: "/owner/sales" }),
     body,
   });
 

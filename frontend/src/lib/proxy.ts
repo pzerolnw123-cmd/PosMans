@@ -1,6 +1,9 @@
 import { backendUrl } from "@/lib/api";
 import { cookies } from "next/headers";
 
+const frontendUrl = process.env.FRONTEND_URL || process.env.NEXT_PUBLIC_FRONTEND_URL || "http://localhost:3000";
+const frontendOrigin = new URL(frontendUrl).origin;
+
 export async function proxyToBackend(path: string, init?: RequestInit) {
   const cookieStore = await cookies();
   const cookieHeader = cookieStore
@@ -18,6 +21,36 @@ export async function proxyToBackend(path: string, init?: RequestInit) {
     headers,
     cache: "no-store",
   });
+}
+
+export function buildBackendHeaders(
+  request: Request,
+  {
+    csrf = false,
+    contentType = false,
+    refererPath = "/",
+  }: {
+    csrf?: boolean;
+    contentType?: boolean;
+    refererPath?: string;
+  } = {},
+) {
+  const headers = new Headers();
+  const requestOrigin = request.headers.get("origin");
+  const requestReferer = request.headers.get("referer");
+
+  if (contentType) {
+    headers.set("content-type", request.headers.get("content-type") || "application/json");
+  }
+
+  if (csrf) {
+    headers.set("x-csrf-token", request.headers.get("x-csrf-token") || "");
+  }
+
+  headers.set("origin", requestOrigin || frontendOrigin);
+  headers.set("referer", requestReferer || new URL(refererPath, frontendOrigin).toString());
+
+  return headers;
 }
 
 export function copyBackendCookies(from: Response, to: Headers) {

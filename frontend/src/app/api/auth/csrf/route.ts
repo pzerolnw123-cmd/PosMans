@@ -1,13 +1,10 @@
 import { NextResponse } from "next/server";
-import { copyBackendCookies, proxyToBackend } from "@/lib/proxy";
+import { buildBackendHeaders, copyBackendCookies, proxyToBackend } from "@/lib/proxy";
 
 export async function GET(request: Request) {
   const response = await proxyToBackend("/api/auth/csrf", {
     method: "GET",
-    headers: {
-      origin: request.headers.get("origin") || "http://localhost:3000",
-      referer: request.headers.get("referer") || "http://localhost:3000/login",
-    },
+    headers: buildBackendHeaders(request, { refererPath: "/login" }),
   });
 
   const text = await response.text();

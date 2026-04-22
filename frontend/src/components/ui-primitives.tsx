@@ -56,7 +56,7 @@ export function PageHeader({
 }) {
   return (
     <div
-      className={`flex h-[156px] min-h-[156px] max-h-[156px] items-start justify-between overflow-hidden rounded-[20px] border border-[var(--border)] bg-[rgba(22,27,38,0.85)] px-5 py-6 shadow-[var(--shadow-soft)] max-[1180px]:h-auto max-[1180px]:min-h-[156px] max-[720px]:flex-col max-[720px]:items-stretch max-[720px]:gap-4 ${className}`.trim()}
+      className={`flex h-[156px] min-h-[156px] max-h-[156px] items-start justify-between overflow-hidden rounded-none border border-[var(--border)] bg-[rgba(22,27,38,0.85)] px-5 py-6 shadow-[var(--shadow-soft)] max-[1180px]:h-auto max-[1180px]:min-h-[156px] max-[720px]:flex-col max-[720px]:items-stretch max-[720px]:gap-4 ${className}`.trim()}
     >
       <div>
         <p className={eyebrowTextClass}>{eyebrow}</p>

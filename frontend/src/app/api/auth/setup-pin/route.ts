@@ -1,16 +1,11 @@
 import { NextResponse } from "next/server";
-import { copyBackendCookies, proxyToBackend } from "@/lib/proxy";
+import { buildBackendHeaders, copyBackendCookies, proxyToBackend } from "@/lib/proxy";
 
 export async function POST(request: Request) {
   const body = await request.text();
   const response = await proxyToBackend("/api/auth/setup-pin", {
     method: "POST",
-    headers: {
-      "content-type": request.headers.get("content-type") || "application/json",
-      "x-csrf-token": request.headers.get("x-csrf-token") || "",
-      origin: request.headers.get("origin") || "http://localhost:3000",
-      referer: request.headers.get("referer") || "http://localhost:3000/login",
-    },
+    headers: buildBackendHeaders(request, { csrf: true, contentType: true, refererPath: "/login" }),
     body,
   });
 

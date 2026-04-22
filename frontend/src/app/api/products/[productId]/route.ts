@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { copyBackendCookies, proxyToBackend } from "@/lib/proxy";
+import { buildBackendHeaders, copyBackendCookies, proxyToBackend } from "@/lib/proxy";
 
 type RouteContext = {
   params: Promise<{ productId: string }>;
@@ -10,12 +10,7 @@ export async function PATCH(request: Request, context: RouteContext) {
   const body = await request.text();
   const response = await proxyToBackend(`/api/products/${productId}`, {
     method: "PATCH",
-    headers: {
-      "content-type": request.headers.get("content-type") || "application/json",
-      "x-csrf-token": request.headers.get("x-csrf-token") || "",
-      origin: request.headers.get("origin") || "http://localhost:3000",
-      referer: request.headers.get("referer") || "http://localhost:3000/owner/menu",
-    },
+    headers: buildBackendHeaders(request, { csrf: true, contentType: true, refererPath: "/owner/menu" }),
     body,
   });
 
@@ -36,11 +31,7 @@ export async function DELETE(request: Request, context: RouteContext) {
   const { productId } = await context.params;
   const response = await proxyToBackend(`/api/products/${productId}`, {
     method: "DELETE",
-    headers: {
-      "x-csrf-token": request.headers.get("x-csrf-token") || "",
-      origin: request.headers.get("origin") || "http://localhost:3000",
-      referer: request.headers.get("referer") || "http://localhost:3000/owner/menu",
-    },
+    headers: buildBackendHeaders(request, { csrf: true, refererPath: "/owner/menu" }),
   });
 
   const headers = new Headers({

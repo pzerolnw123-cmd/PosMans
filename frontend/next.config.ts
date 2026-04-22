@@ -32,13 +32,66 @@ const imageRemotePatterns = imageRemoteOrigins.flatMap((origin) => {
   }
 });
 
+const cspSourceFromOrigin = (origin: string | null | undefined) => {
+  if (!origin) {
+    return null;
+  }
+
+  try {
+    const url = new URL(origin);
+    if (!["http:", "https:"].includes(url.protocol)) {
+      return null;
+    }
+
+    return `${url.protocol}//${url.host}`;
+  } catch {
+    return null;
+  }
+};
+
+const uniqueSources = (sources: Array<string | null | undefined>) => Array.from(new Set(sources.filter(Boolean)));
+const isLocalHttpUrl = (url: URL) => url.protocol === "http:" && ["localhost", "127.0.0.1", "::1"].includes(url.hostname);
+
+const backendSource = cspSourceFromOrigin(process.env.BACKEND_URL || "http://localhost:4000");
+const imageSources = uniqueSources(imageRemoteOrigins.map(cspSourceFromOrigin));
+const uploadSources = uniqueSources([
+  process.env.R2_ENDPOINT,
+  process.env.NEXT_PUBLIC_R2_ENDPOINT,
+  process.env.R2_PUBLIC_BASE_URL,
+  process.env.NEXT_PUBLIC_R2_PUBLIC_BASE_URL,
+  isDev ? "https://*.r2.cloudflarestorage.com" : null,
+].map(cspSourceFromOrigin));
+const connectSources = uniqueSources(["'self'", backendSource, ...uploadSources, ...(isDev ? ["ws:", "wss:"] : [])]);
+
+if (!isDev) {
+  const backendUrl = process.env.BACKEND_URL;
+  if (backendUrl) {
+    const parsedBackendUrl = new URL(backendUrl);
+    if (parsedBackendUrl.protocol !== "https:" && !isLocalHttpUrl(parsedBackendUrl)) {
+      throw new Error("BACKEND_URL must use HTTPS in production");
+    }
+  }
+
+  const insecureImageOrigin = imageRemoteOrigins.find((origin) => {
+    try {
+      const parsedOrigin = new URL(origin);
+      return parsedOrigin.protocol !== "https:" && !isLocalHttpUrl(parsedOrigin);
+    } catch {
+      return true;
+    }
+  });
+  if (insecureImageOrigin) {
+    throw new Error("Image remote origins must use HTTPS in production");
+  }
+}
+
 const contentSecurityPolicy = [
   "default-src 'self'",
   `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""}`,
   "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: blob: https:",
+  `img-src ${uniqueSources(["'self'", "data:", "blob:", ...imageSources]).join(" ")}`,
   "font-src 'self' data:",
-  "connect-src 'self' https: http:" + (isDev ? " ws: wss:" : ""),
+  `connect-src ${connectSources.join(" ")}`,
   "object-src 'none'",
   "base-uri 'self'",
   "form-action 'self'",

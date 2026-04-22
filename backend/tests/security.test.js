@@ -7,6 +7,7 @@ jest.mock("../src/lib/db", () => ({
       update: jest.fn(),
     },
     store: {
+      findUnique: jest.fn(),
       update: jest.fn(),
     },
     session: {
@@ -22,6 +23,7 @@ jest.mock("../src/lib/db", () => ({
     },
     auditLog: {
       create: jest.fn(),
+      deleteMany: jest.fn(),
     },
     product: {
       count: jest.fn(),
@@ -31,8 +33,11 @@ jest.mock("../src/lib/db", () => ({
       update: jest.fn(),
       delete: jest.fn(),
     },
+    saleOrder: {
+      create: jest.fn(),
+    },
     $queryRaw: jest.fn(),
-    $transaction: jest.fn((operations) => Promise.all(operations)),
+    $transaction: jest.fn(),
   },
 }));
 
@@ -44,8 +49,15 @@ jest.mock("../src/utils/password", () => ({
   verifyPin: jest.fn(),
 }));
 
+jest.mock("../src/lib/r2", () => ({
+  isR2Configured: jest.fn(() => false),
+  createPresignedUpload: jest.fn(),
+  deleteR2Object: jest.fn(),
+}));
+
 const { prisma } = require("../src/lib/db");
 const { hashPassword, hashPin, verifyPassword, verifyPin } = require("../src/utils/password");
+const { createPresignedUpload, isR2Configured } = require("../src/lib/r2");
 const { createApp } = require("../src/app");
 const { assertSafeHttpUrl, sanitizeRichText } = require("../src/utils/xss");
 const { Prisma } = require("../src/generated/prisma");
@@ -118,6 +130,7 @@ describe("backend security hardening", () => {
     jest.clearAllMocks();
     prisma.session.deleteMany.mockResolvedValue({ count: 0 });
     prisma.loginChallenge.deleteMany.mockResolvedValue({ count: 0 });
+    prisma.auditLog.deleteMany.mockResolvedValue({ count: 0 });
     prisma.auditLog.create.mockResolvedValue({ id: "audit" });
     prisma.product.count.mockResolvedValue(0);
     prisma.product.findMany.mockResolvedValue([]);
@@ -125,9 +138,34 @@ describe("backend security hardening", () => {
     prisma.product.create.mockResolvedValue({});
     prisma.product.update.mockResolvedValue({});
     prisma.product.delete.mockResolvedValue({});
+    prisma.saleOrder.create.mockResolvedValue({
+      id: "sale-1",
+      code: "SALE-20260422-RE-ABC12",
+      status: "PAID",
+      paymentMethod: "CASH",
+      subtotal: 65,
+      discount: 0,
+      tax: 0,
+      total: 65,
+      note: null,
+      createdAt: new Date("2026-04-22T00:00:00.000Z"),
+      items: [
+        {
+          id: "sale-item-1",
+          productId: "product-1",
+          productCode: "FOOD-001",
+          productName: "ข้าวกะเพรา",
+          productCategory: "อาหาร",
+          quantity: 1,
+          unitPrice: 65,
+          lineTotal: 65,
+        },
+      ],
+    });
+    prisma.store.findUnique.mockResolvedValue({ id: "store-1", logoUploadedKey: null });
     prisma.store.update.mockResolvedValue({ id: "store-1", name: "Demo Store", slug: "demo-store" });
     prisma.$queryRaw.mockResolvedValue([{ maxCode: 0 }]);
-    prisma.$transaction.mockImplementation((operations) => Promise.all(operations));
+    prisma.$transaction.mockImplementation((operations) => (typeof operations === "function" ? operations(prisma) : Promise.all(operations)));
     prisma.session.update.mockResolvedValue({
       id: "session-1",
       createdAt: new Date(Date.now() - 10 * 60_000),
@@ -135,6 +173,17 @@ describe("backend security hardening", () => {
       user: buildSessionUser(),
     });
     prisma.loginChallenge.create.mockResolvedValue({ id: "challenge-1" });
+    isR2Configured.mockReturnValue(false);
+    createPresignedUpload.mockResolvedValue({
+      objectKey: "stores/store-1/uploads/test.webp",
+      upload: {
+        method: "PUT",
+        url: "https://upload.example.com",
+        headers: { "Content-Type": "image/webp" },
+      },
+      maxUploadBytes: 5_242_880,
+      publicUrl: "https://cdn.example.com/stores/store-1/uploads/test.webp",
+    });
     process.env = { ...originalEnv };
   });
 
@@ -309,6 +358,43 @@ describe("backend security hardening", () => {
     expect(response.status).toBe(400);
   });
 
+  test("issues owner upload policies under the current store prefix", async () => {
+    const app = createApp();
+    mockOwnerSession();
+    isR2Configured.mockReturnValue(true);
+
+    const response = await request(app)
+      .post("/api/uploads/sign")
+      .set("Origin", "http://localhost:3000")
+      .set("Cookie", ["pos_mans_session=session-token", "pos_mans_session_csrf=csrf-token"])
+      .set("x-csrf-token", "csrf-token")
+      .send({
+        fileName: "logo.webp",
+        contentType: "image/webp",
+        contentLength: 120,
+      });
+
+    expect(response.status).toBe(200);
+    expect(createPresignedUpload).toHaveBeenCalledWith(
+      {
+        fileName: "logo.webp",
+        contentType: "image/webp",
+        contentLength: 120,
+      },
+      { prefix: "stores/store-1/uploads" },
+    );
+    expect(prisma.auditLog.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        action: "UPLOAD_POLICY_ISSUED",
+        actorUserId: "user-1",
+        metadata: expect.objectContaining({
+          scope: "stores/store-1/uploads",
+          storeId: "store-1",
+        }),
+      }),
+    });
+  });
+
   test("extends active session expiry on authenticated requests when close to expiry", async () => {
     const app = createApp();
     prisma.session.findUnique.mockResolvedValue({
@@ -394,7 +480,7 @@ describe("backend security hardening", () => {
   test("updates owner store name and display name for the current store", async () => {
     const app = createApp();
     mockOwnerSession();
-    prisma.store.update.mockResolvedValue({ id: "store-1", name: "New Store", slug: "demo-store" });
+    prisma.store.update.mockResolvedValue({ id: "store-1", name: "New Store", slug: "demo-store", logoUrl: null, logoUploadedKey: null });
     prisma.user.update.mockResolvedValue({ id: "user-1", displayName: "New Owner" });
 
     const response = await request(app)
@@ -411,7 +497,7 @@ describe("backend security hardening", () => {
     expect(prisma.store.update).toHaveBeenCalledWith({
       where: { id: "store-1" },
       data: { name: "New Store" },
-      select: { id: true, name: true, slug: true },
+      select: { id: true, name: true, slug: true, logoUrl: true, logoUploadedKey: true },
     });
     expect(prisma.user.update).toHaveBeenCalledWith({
       where: { id: "user-1" },
@@ -420,6 +506,66 @@ describe("backend security hardening", () => {
     });
     expect(response.body.user.displayName).toBe("New Owner");
     expect(response.body.user.store.name).toBe("New Store");
+  });
+
+  test("updates owner logo for the current store", async () => {
+    const app = createApp();
+    mockOwnerSession();
+    prisma.store.findUnique.mockResolvedValue({ id: "store-1", logoUploadedKey: null });
+    prisma.store.update.mockResolvedValue({
+      id: "store-1",
+      name: "Demo Store",
+      slug: "demo-store",
+      logoUrl: "https://cdn.example.com/stores/store-1/uploads/logo.webp",
+      logoUploadedKey: "stores/store-1/uploads/logo.webp",
+    });
+
+    const response = await request(app)
+      .patch("/api/auth/owner-logo")
+      .set("Origin", "http://localhost:3000")
+      .set("Cookie", ["pos_mans_session=session-token", "pos_mans_session_csrf=csrf-token"])
+      .set("x-csrf-token", "csrf-token")
+      .send({
+        logoUrl: "https://cdn.example.com/stores/store-1/uploads/logo.webp",
+        uploadedKey: "stores/store-1/uploads/logo.webp",
+      });
+
+    expect(response.status).toBe(200);
+    expect(prisma.store.update).toHaveBeenCalledWith({
+      where: { id: "store-1" },
+      data: {
+        logoUrl: "https://cdn.example.com/stores/store-1/uploads/logo.webp",
+        logoUploadedKey: "stores/store-1/uploads/logo.webp",
+      },
+      select: { id: true, name: true, slug: true, logoUrl: true, logoUploadedKey: true },
+    });
+    expect(prisma.auditLog.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        action: "STORE_LOGO_UPDATED",
+        actorUserId: "user-1",
+        targetType: "store",
+        targetId: "store-1",
+      }),
+    });
+    expect(response.body.store.logoUrl).toBe("https://cdn.example.com/stores/store-1/uploads/logo.webp");
+  });
+
+  test("rejects owner logo uploads outside the current store scope", async () => {
+    const app = createApp();
+    mockOwnerSession();
+
+    const response = await request(app)
+      .patch("/api/auth/owner-logo")
+      .set("Origin", "http://localhost:3000")
+      .set("Cookie", ["pos_mans_session=session-token", "pos_mans_session_csrf=csrf-token"])
+      .set("x-csrf-token", "csrf-token")
+      .send({
+        logoUrl: "https://cdn.example.com/stores/store-2/uploads/logo.webp",
+        uploadedKey: "stores/store-2/uploads/logo.webp",
+      });
+
+    expect(response.status).toBe(403);
+    expect(prisma.store.update).not.toHaveBeenCalled();
   });
 
   test("rejects sessions that exceed the absolute timeout", async () => {
@@ -451,6 +597,37 @@ describe("backend security hardening", () => {
         require("../src/config/env");
       });
     }).toThrow("SESSION_SECRET must be overridden in production");
+  });
+
+  test("rejects insecure frontend url in production", () => {
+    process.env = {
+      ...originalEnv,
+      NODE_ENV: "production",
+      FRONTEND_URL: "http://pos.example.com",
+      DATABASE_URL: "postgresql://db-user:db-pass@db.example.com:5432/app",
+      DIRECT_DATABASE_URL: "postgresql://db-user:db-pass@db.example.com:5432/app",
+      SESSION_SECRET: "production-session-secret-with-more-than-32-chars",
+    };
+
+    expect(() => {
+      jest.isolateModules(() => {
+        require("../src/config/env");
+      });
+    }).toThrow("FRONTEND_URL must use HTTPS in production");
+  });
+
+  test("rejects partial R2 upload configuration", () => {
+    process.env = {
+      ...originalEnv,
+      NODE_ENV: "test",
+      R2_ACCESS_KEY_ID: "key-only",
+    };
+
+    expect(() => {
+      jest.isolateModules(() => {
+        require("../src/config/env");
+      });
+    }).toThrow();
   });
 
   test("allows platform admins to request upload signing", async () => {
@@ -532,7 +709,58 @@ describe("backend security hardening", () => {
 
     expect(response.status).toBe(201);
     expect(prisma.product.create).toHaveBeenCalledTimes(2);
+    expect(prisma.auditLog.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        action: "PRODUCT_CREATED",
+        actorUserId: "user-1",
+        targetType: "product",
+        targetId: "product-2",
+      }),
+    });
     expect(response.body.product.code).toBe("DRINK-003");
+  });
+
+  test("rejects product image uploads outside the current store scope", async () => {
+    const app = createApp();
+    mockOwnerSession();
+
+    const response = await request(app)
+      .post("/api/products")
+      .set("Origin", "http://localhost:3000")
+      .set("Cookie", ["pos_mans_session=session-token", "pos_mans_session_csrf=csrf-token"])
+      .set("x-csrf-token", "csrf-token")
+      .send({
+        name: "รูปผิดร้าน",
+        category: "อาหาร",
+        price: 65,
+        status: "พร้อมขาย",
+        imageUrl: "https://cdn.example.com/stores/store-2/uploads/product.webp",
+        uploadedKey: "stores/store-2/uploads/product.webp",
+      });
+
+    expect(response.status).toBe(403);
+    expect(prisma.product.create).not.toHaveBeenCalled();
+  });
+
+  test("rejects product image urls without an uploaded key", async () => {
+    const app = createApp();
+    mockOwnerSession();
+
+    const response = await request(app)
+      .post("/api/products")
+      .set("Origin", "http://localhost:3000")
+      .set("Cookie", ["pos_mans_session=session-token", "pos_mans_session_csrf=csrf-token"])
+      .set("x-csrf-token", "csrf-token")
+      .send({
+        name: "รูปไม่มี key",
+        category: "อาหาร",
+        price: 65,
+        status: "พร้อมขาย",
+        imageUrl: "https://cdn.example.com/stores/store-1/uploads/product.webp",
+      });
+
+    expect(response.status).toBe(400);
+    expect(prisma.product.create).not.toHaveBeenCalled();
   });
 
   test("rejects product create with invalid price", async () => {
@@ -620,6 +848,174 @@ describe("backend security hardening", () => {
       select: { id: true, uploadedKey: true },
     });
     expect(prisma.product.delete).toHaveBeenCalledWith({ where: { id: "product-1" } });
+  });
+
+  test("creates a paid sale from current store products using server prices", async () => {
+    const app = createApp();
+    mockOwnerSession();
+    prisma.product.findMany.mockResolvedValue([
+      buildProduct({ id: "product-1", price: 65, status: "พร้อมขาย" }),
+      buildProduct({ id: "product-2", code: "DRINK-001", name: "ชาไทย", category: "เครื่องดื่ม", price: 45, status: "พร้อมขาย" }),
+    ]);
+    prisma.saleOrder.create.mockResolvedValue({
+      id: "sale-1",
+      code: "SALE-20260422-RE-ABC12",
+      status: "PAID",
+      paymentMethod: "CASH",
+      subtotal: 175,
+      discount: 0,
+      tax: 0,
+      total: 175,
+      note: null,
+      createdAt: new Date("2026-04-22T00:00:00.000Z"),
+      items: [
+        {
+          id: "sale-item-1",
+          productId: "product-1",
+          productCode: "FOOD-001",
+          productName: "ข้าวกะเพรา",
+          productCategory: "อาหาร",
+          quantity: 2,
+          unitPrice: 65,
+          lineTotal: 130,
+        },
+        {
+          id: "sale-item-2",
+          productId: "product-2",
+          productCode: "DRINK-001",
+          productName: "ชาไทย",
+          productCategory: "เครื่องดื่ม",
+          quantity: 1,
+          unitPrice: 45,
+          lineTotal: 45,
+        },
+      ],
+    });
+
+    const response = await request(app)
+      .post("/api/sales")
+      .set("Origin", "http://localhost:3000")
+      .set("Cookie", ["pos_mans_session=session-token", "pos_mans_session_csrf=csrf-token"])
+      .set("x-csrf-token", "csrf-token")
+      .send({
+        paymentMethod: "CASH",
+        items: [
+          { productId: "product-1", quantity: 2 },
+          { productId: "product-2", quantity: 1 },
+        ],
+      });
+
+    expect(response.status).toBe(201);
+    expect(prisma.product.findMany).toHaveBeenCalledWith({
+      where: { id: { in: ["product-1", "product-2"] }, storeId: "store-1" },
+      select: { id: true, code: true, name: true, category: true, price: true, status: true },
+    });
+    expect(prisma.saleOrder.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          storeId: "store-1",
+          createdByUserId: "user-1",
+          subtotal: 175,
+          total: 175,
+          items: {
+            create: expect.arrayContaining([
+              expect.objectContaining({ productId: "product-1", quantity: 2, unitPrice: 65, lineTotal: 130 }),
+              expect.objectContaining({ productId: "product-2", quantity: 1, unitPrice: 45, lineTotal: 45 }),
+            ]),
+          },
+        }),
+        select: expect.any(Object),
+      }),
+    );
+    expect(prisma.auditLog.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        action: "SALE_CREATED",
+        actorUserId: "user-1",
+        targetType: "saleOrder",
+        targetId: "sale-1",
+      }),
+    });
+    expect(response.body.sale.total).toBe(175);
+  });
+
+  test("rejects sale checkout when a product is outside the current store", async () => {
+    const app = createApp();
+    mockOwnerSession();
+    prisma.product.findMany.mockResolvedValue([]);
+
+    const response = await request(app)
+      .post("/api/sales")
+      .set("Origin", "http://localhost:3000")
+      .set("Cookie", ["pos_mans_session=session-token", "pos_mans_session_csrf=csrf-token"])
+      .set("x-csrf-token", "csrf-token")
+      .send({
+        paymentMethod: "CASH",
+        items: [{ productId: "product-other-store", quantity: 1 }],
+      });
+
+    expect(response.status).toBe(404);
+    expect(prisma.saleOrder.create).not.toHaveBeenCalled();
+  });
+
+  test("rejects sale checkout when a product is closed", async () => {
+    const app = createApp();
+    mockOwnerSession();
+    prisma.product.findMany.mockResolvedValue([buildProduct({ status: "ปิดขาย" })]);
+
+    const response = await request(app)
+      .post("/api/sales")
+      .set("Origin", "http://localhost:3000")
+      .set("Cookie", ["pos_mans_session=session-token", "pos_mans_session_csrf=csrf-token"])
+      .set("x-csrf-token", "csrf-token")
+      .send({
+        paymentMethod: "CASH",
+        items: [{ productId: "product-1", quantity: 1 }],
+      });
+
+    expect(response.status).toBe(409);
+    expect(prisma.saleOrder.create).not.toHaveBeenCalled();
+  });
+
+  test("rejects sale checkout when discount exceeds subtotal", async () => {
+    const app = createApp();
+    mockOwnerSession();
+    prisma.product.findMany.mockResolvedValue([buildProduct({ price: 65, status: "พร้อมขาย" })]);
+
+    const response = await request(app)
+      .post("/api/sales")
+      .set("Origin", "http://localhost:3000")
+      .set("Cookie", ["pos_mans_session=session-token", "pos_mans_session_csrf=csrf-token"])
+      .set("x-csrf-token", "csrf-token")
+      .send({
+        paymentMethod: "CASH",
+        discount: 66,
+        items: [{ productId: "product-1", quantity: 1 }],
+      });
+
+    expect(response.status).toBe(400);
+    expect(response.body.code).toBe("SALE_BAD_DISCOUNT");
+    expect(prisma.saleOrder.create).not.toHaveBeenCalled();
+  });
+
+  test("rejects sale checkout when tax exceeds configured subtotal policy", async () => {
+    const app = createApp();
+    mockOwnerSession();
+    prisma.product.findMany.mockResolvedValue([buildProduct({ price: 65, status: "พร้อมขาย" })]);
+
+    const response = await request(app)
+      .post("/api/sales")
+      .set("Origin", "http://localhost:3000")
+      .set("Cookie", ["pos_mans_session=session-token", "pos_mans_session_csrf=csrf-token"])
+      .set("x-csrf-token", "csrf-token")
+      .send({
+        paymentMethod: "CASH",
+        tax: 66,
+        items: [{ productId: "product-1", quantity: 1 }],
+      });
+
+    expect(response.status).toBe(400);
+    expect(response.body.code).toBe("SALE_BAD_TAX");
+    expect(prisma.saleOrder.create).not.toHaveBeenCalled();
   });
 
   test("rejects javascript urls", () => {

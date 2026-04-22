@@ -2,11 +2,13 @@ const express = require("express");
 const { z } = require("zod");
 const { Prisma } = require("../generated/prisma");
 const { prisma } = require("../lib/db");
+const { env } = require("../config/env");
 const { requireStoreRole, loadSession } = require("../middleware/auth");
 const { requireTrustedOrigin, requireCsrf } = require("../middleware/security");
 const { AppError } = require("../utils/app-error");
 const { safeTextSchema, safeUrlSchema } = require("../utils/xss");
 const { deleteR2Object } = require("../lib/r2");
+const { writeAuditLog } = require("../utils/audit");
 
 const router = express.Router();
 
@@ -79,6 +81,52 @@ const productSelect = {
   imageUrl: true,
   uploadedKey: true,
 };
+
+function ownerUploadPrefix(storeId) {
+  return `stores/${storeId}/uploads/`;
+}
+
+function assertOwnedUploadedKey(storeId, uploadedKey) {
+  if (!uploadedKey) {
+    return;
+  }
+
+  if (!uploadedKey.startsWith(ownerUploadPrefix(storeId))) {
+    throw new AppError("Uploaded file does not belong to this store", 403, { code: "UPLOAD_SCOPE_MISMATCH" });
+  }
+}
+
+function assertImageUrlMatchesUploadedKey(uploadedKey, imageUrl) {
+  if (!uploadedKey || !imageUrl || !env.R2_PUBLIC_BASE_URL) {
+    return;
+  }
+
+  const expectedUrl = `${env.R2_PUBLIC_BASE_URL.replace(/\/$/, "")}/${uploadedKey}`;
+  if (imageUrl !== expectedUrl) {
+    throw new AppError("Image URL does not match uploaded file", 400, { code: "UPLOAD_URL_MISMATCH" });
+  }
+}
+
+function assertUploadPairAndScope(storeId, { imageUrl, uploadedKey }, partial = false) {
+  const imageProvided = imageUrl !== undefined;
+  const keyProvided = uploadedKey !== undefined;
+
+  if (partial && imageProvided !== keyProvided) {
+    throw new AppError("Image URL and uploaded key must be updated together", 400, { code: "UPLOAD_PAIR_REQUIRED" });
+  }
+
+  if (!partial || imageProvided || keyProvided) {
+    const nextImageUrl = imageUrl || null;
+    const nextUploadedKey = uploadedKey || null;
+
+    if (Boolean(nextImageUrl) !== Boolean(nextUploadedKey)) {
+      throw new AppError("Image URL and uploaded key must be saved together", 400, { code: "UPLOAD_PAIR_REQUIRED" });
+    }
+
+    assertOwnedUploadedKey(storeId, nextUploadedKey);
+    assertImageUrlMatchesUploadedKey(nextUploadedKey, nextImageUrl);
+  }
+}
 
 async function requireOwnerStoreId(req, res) {
   const session = await loadSession(req, res);
@@ -192,7 +240,19 @@ router.post("/", requireTrustedOrigin, requireCsrf, requireStoreRole(["OWNER"]),
   try {
     const storeId = await requireOwnerStoreId(req, res);
     const parsed = productCreateSchema.parse(req.body);
+    assertUploadPairAndScope(storeId, parsed);
     const product = await createProductWithUniqueCode(storeId, parsed);
+
+    await writeAuditLog({
+      action: "PRODUCT_CREATED",
+      actorUserId: req.session.user.id,
+      status: "success",
+      ipAddress: req.ip,
+      userAgent: req.get("user-agent") || null,
+      targetType: "product",
+      targetId: product.id,
+      metadata: { storeId, code: product.code, category: product.category },
+    });
 
     res.status(201).json({ product: serializeProduct(product) });
   } catch (error) {
@@ -204,6 +264,7 @@ router.patch("/:productId", requireTrustedOrigin, requireCsrf, requireStoreRole(
   try {
     const storeId = await requireOwnerStoreId(req, res);
     const parsed = productUpdateSchema.parse(req.body);
+    assertUploadPairAndScope(storeId, parsed, true);
 
     const existingProduct = await prisma.product.findFirst({
       where: { id: req.params.productId, storeId },
@@ -231,6 +292,17 @@ router.patch("/:productId", requireTrustedOrigin, requireCsrf, requireStoreRole(
       await deleteR2Object(existingProduct.uploadedKey);
     }
 
+    await writeAuditLog({
+      action: "PRODUCT_UPDATED",
+      actorUserId: req.session.user.id,
+      status: "success",
+      ipAddress: req.ip,
+      userAgent: req.get("user-agent") || null,
+      targetType: "product",
+      targetId: product.id,
+      metadata: { storeId, changedFields: Object.keys(parsed) },
+    });
+
     res.json({ product: serializeProduct(product) });
   } catch (error) {
     next(error);
@@ -256,6 +328,17 @@ router.delete("/:productId", requireTrustedOrigin, requireCsrf, requireStoreRole
 
     await prisma.product.delete({
       where: { id: existingProduct.id },
+    });
+
+    await writeAuditLog({
+      action: "PRODUCT_DELETED",
+      actorUserId: req.session.user.id,
+      status: "success",
+      ipAddress: req.ip,
+      userAgent: req.get("user-agent") || null,
+      targetType: "product",
+      targetId: existingProduct.id,
+      metadata: { storeId },
     });
 
     res.status(204).send();
