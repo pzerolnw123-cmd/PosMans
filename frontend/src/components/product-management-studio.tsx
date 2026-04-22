@@ -139,10 +139,11 @@ export function ProductManagementStudio() {
     };
   }, [activeCategory, itemsPerPage, page]);
 
-  const selectedProduct = products.find((item) => item.id === selectedId) ?? products[0] ?? null;
+  const effectiveSelectedId = pendingDraftRef.current?.id ?? selectedId;
+  const selectedProduct = products.find((item) => item.id === effectiveSelectedId) ?? products[0] ?? null;
   const totalPages = pagination.totalPages;
   const currentPage = pagination.page;
-  const visibleProducts = products;
+  const visibleProducts = pendingDraftRef.current ? products : products.filter((item) => !isDraftProduct(item));
   const isDirty = selectedProduct ? (
     isDraftProduct(selectedProduct) ||
     !serverProducts.find((p) => p.id === selectedProduct.id) ||
@@ -153,6 +154,9 @@ export function ProductManagementStudio() {
         selectedProduct.category !== original.category ||
         selectedProduct.price !== original.price ||
         selectedProduct.status !== original.status ||
+        selectedProduct.trackStock !== original.trackStock ||
+        selectedProduct.stockQuantity !== original.stockQuantity ||
+        selectedProduct.lowStockThreshold !== original.lowStockThreshold ||
         selectedProduct.imageUrl !== original.imageUrl ||
         selectedProduct.uploadedKey !== original.uploadedKey
       );
@@ -163,6 +167,24 @@ export function ProductManagementStudio() {
     if (!selectedProduct) return;
 
     setProducts((current) => current.map((item) => (item.id === selectedProduct.id ? { ...item, ...patch } : item)));
+  }
+
+  function handleToggleStock() {
+    if (!selectedProduct) return;
+
+    const willEnableStock = !selectedProduct.trackStock;
+    updateSelectedProduct({
+      trackStock: willEnableStock,
+      stockQuantity: selectedProduct.trackStock ? 0 : selectedProduct.stockQuantity,
+      lowStockThreshold: selectedProduct.trackStock ? 0 : selectedProduct.lowStockThreshold,
+    });
+    setUploadError(null);
+    setShellAlert({
+      tone: willEnableStock ? "info" : "info",
+      message: willEnableStock
+        ? "เปิดระบบสต๊อกแล้ว กรุณากรอกจำนวนคงเหลือและจุดแจ้งเตือนก่อนบันทึก"
+        : "ปิดระบบสต๊อกแล้ว จำนวนคงเหลือและแจ้งเตือนใกล้หมดจะถูกตั้งเป็น 0 เมื่อบันทึก",
+    });
   }
 
   function handleCategoryChange(category: ProductCategory) {
@@ -196,6 +218,17 @@ export function ProductManagementStudio() {
       return;
     }
 
+    if (
+      selectedProduct.trackStock &&
+      (!Number.isFinite(selectedProduct.stockQuantity) ||
+        selectedProduct.stockQuantity < 0 ||
+        !Number.isFinite(selectedProduct.lowStockThreshold) ||
+        selectedProduct.lowStockThreshold < 0)
+    ) {
+      setUploadError("กรุณากรอกข้อมูลสต๊อกให้ถูกต้อง");
+      return;
+    }
+
     setUploadError(null);
     setSaveBusy(true);
     try {
@@ -218,6 +251,9 @@ export function ProductManagementStudio() {
         category: selectedProduct.category,
         price: selectedProduct.price,
         status: selectedProduct.status,
+        trackStock: selectedProduct.trackStock,
+        stockQuantity: selectedProduct.trackStock ? selectedProduct.stockQuantity : 0,
+        lowStockThreshold: selectedProduct.trackStock ? selectedProduct.lowStockThreshold : 0,
       };
       const uploadPayload = pendingUploadBlob || isDraftProduct(selectedProduct)
         ? {
@@ -302,19 +338,23 @@ export function ProductManagementStudio() {
   }
 
   function handleBackToProducts() {
+    let nextSelectedId = "";
     if (selectedProduct) {
       if (isDraftProduct(selectedProduct)) {
         pendingDraftRef.current = null;
-        setProducts(serverProducts.slice(0, itemsPerPage));
+        const restoredProducts = serverProducts.slice(0, itemsPerPage);
+        setProducts(restoredProducts);
+        nextSelectedId = restoredProducts[0]?.id ?? "";
       } else {
         // หากเป็นสินค้าเดิม ให้ย้อนคืนข้อมูลล่าสุดจาก Server เผื่อมีการแก้ค้างไว้
         const original = serverProducts.find((p) => p.id === selectedProduct.id);
         if (original) {
           setProducts((current) => current.map((item) => (item.id === selectedProduct.id ? { ...original } : item)));
+          nextSelectedId = original.id;
         }
       }
     }
-    setSelectedId("");
+    setSelectedId(nextSelectedId);
     setUploadError(null);
     setPendingUploadBlob(null);
   }
@@ -508,6 +548,7 @@ export function ProductManagementStudio() {
           onChooseImageClick={handleChooseImageClick}
           onBackToProducts={handleBackToProducts}
           onToggleSaleStatus={handleToggleSaleStatus}
+          onToggleStock={handleToggleStock}
           onResetForm={handleResetForm}
           onDeleteConfirmed={handleDeleteRequest}
         />
@@ -518,7 +559,8 @@ export function ProductManagementStudio() {
           filteredCount={pagination.totalItems}
           itemsPerPage={itemsPerPage}
           productsLoading={productsLoading}
-          selectedId={selectedId}
+          selectionTransitionLocked={Boolean(pendingDraftRef.current)}
+          selectedId={effectiveSelectedId}
           totalPages={totalPages}
           visibleProducts={visibleProducts}
           onCategoryChange={handleCategoryChange}

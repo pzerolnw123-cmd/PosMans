@@ -89,6 +89,35 @@ function formatBaht(value: number) {
   return `฿${value.toLocaleString("th-TH")}`;
 }
 
+function normalizeStockValue(value: number | undefined) {
+  return Number.isFinite(value) ? Math.max(0, Math.floor(value || 0)) : 0;
+}
+
+function stockLimit(product: ProductItem) {
+  return product.trackStock ? normalizeStockValue(product.stockQuantity) : Number.POSITIVE_INFINITY;
+}
+
+function isProductSellable(product: ProductItem) {
+  return product.status === "พร้อมขาย" && (!product.trackStock || normalizeStockValue(product.stockQuantity) > 0);
+}
+
+function stockLabel(product: ProductItem, inCart = 0) {
+  if (!product.trackStock) {
+    return null;
+  }
+
+  const remaining = Math.max(0, normalizeStockValue(product.stockQuantity) - inCart);
+  if (remaining <= 0) {
+    return "สต๊อกหมด";
+  }
+
+  if (product.lowStockThreshold > 0 && remaining <= product.lowStockThreshold) {
+    return `ใกล้หมด ${remaining}`;
+  }
+
+  return `คงเหลือ ${remaining}`;
+}
+
 export function SalesPaginationMockup() {
   const router = useRouter();
   const [products, setProducts] = useState<ProductItem[]>([]);
@@ -128,6 +157,9 @@ export function SalesPaginationMockup() {
           category: item.product.category,
           price: item.product.price,
           status: item.product.status,
+          trackStock: item.product.trackStock,
+          stockQuantity: item.product.stockQuantity,
+          lowStockThreshold: item.product.lowStockThreshold,
           imageUrl: item.product.imageUrl,
           uploadedKey: item.product.uploadedKey,
         },
@@ -194,6 +226,9 @@ export function SalesPaginationMockup() {
               product: {
                 ...item.product!,
                 status: item.product!.status || "พร้อมขาย",
+                trackStock: item.product!.trackStock ?? false,
+                stockQuantity: normalizeStockValue(item.product!.stockQuantity),
+                lowStockThreshold: normalizeStockValue(item.product!.lowStockThreshold),
               },
               quantity: Math.max(1, Math.floor(item.quantity)),
             }))
@@ -271,14 +306,19 @@ export function SalesPaginationMockup() {
   }
 
   function handleAddToCart(product: ProductItem) {
-    if (product.status !== "พร้อมขาย") {
+    if (!isProductSellable(product)) {
       return;
     }
 
     setCartItems((current) => {
       const existing = current.find((item) => item.product.id === product.id);
+      const limit = stockLimit(product);
       if (existing) {
-        return current.map((item) => (item.product.id === product.id ? { ...item, quantity: item.quantity + 1, product } : item));
+        if (existing.quantity >= limit) {
+          return current;
+        }
+
+        return current.map((item) => (item.product.id === product.id ? { ...item, quantity: Math.min(limit, item.quantity + 1), product } : item));
       }
 
       return [{ product, quantity: 1 }, ...current];
@@ -293,7 +333,7 @@ export function SalesPaginationMockup() {
           return item;
         }
 
-        return { ...item, quantity: Math.max(1, item.quantity + direction) };
+        return { ...item, quantity: Math.max(1, Math.min(stockLimit(item.product), item.quantity + direction)) };
       }),
     );
   }
@@ -378,7 +418,7 @@ export function SalesPaginationMockup() {
           </div>
         </div>
 
-        <div className="grid min-h-0 grid-cols-3 content-start items-start gap-4 max-[720px]:grid-cols-2" aria-label="products">
+        <div className="grid min-h-0 grid-cols-3 content-start items-start gap-4 overflow-visible p-1 max-[720px]:grid-cols-2" aria-label="products">
           {loading ? (
             Array.from({ length: 6 }).map((_, index) => (
               <article
@@ -392,7 +432,9 @@ export function SalesPaginationMockup() {
             ))
           ) : products.length > 0 ? (
             products.map((product) => {
-              const ready = product.status === "พร้อมขาย";
+              const currentCartQuantity = cartItems.find((item) => item.product.id === product.id)?.quantity ?? 0;
+              const productStockLabel = stockLabel(product, currentCartQuantity);
+              const ready = isProductSellable(product) && currentCartQuantity < stockLimit(product);
               const activePulse = pulseProductId === product.id;
               const added = addedProductId === product.id;
 
@@ -431,6 +473,11 @@ export function SalesPaginationMockup() {
                       <span className="max-w-[86px] truncate text-[0.6rem] font-bold uppercase tracking-[0.1em] text-[var(--foreground-soft)]">
                         {product.code}
                       </span>
+                      {productStockLabel ? (
+                        <span className={ready ? "max-w-[86px] truncate text-[0.68rem] font-bold text-[#8cffbd]" : "max-w-[86px] truncate text-[0.68rem] font-bold text-[#ff8fa2]"}>
+                          {productStockLabel}
+                        </span>
+                      ) : null}
                     </div>
                   </div>
                   <div className="grid gap-1.5">
@@ -526,13 +573,13 @@ export function SalesPaginationMockup() {
                     key={item.product.id}
                     className={
                       highlighted
-                        ? "grid animate-[cart-row-enter_340ms_cubic-bezier(.2,.8,.2,1)] grid-cols-[52px_minmax(0,1fr)] gap-3 rounded-none border border-[rgba(240,106,223,0.32)] bg-[rgba(240,106,223,0.09)] p-[10px] shadow-[rgba(240,106,223,0.12)_0_8px_18px]"
-                        : "grid grid-cols-[52px_minmax(0,1fr)] gap-3 rounded-none border border-[rgba(100,120,160,0.14)] bg-[rgba(255,255,255,0.03)] p-[10px]"
+                        ? "grid animate-[cart-row-enter_340ms_cubic-bezier(.2,.8,.2,1)] grid-cols-[75px_minmax(0,1fr)] items-start gap-3 rounded-none border border-[rgba(240,106,223,0.32)] bg-[rgba(240,106,223,0.09)] p-[10px] shadow-[rgba(240,106,223,0.12)_0_8px_18px]"
+                        : "grid grid-cols-[75px_minmax(0,1fr)] items-start gap-3 rounded-none border border-[rgba(100,120,160,0.14)] bg-[rgba(255,255,255,0.03)] p-[10px]"
                     }
                   >
                     {item.product.imageUrl ? (
                       <span
-                        className="h-[52px] w-[52px] rounded-[10px] border border-[rgba(100,120,160,0.14)] bg-cover bg-center"
+                        className="h-[83px] w-[75px] rounded-[10px] border border-[rgba(100,120,160,0.14)] bg-cover bg-center"
                         style={{ backgroundImage: `url(${item.product.imageUrl})` }}
                         role="img"
                         aria-label={item.product.name}
@@ -542,7 +589,7 @@ export function SalesPaginationMockup() {
                         <BasketIcon size={18} />
                       </span>
                     )}
-                    <div className="grid min-w-0 gap-2">
+                    <div className="grid min-w-0 gap-2 pt-0.5">
                       <div className="grid min-w-0 gap-1">
                         <strong className="truncate text-[0.95rem] leading-[1.25] text-white">{item.product.name}</strong>
                         <span className="text-[0.78rem] text-[var(--foreground-soft)]">
@@ -563,7 +610,8 @@ export function SalesPaginationMockup() {
                           <span className="grid h-8 min-w-8 place-items-center text-[0.85rem] font-bold text-white">{item.quantity}</span>
                           <button
                             type="button"
-                            className="grid h-8 w-8 place-items-center text-[1rem] font-bold text-[var(--foreground)] transition hover:bg-[rgba(255,255,255,0.06)]"
+                            className="grid h-8 w-8 place-items-center text-[1rem] font-bold text-[var(--foreground)] transition hover:bg-[rgba(255,255,255,0.06)] disabled:cursor-not-allowed disabled:text-[var(--foreground-soft)] disabled:opacity-45 disabled:hover:bg-transparent"
+                            disabled={item.quantity >= stockLimit(item.product)}
                             onClick={() => changeQuantity(item.product.id, 1)}
                             aria-label={`เพิ่มจำนวน ${item.product.name}`}
                           >

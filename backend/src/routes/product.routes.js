@@ -20,6 +20,9 @@ const productCreateSchema = z.object({
   category: z.enum(productCategories),
   price: z.number().int().min(1).max(1_000_000),
   status: z.enum(productStatuses).default("พร้อมขาย"),
+  trackStock: z.boolean().default(false),
+  stockQuantity: z.number().int().min(0).max(1_000_000).default(0),
+  lowStockThreshold: z.number().int().min(0).max(1_000_000).default(0),
   imageUrl: safeUrlSchema("imageUrl").optional().nullable(),
   uploadedKey: z.string().max(255).optional().nullable(),
 });
@@ -29,6 +32,9 @@ const productUpdateSchema = z.object({
   category: z.enum(productCategories).optional(),
   price: z.number().int().min(1).max(1_000_000).optional(),
   status: z.enum(productStatuses).optional(),
+  trackStock: z.boolean().optional(),
+  stockQuantity: z.number().int().min(0).max(1_000_000).optional(),
+  lowStockThreshold: z.number().int().min(0).max(1_000_000).optional(),
   imageUrl: safeUrlSchema("imageUrl").optional().nullable(),
   uploadedKey: z.string().max(255).optional().nullable(),
 });
@@ -66,6 +72,9 @@ function serializeProduct(product) {
     category: product.category,
     price: product.price,
     status: product.status,
+    trackStock: product.trackStock,
+    stockQuantity: product.stockQuantity,
+    lowStockThreshold: product.lowStockThreshold,
     imageUrl: product.imageUrl,
     uploadedKey: product.uploadedKey,
   };
@@ -78,6 +87,9 @@ const productSelect = {
   category: true,
   price: true,
   status: true,
+  trackStock: true,
+  stockQuantity: true,
+  lowStockThreshold: true,
   imageUrl: true,
   uploadedKey: true,
 };
@@ -139,10 +151,10 @@ async function requireOwnerStoreId(req, res) {
   return storeId;
 }
 
-async function createNextProductCode(storeId, category, offset = 0) {
+async function createNextProductCode(db, storeId, category, offset = 0) {
   const prefix = categoryCodePrefix(category);
   const startIdx = prefix.length + 2;
-  const rows = await prisma.$queryRaw(
+  const rows = await db.$queryRaw(
     Prisma.sql`
       SELECT MAX(
         CASE
@@ -167,14 +179,14 @@ function isProductCodeUniqueConflict(error) {
   return error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002";
 }
 
-async function createProductWithUniqueCode(storeId, parsed) {
+async function createProductWithUniqueCode(db, storeId, parsed) {
   let lastError;
 
   for (let attempt = 0; attempt < PRODUCT_CODE_CREATE_ATTEMPTS; attempt += 1) {
-    const code = await createNextProductCode(storeId, parsed.category, attempt);
+    const code = await createNextProductCode(db, storeId, parsed.category, attempt);
 
     try {
-      return await prisma.product.create({
+      return await db.product.create({
         data: {
           storeId,
           code,
@@ -182,6 +194,9 @@ async function createProductWithUniqueCode(storeId, parsed) {
           category: parsed.category,
           price: parsed.price,
           status: parsed.status,
+          trackStock: parsed.trackStock,
+          stockQuantity: parsed.trackStock ? parsed.stockQuantity : 0,
+          lowStockThreshold: parsed.trackStock ? parsed.lowStockThreshold : 0,
           imageUrl: parsed.imageUrl || null,
           uploadedKey: parsed.uploadedKey || null,
         },
@@ -241,7 +256,28 @@ router.post("/", requireTrustedOrigin, requireCsrf, requireStoreRole(["OWNER"]),
     const storeId = await requireOwnerStoreId(req, res);
     const parsed = productCreateSchema.parse(req.body);
     assertUploadPairAndScope(storeId, parsed);
-    const product = await createProductWithUniqueCode(storeId, parsed);
+    const product = await prisma.$transaction(async (tx) => {
+      const createdProduct = await createProductWithUniqueCode(tx, storeId, parsed);
+
+      if (createdProduct.trackStock && createdProduct.stockQuantity > 0) {
+        await tx.inventoryMovement.create({
+          data: {
+            storeId,
+            productId: createdProduct.id,
+            createdByUserId: req.session.user.id,
+            type: "RECEIVE",
+            quantityChange: createdProduct.stockQuantity,
+            quantityBefore: 0,
+            quantityAfter: createdProduct.stockQuantity,
+            reason: "Initial stock",
+            referenceType: "product",
+            referenceId: createdProduct.id,
+          },
+        });
+      }
+
+      return createdProduct;
+    });
 
     await writeAuditLog({
       action: "PRODUCT_CREATED",
@@ -268,24 +304,53 @@ router.patch("/:productId", requireTrustedOrigin, requireCsrf, requireStoreRole(
 
     const existingProduct = await prisma.product.findFirst({
       where: { id: req.params.productId, storeId },
-      select: { id: true, uploadedKey: true },
+      select: { id: true, uploadedKey: true, trackStock: true, stockQuantity: true, lowStockThreshold: true },
     });
 
     if (!existingProduct) {
       throw new AppError("Product not found", 404, { code: "PRODUCT_NOT_FOUND" });
     }
 
-    const product = await prisma.product.update({
-      where: { id: existingProduct.id },
-      data: {
-        ...(parsed.name !== undefined ? { name: parsed.name } : {}),
-        ...(parsed.category !== undefined ? { category: parsed.category } : {}),
-        ...(parsed.price !== undefined ? { price: parsed.price } : {}),
-        ...(parsed.status !== undefined ? { status: parsed.status } : {}),
-        ...(parsed.imageUrl !== undefined ? { imageUrl: parsed.imageUrl || null } : {}),
-        ...(parsed.uploadedKey !== undefined ? { uploadedKey: parsed.uploadedKey || null } : {}),
-      },
-      select: productSelect,
+    const nextTrackStock = parsed.trackStock ?? existingProduct.trackStock;
+    const nextStockQuantity = nextTrackStock ? parsed.stockQuantity ?? existingProduct.stockQuantity : 0;
+    const nextLowStockThreshold = nextTrackStock ? parsed.lowStockThreshold ?? existingProduct.lowStockThreshold : 0;
+    const stockChanged = nextStockQuantity !== existingProduct.stockQuantity;
+
+    const product = await prisma.$transaction(async (tx) => {
+      const updatedProduct = await tx.product.update({
+        where: { id: existingProduct.id },
+        data: {
+          ...(parsed.name !== undefined ? { name: parsed.name } : {}),
+          ...(parsed.category !== undefined ? { category: parsed.category } : {}),
+          ...(parsed.price !== undefined ? { price: parsed.price } : {}),
+          ...(parsed.status !== undefined ? { status: parsed.status } : {}),
+          ...(parsed.trackStock !== undefined ? { trackStock: parsed.trackStock } : {}),
+          ...(parsed.stockQuantity !== undefined || parsed.trackStock !== undefined ? { stockQuantity: nextStockQuantity } : {}),
+          ...(parsed.lowStockThreshold !== undefined || parsed.trackStock !== undefined ? { lowStockThreshold: nextLowStockThreshold } : {}),
+          ...(parsed.imageUrl !== undefined ? { imageUrl: parsed.imageUrl || null } : {}),
+          ...(parsed.uploadedKey !== undefined ? { uploadedKey: parsed.uploadedKey || null } : {}),
+        },
+        select: productSelect,
+      });
+
+      if (stockChanged) {
+        await tx.inventoryMovement.create({
+          data: {
+            storeId,
+            productId: existingProduct.id,
+            createdByUserId: req.session.user.id,
+            type: "ADJUSTMENT",
+            quantityChange: nextStockQuantity - existingProduct.stockQuantity,
+            quantityBefore: existingProduct.stockQuantity,
+            quantityAfter: nextStockQuantity,
+            reason: nextTrackStock ? "Manual stock update" : "Stock tracking disabled",
+            referenceType: "product",
+            referenceId: existingProduct.id,
+          },
+        });
+      }
+
+      return updatedProduct;
     });
 
     if (parsed.uploadedKey !== undefined && existingProduct.uploadedKey && existingProduct.uploadedKey !== parsed.uploadedKey) {

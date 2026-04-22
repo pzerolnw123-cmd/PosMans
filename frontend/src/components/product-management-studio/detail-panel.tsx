@@ -27,6 +27,7 @@ type ProductDetailPanelProps = {
   onChooseImageClick: () => void;
   onBackToProducts: () => void;
   onToggleSaleStatus: () => void;
+  onToggleStock: () => void;
   onResetForm: () => void;
   onDeleteConfirmed: () => void;
 };
@@ -44,10 +45,13 @@ export function ProductDetailPanel({
   onChooseImageClick,
   onBackToProducts,
   onToggleSaleStatus,
+  onToggleStock,
   onResetForm,
   onDeleteConfirmed,
 }: ProductDetailPanelProps) {
   const [priceDraft, setPriceDraft] = useState<{ productId: string; value: string } | null>(null);
+  const [stockQuantityDraft, setStockQuantityDraft] = useState<{ productId: string; value: string } | null>(null);
+  const [lowStockThresholdDraft, setLowStockThresholdDraft] = useState<{ productId: string; value: string } | null>(null);
   const [isCategoryOpen, setIsCategoryOpen] = useState(false);
   const categoryRef = useRef<HTMLDivElement>(null);
 
@@ -63,12 +67,24 @@ export function ProductDetailPanel({
 
   const priceInput =
     selectedProduct && priceDraft?.productId === selectedProduct.id ? priceDraft.value : selectedProduct ? String(selectedProduct.price) : "";
+  const stockQuantityInput =
+    selectedProduct && stockQuantityDraft?.productId === selectedProduct.id ? stockQuantityDraft.value : selectedProduct ? String(selectedProduct.stockQuantity) : "";
+  const lowStockThresholdInput =
+    selectedProduct && lowStockThresholdDraft?.productId === selectedProduct.id
+      ? lowStockThresholdDraft.value
+      : selectedProduct
+        ? String(selectedProduct.lowStockThreshold)
+        : "";
+  const stockInvalid =
+    Boolean(selectedProduct?.trackStock) &&
+    ((!Number.isFinite(selectedProduct?.stockQuantity) || (selectedProduct?.stockQuantity ?? 0) < 0) ||
+      (!Number.isFinite(selectedProduct?.lowStockThreshold) || (selectedProduct?.lowStockThreshold ?? 0) < 0));
   const isDraftEmpty = 
     selectedProduct?.code === "DRAFT-NEW" &&
     !selectedProduct.name.trim() &&
     (selectedProduct.price === 0 || isNaN(selectedProduct.price)) &&
     selectedProduct.category === "อาหาร";
-  const isSaveDisabled = saveBusy || deleteBusy || !isDirty || !selectedProduct?.name?.trim() || (selectedProduct?.price ?? 0) <= 0;
+  const isSaveDisabled = saveBusy || deleteBusy || !isDirty || !selectedProduct?.name?.trim() || (selectedProduct?.price ?? 0) <= 0 || stockInvalid;
 
   return (
     <section className="grid w-[calc(100%+22px)] min-h-full grid-rows-[auto_minmax(0,1fr)] overflow-hidden rounded-none border border-[var(--border)] bg-[rgba(22,27,38,0.76)] px-5 py-5 shadow-[var(--shadow-soft)] backdrop-blur-[14px] max-[1180px]:w-full max-[1180px]:px-4 max-[1180px]:py-4">
@@ -84,77 +100,155 @@ export function ProductDetailPanel({
 
       {selectedProduct ? (
         <div className="min-h-0 overflow-auto pr-1">
-          <div className="mt-[10px] h-[178px] overflow-hidden rounded-[18px] border border-[rgba(100,120,160,0.14)] bg-[rgba(255,255,255,0.04)] max-[1180px]:h-[108px]">
-            {selectedProduct.imageUrl && canUseNextImage(selectedProduct.imageUrl) ? (
-              <Image
-                src={selectedProduct.imageUrl}
-                alt={selectedProduct.name}
-                width={900}
-                height={360}
-                sizes="(max-width: 1180px) 100vw, 48vw"
-                className="block h-full w-full object-cover object-center"
-              />
-            ) : selectedProduct.imageUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={selectedProduct.imageUrl} alt={selectedProduct.name} className="block h-full w-full object-cover object-center" decoding="async" />
-            ) : (
-              <div className="h-full w-full bg-[rgba(255,255,255,0.02)]" />
-            )}
-          </div>
+          <div className="mt-[10px] grid grid-cols-[minmax(0,65%)_minmax(132px,1fr)] items-stretch gap-3 max-[720px]:grid-cols-1">
+            <div className="grid max-w-[312px] gap-[10px] max-[720px]:max-w-none">
+              <div className="h-[186px] w-full overflow-hidden rounded-[14px] border border-[rgba(100,120,160,0.14)] bg-[rgba(255,255,255,0.04)] max-[1180px]:h-[96px]">
+                {selectedProduct.imageUrl && canUseNextImage(selectedProduct.imageUrl) ? (
+                  <Image
+                    src={selectedProduct.imageUrl}
+                    alt={selectedProduct.name}
+                    width={480}
+                    height={232}
+                    sizes="(max-width: 720px) 100vw, 312px"
+                    className="block h-full w-full object-cover object-center"
+                  />
+                ) : selectedProduct.imageUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={selectedProduct.imageUrl} alt={selectedProduct.name} className="block h-full w-full object-cover object-center" decoding="async" />
+                ) : (
+                  <div className="h-full w-full bg-[rgba(255,255,255,0.02)]" />
+                )}
+              </div>
 
-          <div className="mt-3 grid gap-[10px]">
-            <div className="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-3 max-[720px]:grid-cols-1">
-              <Field label="ชื่อสินค้า" className="max-w-full">
-                <input className={inputClass} value={selectedProduct.name} onChange={(event) => onUpdateProduct({ name: event.target.value })} />
-              </Field>
+            </div>
 
+            <div className="relative h-[186px] max-[1180px]:h-[96px]">
               <button
                 type="button"
-                className={`${primaryButtonClass} min-h-[46px] rounded-[12px] px-4 disabled:cursor-not-allowed disabled:opacity-50`}
+                className={`${primaryButtonClass} absolute left-0 top-0 min-h-[46px] w-full rounded-[12px] px-4 disabled:cursor-not-allowed disabled:opacity-50`}
                 onClick={onCreateNewProduct}
                 disabled={saveBusy || deleteBusy || (selectedProduct && selectedProduct.code === "DRAFT-NEW")}
               >
                 เพิ่มสินค้าใหม่
               </button>
+
+              <div
+                className={
+                  selectedProduct.trackStock
+                    ? "absolute left-1/2 top-[92px] inline-grid w-fit -translate-x-1/2 justify-items-center gap-3 text-[0.78rem] font-bold text-[#8cffbd] max-[1180px]:top-[56px]"
+                    : "absolute left-1/2 top-[92px] inline-grid w-fit -translate-x-1/2 justify-items-center gap-3 text-[0.78rem] font-bold text-[var(--foreground-soft)] max-[1180px]:top-[56px]"
+                }
+              >
+                <span className={selectedProduct.trackStock ? "inline-flex whitespace-nowrap items-center gap-2 rounded-none border border-[rgba(167,139,250,0.34)] bg-[rgba(91,70,166,0.32)] px-3 py-2 text-[#c8b8ff]" : "inline-flex whitespace-nowrap items-center gap-2 rounded-none border border-[rgba(167,139,250,0.22)] bg-[rgba(37,32,58,0.78)] px-3 py-2 text-[#a99bf2]"}>
+                  {selectedProduct.trackStock ? "ทำการเปิดสต๊อก" : "ทำการปิดสต๊อก"}
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+                    <path fill="none" stroke="currentColor" strokeLinejoin="round" d="M1.583 4.5L8 1.583L14.417 4.5m-12.834 0L8 7.417M1.583 4.5v6.417L8 14.417m0-7L14.417 4.5M8 7.417v7M14.417 4.5v6.417L8 14.417M10.5 13V9.5m2 2.5V8.5" />
+                  </svg>
+                </span>
+                <span className="stock-toggle-uiverse">
+                  <span className="check" aria-hidden="true">
+                    <input
+                      id={`stock-toggle-${selectedProduct.id}`}
+                      type="checkbox"
+                      checked={selectedProduct.trackStock}
+                      onChange={onToggleStock}
+                      aria-label={selectedProduct.trackStock ? "ปิดสต๊อก" : "เปิดสต๊อก"}
+                    />
+                    <label htmlFor={`stock-toggle-${selectedProduct.id}`} />
+                  </span>
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-3 grid gap-[10px]">
+            <div className={selectedProduct.trackStock ? "grid grid-cols-[minmax(0,1fr)_minmax(120px,180px)] items-end gap-3 max-[720px]:grid-cols-1" : "grid items-end gap-3"}>
+              <Field label="ชื่อสินค้า" className="max-w-full">
+                <input className={inputClass} value={selectedProduct.name} onChange={(event) => onUpdateProduct({ name: event.target.value })} />
+              </Field>
+              {selectedProduct.trackStock ? (
+                <Field label="จำนวนคงเหลือ">
+                  <input
+                    type="number"
+                    value={stockQuantityInput}
+                    min="0"
+                    onChange={(event) => {
+                      const value = event.target.value;
+                      setStockQuantityDraft({ productId: selectedProduct.id, value });
+                      const parsed = Number(value);
+                      if (!Number.isNaN(parsed)) {
+                        onUpdateProduct({ stockQuantity: Math.max(0, parsed) });
+                      }
+                    }}
+                    onBlur={() => {
+                      setStockQuantityDraft(null);
+                    }}
+                    className={`${inputClass} [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
+                  />
+                </Field>
+              ) : null}
             </div>
 
-            <Field label="ประเภทสินค้า">
-              <div className="relative" ref={categoryRef}>
-                <button
-                  type="button"
-                  className={`${selectClass} text-left w-full pr-10`}
-                  onClick={() => setIsCategoryOpen(!isCategoryOpen)}
-                >
-                  <span className="block truncate">{selectedProduct.category}</span>
-                </button>
-                <div className="pointer-events-none absolute right-[16px] top-1/2 -translate-y-1/2 flex items-center justify-center">
-                  <span className="text-[0.6rem] text-[var(--foreground-soft)] transition-transform duration-200 block" style={{ transform: isCategoryOpen ? "rotate(180deg)" : "rotate(0deg)" }}>
-                    ▼
-                  </span>
-                </div>
-                {isCategoryOpen && (
-                  <div className="absolute left-0 top-[calc(100%+8px)] z-50 w-full overflow-hidden rounded-[16px] border border-[var(--border)] bg-[rgba(22,27,38,0.95)] shadow-[0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-xl animate-in fade-in zoom-in-95 duration-100">
-                    <div className="flex flex-col py-2">
-                      {["อาหาร", "เครื่องดื่ม", "ของหวาน/ขนม", "รองเท้า", "อะไหล่ / อุปกรณ์เสริม"].map((cat) => (
-                        <button
-                          key={cat}
-                          type="button"
-                          className={`flex items-center px-4 py-[10px] text-[0.95rem] transition-colors hover:bg-[rgba(255,255,255,0.06)] active:bg-[rgba(255,255,255,0.02)] ${
-                            selectedProduct.category === cat ? "text-[rgba(108,92,231,1)] font-bold bg-[rgba(108,92,231,0.08)]" : "text-[rgba(255,255,255,0.8)]"
-                          }`}
-                          onClick={() => {
-                            onUpdateProduct({ category: cat as ProductItem["category"] });
-                            setIsCategoryOpen(false);
-                          }}
-                        >
-                          {cat}
-                        </button>
-                      ))}
-                    </div>
+            <div className={selectedProduct.trackStock ? "grid grid-cols-[minmax(0,1fr)_minmax(120px,180px)] items-end gap-3 max-[720px]:grid-cols-1" : "grid items-end gap-3"}>
+              <Field label="ประเภทสินค้า">
+                <div className="relative" ref={categoryRef}>
+                  <button
+                    type="button"
+                    className={`${selectClass} text-left w-full pr-10`}
+                    onClick={() => setIsCategoryOpen(!isCategoryOpen)}
+                  >
+                    <span className="block truncate">{selectedProduct.category}</span>
+                  </button>
+                  <div className="pointer-events-none absolute right-[16px] top-1/2 -translate-y-1/2 flex items-center justify-center">
+                    <span className="text-[0.6rem] text-[var(--foreground-soft)] transition-transform duration-200 block" style={{ transform: isCategoryOpen ? "rotate(180deg)" : "rotate(0deg)" }}>
+                      ▼
+                    </span>
                   </div>
-                )}
-              </div>
-            </Field>
+                  {isCategoryOpen && (
+                    <div className="absolute left-0 top-[calc(100%+8px)] z-50 w-full overflow-hidden rounded-[16px] border border-[var(--border)] bg-[rgba(22,27,38,0.95)] shadow-[0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-xl animate-in fade-in zoom-in-95 duration-100">
+                      <div className="flex flex-col py-2">
+                        {["อาหาร", "เครื่องดื่ม", "ของหวาน/ขนม", "รองเท้า", "อะไหล่ / อุปกรณ์เสริม"].map((cat) => (
+                          <button
+                            key={cat}
+                            type="button"
+                            className={`flex items-center px-4 py-[10px] text-[0.95rem] transition-colors hover:bg-[rgba(255,255,255,0.06)] active:bg-[rgba(255,255,255,0.02)] ${
+                              selectedProduct.category === cat ? "text-[rgba(108,92,231,1)] font-bold bg-[rgba(108,92,231,0.08)]" : "text-[rgba(255,255,255,0.8)]"
+                            }`}
+                            onClick={() => {
+                              onUpdateProduct({ category: cat as ProductItem["category"] });
+                              setIsCategoryOpen(false);
+                            }}
+                          >
+                            {cat}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </Field>
+              {selectedProduct.trackStock ? (
+                <Field label="แจ้งเตือนใกล้หมด">
+                  <input
+                    type="number"
+                    value={lowStockThresholdInput}
+                    min="0"
+                    onChange={(event) => {
+                      const value = event.target.value;
+                      setLowStockThresholdDraft({ productId: selectedProduct.id, value });
+                      const parsed = Number(value);
+                      if (!Number.isNaN(parsed)) {
+                        onUpdateProduct({ lowStockThreshold: Math.max(0, parsed) });
+                      }
+                    }}
+                    onBlur={() => {
+                      setLowStockThresholdDraft(null);
+                    }}
+                    className={`${inputClass} [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
+                  />
+                </Field>
+              ) : null}
+            </div>
 
             <div className="grid items-stretch gap-[10px] md:grid-cols-2">
               <div className="flex h-full min-w-0 flex-col gap-2">

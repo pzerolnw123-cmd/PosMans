@@ -10,6 +10,13 @@
     "dev:backend": "npm --prefix backend run dev",
     "build:frontend": "npm --prefix frontend run build",
     "lint:frontend": "npm --prefix frontend run lint",
+    "test:backend": "npm --prefix backend test",
+    "security:secrets": "node scripts/security-secrets.mjs",
+    "security:production": "node scripts/production-readiness.mjs",
+    "security:production:strict": "node scripts/production-readiness.mjs --strict",
+    "security:audit:backend": "npm --prefix backend audit --audit-level=high",
+    "security:audit:frontend": "npm --prefix frontend audit --audit-level=high",
+    "security:audit": "npm run security:audit:backend && npm run security:audit:frontend",
     "db:generate": "npm --prefix backend run db:generate",
     "db:push": "npm --prefix backend run db:push",
     "create:admin": "npm --prefix backend run create:admin"

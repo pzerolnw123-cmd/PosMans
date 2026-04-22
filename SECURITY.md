@@ -182,10 +182,10 @@ When the repository adds CI, the baseline should include:
 - secret scanning
 
 Examples:
-- `npm audit` or equivalent
-- `pip-audit`
-- `osv-scanner`
-- secret scanning such as Gitleaks or GitHub Advanced Security features
+- `npm run security:secrets`
+- `npm run security:audit`
+- `npm run security:production:strict`
+- external secret scanning such as Gitleaks or GitHub Advanced Security features
 
 ## 16. Review Checklist
 
@@ -212,3 +212,18 @@ Before deploying the POS app for real stores:
 - Keep audit logs enabled and set `AUDIT_LOG_RETENTION_DAYS` to the retention policy required by the business.
 - Enable database backups and restore testing with the hosting provider. Verify that backups include the production database and that restores are periodically tested.
 - Add deployment monitoring for failed login spikes, upload spikes, checkout errors, backend 5xx rates, database errors, and audit-log write failures.
+
+Recommended local checks before a production release:
+- `npm run security:secrets`
+- `npm run security:audit`
+- `npm run security:production`
+- `npm --prefix backend test`
+- `npm --prefix frontend run lint`
+- `npm --prefix frontend run build`
+
+Set these deployment acknowledgements to `true` only after the infrastructure item is actually verified:
+- `HTTPS_CERTIFICATE_CONFIRMED`
+- `R2_BUCKET_POLICY_CONFIRMED`
+- `DATABASE_BACKUP_CONFIRMED`
+- `MONITORING_ALERTS_CONFIRMED`
+- `SECRET_MANAGER_CONFIRMED`

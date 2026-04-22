@@ -32,6 +32,15 @@ enum AuditAction {
   SALE_CANCELLED
 }
 
+enum InventoryMovementType {
+  RECEIVE
+  SALE
+  RETURN
+  ADJUSTMENT
+  DAMAGE
+  CANCEL_SALE
+}
+
 enum SaleStatus {
   PAID
   CANCELLED
@@ -57,26 +66,32 @@ model Store {
   users           User[]
   products        Product[]
   saleOrders      SaleOrder[]
+  inventoryMovements InventoryMovement[]
 }
 
 model Product {
-  id          String   @id @default(cuid())
-  code        String
-  name        String
-  category    String
-  price       Int
-  status      String
-  imageUrl    String?
-  uploadedKey String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  storeId     String
-  store       Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
-  saleItems   SaleOrderItem[]
+  id                String   @id @default(cuid())
+  code              String
+  name              String
+  category          String
+  price             Int
+  status            String
+  trackStock        Boolean  @default(false)
+  stockQuantity     Int      @default(0)
+  lowStockThreshold Int      @default(0)
+  imageUrl          String?
+  uploadedKey       String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  storeId           String
+  store             Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  saleItems         SaleOrderItem[]
+  inventoryMovements InventoryMovement[]
 
   @@unique([storeId, code])
   @@index([storeId, updatedAt])
   @@index([storeId, category, updatedAt, createdAt])
+  @@index([storeId, trackStock, stockQuantity])
 }
 
 model User {
@@ -97,6 +112,7 @@ model User {
   auditLogs       AuditLog[]
   loginChallenges LoginChallenge[]
   saleOrders      SaleOrder[]
+  inventoryMovements InventoryMovement[]
 
   @@index([platformRole])
   @@index([storeId, storeRole])
@@ -140,6 +156,28 @@ model SaleOrderItem {
 
   @@index([orderId])
   @@index([productId])
+}
+
+model InventoryMovement {
+  id              String                @id @default(cuid())
+  type            InventoryMovementType
+  quantityChange  Int
+  quantityBefore  Int
+  quantityAfter   Int
+  reason          String?
+  referenceType   String?
+  referenceId     String?
+  createdAt       DateTime              @default(now())
+  storeId         String
+  store           Store                 @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  productId       String
+  product         Product               @relation(fields: [productId], references: [id], onDelete: Cascade)
+  createdByUserId String?
+  createdBy       User?                 @relation(fields: [createdByUserId], references: [id], onDelete: SetNull)
+
+  @@index([storeId, createdAt])
+  @@index([productId, createdAt])
+  @@index([referenceType, referenceId])
 }
 
 model Session {

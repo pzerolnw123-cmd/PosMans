@@ -110,6 +110,104 @@ main {
   }
 }
 
+.stock-toggle-uiverse .check {
+  --size: 24px;
+  position: relative;
+  display: inline-block;
+  background: transparent;
+  border-radius: var(--size);
+  font-size: var(--size);
+  line-height: 0;
+  perspective: 400px;
+}
+
+.stock-toggle-uiverse .check input[type="checkbox"],
+.stock-toggle-uiverse .check label,
+.stock-toggle-uiverse .check label::before,
+.stock-toggle-uiverse .check label::after,
+.stock-toggle-uiverse .check {
+  appearance: none;
+  box-sizing: border-box;
+  display: inline-block;
+  border: 0;
+  border-radius: var(--size);
+  cursor: pointer;
+  transition: 0.35s ease-in-out;
+}
+
+.stock-toggle-uiverse .check label {
+  width: calc(2.2 * var(--size));
+  height: var(--size);
+  overflow: hidden;
+  background: #29243f;
+}
+
+.stock-toggle-uiverse .check input[type="checkbox"] {
+  position: absolute;
+  top: calc(0.1 * var(--size));
+  left: calc(0.1 * var(--size));
+  z-index: 1;
+  width: calc(0.8 * var(--size));
+  height: calc(0.8 * var(--size));
+  margin: 0;
+  background: linear-gradient(45deg, #d8ccff, #ffffff);
+  box-shadow: 0 5px 7px rgba(50, 38, 96, 0.36);
+  outline: none;
+}
+
+.stock-toggle-uiverse .check input[type="checkbox"]:checked {
+  left: calc(1.3 * var(--size));
+}
+
+.stock-toggle-uiverse .check input[type="checkbox"]:checked + label {
+  background: #312452;
+}
+
+.stock-toggle-uiverse .check label::before,
+.stock-toggle-uiverse .check label::after {
+  position: absolute;
+  top: calc(0.5 * var(--size));
+  left: calc(0.15 * var(--size));
+  z-index: 2;
+  height: var(--size);
+  overflow: hidden;
+  border-radius: 0;
+  color: #8f98ad;
+  font-family: "Times New Roman", serif;
+  font-size: calc(0.6 * var(--size));
+  letter-spacing: calc(-0.04 * var(--size));
+  content: "· ·";
+  backface-visibility: hidden;
+  transform-origin: 0 0 calc(-0.5 * var(--size));
+}
+
+.stock-toggle-uiverse .check label::after {
+  top: calc(0.65 * var(--size));
+  left: calc(0.2 * var(--size));
+  width: calc(0.35 * var(--size));
+  height: calc(0.1 * var(--size));
+  font-size: calc(0.2 * var(--size));
+  content: "●";
+  transform-origin: 0 0 calc(-0.4 * var(--size));
+}
+
+.stock-toggle-uiverse .check input[type="checkbox"]:checked + label::before,
+.stock-toggle-uiverse .check input[type="checkbox"]:checked + label::after {
+  top: calc(0.4 * var(--size));
+  left: calc(1.55 * var(--size));
+  line-height: calc(0.1 * var(--size));
+  color: rgba(255, 255, 255, 0.9);
+  transform: rotateY(360deg);
+}
+
+.stock-toggle-uiverse .check input[type="checkbox"]:checked + label::after {
+  top: calc(0.55 * var(--size));
+  left: calc(1.6 * var(--size));
+  height: calc(0.16 * var(--size));
+  font-size: calc(0.6 * var(--size));
+  line-height: 0;
+}
+
 @keyframes cart-card-pop {
   0% {
     transform: translateY(0) scale(1);

@@ -30,8 +30,12 @@ jest.mock("../src/lib/db", () => ({
       findMany: jest.fn(),
       findFirst: jest.fn(),
       create: jest.fn(),
+      updateMany: jest.fn(),
       update: jest.fn(),
       delete: jest.fn(),
+    },
+    inventoryMovement: {
+      create: jest.fn(),
     },
     saleOrder: {
       create: jest.fn(),
@@ -100,6 +104,9 @@ function buildProduct(overrides = {}) {
     category: "อาหาร",
     price: 65,
     status: "พร้อมขาย",
+    trackStock: false,
+    stockQuantity: 0,
+    lowStockThreshold: 0,
     imageUrl: null,
     uploadedKey: null,
     ...overrides,
@@ -136,8 +143,10 @@ describe("backend security hardening", () => {
     prisma.product.findMany.mockResolvedValue([]);
     prisma.product.findFirst.mockResolvedValue(null);
     prisma.product.create.mockResolvedValue({});
+    prisma.product.updateMany.mockResolvedValue({ count: 1 });
     prisma.product.update.mockResolvedValue({});
     prisma.product.delete.mockResolvedValue({});
+    prisma.inventoryMovement.create.mockResolvedValue({ id: "movement-1" });
     prisma.saleOrder.create.mockResolvedValue({
       id: "sale-1",
       code: "SALE-20260422-RE-ABC12",
@@ -786,7 +795,7 @@ describe("backend security hardening", () => {
   test("updates only products owned by the current store", async () => {
     const app = createApp();
     mockOwnerSession();
-    prisma.product.findFirst.mockResolvedValue({ id: "product-1" });
+    prisma.product.findFirst.mockResolvedValue({ id: "product-1", uploadedKey: null, trackStock: false, stockQuantity: 0, lowStockThreshold: 0 });
     prisma.product.update.mockResolvedValue(buildProduct({ name: "ข้าวกะเพราพิเศษ", price: 75 }));
 
     const response = await request(app)
@@ -802,7 +811,7 @@ describe("backend security hardening", () => {
     expect(response.status).toBe(200);
     expect(prisma.product.findFirst).toHaveBeenCalledWith({
       where: { id: "product-1", storeId: "store-1" },
-      select: { id: true, uploadedKey: true },
+      select: { id: true, uploadedKey: true, trackStock: true, stockQuantity: true, lowStockThreshold: true },
     });
     expect(prisma.product.update).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -908,7 +917,7 @@ describe("backend security hardening", () => {
     expect(response.status).toBe(201);
     expect(prisma.product.findMany).toHaveBeenCalledWith({
       where: { id: { in: ["product-1", "product-2"] }, storeId: "store-1" },
-      select: { id: true, code: true, name: true, category: true, price: true, status: true },
+      select: { id: true, code: true, name: true, category: true, price: true, status: true, trackStock: true, stockQuantity: true, lowStockThreshold: true },
     });
     expect(prisma.saleOrder.create).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -936,6 +945,94 @@ describe("backend security hardening", () => {
       }),
     });
     expect(response.body.sale.total).toBe(175);
+  });
+
+  test("deducts tracked stock and records inventory movement on sale checkout", async () => {
+    const app = createApp();
+    mockOwnerSession();
+    prisma.product.findMany.mockResolvedValue([buildProduct({ id: "product-1", price: 65, status: "พร้อมขาย", trackStock: true, stockQuantity: 3, lowStockThreshold: 1 })]);
+    prisma.saleOrder.create.mockResolvedValue({
+      id: "sale-1",
+      code: "SALE-20260422-RE-ABC12",
+      status: "PAID",
+      paymentMethod: "CASH",
+      subtotal: 130,
+      discount: 0,
+      tax: 0,
+      total: 130,
+      note: null,
+      createdAt: new Date("2026-04-22T00:00:00.000Z"),
+      items: [
+        {
+          id: "sale-item-1",
+          productId: "product-1",
+          productCode: "FOOD-001",
+          productName: "ข้าวกะเพรา",
+          productCategory: "อาหาร",
+          quantity: 2,
+          unitPrice: 65,
+          lineTotal: 130,
+        },
+      ],
+    });
+
+    const response = await request(app)
+      .post("/api/sales")
+      .set("Origin", "http://localhost:3000")
+      .set("Cookie", ["pos_mans_session=session-token", "pos_mans_session_csrf=csrf-token"])
+      .set("x-csrf-token", "csrf-token")
+      .send({
+        paymentMethod: "CASH",
+        items: [{ productId: "product-1", quantity: 2 }],
+      });
+
+    expect(response.status).toBe(201);
+    expect(prisma.product.updateMany).toHaveBeenCalledWith({
+      where: {
+        id: "product-1",
+        storeId: "store-1",
+        trackStock: true,
+        stockQuantity: { gte: 2 },
+      },
+      data: {
+        stockQuantity: { decrement: 2 },
+      },
+    });
+    expect(prisma.inventoryMovement.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        storeId: "store-1",
+        productId: "product-1",
+        createdByUserId: "user-1",
+        type: "SALE",
+        quantityChange: -2,
+        quantityBefore: 3,
+        quantityAfter: 1,
+        referenceType: "saleOrder",
+        referenceId: "sale-1",
+      }),
+    });
+  });
+
+  test("rejects sale checkout when tracked stock is insufficient", async () => {
+    const app = createApp();
+    mockOwnerSession();
+    prisma.product.findMany.mockResolvedValue([buildProduct({ id: "product-1", price: 65, status: "พร้อมขาย", trackStock: true, stockQuantity: 1 })]);
+
+    const response = await request(app)
+      .post("/api/sales")
+      .set("Origin", "http://localhost:3000")
+      .set("Cookie", ["pos_mans_session=session-token", "pos_mans_session_csrf=csrf-token"])
+      .set("x-csrf-token", "csrf-token")
+      .send({
+        paymentMethod: "CASH",
+        items: [{ productId: "product-1", quantity: 2 }],
+      });
+
+    expect(response.status).toBe(409);
+    expect(response.body.code).toBe("SALE_INSUFFICIENT_STOCK");
+    expect(prisma.saleOrder.create).not.toHaveBeenCalled();
+    expect(prisma.product.updateMany).not.toHaveBeenCalled();
+    expect(prisma.inventoryMovement.create).not.toHaveBeenCalled();
   });
 
   test("rejects sale checkout when a product is outside the current store", async () => {

@@ -9,6 +9,7 @@ type ProductListPanelProps = {
   itemsPerPage: number;
   productsLoading: boolean;
   selectedId: string;
+  selectionTransitionLocked?: boolean;
   totalPages: number;
   visibleProducts: ProductItem[];
   onCategoryChange: (category: ProductCategory) => void;
@@ -23,6 +24,7 @@ export function ProductListPanel({
   itemsPerPage,
   productsLoading,
   selectedId,
+  selectionTransitionLocked = false,
   totalPages,
   visibleProducts,
   onCategoryChange,
@@ -127,6 +129,13 @@ export function ProductListPanel({
           <div className="grid gap-[10px]">
             {visibleProducts.map((item) => {
               const active = item.id === selectedId;
+              const stockLabel = item.trackStock
+                ? item.stockQuantity <= 0
+                  ? "หมด"
+                  : item.lowStockThreshold > 0 && item.stockQuantity <= item.lowStockThreshold
+                    ? `ใกล้หมด ${item.stockQuantity}`
+                    : `เหลือ ${item.stockQuantity}`
+                : null;
 
               return (
                 <button
@@ -135,7 +144,9 @@ export function ProductListPanel({
                   className={
                     active
                       ? "mx-auto grid min-h-[124px] w-[97%] grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 rounded-[18px] border border-[rgba(108,92,231,0.5)] bg-[rgba(108,92,231,0.08)] px-3 py-3 text-left shadow-[rgba(108,92,231,0.08)_0_6px_12px] transition hover:-translate-y-px"
-                      : "mx-auto grid min-h-[124px] w-[97%] grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 rounded-[18px] border border-[var(--border)] bg-[rgba(22,27,38,0.58)] px-3 py-3 text-left transition hover:-translate-y-px hover:shadow-[rgba(0,0,0,0.1)_0_4px_8px]"
+                      : selectionTransitionLocked
+                        ? "mx-auto grid min-h-[124px] w-[97%] grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 rounded-[18px] border border-[var(--border)] bg-[rgba(22,27,38,0.58)] px-3 py-3 text-left"
+                        : "mx-auto grid min-h-[124px] w-[97%] grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 rounded-[18px] border border-[var(--border)] bg-[rgba(22,27,38,0.58)] px-3 py-3 text-left transition hover:-translate-y-px hover:shadow-[rgba(0,0,0,0.1)_0_4px_8px]"
                   }
                   onClick={() => onSelectProduct(item.id)}
                 >
@@ -146,7 +157,10 @@ export function ProductListPanel({
                   />
 
                   <div className="min-w-0 self-center">
-                    <strong className="block text-[1rem] tracking-[-0.03em] text-white">{item.name}</strong>
+                    <strong className="block text-[1rem] tracking-[-0.03em] text-white">
+                      {item.name}
+                      {stockLabel ? <span className="ml-2 text-[0.82rem] font-bold text-[#a0b8d8]">({stockLabel})</span> : null}
+                    </strong>
                     <div className="mt-1.5 flex flex-wrap items-center gap-2">
                       <span className="text-[0.92rem] text-[var(--foreground-soft)]">{item.category}</span>
                     </div>

@@ -123,6 +123,9 @@ router.post("/", saleCheckoutLimiter, requireTrustedOrigin, requireCsrf, require
         category: true,
         price: true,
         status: true,
+        trackStock: true,
+        stockQuantity: true,
+        lowStockThreshold: true,
       },
     });
 
@@ -145,8 +148,15 @@ router.post("/", saleCheckoutLimiter, requireTrustedOrigin, requireCsrf, require
         productCode: product.code,
         productName: product.name,
         productCategory: product.category,
+        trackStock: product.trackStock,
+        stockQuantity: product.stockQuantity,
       };
     });
+
+    const insufficientStockItem = orderItems.find((item) => item.trackStock && item.stockQuantity < item.quantity);
+    if (insufficientStockItem) {
+      throw new AppError("Some products do not have enough stock", 409, { code: "SALE_INSUFFICIENT_STOCK" });
+    }
 
     const subtotal = orderItems.reduce((total, item) => total + item.lineTotal, 0);
     const maxDiscount = Math.floor((subtotal * env.MAX_SALE_DISCOUNT_BPS) / 10000);
@@ -163,7 +173,7 @@ router.post("/", saleCheckoutLimiter, requireTrustedOrigin, requireCsrf, require
     const order = await prisma.$transaction(async (tx) => {
       for (let attempt = 0; attempt < 5; attempt += 1) {
         try {
-          return await tx.saleOrder.create({
+          const createdOrder = await tx.saleOrder.create({
             data: {
               code: nextSaleCode(storeId),
               storeId,
@@ -175,11 +185,46 @@ router.post("/", saleCheckoutLimiter, requireTrustedOrigin, requireCsrf, require
               total,
               note: parsed.note || null,
               items: {
-                create: orderItems,
+                create: orderItems.map(({ trackStock, stockQuantity, ...item }) => item),
               },
             },
             select: saleSelect,
           });
+
+          for (const item of orderItems.filter((entry) => entry.trackStock)) {
+            const updated = await tx.product.updateMany({
+              where: {
+                id: item.productId,
+                storeId,
+                trackStock: true,
+                stockQuantity: { gte: item.quantity },
+              },
+              data: {
+                stockQuantity: { decrement: item.quantity },
+              },
+            });
+
+            if (updated.count !== 1) {
+              throw new AppError("Some products do not have enough stock", 409, { code: "SALE_INSUFFICIENT_STOCK" });
+            }
+
+            await tx.inventoryMovement.create({
+              data: {
+                storeId,
+                productId: item.productId,
+                createdByUserId: req.session.user.id,
+                type: "SALE",
+                quantityChange: -item.quantity,
+                quantityBefore: item.stockQuantity,
+                quantityAfter: item.stockQuantity - item.quantity,
+                reason: "Sale checkout",
+                referenceType: "saleOrder",
+                referenceId: createdOrder.id,
+              },
+            });
+          }
+
+          return createdOrder;
         } catch (error) {
           if (error?.code !== "P2002" || attempt === 4) {
             throw error;

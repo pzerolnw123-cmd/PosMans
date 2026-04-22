@@ -15,6 +15,9 @@ export type ProductItem = {
   category: Exclude<ProductCategory, "ทั้งหมด">;
   price: number;
   status: ProductStatus;
+  trackStock: boolean;
+  stockQuantity: number;
+  lowStockThreshold: number;
   imageUrl?: string;
   uploadedKey?: string;
 };
@@ -63,6 +66,9 @@ export function makeNewProduct(): ProductItem {
     category: "อาหาร",
     price: 0,
     status: "พร้อมขาย",
+    trackStock: false,
+    stockQuantity: 0,
+    lowStockThreshold: 0,
   };
 }
 
