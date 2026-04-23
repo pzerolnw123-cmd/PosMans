@@ -17,6 +17,14 @@ type ProductListPanelProps = {
   onSelectProduct: (id: string) => void;
 };
 
+function displaySaleStatus(product: ProductItem) {
+  if (product.status === "พร้อมขาย" && product.trackStock && product.stockQuantity <= 0) {
+    return "ปิดขาย";
+  }
+
+  return product.status;
+}
+
 export function ProductListPanel({
   activeCategory,
   currentPage,
@@ -129,6 +137,7 @@ export function ProductListPanel({
           <div className="grid gap-[10px]">
             {visibleProducts.map((item) => {
               const active = item.id === selectedId;
+              const saleStatusLabel = displaySaleStatus(item);
               const stockLabel = item.trackStock
                 ? item.stockQuantity <= 0
                   ? "หมด"
@@ -170,7 +179,7 @@ export function ProductListPanel({
                   <div className="flex flex-col items-end self-center whitespace-nowrap pl-2">
                     <div className="text-[1.05rem] font-bold text-[#a0b8d8]">{formatPrice(item.price)}</div>
                     <div className="mt-2">
-                      <StatusPill tone={item.status === "พร้อมขาย" ? "success" : "ghost"}>{item.status}</StatusPill>
+                      <StatusPill tone={saleStatusLabel === "พร้อมขาย" ? "success" : "ghost"}>{saleStatusLabel}</StatusPill>
                     </div>
                   </div>                </button>
               );

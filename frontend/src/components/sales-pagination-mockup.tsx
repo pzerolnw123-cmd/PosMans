@@ -101,6 +101,14 @@ function isProductSellable(product: ProductItem) {
   return product.status === "พร้อมขาย" && (!product.trackStock || normalizeStockValue(product.stockQuantity) > 0);
 }
 
+function displaySaleStatus(product: ProductItem) {
+  if (product.status === "พร้อมขาย" && product.trackStock && normalizeStockValue(product.stockQuantity) <= 0) {
+    return "ปิดขาย";
+  }
+
+  return product.status;
+}
+
 function stockLabel(product: ProductItem, inCart = 0) {
   if (!product.trackStock) {
     return null;
@@ -435,6 +443,7 @@ export function SalesPaginationMockup() {
               const currentCartQuantity = cartItems.find((item) => item.product.id === product.id)?.quantity ?? 0;
               const productStockLabel = stockLabel(product, currentCartQuantity);
               const ready = isProductSellable(product) && currentCartQuantity < stockLimit(product);
+              const saleStatusLabel = displaySaleStatus(product);
               const activePulse = pulseProductId === product.id;
               const added = addedProductId === product.id;
 
@@ -468,7 +477,7 @@ export function SalesPaginationMockup() {
                     )}
                     <div className="grid justify-items-end gap-1 text-right">
                       <b className="text-base leading-[1.2] text-white">{formatBaht(product.price)}</b>
-                      <span className={ready ? "text-[0.78rem] font-bold text-[#75e6a1]" : "text-[0.78rem] font-bold text-[var(--foreground-soft)]"}>{product.status}</span>
+                      <span className={saleStatusLabel === "พร้อมขาย" ? "text-[0.78rem] font-bold text-[#75e6a1]" : "text-[0.78rem] font-bold text-[var(--foreground-soft)]"}>{saleStatusLabel}</span>
                       <span className="max-w-[86px] text-[0.62rem] leading-[1.2] text-[var(--foreground-soft)]">{product.category}</span>
                       <span className="max-w-[86px] truncate text-[0.6rem] font-bold uppercase tracking-[0.1em] text-[var(--foreground-soft)]">
                         {product.code}

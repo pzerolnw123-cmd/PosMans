@@ -28,6 +28,7 @@ enum AuditAction {
   PRODUCT_DELETED
   STORE_PROFILE_UPDATED
   STORE_LOGO_UPDATED
+  STORE_PAYMENT_SETTINGS_UPDATED
   SALE_CREATED
   SALE_CANCELLED
 }
@@ -54,12 +55,31 @@ enum PaymentMethod {
   OTHER
 }
 
+enum StorePromptPayRecipientType {
+  MOBILE
+  NATIONAL_ID
+  TAX_ID
+  STATIC_QR
+  BANK_ACCOUNT
+}
+
 model Store {
   id              String    @id @default(cuid())
   slug            String    @unique
   name            String
   logoUrl         String?
   logoUploadedKey String?
+  promptPayEnabled Boolean @default(false)
+  promptPayRecipientType StorePromptPayRecipientType @default(MOBILE)
+  promptPayId     String?
+  promptPayMobileId String?
+  promptPayNationalId String?
+  promptPayTaxId String?
+  bankName        String?
+  bankAccountName String?
+  bankAccountNumber String?
+  paymentQrImageUrl String?
+  paymentQrUploadedKey String?
   isActive        Boolean   @default(true)
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt

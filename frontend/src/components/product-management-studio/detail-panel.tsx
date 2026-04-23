@@ -125,7 +125,7 @@ export function ProductDetailPanel({
             <div className="relative h-[186px] max-[1180px]:h-[96px]">
               <button
                 type="button"
-                className={`${primaryButtonClass} absolute left-0 top-0 min-h-[46px] w-full rounded-[12px] px-4 disabled:cursor-not-allowed disabled:opacity-50`}
+                className={`${primaryButtonClass} absolute left-0 top-[12px] min-h-[46px] w-full rounded-[12px] px-4 disabled:cursor-not-allowed disabled:opacity-50`}
                 onClick={onCreateNewProduct}
                 disabled={saveBusy || deleteBusy || (selectedProduct && selectedProduct.code === "DRAFT-NEW")}
               >
@@ -139,12 +139,6 @@ export function ProductDetailPanel({
                     : "absolute left-1/2 top-[92px] inline-grid w-fit -translate-x-1/2 justify-items-center gap-3 text-[0.78rem] font-bold text-[var(--foreground-soft)] max-[1180px]:top-[56px]"
                 }
               >
-                <span className={selectedProduct.trackStock ? "inline-flex whitespace-nowrap items-center gap-2 rounded-none border border-[rgba(167,139,250,0.34)] bg-[rgba(91,70,166,0.32)] px-3 py-2 text-[#c8b8ff]" : "inline-flex whitespace-nowrap items-center gap-2 rounded-none border border-[rgba(167,139,250,0.22)] bg-[rgba(37,32,58,0.78)] px-3 py-2 text-[#a99bf2]"}>
-                  {selectedProduct.trackStock ? "ทำการเปิดสต๊อก" : "ทำการปิดสต๊อก"}
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
-                    <path fill="none" stroke="currentColor" strokeLinejoin="round" d="M1.583 4.5L8 1.583L14.417 4.5m-12.834 0L8 7.417M1.583 4.5v6.417L8 14.417m0-7L14.417 4.5M8 7.417v7M14.417 4.5v6.417L8 14.417M10.5 13V9.5m2 2.5V8.5" />
-                  </svg>
-                </span>
                 <span className="stock-toggle-uiverse">
                   <span className="check" aria-hidden="true">
                     <input
@@ -156,6 +150,12 @@ export function ProductDetailPanel({
                     />
                     <label htmlFor={`stock-toggle-${selectedProduct.id}`} />
                   </span>
+                </span>
+                <span className={selectedProduct.trackStock ? "inline-flex whitespace-nowrap items-center gap-2 rounded-none border border-[rgba(167,139,250,0.34)] bg-[rgba(91,70,166,0.32)] px-3 py-2 text-[#c8b8ff]" : "inline-flex whitespace-nowrap items-center gap-2 rounded-none border border-[rgba(167,139,250,0.22)] bg-[rgba(37,32,58,0.78)] px-3 py-2 text-[#a99bf2]"}>
+                  {selectedProduct.trackStock ? "ทำการเปิดสต๊อก" : "ทำการปิดสต๊อก"}
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+                    <path fill="none" stroke="currentColor" strokeLinejoin="round" d="M1.583 4.5L8 1.583L14.417 4.5m-12.834 0L8 7.417M1.583 4.5v6.417L8 14.417m0-7L14.417 4.5M8 7.417v7M14.417 4.5v6.417L8 14.417M10.5 13V9.5m2 2.5V8.5" />
+                  </svg>
                 </span>
               </div>
             </div>

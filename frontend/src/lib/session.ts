@@ -16,6 +16,17 @@ export type SessionUser = {
     slug: string;
     logoUrl?: string | null;
     logoUploadedKey?: string | null;
+    promptPayEnabled?: boolean;
+    promptPayRecipientType?: "MOBILE" | "NATIONAL_ID" | "TAX_ID" | "STATIC_QR" | "BANK_ACCOUNT";
+    promptPayId?: string | null;
+    promptPayMobileId?: string | null;
+    promptPayNationalId?: string | null;
+    promptPayTaxId?: string | null;
+    bankName?: string | null;
+    bankAccountName?: string | null;
+    bankAccountNumber?: string | null;
+    paymentQrImageUrl?: string | null;
+    paymentQrUploadedKey?: string | null;
   } | null;
 };
 

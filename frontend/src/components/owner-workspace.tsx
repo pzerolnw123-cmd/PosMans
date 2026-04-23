@@ -3,7 +3,16 @@ import type { SessionPayload } from "@/lib/session";
 import { BackofficeShell, PanelCard } from "@/components/backoffice-shell";
 import { LogoutButton } from "@/components/logout-button";
 import { InteractiveActionGrid } from "@/components/interactive-action-grid";
-import { OwnerLogoClient, OwnerLogoProvider, OwnerLogoStatusPill, OwnerLogoStatusPreview, OwnerPasswordClient, OwnerProfileClient } from "@/components/owner-settings-client";
+import {
+  OwnerLogoClient,
+  OwnerLogoProvider,
+  OwnerLogoStatusPill,
+  OwnerLogoStatusPreview,
+  OwnerPasswordClient,
+  OwnerPaymentSettingsClient,
+  OwnerProfileClient,
+  type OwnerPaymentSettingsValue,
+} from "@/components/owner-settings-client";
 import { PaymentCheckoutClient } from "@/components/payment-checkout-client";
 import { ProductManagementStudio } from "@/components/product-management-studio";
 import { ListStack, NoteStack, ThreeUpStats } from "@/components/owner-workspace/shared";
@@ -98,7 +107,14 @@ function formatRoleLabel(session: SessionPayload) {
   return "Owner";
 }
 
-function renderOwnerScreen(activeSection: OwnerSectionKey, storeName: string, ownerName: string, formStoreName: string, formOwnerName: string) {
+function renderOwnerScreen(
+  activeSection: OwnerSectionKey,
+  storeName: string,
+  ownerName: string,
+  formStoreName: string,
+  formOwnerName: string,
+  paymentSettings: OwnerPaymentSettingsValue,
+) {
   const screens: Record<
     OwnerSectionKey,
     {
@@ -149,7 +165,7 @@ function renderOwnerScreen(activeSection: OwnerSectionKey, storeName: string, ow
             actions={<StatusPill tone="success">พร้อมรับชำระ</StatusPill>}
           />
 
-          <PaymentCheckoutClient />
+          <PaymentCheckoutClient paymentSettings={paymentSettings} />
         </section>
       ),
       standalone: true,
@@ -424,31 +440,45 @@ function renderOwnerScreen(activeSection: OwnerSectionKey, storeName: string, ow
               <OwnerPasswordClient />
             </PanelCard>
 
-            <PanelCard
-              eyebrow="สัญลักษณ์"
-              title="โลโก้ร้าน"
-              actions={<OwnerLogoStatusPill />}
-              titleClassName="my-[10px] text-[clamp(1.65rem,2.1vw,2.35rem)] leading-[1.05] tracking-[-0.045em]"
-              className="grid h-fit min-h-0 content-start px-5 py-5"
-            >
-              <OwnerLogoClient />
-            </PanelCard>
+            <div className="grid gap-[18px]">
+              <PanelCard
+                eyebrow="โปรไฟล์ร้านค้า"
+                title="ข้อมูลทั่วไป"
+                titleClassName="my-[10px] text-[clamp(1.65rem,2.1vw,2.35rem)] leading-[1.05] tracking-[-0.045em]"
+                className="grid h-fit min-h-0 content-start px-5 py-5"
+              >
+                <div className="grid gap-[18px]">
+                  <OwnerProfileClient
+                    storeName={formStoreName}
+                    ownerName={formOwnerName}
+                    storeNamePlaceholder={storeNamePrompt}
+                    ownerNamePlaceholder={ownerNamePrompt}
+                  />
+                </div>
+              </PanelCard>
 
-            <PanelCard
-              eyebrow="โปรไฟล์ร้านค้า"
-              title="ข้อมูลทั่วไป"
-              titleClassName="my-[10px] text-[clamp(1.65rem,2.1vw,2.35rem)] leading-[1.05] tracking-[-0.045em]"
-              className="grid h-fit min-h-0 content-start px-5 py-5"
-            >
-              <div className="grid gap-[18px]">
-                <OwnerProfileClient
-                  storeName={formStoreName}
-                  ownerName={formOwnerName}
-                  storeNamePlaceholder={storeNamePrompt}
-                  ownerNamePlaceholder={ownerNamePrompt}
-                />
-              </div>
-            </PanelCard>
+              <PanelCard
+                eyebrow="สัญลักษณ์"
+                title="โลโก้ร้าน"
+                actions={<OwnerLogoStatusPill />}
+                titleClassName="my-[10px] text-[clamp(1.65rem,2.1vw,2.35rem)] leading-[1.05] tracking-[-0.045em]"
+                className="grid h-fit min-h-0 content-start px-5 py-5"
+              >
+                <OwnerLogoClient />
+              </PanelCard>
+            </div>
+
+            <div className="grid gap-[18px]">
+              <PanelCard
+                eyebrow="การรับเงิน"
+                title="QR / ข้อมูลโอน"
+                titleClassName="my-[10px] text-[clamp(1.42rem,1.7vw,1.8rem)] leading-[1.08] tracking-[-0.035em]"
+                className="grid h-fit min-h-0 content-start px-5 py-5"
+              >
+                <OwnerPaymentSettingsClient initialSettings={paymentSettings} />
+              </PanelCard>
+            </div>
+
           </div>
         </section>
       ),
@@ -467,7 +497,20 @@ export function OwnerWorkspace({ session, activeSection }: OwnerWorkspaceProps) 
   const storeName = formStoreName || storeNamePrompt;
   const ownerName = formOwnerName || ownerNamePrompt;
   const roleLabel = formatRoleLabel(session);
-  const screen = renderOwnerScreen(activeSection, storeName, ownerName, formStoreName, formOwnerName);
+  const paymentSettings: OwnerPaymentSettingsValue = {
+    promptPayEnabled: Boolean(session.user.store?.promptPayEnabled),
+    promptPayRecipientType: session.user.store?.promptPayRecipientType || "MOBILE",
+    promptPayId: session.user.store?.promptPayId || "",
+    promptPayMobileId: session.user.store?.promptPayMobileId || "",
+    promptPayNationalId: session.user.store?.promptPayNationalId || "",
+    promptPayTaxId: session.user.store?.promptPayTaxId || "",
+    bankName: session.user.store?.bankName || "",
+    bankAccountName: session.user.store?.bankAccountName || "",
+    bankAccountNumber: session.user.store?.bankAccountNumber || "",
+    paymentQrImageUrl: session.user.store?.paymentQrImageUrl || "",
+    paymentQrUploadedKey: session.user.store?.paymentQrUploadedKey || "",
+  };
+  const screen = renderOwnerScreen(activeSection, storeName, ownerName, formStoreName, formOwnerName, paymentSettings);
   const showFooterCards = !screen.standalone;
   const shell = (
     <BackofficeShell

@@ -64,12 +64,136 @@ const ownerProfileSchema = z
   })
   .strict();
 
+const promptPayRecipientTypes = ["MOBILE", "NATIONAL_ID", "TAX_ID", "STATIC_QR", "BANK_ACCOUNT"];
+const nullablePlainText = (fieldName, max = 120) =>
+  z
+    .string()
+    .trim()
+    .max(max)
+    .transform((value) => (value ? assertSafePlainText(value, fieldName) : null))
+    .nullable()
+    .optional()
+    .transform((value) => value || null);
+const nullableDigitText = (max = 32) =>
+  z
+    .string()
+    .trim()
+    .max(max)
+    .transform((value) => value.replace(/[\s-]/g, ""))
+    .nullable()
+    .optional()
+    .transform((value) => value || null);
+
+const ownerPaymentSettingsSchema = z
+  .object({
+    promptPayEnabled: z.boolean(),
+    promptPayRecipientType: z.enum(promptPayRecipientTypes).default("MOBILE"),
+    promptPayId: nullableDigitText(24),
+    promptPayMobileId: nullableDigitText(24),
+    promptPayNationalId: nullableDigitText(24),
+    promptPayTaxId: nullableDigitText(24),
+    bankName: nullablePlainText("bankName", 80),
+    bankAccountName: nullablePlainText("bankAccountName", 120),
+    bankAccountNumber: nullableDigitText(32),
+    paymentQrImageUrl: z.preprocess((value) => (value === "" ? null : value), safeUrlSchema("paymentQrImageUrl").nullable().optional()).transform((value) => value || null),
+    paymentQrUploadedKey: z.string().trim().max(255).nullable().optional().transform((value) => value || null),
+  })
+  .strict()
+  .transform((value) => {
+    const normalized = { ...value };
+
+    if (normalized.promptPayRecipientType !== "STATIC_QR") {
+      normalized.paymentQrImageUrl = null;
+      normalized.paymentQrUploadedKey = null;
+    }
+
+    if (normalized.promptPayRecipientType !== "BANK_ACCOUNT") {
+      normalized.bankName = null;
+      normalized.bankAccountName = null;
+      normalized.bankAccountNumber = null;
+    }
+
+    return normalized;
+  })
+  .superRefine((value, context) => {
+    if (value.promptPayMobileId && !/^\d+$/.test(value.promptPayMobileId)) {
+      context.addIssue({ code: z.ZodIssueCode.custom, path: ["promptPayMobileId"], message: "Mobile PromptPay ID must contain digits only" });
+    }
+
+    if (value.promptPayNationalId && !/^\d+$/.test(value.promptPayNationalId)) {
+      context.addIssue({ code: z.ZodIssueCode.custom, path: ["promptPayNationalId"], message: "National ID PromptPay must contain digits only" });
+    }
+
+    if (value.promptPayTaxId && !/^\d+$/.test(value.promptPayTaxId)) {
+      context.addIssue({ code: z.ZodIssueCode.custom, path: ["promptPayTaxId"], message: "Tax ID PromptPay must contain digits only" });
+    }
+
+    if (value.bankAccountNumber && !/^\d+$/.test(value.bankAccountNumber)) {
+      context.addIssue({ code: z.ZodIssueCode.custom, path: ["bankAccountNumber"], message: "Bank account number must contain digits only" });
+    }
+
+    if (value.promptPayMobileId && !/^0\d{9}$/.test(value.promptPayMobileId)) {
+      context.addIssue({ code: z.ZodIssueCode.custom, path: ["promptPayMobileId"], message: "Mobile PromptPay ID must be a 10-digit Thai mobile number" });
+    }
+
+    if (value.promptPayNationalId && !/^\d{13}$/.test(value.promptPayNationalId)) {
+      context.addIssue({ code: z.ZodIssueCode.custom, path: ["promptPayNationalId"], message: "National ID PromptPay must be 13 digits" });
+    }
+
+    if (value.promptPayTaxId && !/^\d{13}$/.test(value.promptPayTaxId)) {
+      context.addIssue({ code: z.ZodIssueCode.custom, path: ["promptPayTaxId"], message: "Tax ID PromptPay must be 13 digits" });
+    }
+
+    if (value.bankAccountNumber && !/^\d{6,20}$/.test(value.bankAccountNumber)) {
+      context.addIssue({ code: z.ZodIssueCode.custom, path: ["bankAccountNumber"], message: "Bank account number must be 6-20 digits" });
+    }
+
+    if (!value.promptPayEnabled) {
+      return;
+    }
+
+    if (value.promptPayRecipientType === "MOBILE" && !value.promptPayMobileId) {
+      context.addIssue({ code: z.ZodIssueCode.custom, path: ["promptPayMobileId"], message: "Mobile PromptPay ID is required when QR PromptPay is enabled" });
+    }
+
+    if (value.promptPayRecipientType === "NATIONAL_ID" && !value.promptPayNationalId) {
+      context.addIssue({ code: z.ZodIssueCode.custom, path: ["promptPayNationalId"], message: "National ID PromptPay is required when QR PromptPay is enabled" });
+    }
+
+    if (value.promptPayRecipientType === "TAX_ID" && !value.promptPayTaxId) {
+      context.addIssue({ code: z.ZodIssueCode.custom, path: ["promptPayTaxId"], message: "Tax ID PromptPay is required when QR PromptPay is enabled" });
+    }
+
+    if (value.promptPayRecipientType === "STATIC_QR" && (!value.paymentQrImageUrl || !value.paymentQrUploadedKey)) {
+      context.addIssue({ code: z.ZodIssueCode.custom, path: ["paymentQrImageUrl"], message: "Static QR image is required when this recipient type is selected" });
+    }
+
+    if (value.promptPayRecipientType === "BANK_ACCOUNT" && (!value.bankName || !value.bankAccountName || !value.bankAccountNumber)) {
+      context.addIssue({ code: z.ZodIssueCode.custom, path: ["bankAccountNumber"], message: "Bank transfer details are required when this recipient type is selected" });
+    }
+  });
+
 const ownerLogoSchema = z
   .object({
     logoUrl: safeUrlSchema("logoUrl"),
     uploadedKey: z.string().min(1).max(255),
   })
   .strict();
+
+const storePaymentSelect = {
+  id: true,
+  promptPayEnabled: true,
+  promptPayRecipientType: true,
+  promptPayId: true,
+  promptPayMobileId: true,
+  promptPayNationalId: true,
+  promptPayTaxId: true,
+  bankName: true,
+  bankAccountName: true,
+  bankAccountNumber: true,
+  paymentQrImageUrl: true,
+  paymentQrUploadedKey: true,
+};
 
 function ownerUploadPrefix(storeId) {
   return `stores/${storeId}/uploads/`;
@@ -144,6 +268,17 @@ async function getLoginChallenge(token) {
               slug: true,
               logoUrl: true,
               logoUploadedKey: true,
+              promptPayEnabled: true,
+              promptPayRecipientType: true,
+              promptPayId: true,
+              promptPayMobileId: true,
+              promptPayNationalId: true,
+              promptPayTaxId: true,
+              bankName: true,
+              bankAccountName: true,
+              bankAccountNumber: true,
+              paymentQrImageUrl: true,
+              paymentQrUploadedKey: true,
               isActive: true,
             },
           },
@@ -188,6 +323,17 @@ function buildPublicUser(user) {
           slug: user.store.slug,
           logoUrl: user.store.logoUrl,
           logoUploadedKey: user.store.logoUploadedKey,
+          promptPayEnabled: user.store.promptPayEnabled,
+          promptPayRecipientType: user.store.promptPayRecipientType,
+          promptPayId: user.store.promptPayId,
+          promptPayMobileId: user.store.promptPayMobileId,
+          promptPayNationalId: user.store.promptPayNationalId,
+          promptPayTaxId: user.store.promptPayTaxId,
+          bankName: user.store.bankName,
+          bankAccountName: user.store.bankAccountName,
+          bankAccountNumber: user.store.bankAccountNumber,
+          paymentQrImageUrl: user.store.paymentQrImageUrl,
+          paymentQrUploadedKey: user.store.paymentQrUploadedKey,
         }
       : null,
   };
@@ -250,6 +396,17 @@ router.post("/login", requireTrustedOrigin, requireCsrf, ipLoginLimiter, account
             slug: true,
             logoUrl: true,
             logoUploadedKey: true,
+            promptPayEnabled: true,
+            promptPayRecipientType: true,
+            promptPayId: true,
+            promptPayMobileId: true,
+            promptPayNationalId: true,
+            promptPayTaxId: true,
+            bankName: true,
+            bankAccountName: true,
+            bankAccountNumber: true,
+            paymentQrImageUrl: true,
+            paymentQrUploadedKey: true,
             isActive: true,
           },
         },
@@ -602,6 +759,84 @@ router.patch("/owner-logo", requireTrustedOrigin, requireCsrf, requireStoreRole(
       targetType: "store",
       targetId: storeId,
       metadata: { uploadedKey: parsed.uploadedKey },
+    });
+
+    res.set("Cache-Control", "no-store");
+    res.json({ success: true, store });
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.patch("/owner-payment-settings", requireTrustedOrigin, requireCsrf, requireStoreRole(["OWNER"]), async (req, res, next) => {
+  try {
+    const parsed = ownerPaymentSettingsSchema.parse(req.body);
+    const storeId = req.session.user.storeId;
+
+    if (parsed.paymentQrUploadedKey) {
+      assertOwnedUploadedKey(storeId, parsed.paymentQrUploadedKey);
+    }
+
+    if (parsed.paymentQrUploadedKey && parsed.paymentQrImageUrl) {
+      assertUrlMatchesUploadedKey(parsed.paymentQrUploadedKey, parsed.paymentQrImageUrl);
+    }
+
+    const existingStore = await prisma.store.findUnique({
+      where: { id: storeId },
+      select: { id: true, paymentQrUploadedKey: true },
+    });
+
+    if (!existingStore) {
+      return res.status(404).json({ error: "Store not found" });
+    }
+
+    const shouldRemoveQr = existingStore.paymentQrUploadedKey && existingStore.paymentQrUploadedKey !== parsed.paymentQrUploadedKey;
+    const store = await prisma.store.update({
+      where: { id: storeId },
+      data: {
+        promptPayEnabled: parsed.promptPayEnabled,
+        promptPayRecipientType: parsed.promptPayRecipientType,
+        promptPayId:
+          parsed.promptPayRecipientType === "MOBILE"
+            ? parsed.promptPayMobileId
+            : parsed.promptPayRecipientType === "NATIONAL_ID"
+              ? parsed.promptPayNationalId
+              : parsed.promptPayRecipientType === "TAX_ID"
+                ? parsed.promptPayTaxId
+                : null,
+        promptPayMobileId: parsed.promptPayMobileId,
+        promptPayNationalId: parsed.promptPayNationalId,
+        promptPayTaxId: parsed.promptPayTaxId,
+        bankName: parsed.bankName,
+        bankAccountName: parsed.bankAccountName,
+        bankAccountNumber: parsed.bankAccountNumber,
+        paymentQrImageUrl: parsed.paymentQrImageUrl,
+        paymentQrUploadedKey: parsed.paymentQrUploadedKey,
+      },
+      select: storePaymentSelect,
+    });
+
+    if (shouldRemoveQr) {
+      await deleteR2Object(existingStore.paymentQrUploadedKey);
+    }
+
+    await writeAuditLog({
+      action: "STORE_PAYMENT_SETTINGS_UPDATED",
+      actorUserId: req.session.user.id,
+      status: "success",
+      ipAddress: req.ip,
+      userAgent: req.get("user-agent") || null,
+      targetType: "store",
+      targetId: storeId,
+      metadata: {
+        promptPayEnabled: store.promptPayEnabled,
+        promptPayRecipientType: store.promptPayRecipientType,
+        hasPromptPayMobileId: Boolean(store.promptPayMobileId),
+        hasPromptPayNationalId: Boolean(store.promptPayNationalId),
+        hasPromptPayTaxId: Boolean(store.promptPayTaxId),
+        hasBankAccount: Boolean(store.bankAccountNumber),
+        hasStaticQr: Boolean(store.paymentQrUploadedKey),
+      },
     });
 
     res.set("Cache-Control", "no-store");

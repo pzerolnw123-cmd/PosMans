@@ -208,6 +208,12 @@ main {
   line-height: 0;
 }
 
+.stock-toggle-uiverse .check input[type="checkbox"]:disabled,
+.stock-toggle-uiverse .check input[type="checkbox"]:disabled + label {
+  cursor: not-allowed;
+  opacity: 0.58;
+}
+
 @keyframes cart-card-pop {
   0% {
     transform: translateY(0) scale(1);
