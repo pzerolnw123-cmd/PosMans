@@ -107,12 +107,6 @@ const ownerPaymentSettingsSchema = z
       normalized.paymentQrUploadedKey = null;
     }
 
-    if (normalized.promptPayRecipientType !== "BANK_ACCOUNT") {
-      normalized.bankName = null;
-      normalized.bankAccountName = null;
-      normalized.bankAccountNumber = null;
-    }
-
     return normalized;
   })
   .superRefine((value, context) => {

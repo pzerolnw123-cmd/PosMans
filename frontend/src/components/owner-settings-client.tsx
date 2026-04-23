@@ -1,7 +1,8 @@
 "use client";
 
 import type { ChangeEvent, FormEvent, ReactNode } from "react";
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { useBackofficeShellAlert } from "@/components/backoffice-shell";
 import { CropModal } from "@/components/product-management-studio/crop-modal";
@@ -26,8 +27,16 @@ const primaryButtonClass =
 const activeGhostButtonClass =
   "inline-flex min-h-[42px] items-center justify-center gap-[10px] rounded-[10px] border border-[var(--border)] bg-[rgba(22,27,38,0.8)] px-[18px] font-bold text-white transition hover:-translate-y-px hover:border-[var(--border-strong)] hover:shadow-[rgba(0,0,0,0.15)_0_5px_10px] disabled:cursor-not-allowed disabled:text-[var(--foreground-soft)] disabled:opacity-[0.62]";
 
-const fieldLabelClass = "text-[0.9rem] font-semibold text-[var(--foreground-soft)]";
+const dangerGhostButtonClass =
+  "inline-flex min-h-[42px] items-center justify-center gap-[10px] rounded-[10px] border border-[rgba(232,93,117,0.3)] bg-[rgba(232,93,117,0.08)] px-[18px] font-bold text-[#ff8fa2] transition hover:-translate-y-px hover:border-[rgba(232,93,117,0.5)] hover:bg-[rgba(232,93,117,0.14)] disabled:cursor-not-allowed disabled:opacity-[0.62]";
 
+const fieldLabelClass = "text-[0.9rem] font-semibold text-[var(--foreground-soft)]";
+const compactBankInputClass =
+  "h-[42px] w-full rounded-[10px] border border-[rgba(100,120,160,0.22)] bg-[rgba(14,18,28,0.7)] px-3 text-[0.95rem] text-[var(--foreground)] outline-none transition placeholder:text-[#556070] focus:border-[rgba(108,92,231,0.5)] focus:shadow-[0_0_0_4px_var(--ring)] disabled:cursor-not-allowed disabled:opacity-[0.62]";
+const compactFooterGhostButtonClass =
+  "inline-flex min-h-[38px] items-center justify-center gap-[8px] rounded-[10px] border border-[var(--border)] bg-[rgba(22,27,38,0.8)] px-[14px] text-[0.92rem] font-bold text-white transition hover:-translate-y-px hover:border-[var(--border-strong)] hover:shadow-[rgba(0,0,0,0.15)_0_5px_10px] disabled:cursor-not-allowed disabled:text-[var(--foreground-soft)] disabled:opacity-[0.62]";
+const compactFooterPrimaryButtonClass =
+  "inline-flex min-h-[38px] items-center justify-center gap-[8px] rounded-[10px] border border-transparent bg-[linear-gradient(135deg,var(--brand)_0%,#8070f0_100%)] px-[16px] text-[0.9rem] font-bold text-white shadow-[rgba(108,92,231,0.18)_0_6px_14px] transition hover:-translate-y-px disabled:cursor-not-allowed disabled:opacity-[0.62]";
 const passwordInputWrapClass =
   "grid h-[46px] grid-cols-[minmax(0,1fr)_42px] items-center rounded-[10px] border border-[rgba(100,120,160,0.22)] bg-[rgba(14,18,28,0.7)] transition focus-within:border-[rgba(108,92,231,0.5)] focus-within:shadow-[0_0_0_4px_var(--ring)]";
 
@@ -40,6 +49,16 @@ const passwordToggleClass =
 type SubmitState = {
   status: "idle" | "saving" | "success" | "error";
   message: string;
+};
+
+type ConfirmPaymentSettingsModalProps = {
+  busy: boolean;
+  enabled: boolean;
+  recipientLabel: string;
+  bankSummary?: ReactNode;
+  promptPaySummary?: ReactNode;
+  onClose: () => void;
+  onConfirm: () => void;
 };
 
 type OwnerLogoContextValue = {
@@ -80,6 +99,22 @@ const promptPayRecipientOptions: Array<{ value: PromptPayRecipientType; label: s
   { value: "TAX_ID", label: "เลขผู้เสียภาษี", helper: "เลข 13 หลักของกิจการ" },
   { value: "STATIC_QR", label: "Static QR", helper: "อัปโหลด QR ธนาคาร" },
   { value: "BANK_ACCOUNT", label: "บัญชีธนาคาร", helper: "fallback เมื่อไม่มี QR" },
+];
+
+const thaiBankOptions = [
+  "ธนาคารกสิกรไทย",
+  "ธนาคารกรุงไทย",
+  "ธนาคารกรุงเทพ",
+  "ธนาคารไทยพาณิชย์",
+  "ธนาคารกรุงศรีอยุธยา",
+  "ธนาคารทหารไทยธนชาต",
+  "ธนาคารออมสิน",
+  "ธนาคารเพื่อการเกษตรและสหกรณ์การเกษตร",
+  "ธนาคารอาคารสงเคราะห์",
+  "ธนาคารยูโอบี",
+  "ธนาคารซีไอเอ็มบี ไทย",
+  "ธนาคารแลนด์ แอนด์ เฮ้าส์",
+  "ธนาคารเกียรตินาคินภัทร",
 ];
 export function OwnerLogoProvider({ children, initialLogoUrl = "" }: { children: ReactNode; initialLogoUrl?: string | null }) {
   const normalizedInitialLogoUrl = initialLogoUrl || "";
@@ -154,6 +189,73 @@ function EyeIcon({ open }: { open: boolean }) {
       />
       {!open ? <path d="M5 19 19 5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" /> : null}
     </svg>
+  );
+}
+
+function ConfirmPaymentSettingsModal({ busy, enabled, recipientLabel, bankSummary, promptPaySummary, onClose, onConfirm }: ConfirmPaymentSettingsModalProps) {
+  const mounted = useSyncExternalStore(
+    () => () => undefined,
+    () => true,
+    () => false,
+  );
+
+  useEffect(() => {
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape" && !busy) {
+        onClose();
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [busy, onClose]);
+
+  if (!mounted) {
+    return null;
+  }
+
+  return createPortal(
+    <div className="fixed inset-0 z-[300] grid place-items-center bg-[rgba(7,10,16,0.55)] p-4 backdrop-blur-[16px]">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(108,92,231,0.12),transparent_48%)]" />
+
+      <div className="relative z-[1] grid w-[calc(100vw-32px)] max-w-[380px] gap-5 overflow-hidden rounded-[14px] border border-[rgba(108,92,231,0.2)] bg-[linear-gradient(180deg,rgba(22,27,38,0.99),rgba(26,30,42,0.98))] p-5 shadow-[rgba(0,0,0,0.6)_0_40px_100px]">
+        <div className="grid gap-3">
+          <p className="m-0 text-left text-[0.7rem] font-bold uppercase tracking-[0.28em] text-[#9f91ff]">ยืนยันการบันทึก</p>
+          <h2 className="m-0 text-[1.25rem] leading-tight tracking-[-0.04em] text-white">ต้องการบันทึกการตั้งค่านี้ใช่ไหม</h2>
+          <div className="inline-grid w-full gap-2 rounded-none border border-[var(--border)] bg-[rgba(255,255,255,0.03)] p-3">
+            <div className="grid gap-1">
+              <span className="text-[0.78rem] text-[var(--foreground-soft)]">{enabled ? "ประเภทผู้รับเงิน" : "สถานะการแสดงผล"}</span>
+              <strong className="text-white text-[0.95rem]">{enabled ? recipientLabel : "ปิดการแสดง QR / ข้อมูลโอน"}</strong>
+            </div>
+            {enabled && promptPaySummary ? (
+              <div className="grid gap-1 border-t border-[rgba(100,120,160,0.14)] pt-2">
+                <span className="text-[0.78rem] text-[var(--foreground-soft)]">PromptPay</span>
+                <div className="text-white text-[0.95rem]">{promptPaySummary}</div>
+              </div>
+            ) : null}
+            {enabled && bankSummary ? (
+              <div className="grid gap-1 border-t border-[rgba(100,120,160,0.14)] pt-2">
+                <span className="text-[0.78rem] text-[var(--foreground-soft)]">บัญชีธนาคาร</span>
+                <div className="text-white text-[0.95rem]">{bankSummary}</div>
+              </div>
+            ) : null}
+          </div>
+          <p className="m-0 text-[0.88rem] leading-[1.6] text-[var(--foreground-soft)]">
+            {enabled ? "หลังบันทึกแล้ว หน้า Payment จะใช้ข้อมูลนี้เป็นค่าแสดงผลล่าสุดของร้าน" : "หลังบันทึกแล้ว หน้า Payment จะไม่แสดง QR หรือข้อมูลโอนจนกว่าจะเปิดใช้อีกครั้ง"}
+          </p>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3 pt-1">
+          <button type="button" className={`${activeGhostButtonClass} py-2.5 text-[0.92rem]`} onClick={onClose} disabled={busy}>
+            ยกเลิก
+          </button>
+          <button type="button" className={`${primaryButtonClass} py-2.5 text-[0.92rem]`} onClick={onConfirm} disabled={busy}>
+            {busy ? "กำลังบันทึก..." : "ยืนยันการบันทึก"}
+          </button>
+        </div>
+      </div>
+    </div>,
+    document.body,
   );
 }
 
@@ -743,12 +845,6 @@ function normalizePaymentSettings(value: OwnerPaymentSettingsValue): OwnerPaymen
     normalized.paymentQrUploadedKey = "";
   }
 
-  if (normalized.promptPayRecipientType !== "BANK_ACCOUNT") {
-    normalized.bankName = "";
-    normalized.bankAccountName = "";
-    normalized.bankAccountNumber = "";
-  }
-
   normalized.promptPayId =
     normalized.promptPayRecipientType === "MOBILE"
       ? normalized.promptPayMobileId
@@ -767,7 +863,7 @@ function paymentSettingsEqual(left: OwnerPaymentSettingsValue, right: OwnerPayme
   return JSON.stringify(normalizedLeft) === JSON.stringify(normalizedRight);
 }
 
-function validatePaymentSettings(value: OwnerPaymentSettingsValue) {
+function validatePaymentSettings(value: OwnerPaymentSettingsValue, editorType: PromptPayRecipientType) {
   const normalized = normalizePaymentSettings(value);
 
   if (normalized.promptPayMobileId && !/^\d+$/.test(normalized.promptPayMobileId)) {
@@ -802,6 +898,15 @@ function validatePaymentSettings(value: OwnerPaymentSettingsValue) {
     return "เลขบัญชีธนาคารต้องมี 6-20 หลัก";
   }
 
+  if (editorType === "BANK_ACCOUNT") {
+    const hasAnyBankField = Boolean(normalized.bankName || normalized.bankAccountName || normalized.bankAccountNumber);
+    const hasAllBankFields = Boolean(normalized.bankName && normalized.bankAccountName && normalized.bankAccountNumber);
+
+    if (hasAnyBankField && !hasAllBankFields) {
+      return "กรอกข้อมูลบัญชีธนาคารให้ครบก่อนบันทึก";
+    }
+  }
+
   if (!normalized.promptPayEnabled) {
     return null;
   }
@@ -823,10 +928,55 @@ function validatePaymentSettings(value: OwnerPaymentSettingsValue) {
   }
 
   if (normalized.promptPayRecipientType === "BANK_ACCOUNT" && (!normalized.bankName || !normalized.bankAccountName || !normalized.bankAccountNumber)) {
-    return "กรอกชื่อธนาคาร ชื่อบัญชี และเลขบัญชีก่อนเปิดใช้ข้อมูลโอนเงิน";
+    return "กรอกข้อมูลบัญชีธนาคารให้ครบก่อนเปิดใช้งาน";
   }
 
   return null;
+}
+
+function isEditorTypeCleared(settings: OwnerPaymentSettingsValue, editorType: PromptPayRecipientType) {
+  if (editorType === "MOBILE") {
+    return !settings.promptPayMobileId;
+  }
+
+  if (editorType === "NATIONAL_ID") {
+    return !settings.promptPayNationalId;
+  }
+
+  if (editorType === "TAX_ID") {
+    return !settings.promptPayTaxId;
+  }
+
+  if (editorType === "STATIC_QR") {
+    return !settings.paymentQrImageUrl && !settings.paymentQrUploadedKey;
+  }
+
+  if (editorType === "BANK_ACCOUNT") {
+    return !settings.bankName && !settings.bankAccountName && !settings.bankAccountNumber;
+  }
+
+  return false;
+}
+
+function preparePaymentSettingsForSubmit(value: OwnerPaymentSettingsValue, editorType: PromptPayRecipientType): OwnerPaymentSettingsValue {
+  const normalized = normalizePaymentSettings(value);
+
+  if (normalized.promptPayEnabled && isEditorTypeCleared(normalized, editorType)) {
+    const hasBankAccount = Boolean(normalized.bankName && normalized.bankAccountName && normalized.bankAccountNumber);
+    
+    if (editorType !== "BANK_ACCOUNT" && hasBankAccount) {
+      return { ...normalized, promptPayRecipientType: "BANK_ACCOUNT" };
+    }
+
+    if (editorType === "BANK_ACCOUNT") {
+      if (normalized.promptPayMobileId) return { ...normalized, promptPayRecipientType: "MOBILE" };
+      if (normalized.promptPayNationalId) return { ...normalized, promptPayRecipientType: "NATIONAL_ID" };
+      if (normalized.promptPayTaxId) return { ...normalized, promptPayRecipientType: "TAX_ID" };
+      if (normalized.paymentQrImageUrl) return { ...normalized, promptPayRecipientType: "STATIC_QR" };
+    }
+  }
+
+  return normalized;
 }
 
 function promptPayIdFieldCopy(type: PromptPayRecipientType) {
@@ -853,33 +1003,134 @@ function createPromptPayDrafts(settings: OwnerPaymentSettingsValue): PromptPayDr
   };
 }
 
+function clearPaymentSettingsForType(settings: OwnerPaymentSettingsValue, type: PromptPayRecipientType): OwnerPaymentSettingsValue {
+  if (type === "MOBILE") {
+    return {
+      ...settings,
+      promptPayId: "",
+      promptPayMobileId: "",
+    };
+  }
+
+  if (type === "NATIONAL_ID") {
+    return {
+      ...settings,
+      promptPayId: "",
+      promptPayNationalId: "",
+    };
+  }
+
+  if (type === "TAX_ID") {
+    return {
+      ...settings,
+      promptPayId: "",
+      promptPayTaxId: "",
+    };
+  }
+
+  if (type === "STATIC_QR") {
+    return {
+      ...settings,
+      paymentQrImageUrl: "",
+      paymentQrUploadedKey: "",
+    };
+  }
+
+  if (type === "BANK_ACCOUNT") {
+    return {
+      ...settings,
+      bankName: "",
+      bankAccountName: "",
+      bankAccountNumber: "",
+    };
+  }
+
+  return settings;
+}
+
+function resolveEditorType(settings: OwnerPaymentSettingsValue): PromptPayRecipientType {
+  if (settings.promptPayRecipientType === "BANK_ACCOUNT") {
+    return "BANK_ACCOUNT";
+  }
+
+  return settings.promptPayRecipientType;
+}
+
 export function OwnerPaymentSettingsClient({ initialSettings }: { initialSettings: OwnerPaymentSettingsValue }) {
   const { setShellAlert } = useBackofficeShellAlert();
   const router = useRouter();
   const [savedSettings, setSavedSettings] = useState(() => normalizePaymentSettings(initialSettings));
   const [form, setForm] = useState(() => normalizePaymentSettings(initialSettings));
+  const [editorType, setEditorType] = useState<PromptPayRecipientType>(() => resolveEditorType(normalizePaymentSettings(initialSettings)));
   const [promptPayDrafts, setPromptPayDrafts] = useState<PromptPayDrafts>(() => createPromptPayDrafts(initialSettings));
   const [uploadingQr, setUploadingQr] = useState(false);
+  const [qrCropDraft, setQrCropDraft] = useState<CropDraft | null>(null);
+  const [qrCropZoom, setQrCropZoom] = useState(1);
+  const [qrCropOffset, setQrCropOffset] = useState({ x: 0, y: 0 });
+  const [qrCropBusy, setQrCropBusy] = useState(false);
+  const [confirmSaveOpen, setConfirmSaveOpen] = useState(false);
+  const [bankDropdownOpen, setBankDropdownOpen] = useState(false);
+  const bankDropdownRef = useRef<HTMLDivElement | null>(null);
   const [submitState, setSubmitState] = useState<SubmitState>({
     status: "idle",
-    message: "ใช้สร้าง QR หรือข้อมูลโอนใน Payment",
+    message: "ใช้สำหรับระบบการโอนเงิน",
   });
 
   const pending = submitState.status === "saving" || uploadingQr;
-  const validationMessage = validatePaymentSettings(form);
-  const canSavePaymentSettings = !pending && !validationMessage && !paymentSettingsEqual(form, savedSettings);
-  const usesPromptPayId = form.promptPayRecipientType === "MOBILE" || form.promptPayRecipientType === "NATIONAL_ID" || form.promptPayRecipientType === "TAX_ID";
-  const usesBankAccount = form.promptPayRecipientType === "BANK_ACCOUNT";
-  const usesStaticQr = form.promptPayRecipientType === "STATIC_QR";
-  const promptPayField = promptPayIdFieldCopy(form.promptPayRecipientType);
+  const effectivelyDisabled = pending || !form.promptPayEnabled;
+  const bankFormIncomplete =
+    editorType === "BANK_ACCOUNT" &&
+    Boolean(form.bankName || form.bankAccountName || form.bankAccountNumber) &&
+    !(form.bankName && form.bankAccountName && form.bankAccountNumber);
+  const preparedForm = preparePaymentSettingsForSubmit(form, editorType);
+  const validationMessage = bankFormIncomplete ? "กรอกข้อมูลบัญชีธนาคารให้ครบก่อนบันทึก" : validatePaymentSettings(preparedForm, editorType);
+  const canSavePaymentSettings = !pending && !validationMessage && !paymentSettingsEqual(preparedForm, savedSettings);
+  const usesPromptPayId = editorType === "MOBILE" || editorType === "NATIONAL_ID" || editorType === "TAX_ID";
+  const usesBankAccount = editorType === "BANK_ACCOUNT";
+  const usesStaticQr = editorType === "STATIC_QR";
+  const promptPayField = promptPayIdFieldCopy(editorType);
   const activePromptPayValue =
-    form.promptPayRecipientType === "MOBILE"
+    editorType === "MOBILE"
       ? form.promptPayMobileId
-      : form.promptPayRecipientType === "NATIONAL_ID"
+      : editorType === "NATIONAL_ID"
         ? form.promptPayNationalId
-        : form.promptPayRecipientType === "TAX_ID"
+        : editorType === "TAX_ID"
           ? form.promptPayTaxId
           : "";
+  const paymentHintMessage =
+    editorType === "BANK_ACCOUNT"
+      ? "ใช้สำหรับระบบการโอนเงิน"
+      : editorType === "STATIC_QR"
+        ? "ใช้สำหรับแสดง Static QR"
+        : "ใช้สำหรับสร้าง QR PromptPay";
+  const resetTargetForm = clearPaymentSettingsForType(form, editorType);
+  const submitPreviewSettings = preparePaymentSettingsForSubmit(form, editorType);
+  const resetDisabled = pending || paymentSettingsEqual(form, resetTargetForm);
+
+  useEffect(() => {
+    return () => {
+      if (qrCropDraft?.objectUrl) {
+        URL.revokeObjectURL(qrCropDraft.objectUrl);
+      }
+    };
+  }, [qrCropDraft]);
+
+  useEffect(() => {
+    function handlePointerDown(event: MouseEvent) {
+      if (bankDropdownRef.current && !bankDropdownRef.current.contains(event.target as Node)) {
+        setBankDropdownOpen(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handlePointerDown);
+    return () => document.removeEventListener("mousedown", handlePointerDown);
+  }, []);
+
+  useEffect(() => {
+    if (!usesBankAccount || effectivelyDisabled) {
+      setBankDropdownOpen(false);
+    }
+  }, [effectivelyDisabled, usesBankAccount]);
 
   async function handleQrUpload(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
@@ -901,13 +1152,57 @@ export function OwnerPaymentSettingsClient({ initialSettings }: { initialSetting
       return;
     }
 
-    setUploadingQr(true);
-    setSubmitState({ status: "saving", message: "กำลังอัปโหลด Static QR..." });
+    try {
+      const objectUrl = createImageObjectUrl(file);
+      const image = await loadImage(objectUrl);
+      setQrCropDraft({ fileName: file.name, objectUrl, image });
+      setQrCropZoom(1);
+      setQrCropOffset({ x: 0, y: 0 });
+      setSubmitState({ status: "idle", message: "ครอป Static QR ก่อนอัปโหลด" });
+    } catch (error) {
+      setSubmitState({ status: "error", message: error instanceof Error ? error.message : "เตรียมรูป Static QR ไม่สำเร็จ" });
+      setShellAlert({ message: "เตรียมรูป Static QR ไม่สำเร็จ", tone: "danger" });
+    }
+  }
+
+  function handleQrCropZoomChange(nextZoom: number) {
+    if (!qrCropDraft) {
+      return;
+    }
+
+    setQrCropOffset((current) => clampOffset(qrCropDraft.image, nextZoom, current.x, current.y, CROP_VIEWPORT_SIZE));
+    setQrCropZoom(nextZoom);
+  }
+
+  function handleQrCropOffsetChange(nextX: number, nextY: number) {
+    if (!qrCropDraft) {
+      return;
+    }
+
+    setQrCropOffset(clampOffset(qrCropDraft.image, qrCropZoom, nextX, nextY, CROP_VIEWPORT_SIZE));
+  }
+
+  function handleQrCropClose() {
+    if (qrCropBusy) {
+      return;
+    }
+
+    setQrCropDraft(null);
+  }
+
+  async function handleQrCropConfirm() {
+    if (!qrCropDraft) {
+      return;
+    }
 
     try {
-      const safeExtension = file.type === "image/png" ? "png" : file.type === "image/webp" ? "webp" : "jpg";
-      const signedUpload = await requestSignedUpload(`payment-qr-${Date.now()}.${safeExtension}`, file.type, file.size);
-      await uploadBlobToR2(signedUpload, file);
+      setQrCropBusy(true);
+      setUploadingQr(true);
+      setSubmitState({ status: "saving", message: "กำลังอัปโหลด Static QR..." });
+
+      const croppedBlob = await createCroppedBlob(qrCropDraft, qrCropZoom, qrCropOffset.x, qrCropOffset.y);
+      const signedUpload = await requestSignedUpload(`payment-qr-${Date.now()}.webp`, "image/webp", croppedBlob.size);
+      await uploadBlobToR2(signedUpload, croppedBlob);
 
       const publicUrl = signedUpload.publicUrl;
       if (!publicUrl) {
@@ -920,27 +1215,27 @@ export function OwnerPaymentSettingsClient({ initialSettings }: { initialSetting
         paymentQrImageUrl: publicUrl,
         paymentQrUploadedKey: signedUpload.objectKey,
       }));
+      setQrCropDraft(null);
       setSubmitState({ status: "idle", message: "อัปโหลด Static QR แล้ว กดบันทึกเพื่อใช้งานจริง" });
       setShellAlert({ message: "อัปโหลด Static QR แล้ว", tone: "success" });
-    } catch {
-      setSubmitState({ status: "error", message: "อัปโหลด Static QR ไม่สำเร็จ กรุณาลองอีกครั้ง" });
+    } catch (error) {
+      setSubmitState({ status: "error", message: error instanceof Error ? error.message : "อัปโหลด Static QR ไม่สำเร็จ กรุณาลองอีกครั้ง" });
       setShellAlert({ message: "อัปโหลด Static QR ไม่สำเร็จ", tone: "danger" });
     } finally {
+      setQrCropBusy(false);
       setUploadingQr(false);
     }
   }
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-
-    const errorMessage = validatePaymentSettings(form);
+  async function performSubmit() {
+    const nextSettings = preparePaymentSettingsForSubmit(form, editorType);
+    const errorMessage = validatePaymentSettings(nextSettings, editorType);
     if (errorMessage) {
       setSubmitState({ status: "error", message: errorMessage });
       setShellAlert({ message: errorMessage, tone: "danger" });
       return;
     }
 
-    const nextSettings = normalizePaymentSettings(form);
     if (paymentSettingsEqual(nextSettings, savedSettings)) {
       return;
     }
@@ -968,7 +1263,9 @@ export function OwnerPaymentSettingsClient({ initialSettings }: { initialSetting
 
       setForm(nextSettings);
       setSavedSettings(nextSettings);
+      setEditorType(resolveEditorType(nextSettings));
       setPromptPayDrafts(createPromptPayDrafts(nextSettings));
+      setConfirmSaveOpen(false);
       setSubmitState({ status: "success", message: "บันทึกการรับชำระเงินแล้ว" });
       setShellAlert({ message: "บันทึกการรับชำระเงินแล้ว", tone: "success" });
       router.refresh();
@@ -978,13 +1275,89 @@ export function OwnerPaymentSettingsClient({ initialSettings }: { initialSetting
     }
   }
 
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    const nextSettings = preparePaymentSettingsForSubmit(form, editorType);
+    const errorMessage = validatePaymentSettings(nextSettings, editorType);
+    if (errorMessage) {
+      setSubmitState({ status: "error", message: errorMessage });
+      setShellAlert({ message: errorMessage, tone: "danger" });
+      return;
+    }
+
+    if (paymentSettingsEqual(nextSettings, savedSettings)) {
+      return;
+    }
+
+    setConfirmSaveOpen(true);
+  }
+
+  const qrCropModal = qrCropDraft ? (
+    <CropModal
+      draft={qrCropDraft}
+      zoom={qrCropZoom}
+      offsetX={qrCropOffset.x}
+      offsetY={qrCropOffset.y}
+      busy={qrCropBusy}
+      title="ครอปรูป Static QR"
+      description="จัด QR ให้อยู่ในกรอบสี่เหลี่ยมก่อนอัปโหลด เพื่อให้แสดงผลสวยและอ่านง่าย"
+      confirmLabel="ยืนยัน QR"
+      busyLabel="กำลังอัปโหลด..."
+      onClose={handleQrCropClose}
+      onConfirm={handleQrCropConfirm}
+      onZoomChange={handleQrCropZoomChange}
+      onOffsetChange={handleQrCropOffsetChange}
+    />
+  ) : null;
+
+  const confirmSaveModal = confirmSaveOpen ? (
+    <ConfirmPaymentSettingsModal
+      busy={submitState.status === "saving"}
+      enabled={submitPreviewSettings.promptPayEnabled}
+      recipientLabel={`${promptPayRecipientOptions.find((option) => option.value === submitPreviewSettings.promptPayRecipientType)?.label || "-"}${
+        submitPreviewSettings.bankName && submitPreviewSettings.bankAccountNumber && submitPreviewSettings.promptPayRecipientType !== "BANK_ACCOUNT" ? " และ โอนเงินธนาคาร" : ""
+      }`}
+      promptPaySummary={
+        submitPreviewSettings.promptPayMobileId
+          ? (
+            <strong className="text-[1.02rem] font-bold tracking-[0.01em] text-white">
+              เบอร์พร้อมเพย์ <span className="text-[1.08rem] font-extrabold text-[#f3edff]">{submitPreviewSettings.promptPayMobileId}</span>
+            </strong>
+          )
+          : submitPreviewSettings.promptPayNationalId
+            ? (
+              <strong className="text-[1.02rem] font-bold tracking-[0.01em] text-white">
+                เลขบัตรประชาชน <span className="text-[1.08rem] font-extrabold text-[#f3edff]">{submitPreviewSettings.promptPayNationalId}</span>
+              </strong>
+            )
+            : submitPreviewSettings.promptPayTaxId
+              ? (
+                <strong className="text-[1.02rem] font-bold tracking-[0.01em] text-white">
+                  เลขผู้เสียภาษี <span className="text-[1.08rem] font-extrabold text-[#f3edff]">{submitPreviewSettings.promptPayTaxId}</span>
+                </strong>
+              )
+              : null
+      }
+      bankSummary={
+        submitPreviewSettings.bankName && submitPreviewSettings.bankAccountNumber ? (
+          <strong className="text-[1.02rem] font-bold tracking-[0.01em] text-white">
+            {submitPreviewSettings.bankName} • <span className="text-[1.08rem] font-extrabold text-[#f3edff]">{submitPreviewSettings.bankAccountNumber}</span>
+          </strong>
+        ) : null
+      }
+      onClose={() => setConfirmSaveOpen(false)}
+      onConfirm={performSubmit}
+    />
+  ) : null;
+
   return (
     <form className="mt-2" onSubmit={handleSubmit}>
       <div className="grid gap-3">
         <div className="flex items-center justify-between gap-3 rounded-[10px] border border-[var(--border)] bg-[rgba(14,18,28,0.55)] px-3 py-2.5">
           <span className="grid gap-1">
             <span className="text-[0.95rem] font-bold leading-[1.45] text-white">เปิดใช้ QR / ข้อมูลโอน</span>
-            <span className="text-[0.8rem] leading-[1.45] text-[var(--foreground-soft)]">แสดงใน Payment และยังต้อง<br />ตรวจสลิปก่อนยืนยัน</span>
+            <span className="text-[0.8rem] leading-[1.45] text-[var(--foreground-soft)]">แสดงใน Payment และเช็กสลิป</span>
           </span>
           <span className="stock-toggle-uiverse shrink-0">
             <span className="check" aria-hidden="true">
@@ -1001,30 +1374,43 @@ export function OwnerPaymentSettingsClient({ initialSettings }: { initialSetting
           </span>
         </div>
 
-        <div className="grid gap-2">
+        <div className={`grid gap-2 transition-opacity ${!form.promptPayEnabled ? "opacity-40" : ""}`}>
           <span className={fieldLabelClass}>ประเภทผู้รับเงิน</span>
+          <span className="text-[0.78rem] leading-[1.45] text-[var(--foreground-soft)]">ตัวที่เลือกเป็นค่าหลัก เงินโอนใช้บัญชีที่กรอกไว้</span>
           <div className="grid grid-cols-2 gap-2 max-[720px]:grid-cols-1">
             {promptPayRecipientOptions.map((option) => (
               <button
                 key={option.value}
                 type="button"
                 className={
-                  form.promptPayRecipientType === option.value
-                    ? "grid min-h-[54px] content-center gap-0.5 rounded-[10px] border border-[rgba(108,92,231,0.55)] bg-[rgba(108,92,231,0.16)] px-3 py-1.5 text-left text-white"
-                    : "grid min-h-[54px] content-center gap-0.5 rounded-[10px] border border-[var(--border)] bg-[rgba(22,27,38,0.74)] px-3 py-1.5 text-left text-[var(--foreground)] transition hover:border-[var(--border-strong)]"
+                  editorType === option.value
+                    ? `grid min-h-[54px] content-center gap-0.5 rounded-[10px] border px-3 py-1.5 text-left text-white transition-colors ${
+                        option.value === "BANK_ACCOUNT"
+                          ? "border-[rgba(232,93,117,0.52)] bg-[rgba(232,93,117,0.14)] text-[#ffb0bd]"
+                          : form.promptPayEnabled
+                            ? "border-[rgba(108,92,231,0.55)] bg-[rgba(108,92,231,0.16)]"
+                            : "border-[var(--border)] bg-[rgba(22,27,38,0.74)]"
+                      } ${option.value === "BANK_ACCOUNT" ? "col-span-2 mx-auto w-full max-w-[calc(50%-4px)] justify-items-center text-center max-[720px]:col-span-1 max-[720px]:max-w-none" : ""}`
+                    : option.value === "BANK_ACCOUNT"
+                      ? "col-span-2 mx-auto grid min-h-[54px] w-full max-w-[calc(50%-4px)] content-center justify-items-center gap-0.5 rounded-[10px] border border-[rgba(232,93,117,0.34)] bg-[rgba(232,93,117,0.08)] px-3 py-1.5 text-center text-[#ff9daf] transition hover:border-[rgba(232,93,117,0.5)] hover:bg-[rgba(232,93,117,0.12)] max-[720px]:col-span-1 max-[720px]:max-w-none"
+                      : "grid min-h-[54px] content-center gap-0.5 rounded-[10px] border border-[var(--border)] bg-[rgba(22,27,38,0.74)] px-3 py-1.5 text-left text-[var(--foreground)] transition hover:border-[var(--border-strong)]"
                 }
                 onClick={() =>
                   setForm((current) => {
-                    if (option.value === current.promptPayRecipientType) {
+                    if (option.value === editorType) {
                       return current;
                     }
 
                     const nextPromptPayId =
                       option.value === "MOBILE" || option.value === "NATIONAL_ID" || option.value === "TAX_ID"
-                        ? savedSettings.promptPayRecipientType === option.value
-                          ? promptPayDrafts[option.value]
-                          : ""
+                        ? promptPayDrafts[option.value]
                         : "";
+
+                    setEditorType(option.value);
+
+                    if (option.value === "BANK_ACCOUNT") {
+                      return { ...current, promptPayRecipientType: "BANK_ACCOUNT" };
+                    }
 
                     return {
                       ...current,
@@ -1036,7 +1422,7 @@ export function OwnerPaymentSettingsClient({ initialSettings }: { initialSetting
                     };
                   })
                 }
-                disabled={pending}
+                disabled={effectivelyDisabled}
               >
                 <strong className="text-[0.86rem] leading-[1.2] [overflow-wrap:anywhere]">{option.label}</strong>
                 <span className="text-[0.68rem] leading-[1.25] text-[var(--foreground-soft)] [overflow-wrap:anywhere]">{option.helper}</span>
@@ -1046,7 +1432,7 @@ export function OwnerPaymentSettingsClient({ initialSettings }: { initialSetting
         </div>
 
         {usesPromptPayId ? (
-          <label className="grid gap-2">
+          <label className={`grid gap-2 transition-opacity ${!form.promptPayEnabled ? "opacity-40" : ""}`}>
             <span className={fieldLabelClass}>{promptPayField.label}</span>
             <input
               className={inputClass}
@@ -1058,51 +1444,81 @@ export function OwnerPaymentSettingsClient({ initialSettings }: { initialSetting
                 setForm((current) => ({
                   ...current,
                   promptPayId: nextValue,
-                  promptPayMobileId: current.promptPayRecipientType === "MOBILE" ? nextValue : current.promptPayMobileId,
-                  promptPayNationalId: current.promptPayRecipientType === "NATIONAL_ID" ? nextValue : current.promptPayNationalId,
-                  promptPayTaxId: current.promptPayRecipientType === "TAX_ID" ? nextValue : current.promptPayTaxId,
+                  promptPayMobileId: editorType === "MOBILE" ? nextValue : current.promptPayMobileId,
+                  promptPayNationalId: editorType === "NATIONAL_ID" ? nextValue : current.promptPayNationalId,
+                  promptPayTaxId: editorType === "TAX_ID" ? nextValue : current.promptPayTaxId,
                 }));
-                setPromptPayDrafts((current) => ({ ...current, [form.promptPayRecipientType]: nextValue }));
               }}
-              disabled={pending}
+              disabled={effectivelyDisabled}
               maxLength={promptPayField.maxLength}
             />
           </label>
         ) : null}
 
         {usesBankAccount ? (
-          <div className="grid grid-cols-2 gap-3 max-[720px]:grid-cols-1">
-            <label className="grid gap-2">
+          <div className={`grid gap-2.5 transition-opacity ${!form.promptPayEnabled ? "opacity-40" : ""}`}>
+            <label className="grid gap-1">
               <span className={fieldLabelClass}>ชื่อบัญชี</span>
               <input
-                className={inputClass}
+                className={compactBankInputClass}
                 value={form.bankAccountName}
                 placeholder="ชื่อบัญชีรับเงิน"
                 onChange={(event) => setForm((current) => ({ ...current, bankAccountName: event.target.value }))}
-                disabled={pending}
+                disabled={effectivelyDisabled}
                 maxLength={120}
               />
             </label>
-            <label className="grid gap-2">
+            <label className="grid gap-1">
               <span className={fieldLabelClass}>ธนาคาร</span>
-              <input
-                className={inputClass}
-                value={form.bankName}
-                placeholder="เช่น กสิกรไทย"
-                onChange={(event) => setForm((current) => ({ ...current, bankName: event.target.value }))}
-                disabled={pending}
-                maxLength={80}
-              />
+              <div className="relative" ref={bankDropdownRef}>
+                <button
+                  type="button"
+                  className={`${compactBankInputClass} flex items-center justify-between gap-3 text-left ${bankDropdownOpen ? "border-[rgba(108,92,231,0.5)] shadow-[0_0_0_4px_var(--ring)]" : ""}`}
+                  onClick={() => setBankDropdownOpen((current) => !current)}
+                  disabled={effectivelyDisabled}
+                  aria-expanded={bankDropdownOpen}
+                >
+                  <span className={form.bankName ? "truncate text-[var(--foreground)]" : "truncate text-[#7d8799]"}>{form.bankName || "เลือกธนาคาร"}</span>
+                  <span className={`shrink-0 text-[var(--foreground-soft)] transition ${bankDropdownOpen ? "rotate-180" : ""}`}>
+                    <svg aria-hidden="true" viewBox="0 0 20 20" className="h-4 w-4 fill-current">
+                      <path d="M5.47 7.97a.75.75 0 0 1 1.06 0L10 11.44l3.47-3.47a.75.75 0 1 1 1.06 1.06l-4 4a.75.75 0 0 1-1.06 0l-4-4a.75.75 0 0 1 0-1.06Z" />
+                    </svg>
+                  </span>
+                </button>
+                {bankDropdownOpen ? (
+                  <div className="absolute bottom-[calc(100%+10px)] left-0 right-0 z-20 overflow-hidden border border-[rgba(122,110,255,0.24)] bg-[linear-gradient(180deg,rgba(28,32,48,0.98),rgba(21,25,37,0.98))] shadow-[rgba(7,10,16,0.55)_0_18px_40px]">
+                    <div className="max-h-[240px] overflow-y-auto py-2 [&::-webkit-scrollbar]:w-[6px] [&::-webkit-scrollbar-track]:bg-[rgba(15,19,29,0.78)] [&::-webkit-scrollbar-thumb]:bg-[linear-gradient(180deg,rgba(240,106,223,0.8),rgba(169,108,255,0.8))] hover:[&::-webkit-scrollbar-thumb]:bg-[linear-gradient(180deg,rgba(240,106,223,1),rgba(169,108,255,1))]">
+                      {thaiBankOptions.map((bankName) => {
+                        const active = form.bankName === bankName;
+
+                        return (
+                          <button
+                            key={bankName}
+                            type="button"
+                            className={`flex w-full items-center px-4 py-3 text-left text-[0.95rem] leading-[1.25] transition ${active ? "bg-[rgba(108,92,231,0.16)] text-[#b9aeff]" : "text-[rgba(255,255,255,0.9)] hover:bg-[rgba(255,255,255,0.04)]"}`}
+                            onClick={() => {
+                              setForm((current) => ({ ...current, bankName }));
+                              setBankDropdownOpen(false);
+                            }}
+                          >
+                            {bankName}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ) : null}
+              </div>
             </label>
-            <label className="grid gap-2 max-[720px]:col-span-1 min-[721px]:col-span-2">
+            <label className="grid gap-1">
               <span className={fieldLabelClass}>เลขบัญชี</span>
               <input
-                className={inputClass}
+                className={compactBankInputClass}
                 value={form.bankAccountNumber}
                 inputMode="numeric"
                 placeholder="ตัวเลข 6-20 หลัก"
                 onChange={(event) => setForm((current) => ({ ...current, bankAccountNumber: event.target.value }))}
-                disabled={pending}
+                disabled={effectivelyDisabled}
                 maxLength={32}
               />
             </label>
@@ -1110,7 +1526,7 @@ export function OwnerPaymentSettingsClient({ initialSettings }: { initialSetting
         ) : null}
 
         {usesStaticQr ? (
-          <div className="grid gap-2 rounded-[10px] border border-[var(--border)] bg-[rgba(14,18,28,0.55)] p-3">
+          <div className={`grid gap-2 rounded-[10px] border border-[var(--border)] bg-[rgba(14,18,28,0.55)] p-3 transition-opacity ${!form.promptPayEnabled ? "opacity-40" : ""}`}>
             <div className="flex items-center justify-between gap-3">
               <div className="min-w-0">
                 <strong className="block text-[0.95rem] leading-[1.3] text-white">Static QR</strong>
@@ -1118,47 +1534,54 @@ export function OwnerPaymentSettingsClient({ initialSettings }: { initialSetting
               </div>
               <label className={`${activeGhostButtonClass} min-h-[36px] shrink-0 cursor-pointer px-3 text-[0.86rem]`}>
                 {uploadingQr ? "กำลังอัปโหลด..." : "อัปโหลด QR"}
-                <input className="sr-only" type="file" accept="image/png,image/jpeg,image/webp" onChange={handleQrUpload} disabled={pending} />
+                <input className="sr-only" type="file" accept="image/png,image/jpeg,image/webp" onChange={handleQrUpload} disabled={effectivelyDisabled} />
               </label>
             </div>
             {form.paymentQrImageUrl ? (
               <div className="flex items-center gap-2 rounded-[10px] border border-[rgba(100,120,160,0.12)] bg-[rgba(255,255,255,0.03)] p-2">
                 <span className="h-11 w-11 shrink-0 rounded-[8px] border border-[rgba(100,120,160,0.18)] bg-cover bg-center" style={{ backgroundImage: `url(${form.paymentQrImageUrl})` }} />
                 <span className="min-w-0 flex-1 truncate text-[0.82rem] text-[var(--foreground-soft)]">มีรูป QR แล้ว</span>
-                  <button
-                    type="button"
-                    className={`${activeGhostButtonClass} min-h-[34px] shrink-0 px-3 text-[0.82rem]`}
-                    onClick={() => setForm((current) => ({ ...current, paymentQrImageUrl: "", paymentQrUploadedKey: "" }))}
-                    disabled={pending}
-                  >
-                    ลบ
-                  </button>
+                <button
+                  type="button"
+                  className={`${dangerGhostButtonClass} min-h-[34px] shrink-0 px-3 text-[0.82rem]`}
+                  onClick={() => setForm((current) => ({ ...current, paymentQrImageUrl: "", paymentQrUploadedKey: "" }))}
+                  disabled={effectivelyDisabled}
+                >
+                  ลบ
+                </button>
               </div>
             ) : null}
           </div>
         ) : null}
 
         <p className={submitState.status === "error" ? "m-0 truncate whitespace-nowrap text-[0.8rem] font-bold leading-[1.35] text-[#ff8fa2]" : "m-0 truncate whitespace-nowrap text-[0.8rem] leading-[1.35] text-[var(--foreground-soft)]"}>
-          {validationMessage || submitState.message}
+          {validationMessage || (submitState.status === "idle" ? paymentHintMessage : submitState.message)}
         </p>
       </div>
 
       <div className="mt-3 flex flex-wrap justify-start gap-3 max-[720px]:[&>*]:w-full">
         <button
           type="button"
-          className={activeGhostButtonClass}
+          className={compactFooterGhostButtonClass}
           onClick={() => {
-            setForm(savedSettings);
-            setPromptPayDrafts(createPromptPayDrafts(savedSettings));
+            const nextForm = clearPaymentSettingsForType(form, editorType);
+            setForm(nextForm);
+            setEditorType(editorType);
+            setPromptPayDrafts(createPromptPayDrafts(nextForm));
+            setSubmitState({ status: "idle", message: paymentHintMessage });
+            setConfirmSaveOpen(false);
+            setBankDropdownOpen(false);
           }}
-          disabled={pending || paymentSettingsEqual(form, savedSettings)}
+          disabled={resetDisabled}
         >
           รีเซ็ต
         </button>
-        <button type="submit" className={primaryButtonClass} disabled={!canSavePaymentSettings}>
+        <button type="submit" className={compactFooterPrimaryButtonClass} disabled={!canSavePaymentSettings}>
           {submitState.status === "saving" ? "กำลังบันทึก..." : "บันทึกการรับชำระเงิน"}
         </button>
       </div>
+      {qrCropModal}
+      {confirmSaveModal}
     </form>
   );
 }

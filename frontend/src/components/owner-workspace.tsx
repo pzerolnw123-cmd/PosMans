@@ -472,7 +472,7 @@ function renderOwnerScreen(
               <PanelCard
                 eyebrow="การรับเงิน"
                 title="QR / ข้อมูลโอน"
-                titleClassName="my-[10px] text-[clamp(1.42rem,1.7vw,1.8rem)] leading-[1.08] tracking-[-0.035em]"
+                titleClassName="my-[10px] text-[clamp(1.42rem,1.7vw,1.6rem)] leading-[1.08] tracking-[-0.035em]"
                 className="grid h-fit min-h-0 content-start px-5 py-5"
               >
                 <OwnerPaymentSettingsClient initialSettings={paymentSettings} />

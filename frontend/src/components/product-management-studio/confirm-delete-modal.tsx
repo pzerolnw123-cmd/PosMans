@@ -43,7 +43,7 @@ export function ConfirmDeleteModal({
     <div className="fixed inset-0 z-[300] grid place-items-center bg-[rgba(7,10,16,0.55)] p-4 backdrop-blur-[16px]">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(232,93,117,0.08),transparent_48%)]" />
 
-      <div className="relative z-[1] grid w-[min(94vw,400px)] gap-6 overflow-hidden rounded-[24px] border border-[rgba(232,93,117,0.18)] bg-[linear-gradient(180deg,rgba(22,27,38,0.99),rgba(26,30,42,0.98))] p-6 shadow-[rgba(0,0,0,0.6)_0_40px_100px]">
+      <div className="relative z-[1] grid w-[min(94vw,400px)] gap-6 overflow-hidden rounded-none border border-[rgba(232,93,117,0.18)] bg-[linear-gradient(180deg,rgba(22,27,38,0.99),rgba(26,30,42,0.98))] p-6 shadow-[rgba(0,0,0,0.6)_0_40px_100px]">
         <div className="grid gap-2">
           <p className="m-0 text-left text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[#e85d75]">ยืนยันการลบ</p>
           <h2 className="mt-2 text-center text-[1.4rem] leading-tight tracking-[-0.04em] text-white">ต้องการลบสินค้าชิ้นนี้ใช่หรือไม่?</h2>

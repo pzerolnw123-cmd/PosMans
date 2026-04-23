@@ -4,7 +4,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState, type PointerEven
 import { useRouter } from "next/navigation";
 import QRCode from "qrcode";
 import { requestJson } from "@/components/product-management-studio/lib";
-import { inputClass, primaryButtonClass, secondaryButtonClass } from "@/components/ui-primitives";
+import { inputClass, Loader, primaryButtonClass, secondaryButtonClass } from "@/components/ui-primitives";
 import type { OwnerPaymentSettingsValue } from "@/components/owner-settings-client";
 
 type PaymentMethod = "CASH" | "QR" | "CARD" | "TRANSFER" | "OTHER";
@@ -150,8 +150,8 @@ export function PaymentCheckoutClient({ paymentSettings }: { paymentSettings: Ow
   const router = useRouter();
   const [items, setItems] = useState<StoredCartItem[]>([]);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("CASH");
-  const [discount, setDiscount] = useState(0);
-  const [tax, setTax] = useState(0);
+  const [discountPercent, setDiscountPercent] = useState(0);
+  const [taxPercent, setTaxPercent] = useState(0);
   const [note, setNote] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -165,8 +165,16 @@ export function PaymentCheckoutClient({ paymentSettings }: { paymentSettings: Ow
     startY: 0,
     scrollTop: 0,
   });
+  const [mounted, setMounted] = useState(false);
+  const [receivedAmount, setReceivedAmount] = useState<number>(0);
+
+  const [receivedDraft, setReceivedDraft] = useState<string | null>(null);
+  const [discountDraft, setDiscountDraft] = useState<string | null>(null);
+  const [taxDraft, setTaxDraft] = useState<string | null>(null);
 
   const subtotal = useMemo(() => items.reduce((total, item) => total + (item.product?.price || 0) * item.quantity, 0), [items]);
+  const discount = Math.floor(subtotal * (discountPercent / 100));
+  const tax = Math.floor(subtotal * (taxPercent / 100));
   const currentTotal = Math.max(0, subtotal - discount + tax);
   const billSubtotal = completedSale ? completedSale.subtotal : subtotal;
   const billDiscount = completedSale ? completedSale.discount : discount;
@@ -174,6 +182,10 @@ export function PaymentCheckoutClient({ paymentSettings }: { paymentSettings: Ow
   const billTotal = completedSale ? completedSale.total : currentTotal;
   const displayedPaymentMethod = completedSale?.paymentMethod ?? paymentMethod;
   const qrPaymentSelected = displayedPaymentMethod === "QR";
+  const transferSelected = displayedPaymentMethod === "TRANSFER";
+  const bankInfoFilled = Boolean(paymentSettings.bankName && paymentSettings.bankAccountName && paymentSettings.bankAccountNumber);
+  const changeAmount = Math.max(0, receivedAmount - billTotal);
+
   const dynamicPromptPayReady =
     paymentSettings.promptPayEnabled &&
     ["MOBILE", "NATIONAL_ID", "TAX_ID"].includes(paymentSettings.promptPayRecipientType) &&
@@ -185,11 +197,7 @@ export function PaymentCheckoutClient({ paymentSettings }: { paymentSettings: Ow
           : paymentSettings.promptPayTaxId,
     );
   const staticQrReady = paymentSettings.promptPayEnabled && paymentSettings.promptPayRecipientType === "STATIC_QR" && Boolean(paymentSettings.paymentQrImageUrl);
-  const bankFallbackReady =
-    paymentSettings.promptPayEnabled &&
-    paymentSettings.promptPayRecipientType === "BANK_ACCOUNT" &&
-    Boolean(paymentSettings.bankName && paymentSettings.bankAccountName && paymentSettings.bankAccountNumber);
-  const qrPaymentConfigured = dynamicPromptPayReady || staticQrReady || bankFallbackReady;
+  const qrPaymentConfigured = dynamicPromptPayReady || staticQrReady;
   const itemCount = useMemo(
     () => (completedSale ? completedSale.items.reduce((totalItems, item) => totalItems + item.quantity, 0) : items.reduce((totalItems, item) => totalItems + item.quantity, 0)),
     [completedSale, items],
@@ -213,25 +221,30 @@ export function PaymentCheckoutClient({ paymentSettings }: { paymentSettings: Ow
       }));
 
   useEffect(() => {
-    const raw = sessionStorage.getItem(salesCartStorageKey);
-    if (!raw) {
-      setCompletedSale(readLatestSale());
-      return;
-    }
+    async function initCart() {
+      try {
+        const raw = sessionStorage.getItem(salesCartStorageKey);
+        if (!raw) {
+          setCompletedSale(readLatestSale());
+          return;
+        }
 
-    try {
-      const parsed = JSON.parse(raw) as { items?: StoredCartItem[] };
-      const cartItems = Array.isArray(parsed.items) ? parsed.items : [];
-      setItems(cartItems);
-      if (cartItems.length > 0) {
-        setCompletedSale(null);
-      } else {
+        const parsed = JSON.parse(raw) as { items?: StoredCartItem[] };
+        const cartItems = Array.isArray(parsed.items) ? parsed.items : [];
+        setItems(cartItems);
+        if (cartItems.length > 0) {
+          setCompletedSale(null);
+        } else {
+          setCompletedSale(readLatestSale());
+        }
+      } catch {
+        setItems([]);
         setCompletedSale(readLatestSale());
+      } finally {
+        setMounted(true);
       }
-    } catch {
-      setItems([]);
-      setCompletedSale(readLatestSale());
     }
+    initCart();
   }, []);
 
   useLayoutEffect(() => {
@@ -259,7 +272,7 @@ export function PaymentCheckoutClient({ paymentSettings }: { paymentSettings: Ow
           margin: 2,
           scale: 7,
           color: {
-            dark: "#111827",
+            dark: "#6c5ce7",
             light: "#ffffff",
           },
         });
@@ -359,16 +372,16 @@ export function PaymentCheckoutClient({ paymentSettings }: { paymentSettings: Ow
         ) : null}
 
         {!paymentSettings.promptPayEnabled ? (
-          <div className="rounded-[10px] border border-[rgba(232,93,117,0.28)] bg-[rgba(232,93,117,0.08)] px-3 py-2 text-[0.86rem] font-bold text-[#ff8fa2]">
-            ยังไม่ได้เปิดใช้ QR PromptPay ในหน้าตั้งค่า
+          <div className="border border-[rgba(232,93,117,0.28)] bg-[rgba(232,93,117,0.08)] px-3 py-2 text-[0.86rem] font-bold text-[#ff8fa2]">
+            ยังไม่ได้เปิดใช้ QR PromptPay <br />ในหน้าตั้งค่า
           </div>
         ) : dynamicPromptPayReady ? (
           <div className={compact ? "grid justify-items-center gap-4 text-center" : "grid grid-cols-[148px_minmax(0,1fr)] items-center gap-4 max-[720px]:grid-cols-1"}>
             {promptPayQrDataUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={promptPayQrDataUrl} alt="PromptPay QR" className={compact ? "aspect-square w-full max-w-[240px] bg-white p-3" : "h-[148px] w-[148px] rounded-[12px] border border-white/10 bg-white p-2"} />
+              <img src={promptPayQrDataUrl} alt="PromptPay QR" className={compact ? "aspect-square w-full max-w-[240px] rounded-none bg-white p-3 shadow-[rgba(108,92,231,0.2)_0_0_24px]" : "h-[148px] w-[148px] rounded-none border border-[rgba(108,92,231,0.28)] bg-white p-2 shadow-[rgba(108,92,231,0.14)_0_0_15px]"} />
             ) : (
-              <div className={compact ? "grid aspect-square w-full max-w-[240px] place-items-center border border-dashed border-[rgba(220,208,255,0.28)] text-center text-[0.86rem] text-[var(--foreground-soft)]" : "grid h-[148px] w-[148px] place-items-center rounded-[12px] border border-dashed border-[rgba(100,120,160,0.28)] text-center text-[0.82rem] text-[var(--foreground-soft)]"}>
+              <div className={compact ? "grid aspect-square w-full max-w-[240px] place-items-center rounded-none border border-dashed border-[rgba(108,92,231,0.32)] text-center text-[0.86rem] text-[var(--foreground-soft)]" : "grid h-[148px] w-[148px] place-items-center rounded-none border border-dashed border-[rgba(108,92,231,0.28)] text-center text-[0.82rem] text-[var(--foreground-soft)]"}>
                 กำลังสร้าง QR
               </div>
             )}
@@ -411,16 +424,48 @@ export function PaymentCheckoutClient({ paymentSettings }: { paymentSettings: Ow
               <span className="block pt-1 text-center font-bold leading-[1.35] text-[#ffcf7a]">ตรวจสลิปก่อนยืนยัน</span>
             </div>
           </div>
-        ) : bankFallbackReady ? (
-          <div className="grid gap-2 rounded-[10px] border border-[rgba(100,120,160,0.14)] bg-[rgba(14,18,28,0.48)] p-3 text-[0.86rem]">
-            <div className="flex justify-between gap-3"><span className="text-[var(--foreground-soft)]">ธนาคาร</span><strong>{paymentSettings.bankName}</strong></div>
-            <div className="flex justify-between gap-3"><span className="text-[var(--foreground-soft)]">ชื่อบัญชี</span><strong>{paymentSettings.bankAccountName}</strong></div>
-            <div className="flex justify-between gap-3"><span className="text-[var(--foreground-soft)]">เลขบัญชี</span><strong>{paymentSettings.bankAccountNumber}</strong></div>
-            <div className="flex justify-between gap-3"><span className="text-[var(--foreground-soft)]">ยอดโอน</span><strong>{formatBaht(billTotal)}</strong></div>
-          </div>
         ) : (
           <div className="rounded-[10px] border border-[rgba(232,93,117,0.28)] bg-[rgba(232,93,117,0.08)] px-3 py-2 text-[0.84rem] font-bold text-[#ff8fa2]">
             ตั้งค่ารับเงินยังไม่ครบ
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  function renderTransferInstructions(compact = false) {
+    if (!transferSelected) {
+      return null;
+    }
+
+    const wrapperClass = compact ? "grid content-start gap-3" : "grid gap-3 rounded-none border border-[rgba(100,120,160,0.16)] bg-[rgba(255,255,255,0.03)] p-4";
+
+    return (
+      <div className={wrapperClass}>
+        {!compact ? (
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <strong className="block text-white">ข้อมูลโอนเงินผ่านธนาคาร</strong>
+              <span className="text-[0.86rem] leading-[1.5] text-[var(--foreground-soft)]">ให้ลูกค้าโอนเข้าบัญชีด้านล่าง</span>
+            </div>
+            <strong className="whitespace-nowrap text-white">{formatBaht(billTotal)}</strong>
+          </div>
+        ) : (
+          <div className="flex items-center justify-between gap-3">
+            <strong className="text-[0.95rem] text-white">ยอดโอน {formatBaht(billTotal)}</strong>
+            <span className="text-[0.75rem] font-bold text-[#ffcf7a]">ตรวจสลิปหลังโอน</span>
+          </div>
+        )}
+
+        {bankInfoFilled ? (
+          <div className="grid gap-2 rounded-none border border-[rgba(100,120,160,0.14)] bg-[rgba(14,18,28,0.48)] px-3.5 py-3 text-[0.86rem]">
+            <div className="flex justify-between gap-3"><span className="text-[var(--foreground-soft)]">ธนาคาร</span><strong className="text-white">{paymentSettings.bankName}</strong></div>
+            <div className="flex justify-between gap-3"><span className="text-[var(--foreground-soft)]">ชื่อบัญชี</span><strong className="text-white">{paymentSettings.bankAccountName}</strong></div>
+            <div className="flex justify-between gap-3"><span className="text-[var(--foreground-soft)] text-left">เลขบัญชี</span><strong className="text-[1.05rem] text-[var(--brand-strong)] select-all">{paymentSettings.bankAccountNumber}</strong></div>
+          </div>
+        ) : (
+          <div className="border border-[rgba(232,93,117,0.28)] bg-[rgba(232,93,117,0.08)] px-3 py-2 text-[0.84rem] font-bold text-[#ff8fa2]">
+            ยังไม่ได้ตั้งค่าบัญชีธนาคาร
           </div>
         )}
       </div>
@@ -460,12 +505,27 @@ export function PaymentCheckoutClient({ paymentSettings }: { paymentSettings: Ow
       sessionStorage.removeItem(salesCartStorageKey);
       sessionStorage.setItem(latestSaleStorageKey, JSON.stringify(completedSaleWithImages));
       setCompletedSale(completedSaleWithImages);
+      setReceivedAmount(0);
+      setReceivedDraft(null);
+      setDiscountDraft(null);
+      setTaxDraft(null);
     } catch (checkoutError) {
       setError(checkoutError instanceof Error ? checkoutError.message : "ยืนยันการชำระไม่สำเร็จ");
     } finally {
       setBusy(false);
     }
   }
+
+  if (!mounted) {
+    return (
+      <div className="flex h-full min-h-[400px] flex-col items-center justify-center gap-4 rounded-none border border-dashed border-[var(--border)] bg-[rgba(22,27,38,0.48)]">
+        <Loader size={64} label="กำลังตรวจสอบออเดอร์" />
+        <strong className="text-[1.1rem] tracking-[-0.04em] text-[var(--foreground-soft)]">กำลังตรวจสอบรายการ...</strong>
+      </div>
+    );
+  }
+
+  const paymentMethodLabel = paymentMethods.find((m) => m.value === displayedPaymentMethod)?.label || "อื่นๆ";
 
   return (
     <div className="grid h-full min-h-0 grid-cols-[minmax(0,1fr)_minmax(0,1fr)_280px] gap-[18px] max-[1280px]:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] max-[1180px]:grid-cols-1">
@@ -543,7 +603,7 @@ export function PaymentCheckoutClient({ paymentSettings }: { paymentSettings: Ow
         </div>
       </section>
 
-      <section className="grid min-h-0 grid-rows-[auto_auto_1fr_auto] gap-[16px] rounded-none border border-[var(--border)] bg-[rgba(22,27,38,0.76)] px-5 py-[18px] shadow-[var(--shadow-soft)]">
+      <section className="grid h-fit content-start gap-[16px] rounded-none border border-[var(--border)] bg-[rgba(22,27,38,0.76)] px-5 py-[18px] shadow-[var(--shadow-soft)]">
         <div>
           <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[#6b7a94]">Payment Methods</p>
           <strong className="my-[10px] block text-[1.4rem] leading-none tracking-[-0.04em] text-white">{completedSale ? "วิธีชำระล่าสุด" : "เลือกวิธีชำระ"}</strong>
@@ -559,7 +619,8 @@ export function PaymentCheckoutClient({ paymentSettings }: { paymentSettings: Ow
               type="button"
               className={displayedPaymentMethod === method.value ? `${primaryButtonClass} min-h-[52px] rounded-2xl` : `${secondaryButtonClass} min-h-[52px] rounded-2xl`}
               onClick={() => setPaymentMethod(method.value)}
-              disabled={Boolean(completedSale)}
+              disabled={Boolean(completedSale) || method.value === "CARD"}
+              aria-disabled={method.value === "CARD"}
             >
               {method.label}
             </button>
@@ -567,26 +628,74 @@ export function PaymentCheckoutClient({ paymentSettings }: { paymentSettings: Ow
         </div>
 
         <div className="grid content-start gap-4">
+          <div className="grid grid-cols-2 gap-3 max-[720px]:grid-cols-1">
+            {paymentMethod === "CASH" && !completedSale && (
+              <label className="grid gap-2">
+                <span className="text-[0.92rem] font-bold text-[var(--brand-strong)]">รับเงินมา</span>
+                <input
+                  className={`${inputClass} border-[rgba(108,92,231,0.4)] text-[1.2rem] font-bold [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
+                  type="number"
+                  min={0}
+                  value={receivedDraft ?? (receivedAmount === 0 ? "" : String(receivedAmount))}
+                  placeholder="ยอดเงิน..."
+                  onChange={(event) => {
+                    const val = event.target.value;
+                    setReceivedDraft(val);
+                    const parsed = Number(val);
+                    if (!isNaN(parsed)) setReceivedAmount(Math.max(0, parsed));
+                  }}
+                  onBlur={() => setReceivedDraft(null)}
+                  autoFocus
+                />
+              </label>
+            )}
+            <label className={`grid gap-2 ${paymentMethod !== "CASH" || completedSale ? "col-span-2" : ""}`}>
+              <span className="flex items-center gap-2 text-[0.92rem] text-[var(--foreground-soft)]">
+                ส่วนลด <span className="text-[0.72rem] font-bold text-[#8cffbd] bg-[#8cffbd]/10 px-1.5 py-0.5 rounded-[4px]">%</span>
+              </span>
+              <input
+                className={`${inputClass} [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
+                type="number"
+                min={0}
+                max={100}
+                value={discountDraft ?? String(discountPercent)}
+                placeholder="0"
+                onChange={(event) => {
+                  const val = event.target.value;
+                  setDiscountDraft(val);
+                  const parsed = Number(val);
+                  if (!isNaN(parsed)) setDiscountPercent(Math.max(0, Math.min(100, parsed)));
+                }}
+                onBlur={() => setDiscountDraft(null)}
+                disabled={Boolean(completedSale)}
+              />
+            </label>
+          </div>
           <label className="grid gap-2">
-            <span className="text-[0.92rem] text-[var(--foreground-soft)]">ส่วนลด</span>
+            <span className="flex items-center gap-2 text-[0.92rem] text-[var(--foreground-soft)]">
+              ภาษี <span className="text-[0.72rem] font-bold text-[#ff8fa2] bg-[#ff8fa2]/10 px-1.5 py-0.5 rounded-[4px]">%</span>
+            </span>
             <input
-              className={inputClass}
+              className={`${inputClass} [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
               type="number"
               min={0}
-              max={subtotal}
-              value={billDiscount}
-              onChange={(event) => setDiscount(Math.max(0, Number(event.target.value) || 0))}
+              max={100}
+              value={taxDraft ?? String(taxPercent)}
+              placeholder="0"
+              onChange={(event) => {
+                const val = event.target.value;
+                setTaxDraft(val);
+                const parsed = Number(val);
+                if (!isNaN(parsed)) setTaxPercent(Math.max(0, parsed));
+              }}
+              onBlur={() => setTaxDraft(null)}
               disabled={Boolean(completedSale)}
             />
           </label>
           <label className="grid gap-2">
-            <span className="text-[0.92rem] text-[var(--foreground-soft)]">ภาษี</span>
-            <input className={inputClass} type="number" min={0} value={billTax} onChange={(event) => setTax(Math.max(0, Number(event.target.value) || 0))} disabled={Boolean(completedSale)} />
-          </label>
-          <label className="grid gap-2">
             <span className="text-[0.92rem] text-[var(--foreground-soft)]">หมายเหตุบิล</span>
             <textarea
-              className="min-h-[116px] rounded-[14px] border border-[rgba(100,120,160,0.22)] bg-[rgba(14,18,28,0.7)] px-[14px] py-3 text-[var(--foreground)] outline-none transition placeholder:text-[#556070] focus:border-[rgba(108,92,231,0.55)] focus:shadow-[inset_0_0_0_1px_var(--ring)] disabled:cursor-not-allowed disabled:opacity-70"
+              className="min-h-[116px] rounded-none border border-[rgba(100,120,160,0.22)] bg-[rgba(14,18,28,0.7)] px-[14px] py-3 text-[var(--foreground)] outline-none transition placeholder:text-[#556070] focus:border-[rgba(108,92,231,0.55)] focus:shadow-[inset_0_0_0_1px_var(--ring)] disabled:cursor-not-allowed disabled:opacity-70 flex-shrink-0 resize-none [&::-webkit-scrollbar]:w-[6px] [&::-webkit-scrollbar-track]:bg-[rgba(15,19,29,0.78)] [&::-webkit-scrollbar-thumb]:bg-[linear-gradient(180deg,rgba(240,106,223,0.8),rgba(169,108,255,0.8))] hover:[&::-webkit-scrollbar-thumb]:bg-[linear-gradient(180deg,rgba(240,106,223,1),rgba(169,108,255,1))]"
               value={completedSale ? completedSale.note || "" : note}
               onChange={(event) => setNote(event.target.value)}
               disabled={Boolean(completedSale)}
@@ -599,7 +708,7 @@ export function PaymentCheckoutClient({ paymentSettings }: { paymentSettings: Ow
           <button type="button" className={`${secondaryButtonClass} min-h-[52px] rounded-2xl`} onClick={() => router.push("/owner/sales")}>
             {completedSale ? "เปิดออเดอร์ใหม่" : "กลับไปขาย"}
           </button>
-          <button type="button" className={`${primaryButtonClass} min-h-[52px] rounded-2xl`} disabled={items.length === 0 || busy || discount > subtotal || Boolean(completedSale) || (paymentMethod === "QR" && !qrPaymentConfigured)} onClick={handleConfirmPayment}>
+          <button type="button" className={`${primaryButtonClass} min-h-[52px] rounded-2xl`} disabled={items.length === 0 || busy || discount > subtotal || Boolean(completedSale) || (paymentMethod === "QR" && !qrPaymentConfigured) || (paymentMethod === "TRANSFER" && !bankInfoFilled)} onClick={handleConfirmPayment}>
             {busy ? "กำลังยืนยัน..." : "ยืนยันการชำระ"}
           </button>
         </div>
@@ -610,18 +719,32 @@ export function PaymentCheckoutClient({ paymentSettings }: { paymentSettings: Ow
           <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[#6b7a94]">Quick Panel</p>
           <strong className="my-[10px] block text-[1.4rem] leading-none tracking-[-0.04em] text-white">สถานะชำระเงิน</strong>
         </div>
-        <div className="grid gap-3">
-          {qrPaymentSelected ? (
+        <div className="grid gap-2">
+          {!completedSale && qrPaymentSelected ? (
             renderQrPaymentInstructions(true)
+          ) : !completedSale && transferSelected ? (
+            renderTransferInstructions(true)
           ) : (
             <>
-              <div className="rounded-none border border-[rgba(100,120,160,0.14)] bg-[rgba(255,255,255,0.03)] p-4">
-                <span className="text-[0.92rem] text-[var(--foreground-soft)]">จำนวนรายการ</span>
-                <strong className="mt-2 block text-[1.2rem] leading-[1.1] text-white">{billItems.length} รายการ / {itemCount} ชิ้น</strong>
+              {completedSale ? (
+                <div className="rounded-none border border-[rgba(46,212,122,0.22)] bg-[rgba(46,212,122,0.06)] px-3.5 py-3">
+                  <span className="text-[0.82rem] text-[var(--foreground-soft)]">วิธีชำระเงิน</span>
+                  <strong className="mt-1 block text-[1.05rem] leading-[1.1] text-[var(--success)]">{paymentMethodLabel}</strong>
+                </div>
+              ) : null}
+              {paymentMethod === "CASH" && !completedSale && receivedAmount > 0 && (
+                <div className="rounded-none border border-[rgba(108,92,231,0.22)] bg-[rgba(108,92,231,0.06)] px-3.5 py-3 shadow-[rgba(108,92,231,0.1)_0_0_15px]">
+                  <span className="text-[0.82rem] text-[var(--brand-strong)]">เงินทอน</span>
+                  <strong className="mt-1 block text-[1.05rem] leading-[1.1] text-white">{formatBaht(changeAmount)}</strong>
+                </div>
+              )}
+              <div className="rounded-none border border-[rgba(100,120,160,0.14)] bg-[rgba(255,255,255,0.03)] px-3.5 py-3">
+                <span className="text-[0.82rem] text-[var(--foreground-soft)]">จำนวนรายการ</span>
+                <strong className="mt-1 block text-[1.05rem] leading-[1.1] text-white">{billItems.length} รายการ / {itemCount} ชิ้น</strong>
               </div>
-              <div className="rounded-none border border-[rgba(100,120,160,0.14)] bg-[rgba(255,255,255,0.03)] p-4">
-                <span className="text-[0.92rem] text-[var(--foreground-soft)]">ยอดสุทธิ</span>
-                <strong className="mt-2 block text-[1.2rem] leading-[1.1] text-white">{formatBaht(billTotal)}</strong>
+              <div className="rounded-none border border-[rgba(100,120,160,0.14)] bg-[rgba(255,255,255,0.03)] px-3.5 py-3">
+                <span className="text-[0.82rem] text-[var(--foreground-soft)]">ยอดสุทธิ</span>
+                <strong className="mt-1 block text-[1.05rem] leading-[1.1] text-white">{formatBaht(billTotal)}</strong>
               </div>
             </>
           )}
