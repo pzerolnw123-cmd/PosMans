@@ -184,6 +184,7 @@ export function PaymentCheckoutClient({ paymentSettings }: { paymentSettings: Ow
   const qrPaymentSelected = displayedPaymentMethod === "QR";
   const transferSelected = displayedPaymentMethod === "TRANSFER";
   const bankInfoFilled = Boolean(paymentSettings.bankName && paymentSettings.bankAccountName && paymentSettings.bankAccountNumber);
+  const transferPaymentConfigured = paymentSettings.promptPayEnabled && bankInfoFilled;
   const changeAmount = Math.max(0, receivedAmount - billTotal);
 
   const dynamicPromptPayReady =
@@ -457,7 +458,11 @@ export function PaymentCheckoutClient({ paymentSettings }: { paymentSettings: Ow
           </div>
         )}
 
-        {bankInfoFilled ? (
+        {!paymentSettings.promptPayEnabled ? (
+          <div className="border border-[rgba(232,93,117,0.28)] bg-[rgba(232,93,117,0.08)] px-3 py-2 text-[0.84rem] font-bold text-[#ff8fa2]">
+            ยังไม่ได้เปิดใช้การรับโอนเงิน <br />ในหน้าตั้งค่า
+          </div>
+        ) : bankInfoFilled ? (
           <div className="grid gap-2 rounded-none border border-[rgba(100,120,160,0.14)] bg-[rgba(14,18,28,0.48)] px-3.5 py-3 text-[0.86rem]">
             <div className="flex justify-between gap-3"><span className="text-[var(--foreground-soft)]">ธนาคาร</span><strong className="text-white">{paymentSettings.bankName}</strong></div>
             <div className="flex justify-between gap-3"><span className="text-[var(--foreground-soft)]">ชื่อบัญชี</span><strong className="text-white">{paymentSettings.bankAccountName}</strong></div>
@@ -708,7 +713,7 @@ export function PaymentCheckoutClient({ paymentSettings }: { paymentSettings: Ow
           <button type="button" className={`${secondaryButtonClass} min-h-[52px] rounded-2xl`} onClick={() => router.push("/owner/sales")}>
             {completedSale ? "เปิดออเดอร์ใหม่" : "กลับไปขาย"}
           </button>
-          <button type="button" className={`${primaryButtonClass} min-h-[52px] rounded-2xl`} disabled={items.length === 0 || busy || discount > subtotal || Boolean(completedSale) || (paymentMethod === "QR" && !qrPaymentConfigured) || (paymentMethod === "TRANSFER" && !bankInfoFilled)} onClick={handleConfirmPayment}>
+          <button type="button" className={`${primaryButtonClass} min-h-[52px] rounded-2xl`} disabled={items.length === 0 || busy || discount > subtotal || Boolean(completedSale) || (paymentMethod === "QR" && !qrPaymentConfigured) || (paymentMethod === "TRANSFER" && !transferPaymentConfigured)} onClick={handleConfirmPayment}>
             {busy ? "กำลังยืนยัน..." : "ยืนยันการชำระ"}
           </button>
         </div>

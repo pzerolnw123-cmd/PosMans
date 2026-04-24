@@ -219,7 +219,7 @@ function ConfirmPaymentSettingsModal({ busy, enabled, recipientLabel, bankSummar
     <div className="fixed inset-0 z-[300] grid place-items-center bg-[rgba(7,10,16,0.55)] p-4 backdrop-blur-[16px]">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(108,92,231,0.12),transparent_48%)]" />
 
-      <div className="relative z-[1] grid w-[calc(100vw-32px)] max-w-[380px] gap-5 overflow-hidden rounded-[14px] border border-[rgba(108,92,231,0.2)] bg-[linear-gradient(180deg,rgba(22,27,38,0.99),rgba(26,30,42,0.98))] p-5 shadow-[rgba(0,0,0,0.6)_0_40px_100px]">
+      <div className="relative z-[1] grid w-[calc(100vw-32px)] max-w-[380px] gap-5 overflow-hidden rounded-none border border-[rgba(108,92,231,0.2)] bg-[linear-gradient(180deg,rgba(22,27,38,0.99),rgba(26,30,42,0.98))] p-5 shadow-[rgba(0,0,0,0.6)_0_40px_100px]">
         <div className="grid gap-3">
           <p className="m-0 text-left text-[0.7rem] font-bold uppercase tracking-[0.28em] text-[#9f91ff]">ยืนยันการบันทึก</p>
           <h2 className="m-0 text-[1.25rem] leading-tight tracking-[-0.04em] text-white">ต้องการบันทึกการตั้งค่านี้ใช่ไหม</h2>
@@ -242,7 +242,14 @@ function ConfirmPaymentSettingsModal({ busy, enabled, recipientLabel, bankSummar
             ) : null}
           </div>
           <p className="m-0 text-[0.88rem] leading-[1.6] text-[var(--foreground-soft)]">
-            {enabled ? "หลังบันทึกแล้ว หน้า Payment จะใช้ข้อมูลนี้เป็นค่าแสดงผลล่าสุดของร้าน" : "ข้อมูลจะถูกบันทึกเตรียมไว้ แต่หน้า Payment จะไม่แสดงข้อมูลรับเงิน จนกว่าคุณจะกดเปิดสวิตช์ใช้งาน"}
+            {enabled ? (
+              <>
+                หลังบันทึกแล้ว หน้า Payment จะใช้ข้อมูลนี้ <br />
+                เป็นค่าแสดงผลล่าสุดของร้าน
+              </>
+            ) : (
+              "ข้อมูลจะถูกบันทึกเตรียมไว้ แต่หน้า Payment จะไม่แสดงข้อมูลรับเงิน จนกว่าคุณจะกดเปิดสวิตช์ใช้งาน"
+            )}
           </p>
         </div>
 
@@ -1510,6 +1517,8 @@ export function OwnerPaymentSettingsClient({ initialSettings }: { initialSetting
                 onChange={async (event) => {
                   const isChecked = event.target.checked;
                   
+                  // Only block if they actually have unsaved DATA typed into the inputs.
+                  // We ignore `promptPayRecipientType` changes because simply clicking tabs mutates it, which creates false positives.
                   const hasAnyUnsavedChanges = 
                     form.promptPayMobileId !== savedSettings.promptPayMobileId ||
                     form.promptPayNationalId !== savedSettings.promptPayNationalId ||
@@ -1518,8 +1527,7 @@ export function OwnerPaymentSettingsClient({ initialSettings }: { initialSetting
                     form.paymentQrUploadedKey !== savedSettings.paymentQrUploadedKey ||
                     form.bankName !== savedSettings.bankName ||
                     form.bankAccountName !== savedSettings.bankAccountName ||
-                    form.bankAccountNumber !== savedSettings.bankAccountNumber ||
-                    form.promptPayRecipientType !== savedSettings.promptPayRecipientType;
+                    form.bankAccountNumber !== savedSettings.bankAccountNumber;
 
                   const isDirty = hasAnyUnsavedChanges;
                   if (isDirty) {
@@ -1754,8 +1762,41 @@ export function OwnerPaymentSettingsClient({ initialSettings }: { initialSetting
         >
           รีเซ็ต
         </button>
+        <button
+          type="button"
+          className={compactFooterGhostButtonClass}
+          onClick={() => {
+            setForm((current) => {
+              const revertForm = { ...current };
+              if (editorType === "MOBILE") {
+                revertForm.promptPayMobileId = savedSettings.promptPayMobileId;
+                revertForm.promptPayId = savedSettings.promptPayMobileId;
+              } else if (editorType === "NATIONAL_ID") {
+                revertForm.promptPayNationalId = savedSettings.promptPayNationalId;
+                revertForm.promptPayId = savedSettings.promptPayNationalId;
+              } else if (editorType === "TAX_ID") {
+                revertForm.promptPayTaxId = savedSettings.promptPayTaxId;
+                revertForm.promptPayId = savedSettings.promptPayTaxId;
+              } else if (editorType === "STATIC_QR") {
+                revertForm.paymentQrImageUrl = savedSettings.paymentQrImageUrl;
+                revertForm.paymentQrUploadedKey = savedSettings.paymentQrUploadedKey;
+              } else if (editorType === "BANK_ACCOUNT") {
+                revertForm.bankName = savedSettings.bankName;
+                revertForm.bankAccountName = savedSettings.bankAccountName;
+                revertForm.bankAccountNumber = savedSettings.bankAccountNumber;
+              }
+              return revertForm;
+            });
+            setSubmitState({ status: "idle", message: "" });
+            setConfirmSaveOpen(false);
+            setBankDropdownOpen(false);
+          }}
+          disabled={pending || !isActiveTabDirty}
+        >
+          ย้อนกลับ
+        </button>
         <button type="submit" className={compactFooterPrimaryButtonClass} disabled={!canSavePaymentSettings}>
-          {submitState.status === "saving" ? "กำลังบันทึก..." : "บันทึกการรับชำระเงิน"}
+          {submitState.status === "saving" ? "กำลังบันทึก..." : "บันทึก"}
         </button>
       </div>
       {qrCropModal}
