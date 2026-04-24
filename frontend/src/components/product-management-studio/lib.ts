@@ -1,10 +1,13 @@
 import { csrfCookieName, ensureCsrfToken, readCookie } from "@/lib/csrf";
-import type { CropDraft, SignedUploadPayload } from "@/components/product-management-studio/types";
+import type { CropDraft, ProductListResponse, SignedUploadPayload } from "@/components/product-management-studio/types";
 
 export const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 export const CROP_VIEWPORT_SIZE = 320;
 const CROPPED_EXPORT_SIZE = 1200;
+const PRODUCT_LIST_CACHE_TTL_MS = 15_000;
 export const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"] as const;
+
+const productListCache = new Map<string, { expiresAt: number; payload: ProductListResponse }>();
 
 export function clamp(value: number, min: number, max: number) {
   return Math.min(Math.max(value, min), max);
@@ -55,6 +58,34 @@ export async function requestJson<T>(path: string, init?: RequestInit) {
   }
 
   return (payload?.product ?? payload?.products ?? payload) as T;
+}
+
+function cloneProductListResponse(payload: ProductListResponse): ProductListResponse {
+  return {
+    products: payload.products.map((product) => ({ ...product })),
+    pagination: { ...payload.pagination },
+  };
+}
+
+export function invalidateProductListCache() {
+  productListCache.clear();
+}
+
+export async function requestProductList(params: URLSearchParams, { force = false }: { force?: boolean } = {}) {
+  const cacheKey = params.toString();
+  const cached = productListCache.get(cacheKey);
+
+  if (!force && cached && cached.expiresAt > Date.now()) {
+    return cloneProductListResponse(cached.payload);
+  }
+
+  const payload = await requestJson<ProductListResponse>(`/api/products?${cacheKey}`);
+  productListCache.set(cacheKey, {
+    expiresAt: Date.now() + PRODUCT_LIST_CACHE_TTL_MS,
+    payload: cloneProductListResponse(payload),
+  });
+
+  return payload;
 }
 
 export function createImageObjectUrl(file: File) {

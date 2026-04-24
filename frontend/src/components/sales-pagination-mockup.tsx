@@ -2,8 +2,8 @@
 
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type PointerEvent } from "react";
 import { useRouter } from "next/navigation";
-import { requestJson } from "@/components/product-management-studio/lib";
-import { categoryOptions, type ProductCategory, type ProductItem, type ProductListResponse } from "@/components/product-management-studio/types";
+import { requestProductList } from "@/components/product-management-studio/lib";
+import { categoryOptions, type ProductCategory, type ProductItem } from "@/components/product-management-studio/types";
 import { StatusPill } from "@/components/ui-primitives";
 
 type CartItem = {
@@ -188,7 +188,7 @@ export function SalesPaginationMockup() {
           pageSize: "6",
           category: activeCategory,
         });
-        const response = await requestJson<ProductListResponse>(`/api/products?${params.toString()}`);
+        const response = await requestProductList(params);
 
         if (cancelled) {
           return;

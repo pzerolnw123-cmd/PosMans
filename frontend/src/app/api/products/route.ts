@@ -1,5 +1,4 @@
-import { NextResponse } from "next/server";
-import { buildBackendHeaders, copyBackendCookies, proxyToBackend } from "@/lib/proxy";
+import { backendResponse, buildBackendHeaders, proxyToBackend } from "@/lib/proxy";
 
 export async function GET(request: Request) {
   const url = new URL(request.url);
@@ -8,17 +7,7 @@ export async function GET(request: Request) {
     headers: buildBackendHeaders(request, { refererPath: "/owner/menu" }),
   });
 
-  const text = await response.text();
-  const headers = new Headers({
-    "content-type": response.headers.get("content-type") || "application/json",
-    "cache-control": response.headers.get("cache-control") || "no-store",
-  });
-  copyBackendCookies(response, headers);
-
-  return new NextResponse(text, {
-    status: response.status,
-    headers,
-  });
+  return backendResponse(response);
 }
 
 export async function POST(request: Request) {
@@ -29,15 +18,5 @@ export async function POST(request: Request) {
     body,
   });
 
-  const text = await response.text();
-  const headers = new Headers({
-    "content-type": response.headers.get("content-type") || "application/json",
-    "cache-control": response.headers.get("cache-control") || "no-store",
-  });
-  copyBackendCookies(response, headers);
-
-  return new NextResponse(text, {
-    status: response.status,
-    headers,
-  });
+  return backendResponse(response);
 }

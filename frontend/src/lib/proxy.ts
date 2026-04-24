@@ -1,5 +1,6 @@
 import { backendUrl } from "@/lib/api";
 import { cookies } from "next/headers";
+import { NextResponse } from "next/server";
 
 const frontendUrl = process.env.FRONTEND_URL || process.env.NEXT_PUBLIC_FRONTEND_URL || "http://localhost:3000";
 const frontendOrigin = new URL(frontendUrl).origin;
@@ -66,4 +67,22 @@ export function copyBackendCookies(from: Response, to: Headers) {
   if (fallback) {
     to.set("set-cookie", fallback);
   }
+}
+
+export async function backendResponse(response: Response, { empty = false }: { empty?: boolean } = {}) {
+  const shouldReturnEmptyBody = empty && response.status === 204;
+  const headers = new Headers({
+    "cache-control": response.headers.get("cache-control") || "no-store",
+  });
+
+  if (!shouldReturnEmptyBody) {
+    headers.set("content-type", response.headers.get("content-type") || "application/json");
+  }
+
+  copyBackendCookies(response, headers);
+
+  return new NextResponse(shouldReturnEmptyBody ? null : await response.text(), {
+    status: response.status,
+    headers,
+  });
 }

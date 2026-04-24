@@ -225,16 +225,29 @@ router.get("/", requireStoreRole(["OWNER"]), async (req, res, next) => {
       storeId,
       ...(query.category === "ทั้งหมด" ? {} : { category: query.category }),
     };
-    const totalItems = await prisma.product.count({ where });
+    const requestedPage = query.page;
+    const [totalItems, requestedProducts] = await prisma.$transaction([
+      prisma.product.count({ where }),
+      prisma.product.findMany({
+        where,
+        select: productSelect,
+        orderBy: [{ updatedAt: "desc" }, { createdAt: "desc" }],
+        skip: (requestedPage - 1) * query.pageSize,
+        take: query.pageSize,
+      }),
+    ]);
     const totalPages = Math.max(1, Math.ceil(totalItems / query.pageSize));
-    const page = Math.min(query.page, totalPages);
-    const products = await prisma.product.findMany({
-      where,
-      select: productSelect,
-      orderBy: [{ updatedAt: "desc" }, { createdAt: "desc" }],
-      skip: (page - 1) * query.pageSize,
-      take: query.pageSize,
-    });
+    const page = Math.min(requestedPage, totalPages);
+    const products =
+      page === requestedPage
+        ? requestedProducts
+        : await prisma.product.findMany({
+            where,
+            select: productSelect,
+            orderBy: [{ updatedAt: "desc" }, { createdAt: "desc" }],
+            skip: (page - 1) * query.pageSize,
+            take: query.pageSize,
+          });
 
     res.set("Cache-Control", "no-store");
     res.json({

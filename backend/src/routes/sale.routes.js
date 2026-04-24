@@ -29,6 +29,13 @@ const createSaleSchema = z
   })
   .strict();
 
+const saleListQuerySchema = z.object({
+  q: z.string().trim().max(80).optional().default(""),
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().default(""),
+  page: z.coerce.number().int().min(1).optional().default(1),
+  pageSize: z.coerce.number().int().min(1).max(50).optional().default(12),
+});
+
 const saleSelect = {
   id: true,
   code: true,
@@ -50,6 +57,47 @@ const saleSelect = {
       productCode: true,
       productName: true,
       productCategory: true,
+    },
+  },
+};
+
+const saleListSelect = {
+  id: true,
+  code: true,
+  status: true,
+  paymentMethod: true,
+  subtotal: true,
+  discount: true,
+  tax: true,
+  total: true,
+  note: true,
+  createdAt: true,
+  items: {
+    select: {
+      id: true,
+      quantity: true,
+      unitPrice: true,
+      lineTotal: true,
+      productId: true,
+      productCode: true,
+      productName: true,
+      productCategory: true,
+    },
+    orderBy: { id: "asc" },
+  },
+  createdBy: {
+    select: {
+      id: true,
+      displayName: true,
+      username: true,
+    },
+  },
+  store: {
+    select: {
+      id: true,
+      name: true,
+      slug: true,
+      logoUrl: true,
     },
   },
 };
@@ -90,6 +138,29 @@ function serializeSale(order) {
   };
 }
 
+function serializeReceipt(order) {
+  const sale = serializeSale(order);
+  return {
+    ...sale,
+    itemCount: sale.items.reduce((count, item) => count + item.quantity, 0),
+    createdBy: order.createdBy
+      ? {
+          id: order.createdBy.id,
+          displayName: order.createdBy.displayName,
+          username: order.createdBy.username,
+        }
+      : null,
+    store: order.store
+      ? {
+          id: order.store.id,
+          name: order.store.name,
+          slug: order.store.slug,
+          logoUrl: order.store.logoUrl,
+        }
+      : null,
+  };
+}
+
 function mergeItems(items) {
   const merged = new Map();
   for (const item of items) {
@@ -103,6 +174,93 @@ function nextSaleCode(storeId) {
   const random = Math.random().toString(36).slice(2, 7).toUpperCase();
   return `SALE-${today}-${storeId.slice(-4).toUpperCase()}-${random}`;
 }
+
+function bangkokDateRange(dateText) {
+  if (!dateText) return null;
+
+  const start = new Date(`${dateText}T00:00:00.000+07:00`);
+  const end = new Date(start.getTime() + 24 * 60 * 60 * 1000);
+  return { gte: start, lt: end };
+}
+
+router.get("/", requireStoreRole(["OWNER"]), async (req, res, next) => {
+  try {
+    const storeId = await requireOwnerStoreId(req, res);
+    const query = saleListQuerySchema.parse(req.query);
+    const search = query.q.trim();
+    const createdAt = bangkokDateRange(query.date);
+    const where = {
+      storeId,
+      ...(createdAt ? { createdAt } : {}),
+      ...(search
+        ? {
+            OR: [
+              { code: { contains: search, mode: "insensitive" } },
+              { note: { contains: search, mode: "insensitive" } },
+              { items: { some: { productName: { contains: search, mode: "insensitive" } } } },
+              { items: { some: { productCode: { contains: search, mode: "insensitive" } } } },
+            ],
+          }
+        : {}),
+    };
+
+    const requestedPage = query.page;
+    const [totalItems, requestedReceipts] = await prisma.$transaction([
+      prisma.saleOrder.count({ where }),
+      prisma.saleOrder.findMany({
+        where,
+        select: saleListSelect,
+        orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+        skip: (requestedPage - 1) * query.pageSize,
+        take: query.pageSize,
+      }),
+    ]);
+    const totalPages = Math.max(1, Math.ceil(totalItems / query.pageSize));
+    const page = Math.min(requestedPage, totalPages);
+    const receipts =
+      page === requestedPage
+        ? requestedReceipts
+        : await prisma.saleOrder.findMany({
+            where,
+            select: saleListSelect,
+            orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+            skip: (page - 1) * query.pageSize,
+            take: query.pageSize,
+          });
+
+    res.set("Cache-Control", "no-store");
+    res.json({
+      receipts: receipts.map(serializeReceipt),
+      pagination: {
+        page,
+        pageSize: query.pageSize,
+        totalItems,
+        totalPages,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.get("/:saleId", requireStoreRole(["OWNER"]), async (req, res, next) => {
+  try {
+    const storeId = await requireOwnerStoreId(req, res);
+    const receipt = await prisma.saleOrder.findFirst({
+      where: { id: req.params.saleId, storeId },
+      select: saleListSelect,
+    });
+
+    if (!receipt) {
+      throw new AppError("Receipt not found", 404, { code: "RECEIPT_NOT_FOUND" });
+    }
+
+    res.set("Cache-Control", "no-store");
+    res.json({ receipt: serializeReceipt(receipt) });
+  } catch (error) {
+    next(error);
+  }
+});
 
 router.post("/", saleCheckoutLimiter, requireTrustedOrigin, requireCsrf, requireStoreRole(["OWNER"]), async (req, res, next) => {
   try {
@@ -191,25 +349,30 @@ router.post("/", saleCheckoutLimiter, requireTrustedOrigin, requireCsrf, require
             select: saleSelect,
           });
 
-          for (const item of orderItems.filter((entry) => entry.trackStock)) {
-            const updated = await tx.product.updateMany({
-              where: {
-                id: item.productId,
-                storeId,
-                trackStock: true,
-                stockQuantity: { gte: item.quantity },
-              },
-              data: {
-                stockQuantity: { decrement: item.quantity },
-              },
-            });
+          const stockTrackedItems = orderItems.filter((entry) => entry.trackStock);
+          const stockUpdates = await Promise.all(
+            stockTrackedItems.map((item) =>
+              tx.product.updateMany({
+                where: {
+                  id: item.productId,
+                  storeId,
+                  trackStock: true,
+                  stockQuantity: { gte: item.quantity },
+                },
+                data: {
+                  stockQuantity: { decrement: item.quantity },
+                },
+              }),
+            ),
+          );
 
-            if (updated.count !== 1) {
-              throw new AppError("Some products do not have enough stock", 409, { code: "SALE_INSUFFICIENT_STOCK" });
-            }
+          if (stockUpdates.some((updated) => updated.count !== 1)) {
+            throw new AppError("Some products do not have enough stock", 409, { code: "SALE_INSUFFICIENT_STOCK" });
+          }
 
-            await tx.inventoryMovement.create({
-              data: {
+          if (stockTrackedItems.length > 0) {
+            await tx.inventoryMovement.createMany({
+              data: stockTrackedItems.map((item) => ({
                 storeId,
                 productId: item.productId,
                 createdByUserId: req.session.user.id,
@@ -220,7 +383,7 @@ router.post("/", saleCheckoutLimiter, requireTrustedOrigin, requireCsrf, require
                 reason: "Sale checkout",
                 referenceType: "saleOrder",
                 referenceId: createdOrder.id,
-              },
+              })),
             });
           }
 

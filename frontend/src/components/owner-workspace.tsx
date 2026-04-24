@@ -2,7 +2,6 @@ import type { ReactNode } from "react";
 import type { SessionPayload } from "@/lib/session";
 import { BackofficeShell, PanelCard } from "@/components/backoffice-shell";
 import { LogoutButton } from "@/components/logout-button";
-import { InteractiveActionGrid } from "@/components/interactive-action-grid";
 import {
   OwnerLogoClient,
   OwnerLogoProvider,
@@ -15,6 +14,7 @@ import {
 } from "@/components/owner-settings-client";
 import { PaymentCheckoutClient } from "@/components/payment-checkout-client";
 import { ProductManagementStudio } from "@/components/product-management-studio";
+import { ReceiptDeskClient } from "@/components/receipt-desk-client";
 import { ListStack, NoteStack, ThreeUpStats } from "@/components/owner-workspace/shared";
 import { SalesPaginationMockup } from "@/components/sales-pagination-mockup";
 import { PageHeader, StatusPill, inputClass } from "@/components/ui-primitives";
@@ -174,61 +174,17 @@ function renderOwnerScreen(
       eyebrow: "Receipt Desk",
       title: "ใบเสร็จ",
       description: "รวมการค้นบิล ซ้ำพิมพ์ และส่งสลิปแบบย่อในจอเดียว",
-      actions: <StatusPill>พร้อมพิมพ์ 12 รายการ</StatusPill>,
+      actions: <StatusPill tone="success">เชื่อมบิลขายจริง</StatusPill>,
       body: (
         <section className="grid h-full min-h-0 grid-rows-[156px_minmax(0,1fr)] gap-[18px] max-[1180px]:grid-rows-[auto_minmax(0,1fr)]">
           <PageHeader
             eyebrow="Receipt Desk"
             title="ใบเสร็จ"
-            actions={
-              <>
-                <StatusPill>พร้อมพิมพ์ 12 รายการ</StatusPill>
-                <div className="h-5 w-[128px] rounded-full border border-[var(--border)] bg-[rgba(255,255,255,0.06)] max-[720px]:w-full" />
-              </>
-            }
+            description="ค้นหาบิลขายที่ปิดแล้ว ดูรายละเอียด พิมพ์ซ้ำ และคัดลอกข้อมูลให้ลูกค้า"
+            actions={<StatusPill tone="success">ใช้ข้อมูลจริง</StatusPill>}
           />
 
-          <div className="grid min-h-0 grid-cols-[minmax(0,1.25fr)_minmax(320px,0.75fr)] gap-[18px] max-[1180px]:grid-cols-1">
-            <PanelCard eyebrow="Recent Receipts" title="บิลล่าสุด" description="ค้นบิลได้จากรายการสั้น" className="grid min-h-0 content-start px-[18px] py-4">
-              <div className="grid gap-[18px]">
-                <ListStack
-                  items={[
-                    { title: "RC-1042", subtitle: "โต๊ะ A03", value: "1,280 บาท" },
-                    { title: "RC-1041", subtitle: "กลับบ้าน", value: "245 บาท" },
-                    { title: "RC-1040", subtitle: "โต๊ะ C01", value: "3,450 บาท" },
-                  ]}
-                />
-                <div className="grid gap-[10px] rounded-[16px] border border-[var(--border)] bg-[rgba(255,255,255,0.03)] p-4">
-                  <div className="flex items-center justify-between gap-3 rounded-xl border border-[rgba(100,120,160,0.12)] bg-[rgba(22,27,38,0.56)] px-4 py-3">
-                    <span className="text-[var(--foreground-soft)]">ค้นหาจากเลขบิล</span>
-                    <strong>RC-1042</strong>
-                  </div>
-                  <div className="flex items-center justify-between gap-3 rounded-xl border border-[rgba(100,120,160,0.12)] bg-[rgba(22,27,38,0.56)] px-4 py-3">
-                    <span className="text-[var(--foreground-soft)]">ประเภท</span>
-                    <strong>รับประทานที่ร้าน</strong>
-                  </div>
-                </div>
-              </div>
-            </PanelCard>
-
-            <PanelCard eyebrow="Print & Share" title="งานหลังปิดบิล" description="พิมพ์ซ้ำ ส่งต่อ และดูตัวอย่างใบเสร็จ" className="grid min-h-0 content-start px-[18px] py-4">
-              <div className="grid gap-[18px]">
-                <div className="min-h-[240px] rounded-[18px] border border-[rgba(100,120,160,0.14)] bg-[rgba(255,255,255,0.03)] p-4">
-                  <div className="mx-auto max-w-[240px] rounded-[18px] border border-[rgba(100,120,160,0.14)] bg-[rgba(14,18,28,0.72)] p-4 text-center">
-                    <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[#6b7a94]">Receipt Preview</p>
-                    <strong className="mt-3 block text-[1.15rem]">RC-1042</strong>
-                    <p className="mt-2 text-[0.9rem] text-[var(--foreground-soft)]">Main Store · โต๊ะ A03</p>
-                    <div className="mt-4 grid gap-2 text-left text-[0.9rem] text-[var(--foreground-soft)]">
-                      <div className="flex items-center justify-between"><span>ข้าวกะเพรา</span><span>฿65</span></div>
-                      <div className="flex items-center justify-between"><span>ชาไทยเย็น</span><span>฿90</span></div>
-                      <div className="flex items-center justify-between"><span>สุทธิ</span><strong className="text-white">฿155</strong></div>
-                    </div>
-                  </div>
-                </div>
-                <InteractiveActionGrid items={["พิมพ์ซ้ำ", "ส่งอีเมล", "ส่งไลน์", "ดูรายละเอียด"]} columns={2} />
-              </div>
-            </PanelCard>
-          </div>
+          <ReceiptDeskClient />
         </section>
       ),
       standalone: true,

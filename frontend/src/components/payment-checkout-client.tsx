@@ -3,7 +3,7 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type PointerEvent } from "react";
 import { useRouter } from "next/navigation";
 import QRCode from "qrcode";
-import { requestJson } from "@/components/product-management-studio/lib";
+import { invalidateProductListCache, requestJson } from "@/components/product-management-studio/lib";
 import { inputClass, Loader, primaryButtonClass, secondaryButtonClass } from "@/components/ui-primitives";
 import type { OwnerPaymentSettingsValue } from "@/components/owner-settings-client";
 
@@ -186,6 +186,7 @@ export function PaymentCheckoutClient({ paymentSettings }: { paymentSettings: Ow
   const bankInfoFilled = Boolean(paymentSettings.bankName && paymentSettings.bankAccountName && paymentSettings.bankAccountNumber);
   const transferPaymentConfigured = paymentSettings.promptPayEnabled && bankInfoFilled;
   const changeAmount = Math.max(0, receivedAmount - billTotal);
+  const cashPaymentMissingReceivedAmount = !completedSale && paymentMethod === "CASH" && receivedAmount <= 0;
 
   const dynamicPromptPayReady =
     paymentSettings.promptPayEnabled &&
@@ -478,7 +479,7 @@ export function PaymentCheckoutClient({ paymentSettings }: { paymentSettings: Ow
   }
 
   async function handleConfirmPayment() {
-    if (items.length === 0 || busy) {
+    if (items.length === 0 || busy || cashPaymentMissingReceivedAmount) {
       return;
     }
 
@@ -509,6 +510,7 @@ export function PaymentCheckoutClient({ paymentSettings }: { paymentSettings: Ow
 
       sessionStorage.removeItem(salesCartStorageKey);
       sessionStorage.setItem(latestSaleStorageKey, JSON.stringify(completedSaleWithImages));
+      invalidateProductListCache();
       setCompletedSale(completedSaleWithImages);
       setReceivedAmount(0);
       setReceivedDraft(null);
@@ -713,7 +715,7 @@ export function PaymentCheckoutClient({ paymentSettings }: { paymentSettings: Ow
           <button type="button" className={`${secondaryButtonClass} min-h-[52px] rounded-2xl`} onClick={() => router.push("/owner/sales")}>
             {completedSale ? "เปิดออเดอร์ใหม่" : "กลับไปขาย"}
           </button>
-          <button type="button" className={`${primaryButtonClass} min-h-[52px] rounded-2xl`} disabled={items.length === 0 || busy || discount > subtotal || Boolean(completedSale) || (paymentMethod === "QR" && !qrPaymentConfigured) || (paymentMethod === "TRANSFER" && !transferPaymentConfigured)} onClick={handleConfirmPayment}>
+          <button type="button" className={`${primaryButtonClass} min-h-[52px] rounded-2xl`} disabled={items.length === 0 || busy || discount > subtotal || Boolean(completedSale) || cashPaymentMissingReceivedAmount || (paymentMethod === "QR" && !qrPaymentConfigured) || (paymentMethod === "TRANSFER" && !transferPaymentConfigured)} onClick={handleConfirmPayment}>
             {busy ? "กำลังยืนยัน..." : "ยืนยันการชำระ"}
           </button>
         </div>

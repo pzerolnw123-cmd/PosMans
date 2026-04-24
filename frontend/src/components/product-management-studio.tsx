@@ -15,7 +15,9 @@ import {
   loadImage,
   MAX_IMAGE_BYTES,
   requestJson,
+  requestProductList,
   requestSignedUpload,
+  invalidateProductListCache,
   revokeManagedObjectUrl,
   uploadBlobToR2,
 } from "@/components/product-management-studio/lib";
@@ -27,7 +29,6 @@ import {
   type CropDraft,
   type ProductCategory,
   type ProductItem,
-  type ProductListResponse,
 } from "@/components/product-management-studio/types";
 import { PageHeader, StatusPill } from "@/components/ui-primitives";
 
@@ -96,7 +97,7 @@ export function ProductManagementStudio() {
           pageSize: String(itemsPerPage),
           category: activeCategory,
         });
-        const response = await requestJson<ProductListResponse>(`/api/products?${params.toString()}`);
+        const response = await requestProductList(params);
         if (cancelled) return;
 
         setPagination(response.pagination);
@@ -268,6 +269,7 @@ export function ProductManagementStudio() {
           method: "POST",
           body: JSON.stringify(payload),
         });
+        invalidateProductListCache();
         const clientCreated =
           !created.imageUrl && selectedProduct.imageUrl?.startsWith("blob:")
             ? { ...created, imageUrl: selectedProduct.imageUrl, uploadedKey: selectedProduct.uploadedKey }
@@ -295,6 +297,7 @@ export function ProductManagementStudio() {
         method: "PATCH",
         body: JSON.stringify(payload),
       });
+      invalidateProductListCache();
       const clientUpdated =
         !updated.imageUrl && selectedProduct.imageUrl?.startsWith("blob:")
           ? { ...updated, imageUrl: selectedProduct.imageUrl, uploadedKey: selectedProduct.uploadedKey }
@@ -487,6 +490,7 @@ export function ProductManagementStudio() {
       await requestJson(`/api/products/${selectedProduct.id}`, {
         method: "DELETE",
       });
+      invalidateProductListCache();
 
       objectUrlsRef.current = revokeManagedObjectUrl(selectedProduct.imageUrl, objectUrlsRef.current);
       const remaining = products.filter((item) => item.id !== selectedProduct.id);

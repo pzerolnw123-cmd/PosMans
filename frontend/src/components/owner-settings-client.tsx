@@ -1628,6 +1628,9 @@ export function OwnerPaymentSettingsClient({ initialSettings }: { initialSetting
               placeholder={promptPayField.placeholder}
               onChange={(event) => {
                 const nextValue = normalizeDigitInput(event.target.value).slice(0, promptPayField.maxLength);
+                if (editorType === "MOBILE" || editorType === "NATIONAL_ID" || editorType === "TAX_ID") {
+                  setPromptPayDrafts((current) => ({ ...current, [editorType]: nextValue }));
+                }
                 setForm((current) => ({
                   ...current,
                   promptPayId: nextValue,
@@ -1766,7 +1769,8 @@ export function OwnerPaymentSettingsClient({ initialSettings }: { initialSetting
           type="button"
           className={compactFooterGhostButtonClass}
           onClick={() => {
-            setForm((current) => {
+            const nextForm = (() => {
+              const current = form;
               const revertForm = { ...current };
               if (editorType === "MOBILE") {
                 revertForm.promptPayMobileId = savedSettings.promptPayMobileId;
@@ -1786,7 +1790,9 @@ export function OwnerPaymentSettingsClient({ initialSettings }: { initialSetting
                 revertForm.bankAccountNumber = savedSettings.bankAccountNumber;
               }
               return revertForm;
-            });
+            })();
+            setForm(nextForm);
+            setPromptPayDrafts(createPromptPayDrafts(nextForm));
             setSubmitState({ status: "idle", message: "" });
             setConfirmSaveOpen(false);
             setBankDropdownOpen(false);

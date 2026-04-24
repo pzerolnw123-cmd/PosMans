@@ -36,8 +36,12 @@ jest.mock("../src/lib/db", () => ({
     },
     inventoryMovement: {
       create: jest.fn(),
+      createMany: jest.fn(),
     },
     saleOrder: {
+      count: jest.fn(),
+      findMany: jest.fn(),
+      findFirst: jest.fn(),
       create: jest.fn(),
     },
     $queryRaw: jest.fn(),
@@ -113,6 +117,36 @@ function buildProduct(overrides = {}) {
   };
 }
 
+function buildSaleOrder(overrides = {}) {
+  return {
+    id: "sale-1",
+    code: "SALE-20260422-RE-ABC12",
+    status: "PAID",
+    paymentMethod: "CASH",
+    subtotal: 130,
+    discount: 0,
+    tax: 0,
+    total: 130,
+    note: null,
+    createdAt: new Date("2026-04-22T10:00:00.000Z"),
+    items: [
+      {
+        id: "sale-item-1",
+        productId: "product-1",
+        productCode: "FOOD-001",
+        productName: "Pad Kra Pao",
+        productCategory: "Food",
+        quantity: 2,
+        unitPrice: 65,
+        lineTotal: 130,
+      },
+    ],
+    createdBy: { id: "user-1", displayName: "Owner", username: "demoowner" },
+    store: { id: "store-1", name: "Demo Store", slug: "demo-store", logoUrl: null },
+    ...overrides,
+  };
+}
+
 function mockOwnerSession(userOverrides = {}) {
   prisma.session.findUnique.mockResolvedValue({
     id: "session-1",
@@ -147,6 +181,10 @@ describe("backend security hardening", () => {
     prisma.product.update.mockResolvedValue({});
     prisma.product.delete.mockResolvedValue({});
     prisma.inventoryMovement.create.mockResolvedValue({ id: "movement-1" });
+    prisma.inventoryMovement.createMany.mockResolvedValue({ count: 1 });
+    prisma.saleOrder.count.mockResolvedValue(0);
+    prisma.saleOrder.findMany.mockResolvedValue([]);
+    prisma.saleOrder.findFirst.mockResolvedValue(null);
     prisma.saleOrder.create.mockResolvedValue({
       id: "sale-1",
       code: "SALE-20260422-RE-ABC12",
@@ -859,6 +897,78 @@ describe("backend security hardening", () => {
     expect(prisma.product.delete).toHaveBeenCalledWith({ where: { id: "product-1" } });
   });
 
+  test("lists receipts for the current owner store", async () => {
+    const app = createApp();
+    mockOwnerSession();
+    prisma.saleOrder.count.mockResolvedValue(1);
+    prisma.saleOrder.findMany.mockResolvedValue([buildSaleOrder()]);
+
+    const response = await request(app)
+      .get("/api/sales?date=2026-04-22")
+      .set("Cookie", ["pos_mans_session=session-token"]);
+
+    expect(response.status).toBe(200);
+    expect(response.body.receipts).toHaveLength(1);
+    expect(response.body.receipts[0]).toEqual(
+      expect.objectContaining({
+        id: "sale-1",
+        code: "SALE-20260422-RE-ABC12",
+        itemCount: 2,
+        total: 130,
+      }),
+    );
+    expect(response.body.pagination).toEqual(
+      expect.objectContaining({
+        page: 1,
+        pageSize: 12,
+        totalItems: 1,
+        totalPages: 1,
+      }),
+    );
+    expect(prisma.saleOrder.count).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          storeId: "store-1",
+          createdAt: {
+            gte: new Date("2026-04-21T17:00:00.000Z"),
+            lt: new Date("2026-04-22T17:00:00.000Z"),
+          },
+        }),
+      }),
+    );
+    expect(prisma.saleOrder.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        skip: 0,
+        take: 12,
+      }),
+    );
+  });
+
+  test("returns a store-scoped receipt detail", async () => {
+    const app = createApp();
+    mockOwnerSession();
+    prisma.saleOrder.findFirst.mockResolvedValue(buildSaleOrder());
+
+    const response = await request(app)
+      .get("/api/sales/sale-1")
+      .set("Cookie", ["pos_mans_session=session-token"]);
+
+    expect(response.status).toBe(200);
+    expect(response.body.receipt).toEqual(
+      expect.objectContaining({
+        id: "sale-1",
+        code: "SALE-20260422-RE-ABC12",
+        itemCount: 2,
+        store: expect.objectContaining({ id: "store-1" }),
+      }),
+    );
+    expect(prisma.saleOrder.findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: "sale-1", storeId: "store-1" },
+      }),
+    );
+  });
+
   test("creates a paid sale from current store products using server prices", async () => {
     const app = createApp();
     mockOwnerSession();
@@ -998,8 +1108,9 @@ describe("backend security hardening", () => {
         stockQuantity: { decrement: 2 },
       },
     });
-    expect(prisma.inventoryMovement.create).toHaveBeenCalledWith({
-      data: expect.objectContaining({
+    expect(prisma.inventoryMovement.createMany).toHaveBeenCalledWith({
+      data: [
+        expect.objectContaining({
         storeId: "store-1",
         productId: "product-1",
         createdByUserId: "user-1",
@@ -1009,7 +1120,8 @@ describe("backend security hardening", () => {
         quantityAfter: 1,
         referenceType: "saleOrder",
         referenceId: "sale-1",
-      }),
+        }),
+      ],
     });
   });
 
@@ -1032,7 +1144,7 @@ describe("backend security hardening", () => {
     expect(response.body.code).toBe("SALE_INSUFFICIENT_STOCK");
     expect(prisma.saleOrder.create).not.toHaveBeenCalled();
     expect(prisma.product.updateMany).not.toHaveBeenCalled();
-    expect(prisma.inventoryMovement.create).not.toHaveBeenCalled();
+    expect(prisma.inventoryMovement.createMany).not.toHaveBeenCalled();
   });
 
   test("rejects sale checkout when a product is outside the current store", async () => {
