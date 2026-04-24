@@ -468,12 +468,12 @@ function renderOwnerScreen(
               </PanelCard>
             </div>
 
-            <div className="grid gap-[18px]">
+            <div className="grid h-fit min-w-0 gap-[18px]">
               <PanelCard
                 eyebrow="การรับเงิน"
                 title="QR / ข้อมูลโอน"
-                titleClassName="my-[10px] text-[clamp(1.42rem,1.7vw,1.6rem)] leading-[1.08] tracking-[-0.035em]"
-                className="grid h-fit min-h-0 content-start px-5 py-5"
+                titleClassName="my-[10px] text-[clamp(1.42rem,1.7vw,1.5rem)] leading-[1.08] tracking-[-0.035em]"
+                className="grid h-fit min-h-0 min-w-0 content-start px-5 py-5"
               >
                 <OwnerPaymentSettingsClient initialSettings={paymentSettings} />
               </PanelCard>
