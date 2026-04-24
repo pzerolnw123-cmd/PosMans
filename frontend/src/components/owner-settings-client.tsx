@@ -54,6 +54,7 @@ type SubmitState = {
 type ConfirmPaymentSettingsModalProps = {
   busy: boolean;
   enabled: boolean;
+  autoEnabled?: boolean;
   recipientLabel: string;
   bankSummary?: ReactNode;
   promptPaySummary?: ReactNode;
@@ -224,24 +225,24 @@ function ConfirmPaymentSettingsModal({ busy, enabled, recipientLabel, bankSummar
           <h2 className="m-0 text-[1.25rem] leading-tight tracking-[-0.04em] text-white">ต้องการบันทึกการตั้งค่านี้ใช่ไหม</h2>
           <div className="inline-grid w-full gap-2 rounded-none border border-[var(--border)] bg-[rgba(255,255,255,0.03)] p-3">
             <div className="grid gap-1">
-              <span className="text-[0.78rem] text-[var(--foreground-soft)]">{enabled ? "ประเภทผู้รับเงิน" : "สถานะการแสดงผล"}</span>
-              <strong className="text-white text-[0.95rem]">{enabled ? recipientLabel : "ปิดการแสดง QR / ข้อมูลโอน"}</strong>
+              <span className="text-[0.78rem] text-[var(--foreground-soft)]">{enabled ? "ประเภทผู้รับเงิน" : "สถานะระบบ"}</span>
+              <strong className="text-white text-[0.95rem]">{enabled ? recipientLabel : "ปิดใช้งานและซ่อนจากหน้าร้าน (Offline)"}</strong>
             </div>
-            {enabled && promptPaySummary ? (
+            {promptPaySummary ? (
               <div className="grid gap-1 border-t border-[rgba(100,120,160,0.14)] pt-2">
-                <span className="text-[0.78rem] text-[var(--foreground-soft)]">PromptPay</span>
-                <div className="text-white text-[0.95rem]">{promptPaySummary}</div>
+                <span className="text-[0.78rem] text-[var(--foreground-soft)]">PromptPay {!enabled ? <span className="text-[#a499ff]">(บันทึกแบบรอเปิดใช้)</span> : null}</span>
+                <div className={`text-[0.95rem] ${enabled ? "text-white" : "text-[rgba(255,255,255,0.65)]"}`}>{promptPaySummary}</div>
               </div>
             ) : null}
-            {enabled && bankSummary ? (
+            {bankSummary ? (
               <div className="grid gap-1 border-t border-[rgba(100,120,160,0.14)] pt-2">
-                <span className="text-[0.78rem] text-[var(--foreground-soft)]">บัญชีธนาคาร</span>
-                <div className="text-white text-[0.95rem]">{bankSummary}</div>
+                <span className="text-[0.78rem] text-[var(--foreground-soft)]">บัญชีธนาคาร {!enabled ? <span className="text-[#a499ff]">(บันทึกแบบรอเปิดใช้)</span> : null}</span>
+                <div className={`text-[0.95rem] ${enabled ? "text-white" : "text-[rgba(255,255,255,0.65)]"}`}>{bankSummary}</div>
               </div>
             ) : null}
           </div>
           <p className="m-0 text-[0.88rem] leading-[1.6] text-[var(--foreground-soft)]">
-            {enabled ? "หลังบันทึกแล้ว หน้า Payment จะใช้ข้อมูลนี้เป็นค่าแสดงผลล่าสุดของร้าน" : "หลังบันทึกแล้ว หน้า Payment จะไม่แสดง QR หรือข้อมูลโอนจนกว่าจะเปิดใช้อีกครั้ง"}
+            {enabled ? "หลังบันทึกแล้ว หน้า Payment จะใช้ข้อมูลนี้เป็นค่าแสดงผลล่าสุดของร้าน" : "ข้อมูลจะถูกบันทึกเตรียมไว้ แต่หน้า Payment จะไม่แสดงข้อมูลรับเงิน จนกว่าคุณจะกดเปิดสวิตช์ใช้งาน"}
           </p>
         </div>
 
@@ -840,20 +841,20 @@ function normalizePaymentSettings(value: OwnerPaymentSettingsValue): OwnerPaymen
     paymentQrUploadedKey: value.paymentQrUploadedKey.trim(),
   };
 
-  if (normalized.promptPayRecipientType !== "STATIC_QR") {
+  if (normalized.promptPayRecipientType !== "STATIC_QR" && normalized.promptPayRecipientType !== "BANK_ACCOUNT") {
     normalized.paymentQrImageUrl = "";
     normalized.paymentQrUploadedKey = "";
   }
 
-  if (normalized.promptPayRecipientType !== "MOBILE") {
+  if (normalized.promptPayRecipientType !== "MOBILE" && normalized.promptPayRecipientType !== "BANK_ACCOUNT") {
     normalized.promptPayMobileId = "";
   }
 
-  if (normalized.promptPayRecipientType !== "NATIONAL_ID") {
+  if (normalized.promptPayRecipientType !== "NATIONAL_ID" && normalized.promptPayRecipientType !== "BANK_ACCOUNT") {
     normalized.promptPayNationalId = "";
   }
 
-  if (normalized.promptPayRecipientType !== "TAX_ID") {
+  if (normalized.promptPayRecipientType !== "TAX_ID" && normalized.promptPayRecipientType !== "BANK_ACCOUNT") {
     normalized.promptPayTaxId = "";
   }
 
@@ -866,12 +867,29 @@ function normalizePaymentSettings(value: OwnerPaymentSettingsValue): OwnerPaymen
           ? normalized.promptPayTaxId
           : "";
 
+  // Auto-healing cascade: If a previous save aggressively set BANK_ACCOUNT as primary but the bank data was since wiped,
+  // we gracefully fallback to whatever PromptPay data they still have available so the toggle switch works correctly.
+  if (normalized.promptPayRecipientType === "BANK_ACCOUNT" && !normalized.bankName && !normalized.bankAccountName && !normalized.bankAccountNumber) {
+    if (normalized.promptPayMobileId) {
+      normalized.promptPayRecipientType = "MOBILE";
+    } else if (normalized.promptPayNationalId) {
+      normalized.promptPayRecipientType = "NATIONAL_ID";
+    } else if (normalized.promptPayTaxId) {
+      normalized.promptPayRecipientType = "TAX_ID";
+    } else if (normalized.paymentQrImageUrl) {
+      normalized.promptPayRecipientType = "STATIC_QR";
+    }
+  }
+
   return normalized;
 }
 
 function paymentSettingsEqual(left: OwnerPaymentSettingsValue, right: OwnerPaymentSettingsValue) {
   const normalizedLeft = normalizePaymentSettings(left);
   const normalizedRight = normalizePaymentSettings(right);
+
+  // The user explicitly desires the ability to draft PromptPay data while the switch is OFF.
+  // Therefore, we must evaluate the entire configuration for equality to detect their offline edits.
   return JSON.stringify(normalizedLeft) === JSON.stringify(normalizedRight);
 }
 
@@ -923,27 +941,28 @@ function validatePaymentSettings(value: OwnerPaymentSettingsValue, editorType: P
     return null;
   }
 
+  let promptPayError = null;
+
   if (normalized.promptPayRecipientType === "MOBILE" && !normalized.promptPayMobileId) {
-    return "กรอกเบอร์พร้อมเพย์ก่อนเปิดใช้";
+    promptPayError = "กรอกเบอร์พร้อมเพย์ก่อนเปิดใช้";
+  } else if (normalized.promptPayRecipientType === "NATIONAL_ID" && !normalized.promptPayNationalId) {
+    promptPayError = "กรอกเลขบัตรประชาชนก่อนเปิดใช้";
+  } else if (normalized.promptPayRecipientType === "TAX_ID" && !normalized.promptPayTaxId) {
+    promptPayError = "กรอกเลขผู้เสียภาษีก่อนเปิดใช้";
+  } else if (normalized.promptPayRecipientType === "STATIC_QR" && (!normalized.paymentQrImageUrl || !normalized.paymentQrUploadedKey)) {
+    promptPayError = "อัปโหลดรูป Static QR ก่อนเปิดใช้";
+  } else if (normalized.promptPayRecipientType === "BANK_ACCOUNT" && (!normalized.bankName || !normalized.bankAccountName || !normalized.bankAccountNumber)) {
+    promptPayError = "กรอกข้อมูลบัญชีธนาคารให้ครบก่อนเปิดใช้งาน";
   }
 
-  if (normalized.promptPayRecipientType === "NATIONAL_ID" && !normalized.promptPayNationalId) {
-    return "กรอกเลขบัตรประชาชนก่อนเปิดใช้";
-  }
-
-  if (normalized.promptPayRecipientType === "TAX_ID" && !normalized.promptPayTaxId) {
-    return "กรอกเลขผู้เสียภาษีก่อนเปิดใช้";
-  }
-
-  if (normalized.promptPayRecipientType === "STATIC_QR" && (!normalized.paymentQrImageUrl || !normalized.paymentQrUploadedKey)) {
-    return "อัปโหลดรูป Static QR ก่อนเปิดใช้";
-  }
-
-  if (normalized.promptPayRecipientType === "BANK_ACCOUNT" && (!normalized.bankName || !normalized.bankAccountName || !normalized.bankAccountNumber)) {
+  // If there's a validation error from an invisible PromptPay tab, BUT the user is looking at the Bank Account...
+  // It's extremely confusing to tell them to fill out a tab they aren't looking at.
+  // Instead, instruct them to simply fill out the Bank Account they are currently viewing!
+  if (promptPayError && editorType === "BANK_ACCOUNT") {
     return "กรอกข้อมูลบัญชีธนาคารให้ครบก่อนเปิดใช้งาน";
   }
 
-  return null;
+  return promptPayError;
 }
 
 function isEditorTypeCleared(settings: OwnerPaymentSettingsValue, editorType: PromptPayRecipientType) {
@@ -970,7 +989,11 @@ function isEditorTypeCleared(settings: OwnerPaymentSettingsValue, editorType: Pr
   return false;
 }
 
-function preparePaymentSettingsForSubmit(value: OwnerPaymentSettingsValue, editorType: PromptPayRecipientType): OwnerPaymentSettingsValue {
+function preparePaymentSettingsForSubmit(
+  value: OwnerPaymentSettingsValue,
+  editorType: PromptPayRecipientType,
+  savedPromptPayEnabled: boolean
+): OwnerPaymentSettingsValue {
   const normalized = normalizePaymentSettings(value);
 
   // If the promptPay feature is enabled, but the active editor is cleared...
@@ -983,15 +1006,21 @@ function preparePaymentSettingsForSubmit(value: OwnerPaymentSettingsValue, edito
     const hasAllBankFields = Boolean(value.bankName && value.bankAccountName && value.bankAccountNumber);
     const hasAnyRawPromptPay = rawHasMobile || rawHasNationalId || rawHasTaxId || rawHasStaticQr;
 
-    // If there is literally NO PromptPay data left anywhere, BUT they have filled out a complete Bank Account...
-    // Smartly shift the primary recipient type to BANK_ACCOUNT so it can be saved legitimately without phantom QR validation errors.
+    // If the user's entire core PromptPay configuration is genuinely empty, BUT they have a complete Bank Account...
+    // Smartly shift the primary recipient type to BANK_ACCOUNT so it can be legitimately saved and used as primary.
+    // This allows users who hit "Reset" on their last PromptPay method to seamlessly save their Bank Account instead.
     if (!hasAnyRawPromptPay && hasAllBankFields) {
       return { ...normalized, promptPayRecipientType: "BANK_ACCOUNT" };
     }
 
-    // If they genuinely wiped EVERYTHING out of the entire form (no QR, no bank account), auto-disable the switch.
+    // If they genuinely wiped EVERYTHING out of the entire form (no QR, no bank account).
+    // We only auto-disable if the feature was ALREADY enabled in their saved settings.
+    // If it wasn't, it means they just toggled it ON right now, so we must force them to fill it out via validation!
     if (!hasAnyRawPromptPay && !Boolean(value.bankName || value.bankAccountName || value.bankAccountNumber)) {
-      return { ...normalized, promptPayEnabled: false };
+      if (savedPromptPayEnabled) {
+        return { ...normalized, promptPayEnabled: false };
+      }
+      return normalized;
     }
 
     // Otherwise, they just switched to an empty tab, or they are missing bank fields.
@@ -1071,18 +1100,43 @@ function clearPaymentSettingsForType(settings: OwnerPaymentSettingsValue, type: 
 }
 
 function resolveEditorType(settings: OwnerPaymentSettingsValue): PromptPayRecipientType {
-  if (settings.promptPayRecipientType === "BANK_ACCOUNT") {
-    return "BANK_ACCOUNT";
+  const hasAnyData = Boolean(
+    settings.promptPayMobileId ||
+      settings.promptPayNationalId ||
+      settings.promptPayTaxId ||
+      settings.paymentQrImageUrl ||
+      settings.paymentQrUploadedKey ||
+      settings.bankName ||
+      settings.bankAccountNumber
+  );
+
+  // If there is absolutely no data left in the configuration, default back to the primary Mobile PromptPay tab.
+  if (!hasAnyData) {
+    return "MOBILE";
   }
 
-  return settings.promptPayRecipientType;
+  return settings.promptPayRecipientType || "MOBILE";
 }
 
 export function OwnerPaymentSettingsClient({ initialSettings }: { initialSettings: OwnerPaymentSettingsValue }) {
   const { setShellAlert } = useBackofficeShellAlert();
   const router = useRouter();
-  const [savedSettings, setSavedSettings] = useState(() => normalizePaymentSettings(initialSettings));
-  const [form, setForm] = useState(() => normalizePaymentSettings(initialSettings));
+  const [savedSettings, setSavedSettings] = useState(() => {
+    const base = normalizePaymentSettings(initialSettings);
+    const resolvedType = resolveEditorType(base);
+    if (base.promptPayRecipientType !== resolvedType) {
+      base.promptPayRecipientType = resolvedType;
+    }
+    return base;
+  });
+  const [form, setForm] = useState(() => {
+    const base = normalizePaymentSettings(initialSettings);
+    const resolvedType = resolveEditorType(base);
+    if (base.promptPayRecipientType !== resolvedType) {
+      base.promptPayRecipientType = resolvedType;
+    }
+    return base;
+  });
   const [editorType, setEditorType] = useState<PromptPayRecipientType>(() => resolveEditorType(normalizePaymentSettings(initialSettings)));
   const [promptPayDrafts, setPromptPayDrafts] = useState<PromptPayDrafts>(() => createPromptPayDrafts(initialSettings));
   const [uploadingQr, setUploadingQr] = useState(false);
@@ -1095,18 +1149,41 @@ export function OwnerPaymentSettingsClient({ initialSettings }: { initialSetting
   const bankDropdownRef = useRef<HTMLDivElement | null>(null);
   const [submitState, setSubmitState] = useState<SubmitState>({
     status: "idle",
-    message: "ใช้สำหรับระบบการโอนเงิน",
+    message: "",
   });
 
+  const [submitAutoEnabled, setSubmitAutoEnabled] = useState(false);
+
   const pending = submitState.status === "saving" || uploadingQr;
-  const effectivelyDisabled = pending || !form.promptPayEnabled;
+  const effectivelyDisabled = pending;
   const bankFormIncomplete =
     editorType === "BANK_ACCOUNT" &&
     Boolean(form.bankName || form.bankAccountName || form.bankAccountNumber) &&
     !(form.bankName && form.bankAccountName && form.bankAccountNumber);
-  const preparedForm = preparePaymentSettingsForSubmit(form, editorType);
-  const validationMessage = bankFormIncomplete ? "กรอกข้อมูลบัญชีธนาคารให้ครบก่อนบันทึก" : validatePaymentSettings(preparedForm, editorType);
-  const canSavePaymentSettings = !pending && !validationMessage && !paymentSettingsEqual(preparedForm, savedSettings);
+  const targetPreviewForm = confirmSaveOpen && submitAutoEnabled ? { ...form, promptPayEnabled: true } : form;
+  const submitPreviewSettings = preparePaymentSettingsForSubmit(targetPreviewForm, editorType, savedSettings.promptPayEnabled);
+  const validationMessage = bankFormIncomplete ? "กรอกข้อมูลบัญชีธนาคารให้ครบก่อนบันทึก" : validatePaymentSettings(submitPreviewSettings, editorType);
+  
+  // Localize the dirty check so the Save button only activates if the CURRENTLY VIEWED tab or global switch actually has changes.
+  const isGlobalSwitchDirty = form.promptPayEnabled !== savedSettings.promptPayEnabled;
+  const isActiveTabDirty = (() => {
+    if (editorType === "BANK_ACCOUNT") {
+      return (
+        form.bankName !== savedSettings.bankName ||
+        form.bankAccountName !== savedSettings.bankAccountName ||
+        form.bankAccountNumber !== savedSettings.bankAccountNumber
+      );
+    }
+    if (editorType === "MOBILE") return form.promptPayMobileId !== savedSettings.promptPayMobileId;
+    if (editorType === "NATIONAL_ID") return form.promptPayNationalId !== savedSettings.promptPayNationalId;
+    if (editorType === "TAX_ID") return form.promptPayTaxId !== savedSettings.promptPayTaxId;
+    if (editorType === "STATIC_QR") return form.paymentQrImageUrl !== savedSettings.paymentQrImageUrl || form.paymentQrUploadedKey !== savedSettings.paymentQrUploadedKey;
+    return false;
+  })();
+  const isRecipientTypeDirty = form.promptPayRecipientType !== savedSettings.promptPayRecipientType && !isEditorTypeCleared(form, form.promptPayRecipientType);
+  const hasIntentionalChanges = isGlobalSwitchDirty || isActiveTabDirty || isRecipientTypeDirty;
+
+  const canSavePaymentSettings = !pending && !validationMessage && hasIntentionalChanges;
   const usesPromptPayId = editorType === "MOBILE" || editorType === "NATIONAL_ID" || editorType === "TAX_ID";
   const usesBankAccount = editorType === "BANK_ACCOUNT";
   const usesStaticQr = editorType === "STATIC_QR";
@@ -1126,7 +1203,7 @@ export function OwnerPaymentSettingsClient({ initialSettings }: { initialSetting
         ? "ใช้สำหรับแสดง Static QR"
         : "ใช้สำหรับสร้าง QR PromptPay";
   const resetTargetForm = clearPaymentSettingsForType(form, editorType);
-  const submitPreviewSettings = preparePaymentSettingsForSubmit(form, editorType);
+
   const resetDisabled = pending || paymentSettingsEqual(form, resetTargetForm);
 
   useEffect(() => {
@@ -1249,17 +1326,18 @@ export function OwnerPaymentSettingsClient({ initialSettings }: { initialSetting
     }
   }
 
-  async function performSubmit() {
-    const nextSettings = preparePaymentSettingsForSubmit(form, editorType);
+  async function performSubmit(overrideForm?: OwnerPaymentSettingsValue, isAutoEnable?: boolean): Promise<boolean> {
+    const dataToSubmit = overrideForm || form;
+    const nextSettings = preparePaymentSettingsForSubmit(dataToSubmit, editorType, savedSettings.promptPayEnabled);
     const errorMessage = validatePaymentSettings(nextSettings, editorType);
     if (errorMessage) {
       setSubmitState({ status: "error", message: errorMessage });
       setShellAlert({ message: errorMessage, tone: "danger" });
-      return;
+      return false;
     }
 
     if (paymentSettingsEqual(nextSettings, savedSettings)) {
-      return;
+      return true;
     }
 
     setSubmitState({ status: "saving", message: "กำลังบันทึกการรับชำระเงิน..." });
@@ -1280,49 +1358,62 @@ export function OwnerPaymentSettingsClient({ initialSettings }: { initialSetting
         const message = await readApiMessage(response, "บันทึกการรับชำระเงินไม่สำเร็จ");
         setSubmitState({ status: "error", message });
         setShellAlert({ message, tone: "danger" });
-        return;
+        return false;
       }
 
       setForm(nextSettings);
       setSavedSettings(nextSettings);
-      setEditorType(resolveEditorType(nextSettings));
       setPromptPayDrafts(createPromptPayDrafts(nextSettings));
       setConfirmSaveOpen(false);
 
       let successMessage = "บันทึกการรับชำระเงินแล้ว";
       if (!nextSettings.promptPayEnabled) {
-        successMessage = "บันทึกปิดการรับชำระเงินแล้ว";
+        successMessage = overrideForm ? "ปิดใช้ QR / ข้อมูลโอนแล้ว" : "บันทึกปิดการรับชำระเงินแล้ว";
       } else {
-        const hasBank = Boolean(nextSettings.bankName && nextSettings.bankAccountNumber);
-        let primaryMessage = "";
-
-        if (nextSettings.promptPayRecipientType === "MOBILE") primaryMessage = "เบอร์พร้อมเพย์";
-        else if (nextSettings.promptPayRecipientType === "NATIONAL_ID") primaryMessage = "เลขบัตรประชาชน";
-        else if (nextSettings.promptPayRecipientType === "TAX_ID") primaryMessage = "เลขผู้เสียภาษี";
-        else if (nextSettings.promptPayRecipientType === "STATIC_QR") primaryMessage = "รูป Static QR";
-        else if (nextSettings.promptPayRecipientType === "BANK_ACCOUNT") primaryMessage = "บัญชีธนาคาร";
-
-        if (nextSettings.promptPayRecipientType !== "BANK_ACCOUNT" && hasBank) {
-          successMessage = `บันทึก${primaryMessage} และบัญชีธนาคารแล้ว`;
+        if (isAutoEnable) {
+          successMessage = "เปิดใช้ QR / ข้อมูลโอน และบันทึกข้อมูลแล้ว";
+        } else if (overrideForm) {
+          successMessage = "เปิดใช้ QR / ข้อมูลโอนแล้ว";
         } else {
-          successMessage = `บันทึก${primaryMessage}แล้ว`;
+          const hasBank = Boolean(nextSettings.bankName && nextSettings.bankAccountNumber);
+          let primaryMessage = "";
+
+          if (nextSettings.promptPayRecipientType === "MOBILE") primaryMessage = "เบอร์พร้อมเพย์";
+          else if (nextSettings.promptPayRecipientType === "NATIONAL_ID") primaryMessage = "เลขบัตรประชาชน";
+          else if (nextSettings.promptPayRecipientType === "TAX_ID") primaryMessage = "เลขผู้เสียภาษี";
+          else if (nextSettings.promptPayRecipientType === "STATIC_QR") primaryMessage = "รูป Static QR";
+          else if (nextSettings.promptPayRecipientType === "BANK_ACCOUNT") primaryMessage = "บัญชีธนาคาร";
+
+          if (nextSettings.promptPayRecipientType !== "BANK_ACCOUNT" && hasBank) {
+            successMessage = `บันทึก${primaryMessage} และบัญชีธนาคารแล้ว`;
+          } else {
+            successMessage = `บันทึก${primaryMessage}แล้ว`;
+          }
         }
       }
 
       setSubmitState({ status: "success", message: successMessage });
       setShellAlert({ message: successMessage, tone: "success" });
       router.refresh();
+      return true;
     } catch {
       setSubmitState({ status: "error", message: "เชื่อมต่อระบบไม่ได้ กรุณาลองอีกครั้ง" });
       setShellAlert({ message: "เชื่อมต่อระบบไม่ได้ กรุณาลองอีกครั้ง", tone: "danger" });
+      return false;
     }
   }
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    const nextSettings = preparePaymentSettingsForSubmit(form, editorType);
+    const normalizedRaw = normalizePaymentSettings(form);
+    const isWiped = isEditorTypeCleared(normalizedRaw, editorType);
+    const requiresAutoEnable = !form.promptPayEnabled && !isWiped;
+
+    const optimisticForm = { ...form, promptPayEnabled: requiresAutoEnable ? true : form.promptPayEnabled };
+    const nextSettings = preparePaymentSettingsForSubmit(optimisticForm, editorType, savedSettings.promptPayEnabled);
     const errorMessage = validatePaymentSettings(nextSettings, editorType);
+    
     if (errorMessage) {
       setSubmitState({ status: "error", message: errorMessage });
       setShellAlert({ message: errorMessage, tone: "danger" });
@@ -1333,6 +1424,7 @@ export function OwnerPaymentSettingsClient({ initialSettings }: { initialSetting
       return;
     }
 
+    setSubmitAutoEnabled(requiresAutoEnable);
     setConfirmSaveOpen(true);
   }
 
@@ -1358,6 +1450,7 @@ export function OwnerPaymentSettingsClient({ initialSettings }: { initialSetting
     <ConfirmPaymentSettingsModal
       busy={submitState.status === "saving"}
       enabled={submitPreviewSettings.promptPayEnabled}
+      autoEnabled={submitAutoEnabled}
       recipientLabel={`${promptPayRecipientOptions.find((option) => option.value === submitPreviewSettings.promptPayRecipientType)?.label || "-"}${
         submitPreviewSettings.bankName && submitPreviewSettings.bankAccountNumber && submitPreviewSettings.promptPayRecipientType !== "BANK_ACCOUNT" ? " และ โอนเงินธนาคาร" : ""
       }`}
@@ -1390,7 +1483,13 @@ export function OwnerPaymentSettingsClient({ initialSettings }: { initialSetting
         ) : null
       }
       onClose={() => setConfirmSaveOpen(false)}
-      onConfirm={performSubmit}
+      onConfirm={() => {
+        if (submitAutoEnabled) {
+          performSubmit({ ...form, promptPayEnabled: true }, true);
+        } else {
+          performSubmit();
+        }
+      }}
     />
   ) : null;
 
@@ -1408,7 +1507,45 @@ export function OwnerPaymentSettingsClient({ initialSettings }: { initialSetting
                 id="owner-payment-settings-toggle"
                 type="checkbox"
                 checked={form.promptPayEnabled}
-                onChange={(event) => setForm((current) => ({ ...current, promptPayEnabled: event.target.checked }))}
+                onChange={async (event) => {
+                  const isChecked = event.target.checked;
+                  
+                  const hasAnyUnsavedChanges = 
+                    form.promptPayMobileId !== savedSettings.promptPayMobileId ||
+                    form.promptPayNationalId !== savedSettings.promptPayNationalId ||
+                    form.promptPayTaxId !== savedSettings.promptPayTaxId ||
+                    form.paymentQrImageUrl !== savedSettings.paymentQrImageUrl ||
+                    form.paymentQrUploadedKey !== savedSettings.paymentQrUploadedKey ||
+                    form.bankName !== savedSettings.bankName ||
+                    form.bankAccountName !== savedSettings.bankAccountName ||
+                    form.bankAccountNumber !== savedSettings.bankAccountNumber ||
+                    form.promptPayRecipientType !== savedSettings.promptPayRecipientType;
+
+                  const isDirty = hasAnyUnsavedChanges;
+                  if (isDirty) {
+                    setShellAlert({ message: "กรุณากดบันทึกข้อมูลก่อนเปิด/ปิดใช้งาน", tone: "danger" });
+                    return; // Immediately snap the controlled switch back!
+                  }
+
+                  // If they are attempting to turn the switch ON, strictly validate the form BEFORE allowing it.
+                  if (isChecked) {
+                    const testFormAsEnabled = { ...form, promptPayEnabled: true };
+                    const testPrepared = preparePaymentSettingsForSubmit(testFormAsEnabled, editorType, savedSettings.promptPayEnabled);
+                    const testBankIncomplete = editorType === "BANK_ACCOUNT" && Boolean(testFormAsEnabled.bankName || testFormAsEnabled.bankAccountName || testFormAsEnabled.bankAccountNumber) && !(testFormAsEnabled.bankName && testFormAsEnabled.bankAccountName && testFormAsEnabled.bankAccountNumber);
+                    const validationError = testBankIncomplete ? "กรอกข้อมูลบัญชีธนาคารให้ครบก่อนเปิดใช้งาน" : validatePaymentSettings(testPrepared, editorType);
+
+                    if (validationError) {
+                      setShellAlert({ message: validationError, tone: "danger" });
+                      return; // Immediately snap the controlled switch back to OFF! 
+                    }
+                  }
+
+                  const nextForm = { ...form, promptPayEnabled: isChecked };
+                  
+                  // Proceed with a guaranteed valid optimistic toggle
+                  setForm(nextForm);
+                  await performSubmit(nextForm);
+                }}
                 disabled={pending}
                 aria-label={form.promptPayEnabled ? "ปิดใช้ QR และข้อมูลโอนในหน้า Payment" : "เปิดใช้ QR และข้อมูลโอนในหน้า Payment"}
               />
@@ -1417,7 +1554,7 @@ export function OwnerPaymentSettingsClient({ initialSettings }: { initialSetting
           </span>
         </div>
 
-        <div className={`grid gap-2 transition-opacity ${!form.promptPayEnabled ? "opacity-40" : ""}`}>
+        <div className="grid gap-2">
           <span className={fieldLabelClass}>ประเภทผู้รับเงิน</span>
           <span className="text-[0.78rem] leading-[1.45] text-[var(--foreground-soft)]">คุณสามารถกรอกเบอร์พร้อมเพย์, เลขบัตรประชาชน, เลขผู้เสียภาษี, หรือรูป QR พร้อมกับข้อมูลบัญชีธนาคารได้</span>
           <div className="grid grid-cols-1 gap-1 sm:grid-cols-2">
@@ -1430,9 +1567,7 @@ export function OwnerPaymentSettingsClient({ initialSettings }: { initialSetting
                     ? `grid min-h-[54px] content-center gap-0.5 rounded-[10px] border px-3 py-1.5 text-left text-white transition-colors ${
                         option.value === "BANK_ACCOUNT"
                           ? "border-[rgba(232,93,117,0.52)] bg-[rgba(232,93,117,0.14)] text-[#ffb0bd]"
-                          : form.promptPayEnabled
-                            ? "border-[rgba(108,92,231,0.55)] bg-[rgba(108,92,231,0.16)]"
-                            : "border-[var(--border)] bg-[rgba(22,27,38,0.74)]"
+                          : "border-[rgba(108,92,231,0.55)] bg-[rgba(108,92,231,0.16)]"
                       } ${option.value === "BANK_ACCOUNT" ? "col-span-1 sm:col-span-2 mx-auto w-full sm:max-w-[calc(50%_-_2px)] justify-items-center text-center" : ""}`
                     : option.value === "BANK_ACCOUNT"
                       ? "col-span-1 sm:col-span-2 mx-auto grid min-h-[54px] w-full sm:max-w-[calc(50%_-_2px)] content-center justify-items-center gap-0.5 rounded-[10px] border border-[rgba(232,93,117,0.34)] bg-[rgba(232,93,117,0.08)] px-3 py-1.5 text-center text-[#ff9daf] transition hover:border-[rgba(232,93,117,0.5)] hover:bg-[rgba(232,93,117,0.12)]"
@@ -1476,7 +1611,7 @@ export function OwnerPaymentSettingsClient({ initialSettings }: { initialSetting
         </div>
 
         {usesPromptPayId ? (
-          <label className={`grid gap-2 transition-opacity ${!form.promptPayEnabled ? "opacity-40" : ""}`}>
+          <label className="grid gap-2">
             <span className={fieldLabelClass}>{promptPayField.label}</span>
             <input
               className={inputClass}
@@ -1500,7 +1635,7 @@ export function OwnerPaymentSettingsClient({ initialSettings }: { initialSetting
         ) : null}
 
         {usesBankAccount ? (
-          <div className={`grid gap-2.5 transition-opacity ${!form.promptPayEnabled ? "opacity-40" : ""}`}>
+          <div className="grid gap-2.5">
             <label className="grid gap-1">
               <span className={fieldLabelClass}>ชื่อบัญชี</span>
               <input
@@ -1570,7 +1705,7 @@ export function OwnerPaymentSettingsClient({ initialSettings }: { initialSetting
         ) : null}
 
         {usesStaticQr ? (
-          <div className={`grid gap-2 rounded-[10px] border border-[var(--border)] bg-[rgba(14,18,28,0.55)] p-3 transition-opacity ${!form.promptPayEnabled ? "opacity-40" : ""}`}>
+          <div className="grid gap-2 rounded-[10px] border border-[var(--border)] bg-[rgba(14,18,28,0.55)] p-3">
             <div className="flex items-center justify-between gap-3">
               <div className="min-w-0">
                 <strong className="block text-[0.95rem] leading-[1.3] text-white">Static QR</strong>
@@ -1598,8 +1733,8 @@ export function OwnerPaymentSettingsClient({ initialSettings }: { initialSetting
           </div>
         ) : null}
 
-        <p className={submitState.status === "error" ? "m-0 truncate whitespace-nowrap text-[0.8rem] font-bold leading-[1.35] text-[#ff8fa2]" : "m-0 truncate whitespace-nowrap text-[0.8rem] leading-[1.35] text-[var(--foreground-soft)]"}>
-          {validationMessage || (submitState.status === "idle" ? paymentHintMessage : submitState.message)}
+        <p className="m-0 truncate whitespace-nowrap text-[0.8rem] leading-[1.35] text-[var(--foreground-soft)]">
+          {submitState.status === "success" || submitState.status === "saving" ? submitState.message : paymentHintMessage}
         </p>
       </div>
 
@@ -1610,9 +1745,8 @@ export function OwnerPaymentSettingsClient({ initialSettings }: { initialSetting
           onClick={() => {
             const nextForm = clearPaymentSettingsForType(form, editorType);
             setForm(nextForm);
-            setEditorType(editorType);
             setPromptPayDrafts(createPromptPayDrafts(nextForm));
-            setSubmitState({ status: "idle", message: paymentHintMessage });
+            setSubmitState({ status: "idle", message: "" });
             setConfirmSaveOpen(false);
             setBankDropdownOpen(false);
           }}
