@@ -6,6 +6,7 @@ import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { useBackofficeShellAlert } from "@/components/backoffice-shell";
 import { CropModal } from "@/components/product-management-studio/crop-modal";
+import { StatusPill } from "@/components/ui-primitives";
 import {
   clampOffset,
   createCroppedBlob,
@@ -19,26 +20,26 @@ import type { CropDraft } from "@/components/product-management-studio/types";
 import { ensureCsrfToken } from "@/lib/csrf";
 
 const inputClass =
-  "h-[46px] w-full rounded-[10px] border border-[rgba(100,120,160,0.22)] bg-[rgba(14,18,28,0.7)] px-[14px] text-[var(--foreground)] outline-none transition placeholder:text-[#556070] focus:border-[rgba(108,92,231,0.5)] focus:shadow-[0_0_0_4px_var(--ring)] disabled:cursor-not-allowed disabled:opacity-[0.62]";
+  "h-[46px] w-full rounded-[10px] border border-[rgba(100,120,160,0.22)] bg-[var(--field-bg)] px-[14px] text-[var(--foreground)] outline-none transition placeholder:text-[var(--field-placeholder)] focus:border-[var(--brand-strong)] focus:shadow-[0_0_0_4px_var(--ring)] disabled:cursor-not-allowed disabled:opacity-[0.62]";
 
 const primaryButtonClass =
-  "inline-flex min-h-[42px] items-center justify-center gap-[10px] rounded-[10px] border border-transparent bg-[linear-gradient(135deg,var(--brand)_0%,#8070f0_100%)] px-[18px] font-bold text-white shadow-[rgba(108,92,231,0.18)_0_6px_14px] transition hover:-translate-y-px disabled:cursor-not-allowed disabled:opacity-[0.62]";
+  "inline-flex min-h-[42px] items-center justify-center gap-[10px] rounded-[10px] border border-transparent bg-[linear-gradient(135deg,var(--brand)_0%,var(--brand-strong)_100%)] px-[18px] font-bold text-[var(--button-text)] shadow-[var(--brand-shadow)_0_6px_14px] transition hover:-translate-y-px disabled:cursor-not-allowed disabled:opacity-[0.62]";
 
 const activeGhostButtonClass =
-  "inline-flex min-h-[42px] items-center justify-center gap-[10px] rounded-[10px] border border-[var(--border)] bg-[rgba(22,27,38,0.8)] px-[18px] font-bold text-white transition hover:-translate-y-px hover:border-[var(--border-strong)] hover:shadow-[rgba(0,0,0,0.15)_0_5px_10px] disabled:cursor-not-allowed disabled:text-[var(--foreground-soft)] disabled:opacity-[0.62]";
+  "inline-flex min-h-[42px] items-center justify-center gap-[10px] rounded-[10px] border border-[var(--border)] bg-[var(--surface-muted)] px-[18px] font-bold text-[var(--foreground)] transition hover:-translate-y-px hover:border-[var(--border-strong)] hover:shadow-[rgba(0,0,0,0.15)_0_5px_10px] disabled:cursor-not-allowed disabled:text-[var(--foreground-soft)] disabled:opacity-[0.62]";
 
 const dangerGhostButtonClass =
   "inline-flex min-h-[42px] items-center justify-center gap-[10px] rounded-[10px] border border-[rgba(232,93,117,0.3)] bg-[rgba(232,93,117,0.08)] px-[18px] font-bold text-[#ff8fa2] transition hover:-translate-y-px hover:border-[rgba(232,93,117,0.5)] hover:bg-[rgba(232,93,117,0.14)] disabled:cursor-not-allowed disabled:opacity-[0.62]";
 
 const fieldLabelClass = "text-[0.9rem] font-semibold text-[var(--foreground-soft)]";
 const compactBankInputClass =
-  "h-[42px] w-full rounded-[10px] border border-[rgba(100,120,160,0.22)] bg-[rgba(14,18,28,0.7)] px-3 text-[0.95rem] text-[var(--foreground)] outline-none transition placeholder:text-[#556070] focus:border-[rgba(108,92,231,0.5)] focus:shadow-[0_0_0_4px_var(--ring)] disabled:cursor-not-allowed disabled:opacity-[0.62]";
+  "h-[42px] w-full rounded-[10px] border border-[rgba(100,120,160,0.22)] bg-[var(--field-bg)] px-3 text-[0.95rem] text-[var(--foreground)] outline-none transition placeholder:text-[var(--field-placeholder)] focus:border-[var(--brand-strong)] focus:shadow-[0_0_0_4px_var(--ring)] disabled:cursor-not-allowed disabled:opacity-[0.62]";
 const compactFooterGhostButtonClass =
-  "inline-flex min-h-[38px] items-center justify-center gap-[8px] rounded-[10px] border border-[var(--border)] bg-[rgba(22,27,38,0.8)] px-[14px] text-[0.92rem] font-bold text-white transition hover:-translate-y-px hover:border-[var(--border-strong)] hover:shadow-[rgba(0,0,0,0.15)_0_5px_10px] disabled:cursor-not-allowed disabled:text-[var(--foreground-soft)] disabled:opacity-[0.62]";
+  "inline-flex min-h-[38px] items-center justify-center gap-[8px] rounded-[10px] border border-[var(--border)] bg-[var(--surface-muted)] px-[14px] text-[0.92rem] font-bold text-[var(--foreground)] transition hover:-translate-y-px hover:border-[var(--border-strong)] hover:shadow-[rgba(0,0,0,0.15)_0_5px_10px] disabled:cursor-not-allowed disabled:text-[var(--foreground-soft)] disabled:opacity-[0.62]";
 const compactFooterPrimaryButtonClass =
-  "inline-flex min-h-[38px] items-center justify-center gap-[8px] rounded-[10px] border border-transparent bg-[linear-gradient(135deg,var(--brand)_0%,#8070f0_100%)] px-[16px] text-[0.9rem] font-bold text-white shadow-[rgba(108,92,231,0.18)_0_6px_14px] transition hover:-translate-y-px disabled:cursor-not-allowed disabled:opacity-[0.62]";
+  "inline-flex min-h-[38px] items-center justify-center gap-[8px] rounded-[10px] border border-transparent bg-[linear-gradient(135deg,var(--brand)_0%,var(--brand-strong)_100%)] px-[16px] text-[0.9rem] font-bold text-[var(--button-text)] shadow-[var(--brand-shadow)_0_6px_14px] transition hover:-translate-y-px disabled:cursor-not-allowed disabled:opacity-[0.62]";
 const passwordInputWrapClass =
-  "grid h-[46px] grid-cols-[minmax(0,1fr)_42px] items-center rounded-[10px] border border-[rgba(100,120,160,0.22)] bg-[rgba(14,18,28,0.7)] transition focus-within:border-[rgba(108,92,231,0.5)] focus-within:shadow-[0_0_0_4px_var(--ring)]";
+  "grid h-[46px] grid-cols-[minmax(0,1fr)_42px] items-center rounded-[10px] border border-[rgba(100,120,160,0.22)] bg-[var(--field-bg)] transition focus-within:border-[var(--brand-strong)] focus-within:shadow-[0_0_0_4px_var(--ring)]";
 
 const passwordInputClass =
   "h-full min-w-0 rounded-l-[10px] border-0 bg-transparent px-[14px] text-[var(--foreground)] outline-none placeholder:text-[#556070] disabled:cursor-not-allowed disabled:opacity-[0.62]";
@@ -76,7 +77,9 @@ const logoFileTypes = new Set(["image/png", "image/jpeg", "image/webp"]);
 const maxLogoFileSize = 2 * 1024 * 1024;
 const paymentQrFileTypes = new Set(["image/png", "image/jpeg", "image/webp"]);
 const maxPaymentQrFileSize = 2 * 1024 * 1024;
+const ownerThemeStorageKey = "pos-mans-owner-theme";
 export type PromptPayRecipientType = "MOBILE" | "NATIONAL_ID" | "TAX_ID" | "STATIC_QR" | "BANK_ACCOUNT";
+export type OwnerThemeId = "violet" | "light" | "dark";
 
 export type OwnerPaymentSettingsValue = {
   promptPayEnabled: boolean;
@@ -93,6 +96,72 @@ export type OwnerPaymentSettingsValue = {
 };
 
 type PromptPayDrafts = Record<"MOBILE" | "NATIONAL_ID" | "TAX_ID", string>;
+
+const ownerThemeOptions: Array<{
+  id: OwnerThemeId;
+  label: string;
+  description: string;
+  preview: string;
+}> = [
+  {
+    id: "violet",
+    label: "Midnight Violet",
+    description: "โทนหลักดั้งเดิมของระบบ ให้ฟีลเข้ม คม และเน้น accent แบบม่วง",
+    preview: "linear-gradient(135deg, #6c5ce7 0%, #8070f0 100%)",
+  },
+  {
+    id: "light",
+    label: "Snow Blue",
+    description: "พื้นหลังสีขาว ปุ่มโทนฟ้า และการ์ดสีขาว สำหรับหน้าร้านที่ดูสะอาดและสว่าง",
+    preview: "linear-gradient(135deg, #ffffff 0%, #dcedff 40%, #2b8cff 100%)",
+  },
+  {
+    id: "dark",
+    label: "Midnight Gold",
+    description: "พื้นหลังสีดำ ปุ่มโทนเหลือง และการ์ดสีดำ ให้ภาพรวมคมเข้มและเด่นชัด",
+    preview: "linear-gradient(135deg, #0f0f0f 0%, #1c1c1c 42%, #f4c430 100%)",
+  },
+];
+
+function isOwnerTheme(value: string | undefined | null): value is OwnerThemeId {
+  return ownerThemeOptions.some((option) => option.id === value);
+}
+
+function readOwnerTheme(): OwnerThemeId {
+  if (typeof window === "undefined") {
+    return "violet";
+  }
+
+  const currentTheme = document.documentElement.dataset.storeTheme;
+  if (isOwnerTheme(currentTheme)) {
+    return currentTheme;
+  }
+
+  try {
+    const savedTheme = window.localStorage.getItem(ownerThemeStorageKey);
+    if (isOwnerTheme(savedTheme)) {
+      return savedTheme;
+    }
+  } catch {
+    // Ignore localStorage access issues and fall back to the default theme.
+  }
+
+  return "violet";
+}
+
+function applyOwnerTheme(theme: OwnerThemeId) {
+  if (typeof document === "undefined") {
+    return;
+  }
+
+  document.documentElement.dataset.storeTheme = theme;
+
+  try {
+    window.localStorage.setItem(ownerThemeStorageKey, theme);
+  } catch {
+    // Persisting the theme is optional; the visual update should still work.
+  }
+}
 
 const promptPayRecipientOptions: Array<{ value: PromptPayRecipientType; label: string; helper: string }> = [
   { value: "MOBILE", label: "เบอร์พร้อมเพย์", helper: "เบอร์มือถือ 10 หลัก" },
@@ -216,28 +285,28 @@ function ConfirmPaymentSettingsModal({ busy, enabled, recipientLabel, bankSummar
   }
 
   return createPortal(
-    <div className="fixed inset-0 z-[300] grid place-items-center bg-[rgba(7,10,16,0.55)] p-4 backdrop-blur-[16px]">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(108,92,231,0.12),transparent_48%)]" />
+    <div className="fixed inset-0 z-[300] grid place-items-center bg-[var(--modal-backdrop)] p-4 backdrop-blur-[16px]">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,var(--brand-soft),transparent_48%)]" />
 
-      <div className="relative z-[1] grid w-[calc(100vw-32px)] max-w-[380px] gap-5 overflow-hidden rounded-none border border-[rgba(108,92,231,0.2)] bg-[linear-gradient(180deg,rgba(22,27,38,0.99),rgba(26,30,42,0.98))] p-5 shadow-[rgba(0,0,0,0.6)_0_40px_100px] max-[640px]:gap-4 max-[640px]:p-4">
+      <div className="relative z-[1] grid w-[calc(100vw-32px)] max-w-[380px] gap-5 overflow-hidden rounded-none border border-[var(--border)] bg-[var(--modal-surface)] p-5 shadow-[var(--modal-shadow)] max-[640px]:gap-4 max-[640px]:p-4">
         <div className="grid gap-3">
-          <p className="m-0 text-left text-[0.7rem] font-bold uppercase tracking-[0.28em] text-[#9f91ff]">ยืนยันการบันทึก</p>
-          <h2 className="m-0 text-[1.25rem] leading-tight tracking-[-0.04em] text-white">ต้องการบันทึกการตั้งค่านี้ใช่ไหม</h2>
-          <div className="inline-grid w-full gap-2 rounded-none border border-[var(--border)] bg-[rgba(255,255,255,0.03)] p-3">
+          <p className="m-0 text-left text-[0.7rem] font-bold uppercase tracking-[0.28em] text-[var(--brand-strong)]">ยืนยันการบันทึก</p>
+          <h2 className="m-0 text-[1.25rem] leading-tight tracking-[-0.04em] text-[var(--foreground)]">ต้องการบันทึกการตั้งค่านี้ใช่ไหม</h2>
+          <div className="inline-grid w-full gap-2 rounded-none border border-[var(--border)] bg-[var(--panel-subtle)] p-3">
             <div className="grid gap-1">
               <span className="text-[0.78rem] text-[var(--foreground-soft)]">{enabled ? "ประเภทผู้รับเงิน" : "สถานะระบบ"}</span>
-              <strong className="text-white text-[0.95rem]">{enabled ? recipientLabel : "ปิดใช้งานและซ่อนจากหน้าร้าน (Offline)"}</strong>
+              <strong className="text-[var(--foreground)] text-[0.95rem]">{enabled ? recipientLabel : "ปิดใช้งานและซ่อนจากหน้าร้าน (Offline)"}</strong>
             </div>
             {promptPaySummary ? (
               <div className="grid gap-1 border-t border-[rgba(100,120,160,0.14)] pt-2">
-                <span className="text-[0.78rem] text-[var(--foreground-soft)]">PromptPay {!enabled ? <span className="text-[#a499ff]">(บันทึกแบบรอเปิดใช้)</span> : null}</span>
-                <div className={`text-[0.95rem] ${enabled ? "text-white" : "text-[rgba(255,255,255,0.65)]"}`}>{promptPaySummary}</div>
+                <span className="text-[0.78rem] text-[var(--foreground-soft)]">PromptPay {!enabled ? <span className="text-[var(--accent-text)]">(บันทึกแบบรอเปิดใช้)</span> : null}</span>
+                <div className={`text-[0.95rem] ${enabled ? "text-[var(--foreground)]" : "text-[var(--foreground-soft)]"}`}>{promptPaySummary}</div>
               </div>
             ) : null}
             {bankSummary ? (
               <div className="grid gap-1 border-t border-[rgba(100,120,160,0.14)] pt-2">
-                <span className="text-[0.78rem] text-[var(--foreground-soft)]">บัญชีธนาคาร {!enabled ? <span className="text-[#a499ff]">(บันทึกแบบรอเปิดใช้)</span> : null}</span>
-                <div className={`text-[0.95rem] ${enabled ? "text-white" : "text-[rgba(255,255,255,0.65)]"}`}>{bankSummary}</div>
+                <span className="text-[0.78rem] text-[var(--foreground-soft)]">บัญชีธนาคาร {!enabled ? <span className="text-[var(--accent-text)]">(บันทึกแบบรอเปิดใช้)</span> : null}</span>
+                <div className={`text-[0.95rem] ${enabled ? "text-[var(--foreground)]" : "text-[var(--foreground-soft)]"}`}>{bankSummary}</div>
               </div>
             ) : null}
           </div>
@@ -286,6 +355,237 @@ export function OwnerLogoStatusPill() {
   }
 
   return <SelectedLogoStatus saved={saved} />;
+}
+
+function ThemeSparkleIcon({ className = "" }: { className?: string }) {
+  return (
+    <svg aria-hidden="true" className={className} viewBox="0 0 24 24" fill="none">
+      <path
+        d="m12 3 1.72 4.28L18 9l-4.28 1.72L12 15l-1.72-4.28L6 9l4.28-1.72L12 3Zm7 10 1 2.5 2.5 1-2.5 1L19 20l-1-2.5-2.5-1 2.5-1L19 13ZM5 14l1.1 2.9L9 18l-2.9 1.1L5 22l-1.1-2.9L1 18l2.9-1.1L5 14Z"
+        stroke="currentColor"
+        strokeWidth="1.45"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function ThemePickerModal({
+  open,
+  activeTheme,
+  onSelect,
+  onClose,
+}: {
+  open: boolean;
+  activeTheme: OwnerThemeId;
+  onSelect: (theme: OwnerThemeId) => void;
+  onClose: () => void;
+}) {
+  const mounted = useSyncExternalStore(
+    () => () => undefined,
+    () => true,
+    () => false,
+  );
+
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        onClose();
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [open, onClose]);
+
+  if (!mounted || !open) {
+    return null;
+  }
+
+  return createPortal(
+    <div
+      className="fixed inset-0 z-[320] grid place-items-center bg-[var(--modal-backdrop)] p-3 backdrop-blur-[16px] max-[640px]:p-2.5"
+      onClick={onClose}
+    >
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,var(--brand-soft),transparent_52%)]" />
+      <div
+        className="relative z-[1] grid max-h-[min(560px,calc(100vh-24px))] w-[min(540px,calc(100vw-24px))] gap-3 overflow-y-auto overflow-x-hidden rounded-[20px] border border-[var(--border)] bg-[var(--modal-surface)] p-4 shadow-[var(--modal-shadow)] max-[640px]:max-h-[min(520px,calc(100vh-20px))] max-[640px]:gap-2.5 max-[640px]:rounded-[16px] max-[640px]:p-3.5"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div className="flex items-start justify-between gap-3">
+          <div className="grid gap-1.5">
+            <span className="inline-flex items-center gap-2 text-[0.72rem] font-bold uppercase tracking-[0.24em] text-[var(--brand-strong)]">
+              <ThemeSparkleIcon className="h-3.5 w-3.5" />
+              Theme Switch
+            </span>
+            <div className="grid gap-1">
+              <h3 className="m-0 text-[1.4rem] leading-tight tracking-[-0.05em] text-[var(--foreground)] max-[640px]:text-[1.2rem]">เลือกธีมร้านของคุณ</h3>
+              <p className="m-0 text-[0.88rem] leading-[1.6] text-[var(--foreground-soft)] max-[640px]:text-[0.8rem]">
+                เปลี่ยนโทนสีของ owner workspace แล้วดูผลได้ทันที
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--surface-muted)] text-[var(--foreground-soft)] transition hover:border-[var(--border-strong)] hover:text-[var(--foreground)]"
+            onClick={onClose}
+            aria-label="ปิดหน้าต่างเลือกธีม"
+          >
+            <span className="text-[1.2rem] leading-none">×</span>
+          </button>
+        </div>
+
+        <div className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
+          {ownerThemeOptions.map((option) => {
+            const active = option.id === activeTheme;
+
+            return (
+              <button
+                key={option.id}
+                type="button"
+                className={
+                  active
+                    ? "grid min-w-0 gap-2 rounded-[16px] border border-[var(--brand-strong)] bg-[linear-gradient(180deg,var(--brand-soft),rgba(255,255,255,0.02))] p-2.5 text-left text-[var(--foreground)] shadow-[var(--brand-shadow)_0_14px_28px] transition"
+                    : "grid min-w-0 gap-2 rounded-[16px] border border-[var(--border)] bg-[var(--surface-muted)] p-2.5 text-left text-[var(--foreground-soft)] transition hover:border-[var(--border-strong)] hover:bg-[var(--surface)] hover:text-[var(--foreground)]"
+                }
+                onClick={() => onSelect(option.id)}
+              >
+                <span
+                  className="block h-12 rounded-[12px] border border-[var(--border)]"
+                  style={{ background: option.preview }}
+                  aria-hidden="true"
+                />
+                <div className="grid gap-1">
+                  <span className="text-[0.9rem] font-bold leading-[1.2]">{option.label}</span>
+                  <span className={`text-[0.72rem] leading-[1.4] ${active ? "text-[var(--foreground)]" : "text-[var(--foreground-soft)]"}`}>
+                    {option.description}
+                  </span>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="flex items-center justify-between gap-3 rounded-[14px] border border-[var(--border)] bg-[var(--surface-muted)] px-3.5 py-2.5 max-[640px]:flex-col max-[640px]:items-stretch max-[640px]:px-3">
+          <p className="m-0 text-[0.76rem] leading-[1.45] text-[var(--foreground-soft)]">
+            ธีมจะถูกบันทึกไว้ในเบราว์เซอร์นี้ และมีผลกับสี accent ของ workspace ฝั่งเจ้าของร้าน
+          </p>
+          <button type="button" className={`${activeGhostButtonClass} min-h-[36px] shrink-0 px-3.5 text-[0.84rem]`} onClick={onClose}>
+            เสร็จสิ้น
+          </button>
+        </div>
+      </div>
+    </div>,
+    document.body,
+  );
+}
+
+export function OwnerThemeStatusPill() {
+  return (
+    <StatusPill tone="success">
+      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="m5 12 4.2 4.2L19 6.5" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+      คุณมีธีมร้านแล้ว
+    </StatusPill>
+  );
+}
+
+export function OwnerThemeClient() {
+  const [themePickerOpen, setThemePickerOpen] = useState(false);
+  const [activeTheme, setActiveTheme] = useState<OwnerThemeId>("violet");
+
+  useEffect(() => {
+    setActiveTheme(readOwnerTheme());
+  }, []);
+
+  useEffect(() => {
+    applyOwnerTheme(activeTheme);
+  }, [activeTheme]);
+
+  const activeThemeOption = ownerThemeOptions.find((option) => option.id === activeTheme) || ownerThemeOptions[0];
+
+  return (
+    <div className="mt-1 grid min-w-0 gap-2 max-[520px]:gap-2">
+      <button
+        type="button"
+        className="grid min-w-0 gap-2 rounded-[12px] border border-[var(--border)] bg-[var(--surface-muted)] p-3 text-left transition hover:border-[var(--border-strong)] hover:bg-[var(--surface)] max-[520px]:rounded-[11px] max-[520px]:p-2.5"
+        onClick={() => setThemePickerOpen(true)}
+        aria-expanded={themePickerOpen}
+        aria-haspopup="dialog"
+      >
+        <div className="flex min-w-0 items-start justify-between gap-2.5 max-[520px]:gap-2">
+          <div className="min-w-0 flex-1">
+            <span className="text-[0.72rem] font-bold uppercase tracking-[0.22em] text-[var(--eyebrow)]">ธีมที่กำลังใช้</span>
+            <strong className="mt-1 block break-words text-[0.94rem] leading-tight text-[var(--foreground)] max-[520px]:text-[0.86rem]">{activeThemeOption.label}</strong>
+          </div>
+          <span
+            className="h-9 w-9 shrink-0 rounded-[11px] border border-[rgba(255,255,255,0.12)] shadow-[rgba(0,0,0,0.2)_0_10px_20px] max-[520px]:h-8 max-[520px]:w-8"
+            style={{ background: activeThemeOption.preview }}
+            aria-hidden="true"
+          />
+        </div>
+        <p className="m-0 text-[0.78rem] leading-[1.45] text-[var(--foreground-soft)] max-[520px]:text-[0.72rem]">{activeThemeOption.description}</p>
+      </button>
+
+      <button
+        type="button"
+        className="hidden"
+        onClick={() => setThemePickerOpen((open) => !open)}
+        aria-expanded={themePickerOpen}
+      >
+        <ThemeSparkleIcon className="h-[18px] w-[18px] shrink-0 opacity-90 max-[520px]:h-4 max-[520px]:w-4" />
+        เลือกธีมร้านของคุณใหม่
+      </button>
+
+      <ThemePickerModal
+        open={themePickerOpen}
+        activeTheme={activeTheme}
+        onSelect={(theme) => {
+          setActiveTheme(theme);
+          setThemePickerOpen(false);
+        }}
+        onClose={() => setThemePickerOpen(false)}
+      />
+      {false ? (
+        <div className="grid gap-2.5 overflow-hidden rounded-none border border-[rgba(100,120,160,0.16)] bg-[rgba(255,255,255,0.03)] p-3 max-[520px]:p-2.5">
+          <div className="grid gap-2 sm:grid-cols-3">
+            {ownerThemeOptions.map((option) => {
+              const active = option.id === activeTheme;
+
+              return (
+                <button
+                  key={option.id}
+                  type="button"
+                  className={
+                    active
+                      ? "grid min-w-0 gap-2 rounded-[12px] border border-[var(--brand-strong)] bg-[var(--brand-soft)] p-2.5 text-left text-[var(--foreground)] shadow-[rgba(0,0,0,0.16)_0_10px_18px] max-[520px]:rounded-[10px] max-[520px]:p-2"
+                      : "grid min-w-0 gap-2 rounded-[12px] border border-[rgba(100,120,160,0.16)] bg-[var(--field-bg)] p-2.5 text-left text-[var(--foreground-soft)] transition hover:border-[var(--border-strong)] hover:text-[var(--foreground)] max-[520px]:rounded-[10px] max-[520px]:p-2"
+                  }
+                  onClick={() => setActiveTheme(option.id)}
+                >
+                  <span
+                    className="block h-10 rounded-[10px] border border-[rgba(255,255,255,0.12)] max-[520px]:h-8"
+                    style={{ background: option.preview }}
+                    aria-hidden="true"
+                  />
+                  <span className="break-words text-[0.84rem] font-bold leading-[1.35] max-[520px]:text-[0.76rem]">{option.label}</span>
+                </button>
+              );
+            })}
+          </div>
+          <p className="m-0 text-[0.75rem] leading-[1.45] text-[var(--foreground-soft)] max-[520px]:text-[0.7rem]">
+            ธีมจะถูกบันทึกไว้ในเบราว์เซอร์นี้ และมีผลกับสี accent ของ workspace ฝั่งเจ้าของร้าน
+          </p>
+        </div>
+      ) : null}
+    </div>
+  );
 }
 
 function PasswordField({
@@ -631,7 +931,7 @@ export function OwnerLogoClient({ compact = false }: { compact?: boolean }) {
     return (
       <div className="grid gap-4 max-[640px]:gap-3">
         <label
-          className="grid aspect-square min-h-[206px] cursor-pointer place-items-center overflow-hidden rounded-[14px] border border-dashed border-[rgba(100,120,160,0.32)] bg-[rgba(14,18,28,0.64)]"
+          className="grid aspect-square min-h-[206px] cursor-pointer place-items-center overflow-hidden rounded-[14px] border border-dashed border-[rgba(100,120,160,0.32)] bg-[var(--field-bg)]"
           aria-label="เลือกโลโก้ร้าน"
         >
           {previewUrl ? (
@@ -702,7 +1002,7 @@ export function OwnerLogoStatusPreview() {
   }
 
   return (
-    <div className="grid aspect-square min-h-[206px] place-items-center overflow-hidden rounded-[14px] border border-dashed border-[rgba(100,120,160,0.32)] bg-[rgba(14,18,28,0.64)]">
+    <div className="grid aspect-square min-h-[206px] place-items-center overflow-hidden rounded-[14px] border border-dashed border-[rgba(100,120,160,0.32)] bg-[var(--field-bg)]">
       <span className="text-[0.95rem] font-semibold text-[var(--foreground-soft)]">โลโก้ร้าน</span>
     </div>
   );
@@ -1471,19 +1771,19 @@ export function OwnerPaymentSettingsClient({ initialSettings }: { initialSetting
       promptPaySummary={
         submitPreviewSettings.promptPayMobileId
           ? (
-            <strong className="text-[1.02rem] font-bold tracking-[0.01em] text-white">
+            <strong className="text-[1.02rem] font-bold tracking-[0.01em] text-[var(--foreground)]">
               เบอร์พร้อมเพย์ <span className="text-[1.08rem] font-extrabold text-[#f3edff]">{submitPreviewSettings.promptPayMobileId}</span>
             </strong>
           )
           : submitPreviewSettings.promptPayNationalId
             ? (
-              <strong className="text-[1.02rem] font-bold tracking-[0.01em] text-white">
+              <strong className="text-[1.02rem] font-bold tracking-[0.01em] text-[var(--foreground)]">
                 เลขบัตรประชาชน <span className="text-[1.08rem] font-extrabold text-[#f3edff]">{submitPreviewSettings.promptPayNationalId}</span>
               </strong>
             )
             : submitPreviewSettings.promptPayTaxId
               ? (
-                <strong className="text-[1.02rem] font-bold tracking-[0.01em] text-white">
+                <strong className="text-[1.02rem] font-bold tracking-[0.01em] text-[var(--foreground)]">
                   เลขผู้เสียภาษี <span className="text-[1.08rem] font-extrabold text-[#f3edff]">{submitPreviewSettings.promptPayTaxId}</span>
                 </strong>
               )
@@ -1491,7 +1791,7 @@ export function OwnerPaymentSettingsClient({ initialSettings }: { initialSetting
       }
       bankSummary={
         submitPreviewSettings.bankName && submitPreviewSettings.bankAccountNumber ? (
-          <strong className="text-[1.02rem] font-bold tracking-[0.01em] text-white">
+          <strong className="text-[1.02rem] font-bold tracking-[0.01em] text-[var(--foreground)]">
             {submitPreviewSettings.bankName} • <span className="text-[1.08rem] font-extrabold text-[#f3edff]">{submitPreviewSettings.bankAccountNumber}</span>
           </strong>
         ) : null
@@ -1510,9 +1810,9 @@ export function OwnerPaymentSettingsClient({ initialSettings }: { initialSetting
   return (
     <form className="mt-2" onSubmit={handleSubmit}>
       <div className="grid gap-3">
-        <div className="flex items-center justify-between gap-3 rounded-[10px] border border-[var(--border)] bg-[rgba(14,18,28,0.55)] px-3 py-2.5 max-[640px]:flex-col max-[640px]:items-start">
+        <div className="flex items-center justify-between gap-3 rounded-[10px] border border-[var(--border)] bg-[var(--field-bg)] px-3 py-2.5 max-[640px]:flex-col max-[640px]:items-start">
           <span className="grid min-w-0 gap-1">
-            <span className="truncate text-[0.95rem] font-bold leading-[1.45] text-white">เปิดใช้ QR / ข้อมูลโอน</span>
+            <span className="truncate text-[0.95rem] font-bold leading-[1.45] text-[var(--foreground)]">เปิดใช้ QR / ข้อมูลโอน</span>
             <span className="text-[0.8rem] leading-[1.45] text-[var(--foreground-soft)] max-[640px]:text-[0.78rem]">แสดงใน Payment และเช็กสลิป</span>
           </span>
           <span className="stock-toggle-uiverse shrink-0">
@@ -1579,14 +1879,14 @@ export function OwnerPaymentSettingsClient({ initialSettings }: { initialSetting
                 type="button"
                 className={
                   editorType === option.value
-                    ? `grid min-h-[54px] content-center gap-0.5 rounded-[10px] border px-3 py-1.5 text-left text-white transition-colors ${
+                    ? `grid min-h-[54px] content-center gap-0.5 rounded-[10px] border px-3 py-1.5 text-left text-[var(--foreground)] transition-colors ${
                         option.value === "BANK_ACCOUNT"
                           ? "border-[rgba(232,93,117,0.52)] bg-[rgba(232,93,117,0.14)] text-[#ffb0bd]"
-                          : "border-[rgba(108,92,231,0.55)] bg-[rgba(108,92,231,0.16)]"
+                          : "border-[var(--accent-border)] bg-[var(--accent-surface)]"
                       } ${option.value === "BANK_ACCOUNT" ? "col-span-1 sm:col-span-2 mx-auto w-full sm:max-w-[calc(50%_-_2px)] justify-items-center text-center" : ""}`
                     : option.value === "BANK_ACCOUNT"
                       ? "col-span-1 sm:col-span-2 mx-auto grid min-h-[54px] w-full sm:max-w-[calc(50%_-_2px)] content-center justify-items-center gap-0.5 rounded-[10px] border border-[rgba(232,93,117,0.34)] bg-[rgba(232,93,117,0.08)] px-3 py-1.5 text-center text-[#ff9daf] transition hover:border-[rgba(232,93,117,0.5)] hover:bg-[rgba(232,93,117,0.12)]"
-                      : "grid min-h-[54px] content-center gap-0.5 rounded-[10px] border border-[var(--border)] bg-[rgba(22,27,38,0.74)] px-3 py-1.5 text-left text-[var(--foreground)] transition hover:border-[var(--border-strong)]"
+                      : "grid min-h-[54px] content-center gap-0.5 rounded-[10px] border border-[var(--border)] bg-[var(--surface-muted)] px-3 py-1.5 text-left text-[var(--foreground)] transition hover:border-[var(--border-strong)]"
                 }
                 onClick={() => {
                   if (option.value === editorType) {
@@ -1670,7 +1970,7 @@ export function OwnerPaymentSettingsClient({ initialSettings }: { initialSetting
               <div className="relative" ref={bankDropdownRef}>
                 <button
                   type="button"
-                  className={`${compactBankInputClass} flex items-center justify-between gap-3 text-left ${bankDropdownOpen ? "border-[rgba(108,92,231,0.5)] shadow-[0_0_0_4px_var(--ring)]" : ""}`}
+                  className={`${compactBankInputClass} flex items-center justify-between gap-3 text-left ${bankDropdownOpen ? "border-[var(--brand-strong)] shadow-[0_0_0_4px_var(--ring)]" : ""}`}
                   onClick={() => setBankDropdownOpen((current) => !current)}
                   disabled={effectivelyDisabled}
                   aria-expanded={bankDropdownOpen}
@@ -1692,7 +1992,7 @@ export function OwnerPaymentSettingsClient({ initialSettings }: { initialSetting
                           <button
                             key={bankName}
                             type="button"
-                            className={`flex w-full items-center px-4 py-3 text-left text-[0.95rem] leading-[1.25] transition ${active ? "bg-[rgba(108,92,231,0.16)] text-[#b9aeff]" : "text-[rgba(255,255,255,0.9)] hover:bg-[rgba(255,255,255,0.04)]"}`}
+                            className={`flex w-full items-center px-4 py-3 text-left text-[0.95rem] leading-[1.25] transition ${active ? "bg-[var(--accent-surface)] text-[var(--accent-text)]" : "text-[var(--foreground)] hover:bg-[var(--panel-subtle)]"}`}
                             onClick={() => {
                               setForm((current) => ({ ...current, bankName }));
                               setBankDropdownOpen(false);
@@ -1723,10 +2023,10 @@ export function OwnerPaymentSettingsClient({ initialSettings }: { initialSetting
         ) : null}
 
         {usesStaticQr ? (
-          <div className="grid gap-2.5 rounded-[10px] border border-[var(--border)] bg-[rgba(14,18,28,0.55)] p-3">
+          <div className="grid gap-2.5 rounded-[10px] border border-[var(--border)] bg-[var(--field-bg)] p-3">
             <div className="flex items-center justify-between gap-3 max-[640px]:flex-col max-[640px]:items-stretch">
               <div className="min-w-0">
-                <strong className="block text-[0.95rem] leading-[1.3] text-white">Static QR</strong>
+                <strong className="block text-[0.95rem] leading-[1.3] text-[var(--foreground)]">Static QR</strong>
                 <span className="block truncate text-[0.76rem] text-[var(--foreground-soft)]">ตรวจยอดจากสลิปเอง</span>
               </div>
               <label className={`${activeGhostButtonClass} min-h-[36px] shrink-0 cursor-pointer px-3 text-[0.86rem] max-[640px]:w-full`}>

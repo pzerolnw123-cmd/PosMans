@@ -364,12 +364,12 @@ export function PaymentCheckoutClient({ paymentSettings }: { paymentSettings: Ow
         {!compact ? (
           <div className="flex items-start justify-between gap-3 max-[860px]:flex-col">
             <div>
-              <strong className="block text-white">QR PromptPay / โอนเงิน</strong>
+              <strong className="block text-[var(--foreground)]">QR PromptPay / โอนเงิน</strong>
               <span className="text-[0.86rem] leading-[1.5] text-[var(--foreground-soft)]">
                 {completedSale ? "วิธีรับเงินของบิลล่าสุด" : "ให้ลูกค้าสแกนหรือโอน แล้วตรวจสลิปก่อนกดยืนยัน"}
               </span>
             </div>
-            <strong className="whitespace-nowrap text-white">{formatBaht(billTotal)}</strong>
+            <strong className="whitespace-nowrap text-[var(--foreground)]">{formatBaht(billTotal)}</strong>
           </div>
         ) : null}
 
@@ -381,9 +381,9 @@ export function PaymentCheckoutClient({ paymentSettings }: { paymentSettings: Ow
           <div className={compact ? "grid justify-items-center gap-4 text-center" : "grid grid-cols-[148px_minmax(0,1fr)] items-center gap-4 max-[860px]:grid-cols-1"}>
             {promptPayQrDataUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={promptPayQrDataUrl} alt="PromptPay QR" className={compact ? "aspect-square w-full max-w-[240px] rounded-none bg-white p-3 shadow-[rgba(108,92,231,0.2)_0_0_24px]" : "h-[148px] w-[148px] rounded-none border border-[rgba(108,92,231,0.28)] bg-white p-2 shadow-[rgba(108,92,231,0.14)_0_0_15px]"} />
+              <img src={promptPayQrDataUrl} alt="PromptPay QR" className={compact ? "aspect-square w-full max-w-[240px] rounded-none bg-white p-3 shadow-[var(--brand-shadow)_0_0_24px]" : "h-[148px] w-[148px] rounded-none border border-[var(--accent-border)] bg-white p-2 shadow-[var(--brand-shadow)_0_0_15px]"} />
             ) : (
-              <div className={compact ? "grid aspect-square w-full max-w-[240px] place-items-center rounded-none border border-dashed border-[rgba(108,92,231,0.32)] text-center text-[0.86rem] text-[var(--foreground-soft)]" : "grid h-[148px] w-[148px] place-items-center rounded-none border border-dashed border-[rgba(108,92,231,0.28)] text-center text-[0.82rem] text-[var(--foreground-soft)]"}>
+              <div className={compact ? "grid aspect-square w-full max-w-[240px] place-items-center rounded-none border border-dashed border-[var(--accent-border)] text-center text-[0.86rem] text-[var(--foreground-soft)]" : "grid h-[148px] w-[148px] place-items-center rounded-none border border-dashed border-[var(--accent-border)] text-center text-[0.82rem] text-[var(--foreground-soft)]"}>
                 กำลังสร้าง QR
               </div>
             )}
@@ -391,10 +391,10 @@ export function PaymentCheckoutClient({ paymentSettings }: { paymentSettings: Ow
               {compact ? (
                 <div className="flex items-start justify-between gap-4 text-left max-[520px]:flex-col">
                   <div className="grid min-w-0 gap-1.5">
-                    <strong className="block leading-[1.28] text-white">QR PromptPay / โอนเงิน</strong>
+                    <strong className="block leading-[1.28] text-[var(--foreground)]">QR PromptPay / โอนเงิน</strong>
                     <span className="text-[0.78rem] leading-[1.55] text-[var(--foreground-soft)]">ยอดถูกฝังใน QR แล้ว</span>
                   </div>
-                  <strong className="whitespace-nowrap text-white">{formatBaht(billTotal)}</strong>
+                  <strong className="whitespace-nowrap text-[var(--foreground)]">{formatBaht(billTotal)}</strong>
                 </div>
               ) : (
                 <>
@@ -412,10 +412,10 @@ export function PaymentCheckoutClient({ paymentSettings }: { paymentSettings: Ow
               {compact ? (
                 <div className="flex items-start justify-between gap-4 text-left max-[520px]:flex-col">
                   <div className="grid min-w-0 gap-1.5">
-                    <strong className="block leading-[1.28] text-white">Static QR จากธนาคาร</strong>
+                    <strong className="block leading-[1.28] text-[var(--foreground)]">Static QR จากธนาคาร</strong>
                     <span className="text-[0.78rem] leading-[1.55] text-[var(--foreground-soft)]">ให้ลูกค้าโอนยอดนี้</span>
                   </div>
-                  <strong className="whitespace-nowrap text-white">{formatBaht(billTotal)}</strong>
+                  <strong className="whitespace-nowrap text-[var(--foreground)]">{formatBaht(billTotal)}</strong>
                 </div>
               ) : (
                 <>
@@ -447,14 +447,14 @@ export function PaymentCheckoutClient({ paymentSettings }: { paymentSettings: Ow
         {!compact ? (
           <div className="flex items-start justify-between gap-3 max-[860px]:flex-col">
             <div>
-              <strong className="block text-white">ข้อมูลโอนเงินผ่านธนาคาร</strong>
+              <strong className="block text-[var(--foreground)]">ข้อมูลโอนเงินผ่านธนาคาร</strong>
               <span className="text-[0.86rem] leading-[1.5] text-[var(--foreground-soft)]">ให้ลูกค้าโอนเข้าบัญชีด้านล่าง</span>
             </div>
-            <strong className="whitespace-nowrap text-white">{formatBaht(billTotal)}</strong>
+            <strong className="whitespace-nowrap text-[var(--foreground)]">{formatBaht(billTotal)}</strong>
           </div>
         ) : (
           <div className="flex items-center justify-between gap-3 max-[520px]:flex-col max-[520px]:items-start">
-            <strong className="text-[0.95rem] text-white">ยอดโอน {formatBaht(billTotal)}</strong>
+            <strong className="text-[0.95rem] text-[var(--foreground)]">ยอดโอน {formatBaht(billTotal)}</strong>
             <span className="text-[0.75rem] font-bold text-[#ffcf7a]">ตรวจสลิปหลังโอน</span>
           </div>
         )}
@@ -464,9 +464,9 @@ export function PaymentCheckoutClient({ paymentSettings }: { paymentSettings: Ow
             ยังไม่ได้เปิดใช้การรับโอนเงิน <br />ในหน้าตั้งค่า
           </div>
         ) : bankInfoFilled ? (
-          <div className="grid gap-2 rounded-none border border-[rgba(100,120,160,0.14)] bg-[rgba(14,18,28,0.48)] px-3.5 py-3 text-[0.86rem]">
-            <div className="flex justify-between gap-3"><span className="text-[var(--foreground-soft)]">ธนาคาร</span><strong className="text-white">{paymentSettings.bankName}</strong></div>
-            <div className="flex justify-between gap-3"><span className="text-[var(--foreground-soft)]">ชื่อบัญชี</span><strong className="text-white">{paymentSettings.bankAccountName}</strong></div>
+          <div className="grid gap-2 rounded-none border border-[rgba(100,120,160,0.14)] bg-[var(--field-bg)] px-3.5 py-3 text-[0.86rem]">
+            <div className="flex justify-between gap-3"><span className="text-[var(--foreground-soft)]">ธนาคาร</span><strong className="text-[var(--foreground)]">{paymentSettings.bankName}</strong></div>
+            <div className="flex justify-between gap-3"><span className="text-[var(--foreground-soft)]">ชื่อบัญชี</span><strong className="text-[var(--foreground)]">{paymentSettings.bankAccountName}</strong></div>
             <div className="flex justify-between gap-3"><span className="text-[var(--foreground-soft)] text-left">เลขบัญชี</span><strong className="text-[1.05rem] text-[var(--brand-strong)] select-all">{paymentSettings.bankAccountNumber}</strong></div>
           </div>
         ) : (
@@ -525,7 +525,7 @@ export function PaymentCheckoutClient({ paymentSettings }: { paymentSettings: Ow
 
   if (!mounted) {
     return (
-      <div className="flex h-full min-h-[400px] flex-col items-center justify-center gap-4 rounded-none border border-dashed border-[var(--border)] bg-[rgba(22,27,38,0.48)]">
+      <div className="flex h-full min-h-[400px] flex-col items-center justify-center gap-4 rounded-none border border-dashed border-[var(--border)] bg-[var(--panel-subtle)]">
         <Loader size={64} label="กำลังตรวจสอบออเดอร์" />
         <strong className="text-[1.1rem] tracking-[-0.04em] text-[var(--foreground-soft)]">กำลังตรวจสอบรายการ...</strong>
       </div>
@@ -536,10 +536,10 @@ export function PaymentCheckoutClient({ paymentSettings }: { paymentSettings: Ow
 
   return (
     <div className="grid h-full min-h-0 grid-cols-[minmax(0,1fr)_minmax(0,1fr)_280px] gap-[18px] max-[1366px]:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] max-[1180px]:grid-cols-1 max-[820px]:gap-4">
-      <section className="grid min-h-0 grid-rows-[auto_minmax(0,1fr)_auto] gap-[16px] rounded-none border border-[var(--border)] bg-[rgba(22,27,38,0.76)] px-5 py-[18px] shadow-[var(--shadow-soft)] max-[820px]:px-4 max-[820px]:py-4">
+      <section className="grid min-h-0 grid-rows-[auto_minmax(0,1fr)_auto] gap-[16px] rounded-none border border-[var(--border)] bg-[var(--panel-strong)] px-5 py-[18px] shadow-[var(--shadow-soft)] max-[820px]:px-4 max-[820px]:py-4">
         <div>
-          <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[#6b7a94]">Bill Summary</p>
-          <strong className="my-[10px] block text-[1.4rem] leading-none tracking-[-0.04em] text-white">
+          <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[var(--eyebrow)]">Bill Summary</p>
+          <strong className="my-[10px] block text-[1.4rem] leading-none tracking-[-0.04em] text-[var(--foreground)]">
             {completedSale ? "ชำระเงินสำเร็จ (ล่าสุด)" : items.length > 0 ? "รายการรอชำระ" : "ยังไม่มีรายการ"}
           </strong>
           <p className="m-0 text-[0.95rem] leading-[1.65] text-[var(--foreground-soft)]">
@@ -565,24 +565,24 @@ export function PaymentCheckoutClient({ paymentSettings }: { paymentSettings: Ow
                 onPointerLeave={stopBillDrag}
               >
                 {billItems.map((item) => (
-                  <div key={item.key} className="grid grid-cols-[52px_minmax(0,1fr)_auto] items-center gap-3 rounded-none border border-[rgba(100,120,160,0.14)] bg-[rgba(255,255,255,0.03)] p-3 max-[520px]:grid-cols-[52px_minmax(0,1fr)]">
+                  <div key={item.key} className="grid grid-cols-[52px_minmax(0,1fr)_auto] items-center gap-3 rounded-none border border-[rgba(100,120,160,0.14)] bg-[var(--panel-subtle)] p-3 max-[520px]:grid-cols-[52px_minmax(0,1fr)]">
                     {item.imageUrl ? (
                       <span className="h-[52px] w-[52px] rounded-[10px] border border-[rgba(100,120,160,0.14)] bg-cover bg-center" style={{ backgroundImage: `url(${item.imageUrl})` }} />
                     ) : (
-                      <div className="h-[52px] w-[52px] rounded-[10px] border border-[rgba(100,120,160,0.14)] bg-[rgba(255,255,255,0.04)]" />
+                      <div className="h-[52px] w-[52px] rounded-[10px] border border-[rgba(100,120,160,0.14)] bg-[var(--surface-muted)]" />
                     )}
                     <div className="grid min-w-0 gap-1">
-                      <strong className="truncate text-base leading-[1.2] text-white">{item.name}</strong>
+                      <strong className="truncate text-base leading-[1.2] text-[var(--foreground)]">{item.name}</strong>
                       <span className="text-[0.92rem] text-[var(--foreground-soft)]">{formatBaht(item.unitPrice)} x {item.quantity}</span>
                     </div>
-                    <strong className="text-base leading-[1.2] text-white max-[520px]:col-span-2 max-[520px]:justify-self-end">{formatBaht(item.lineTotal)}</strong>
+                    <strong className="text-base leading-[1.2] text-[var(--foreground)] max-[520px]:col-span-2 max-[520px]:justify-self-end">{formatBaht(item.lineTotal)}</strong>
                   </div>
                 ))}
               </div>
               {billScrollMetric.visible ? (
-                <span className="pointer-events-none absolute bottom-0 right-0 top-0 w-[7px] bg-[rgba(15,19,29,0.78)]">
+                <span className="pointer-events-none absolute bottom-0 right-0 top-0 w-[7px] bg-[var(--scroll-track)]">
                   <span
-                    className="absolute left-0 w-full rounded-full bg-[linear-gradient(180deg,rgba(240,106,223,0.98),rgba(169,108,255,0.94))] shadow-[rgba(240,106,223,0.24)_0_0_14px]"
+                    className="absolute left-0 w-full rounded-full bg-[var(--scroll-thumb)] shadow-[var(--brand-shadow)_0_0_14px]"
                     style={{ top: `${billScrollMetric.top}%`, height: `${billScrollMetric.height}%` }}
                   />
                 </span>
@@ -604,16 +604,16 @@ export function PaymentCheckoutClient({ paymentSettings }: { paymentSettings: Ow
           ].map(([label, value]) => (
             <div key={label} className="flex items-center justify-between gap-3 max-[420px]:flex-col max-[420px]:items-start">
               <span className="text-[0.95rem] text-[var(--foreground-soft)]">{label}</span>
-              <strong className="text-base leading-[1.2] text-white">{value}</strong>
+              <strong className="text-base leading-[1.2] text-[var(--foreground)]">{value}</strong>
             </div>
           ))}
         </div>
       </section>
 
-      <section className="grid h-fit content-start gap-[16px] rounded-none border border-[var(--border)] bg-[rgba(22,27,38,0.76)] px-5 py-[18px] shadow-[var(--shadow-soft)] max-[820px]:px-4 max-[820px]:py-4">
+      <section className="grid h-fit content-start gap-[16px] rounded-none border border-[var(--border)] bg-[var(--panel-strong)] px-5 py-[18px] shadow-[var(--shadow-soft)] max-[820px]:px-4 max-[820px]:py-4">
         <div>
-          <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[#6b7a94]">Payment Methods</p>
-          <strong className="my-[10px] block text-[1.4rem] leading-none tracking-[-0.04em] text-white">{completedSale ? "วิธีชำระล่าสุด" : "เลือกวิธีชำระ"}</strong>
+          <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[var(--eyebrow)]">Payment Methods</p>
+          <strong className="my-[10px] block text-[1.4rem] leading-none tracking-[-0.04em] text-[var(--foreground)]">{completedSale ? "วิธีชำระล่าสุด" : "เลือกวิธีชำระ"}</strong>
           <p className="m-0 text-[0.95rem] leading-[1.65] text-[var(--foreground-soft)]">
             {completedSale ? "บิลนี้ชำระสำเร็จแล้ว รายละเอียดถูกล็อกไว้" : "เลือกวิธีรับเงินก่อนบันทึกบิลจริง"}
           </p>
@@ -640,7 +640,7 @@ export function PaymentCheckoutClient({ paymentSettings }: { paymentSettings: Ow
               <label className="grid gap-2">
                 <span className="text-[0.92rem] font-bold text-[var(--brand-strong)]">รับเงินมา</span>
                 <input
-                  className={`${inputClass} border-[rgba(108,92,231,0.4)] text-[1.2rem] font-bold [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
+                  className={`${inputClass} border-[var(--accent-border)] text-[1.2rem] font-bold [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
                   type="number"
                   min={0}
                   value={receivedDraft ?? (receivedAmount === 0 ? "" : String(receivedAmount))}
@@ -702,7 +702,7 @@ export function PaymentCheckoutClient({ paymentSettings }: { paymentSettings: Ow
           <label className="grid gap-2">
             <span className="text-[0.92rem] text-[var(--foreground-soft)]">หมายเหตุบิล</span>
             <textarea
-              className="min-h-[116px] rounded-none border border-[rgba(100,120,160,0.22)] bg-[rgba(14,18,28,0.7)] px-[14px] py-3 text-[var(--foreground)] outline-none transition placeholder:text-[#556070] focus:border-[rgba(108,92,231,0.55)] focus:shadow-[inset_0_0_0_1px_var(--ring)] disabled:cursor-not-allowed disabled:opacity-70 flex-shrink-0 resize-none max-[640px]:min-h-[96px] [&::-webkit-scrollbar]:w-[6px] [&::-webkit-scrollbar-track]:bg-[rgba(15,19,29,0.78)] [&::-webkit-scrollbar-thumb]:bg-[linear-gradient(180deg,rgba(240,106,223,0.8),rgba(169,108,255,0.8))] hover:[&::-webkit-scrollbar-thumb]:bg-[linear-gradient(180deg,rgba(240,106,223,1),rgba(169,108,255,1))]"
+              className="min-h-[116px] rounded-none border border-[rgba(100,120,160,0.22)] bg-[var(--field-bg)] px-[14px] py-3 text-[var(--foreground)] outline-none transition placeholder:text-[var(--field-placeholder)] focus:border-[var(--brand-strong)] focus:shadow-[inset_0_0_0_1px_var(--ring)] disabled:cursor-not-allowed disabled:opacity-70 flex-shrink-0 resize-none max-[640px]:min-h-[96px] [&::-webkit-scrollbar]:w-[6px] [&::-webkit-scrollbar-track]:bg-[var(--scroll-track)] [&::-webkit-scrollbar-thumb]:bg-[var(--scroll-thumb)] hover:[&::-webkit-scrollbar-thumb]:bg-[var(--scroll-thumb-hover)]"
               value={completedSale ? completedSale.note || "" : note}
               onChange={(event) => setNote(event.target.value)}
               disabled={Boolean(completedSale)}
@@ -721,10 +721,10 @@ export function PaymentCheckoutClient({ paymentSettings }: { paymentSettings: Ow
         </div>
       </section>
 
-      <section className="grid h-fit gap-[16px] rounded-none border border-[var(--border)] bg-[rgba(22,27,38,0.76)] px-5 py-[18px] shadow-[var(--shadow-soft)] max-[1366px]:col-span-2 max-[1180px]:col-span-1 max-[820px]:px-4 max-[820px]:py-4">
+      <section className="grid h-fit gap-[16px] rounded-none border border-[var(--border)] bg-[var(--panel-strong)] px-5 py-[18px] shadow-[var(--shadow-soft)] max-[1366px]:col-span-2 max-[1180px]:col-span-1 max-[820px]:px-4 max-[820px]:py-4">
         <div>
-          <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[#6b7a94]">Quick Panel</p>
-          <strong className="my-[10px] block text-[1.4rem] leading-none tracking-[-0.04em] text-white">สถานะชำระเงิน</strong>
+          <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[var(--eyebrow)]">Quick Panel</p>
+          <strong className="my-[10px] block text-[1.4rem] leading-none tracking-[-0.04em] text-[var(--foreground)]">สถานะชำระเงิน</strong>
         </div>
         <div className="grid gap-2">
           {!completedSale && qrPaymentSelected ? (
@@ -740,18 +740,18 @@ export function PaymentCheckoutClient({ paymentSettings }: { paymentSettings: Ow
                 </div>
               ) : null}
               {paymentMethod === "CASH" && !completedSale && receivedAmount > 0 && (
-                <div className="rounded-none border border-[rgba(108,92,231,0.22)] bg-[rgba(108,92,231,0.06)] px-3.5 py-3 shadow-[rgba(108,92,231,0.1)_0_0_15px]">
+                <div className="rounded-none border border-[var(--accent-border)] bg-[var(--accent-surface)] px-3.5 py-3 shadow-[var(--brand-shadow)_0_0_15px]">
                   <span className="text-[0.82rem] text-[var(--brand-strong)]">เงินทอน</span>
-                  <strong className="mt-1 block text-[1.05rem] leading-[1.1] text-white">{formatBaht(changeAmount)}</strong>
+                  <strong className="mt-1 block text-[1.05rem] leading-[1.1] text-[var(--foreground)]">{formatBaht(changeAmount)}</strong>
                 </div>
               )}
-              <div className="rounded-none border border-[rgba(100,120,160,0.14)] bg-[rgba(255,255,255,0.03)] px-3.5 py-3">
+              <div className="rounded-none border border-[rgba(100,120,160,0.14)] bg-[var(--panel-subtle)] px-3.5 py-3">
                 <span className="text-[0.82rem] text-[var(--foreground-soft)]">จำนวนรายการ</span>
-                <strong className="mt-1 block text-[1.05rem] leading-[1.1] text-white">{billItems.length} รายการ / {itemCount} ชิ้น</strong>
+                <strong className="mt-1 block text-[1.05rem] leading-[1.1] text-[var(--foreground)]">{billItems.length} รายการ / {itemCount} ชิ้น</strong>
               </div>
-              <div className="rounded-none border border-[rgba(100,120,160,0.14)] bg-[rgba(255,255,255,0.03)] px-3.5 py-3">
+              <div className="rounded-none border border-[rgba(100,120,160,0.14)] bg-[var(--panel-subtle)] px-3.5 py-3">
                 <span className="text-[0.82rem] text-[var(--foreground-soft)]">ยอดสุทธิ</span>
-                <strong className="mt-1 block text-[1.05rem] leading-[1.1] text-white">{formatBaht(billTotal)}</strong>
+                <strong className="mt-1 block text-[1.05rem] leading-[1.1] text-[var(--foreground)]">{formatBaht(billTotal)}</strong>
               </div>
             </>
           )}

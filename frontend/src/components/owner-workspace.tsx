@@ -10,6 +10,8 @@ import {
   OwnerPasswordClient,
   OwnerPaymentSettingsClient,
   OwnerProfileClient,
+  OwnerThemeClient,
+  OwnerThemeStatusPill,
   type OwnerPaymentSettingsValue,
 } from "@/components/owner-settings-client";
 import { PaymentCheckoutClient } from "@/components/payment-checkout-client";
@@ -142,6 +144,7 @@ function renderOwnerScreen(
             title="ขายหน้าร้าน"
             description="จัดการรายการขายหน้าร้านของคุณ เลือกสินค้า เพิ่มลงตะกร้า และติดตามบิลที่กำลังขาย พร้อมเข้าสู่ขั้นตอนชำระเงินได้อย่างรวดเร็ว"
             actions={<StatusPill tone="success">พร้อมขายแล้ว</StatusPill>}
+            className="h-[138px] min-h-[138px] max-h-[138px] px-5 py-5 max-[1180px]:h-auto max-[1180px]:min-h-0 max-[1180px]:max-h-none max-[1024px]:px-4 max-[1024px]:py-4 max-[640px]:px-3.5 max-[640px]:py-3.5 h-[144px] min-h-[144px] max-h-[144px] px-4 py-4 max-[1180px]:h-auto max-[1180px]:min-h-0 max-[1180px]:max-h-none max-[640px]:px-3.5 max-[640px]:py-3.5"
           />
 
           <SalesPaginationMockup />
@@ -196,7 +199,7 @@ function renderOwnerScreen(
       description: "มุมมองอ่านเร็วสำหรับยอดขาย บิลเฉลี่ย และสิ่งที่ต้องจับตาในวันเดียว",
       actions: <StatusPill tone="success">อัปเดตล่าสุด 5 นาทีที่แล้ว</StatusPill>,
       body: (
-        <section className="grid h-full min-h-0 grid-rows-[156px_minmax(0,1fr)] gap-[18px] max-[1180px]:grid-rows-[auto_minmax(0,1fr)]">
+        <section className="grid h-full min-h-0 grid-rows-[138px_minmax(0,1fr)] gap-[14px] max-[1180px]:grid-rows-[auto_minmax(0,1fr)] max-[820px]:gap-4">
           <PageHeader
             eyebrow="Reports"
             title="รายงาน"
@@ -212,14 +215,14 @@ function renderOwnerScreen(
             <PanelCard eyebrow="Today" title="ตัวชี้วัดสำคัญวันนี้" description="ตัวเลขหลักที่เจ้าของร้านใช้ตัดสินใจ" className="grid min-h-0 content-start px-[18px] py-4">
               <div className="grid gap-[18px]">
                 <ThreeUpStats items={[["ยอดขาย", "28,450"], ["บิลเฉลี่ย", "412"], ["ช่วงพีค", "12:30"]]} />
-                <div className="grid gap-[10px] rounded-[16px] border border-[var(--border)] bg-[rgba(255,255,255,0.03)] p-4">
+                <div className="grid gap-[10px] rounded-[16px] border border-[var(--border)] bg-[var(--panel-subtle)] p-4">
                   {[
                     ["ยอดเช้า", "8,450 บาท"],
                     ["ยอดเที่ยง", "12,280 บาท"],
                     ["ยอดเย็น", "7,720 บาท"],
                     ["บิลที่ยังไม่ปิด", "3 บิล"],
                   ].map(([label, value]) => (
-                    <div key={label} className="flex items-center justify-between gap-3 rounded-xl border border-[rgba(100,120,160,0.12)] bg-[rgba(22,27,38,0.56)] px-4 py-3">
+                    <div key={label} className="flex items-center justify-between gap-3 rounded-xl border border-[rgba(100,120,160,0.12)] bg-[var(--surface-muted)] px-4 py-3">
                       <span className="text-[var(--foreground-soft)]">{label}</span>
                       <strong>{value}</strong>
                     </div>
@@ -263,7 +266,7 @@ function renderOwnerScreen(
       description: "หน้ารวมสำหรับ owner โดยไม่ปะปนเรื่อง platform-level control ของ superadmin",
       actions: <StatusPill>{storeName}</StatusPill>,
       body: (
-        <section className="grid h-full min-h-0 grid-rows-[156px_minmax(0,1fr)] gap-[18px] max-[1180px]:grid-rows-[auto_minmax(0,1fr)]">
+        <section className="grid h-full min-h-0 grid-rows-[140px_minmax(0,1fr)] gap-[12px] max-[1180px]:grid-rows-[auto_minmax(0,1fr)] max-[820px]:gap-4">
           <PageHeader
             eyebrow="Overview"
             title="ภาพรวมร้าน"
@@ -279,13 +282,13 @@ function renderOwnerScreen(
             <PanelCard eyebrow="Store Pulse" title="สถานะวันนี้" description="ตัวเลขหลักของร้านในวันเดียว" className="grid min-h-0 content-start px-[18px] py-4">
               <div className="grid gap-[18px]">
                 <ThreeUpStats items={[["ออเดอร์เปิด", "8"], ["ยอดขายสด", "28.4K"], ["พนักงานเข้าเวร", "6"]]} />
-                <div className="grid gap-[10px] rounded-[16px] border border-[var(--border)] bg-[rgba(255,255,255,0.03)] p-4">
+                <div className="grid gap-[10px] rounded-[16px] border border-[var(--border)] bg-[var(--panel-subtle)] p-4">
                   {[
                     ["โต๊ะที่กำลังใช้งาน", "5 โต๊ะ"],
                     ["ลูกค้ารอชำระ", "2 บิล"],
                     ["สินค้าต้องเติม", "4 รายการ"],
                   ].map(([label, value]) => (
-                    <div key={label} className="flex items-center justify-between gap-3 rounded-xl border border-[rgba(100,120,160,0.12)] bg-[rgba(22,27,38,0.56)] px-4 py-3">
+                    <div key={label} className="flex items-center justify-between gap-3 rounded-xl border border-[rgba(100,120,160,0.12)] bg-[var(--surface-muted)] px-4 py-3">
                       <span className="text-[var(--foreground-soft)]">{label}</span>
                       <strong>{value}</strong>
                     </div>
@@ -322,7 +325,7 @@ function renderOwnerScreen(
       description: "ช่วยคำนวณต้นทุน ราคาขาย และกำไรขั้นต้นสำหรับสินค้าแต่ละรายการ",
       actions: <StatusPill tone="success">พร้อมคำนวณ</StatusPill>,
       body: (
-        <section className="grid h-full min-h-0 grid-rows-[156px_minmax(0,1fr)] gap-[18px] max-[1180px]:grid-rows-[auto_minmax(0,1fr)]">
+        <section className="grid h-full min-h-0 grid-rows-[144px_minmax(0,1fr)] gap-[12px] max-[1180px]:grid-rows-[auto_minmax(0,1fr)] max-[820px]:gap-4">
           <PageHeader
             eyebrow="Cost Calculator"
             title="คำนวณ"
@@ -354,12 +357,12 @@ function renderOwnerScreen(
             <PanelCard eyebrow="Profit Snapshot" title="สรุปกำไร" description="คำนวณเบื้องต้นเพื่อใช้ตั้งราคาขายหรือปรับโปรโมชั่น" className="grid min-h-0 content-start px-[18px] py-4">
               <div className="grid gap-[18px]">
                 <ThreeUpStats items={[["ต้นทุนรวม", "115"], ["กำไรขั้นต้น", "44"], ["Margin", "27.7%"]]} />
-                <div className="grid gap-[10px] rounded-[16px] border border-[var(--border)] bg-[rgba(255,255,255,0.03)] p-4">
-                  <div className="flex items-center justify-between gap-3 rounded-xl border border-[rgba(100,120,160,0.12)] bg-[rgba(22,27,38,0.56)] px-4 py-3">
+                <div className="grid gap-[10px] rounded-[16px] border border-[var(--border)] bg-[var(--panel-subtle)] p-4">
+                  <div className="flex items-center justify-between gap-3 rounded-xl border border-[rgba(100,120,160,0.12)] bg-[var(--surface-muted)] px-4 py-3">
                     <span className="text-[var(--foreground-soft)]">ราคาขายแนะนำ</span>
                     <strong>฿169</strong>
                   </div>
-                  <div className="flex items-center justify-between gap-3 rounded-xl border border-[rgba(100,120,160,0.12)] bg-[rgba(22,27,38,0.56)] px-4 py-3">
+                  <div className="flex items-center justify-between gap-3 rounded-xl border border-[rgba(100,120,160,0.12)] bg-[var(--surface-muted)] px-4 py-3">
                     <span className="text-[var(--foreground-soft)]">Break-even</span>
                     <strong>฿115</strong>
                   </div>
@@ -387,22 +390,22 @@ function renderOwnerScreen(
             }
           />
 
-          <div className="grid min-h-0 grid-cols-[minmax(280px,1fr)_minmax(280px,1fr)_minmax(280px,1fr)] items-start gap-[18px] max-[1366px]:grid-cols-[repeat(2,minmax(280px,1fr))] max-[980px]:grid-cols-1 max-[820px]:gap-4">
+          <div className="grid min-h-0 grid-cols-[minmax(250px,1fr)_minmax(250px,1fr)_minmax(250px,1fr)] items-start gap-[12px] max-[1366px]:grid-cols-[repeat(2,minmax(250px,1fr))] max-[980px]:grid-cols-1 max-[820px]:gap-4">
             <PanelCard
               eyebrow="ความปลอดภัยของบัญชี"
               title="เปลี่ยนรหัสผ่าน"
-              titleClassName="my-[10px] text-[clamp(1.65rem,2.1vw,2.35rem)] leading-[1.05] tracking-[-0.045em]"
-              className="grid h-fit min-h-0 content-start px-5 py-5 max-[820px]:px-4 max-[820px]:py-4"
+              titleClassName="my-[7px] text-[clamp(1.42rem,1.82vw,1.94rem)] leading-[1.05] tracking-[-0.04em]"
+              className="grid h-fit min-h-0 content-start px-3.5 py-3.5 max-[820px]:px-3.5 max-[820px]:py-3.5 max-[640px]:px-3 max-[640px]:py-3"
             >
               <OwnerPasswordClient />
             </PanelCard>
 
-            <div className="grid gap-[18px] max-[820px]:gap-4">
+            <div className="grid gap-[12px] max-[820px]:gap-4">
               <PanelCard
                 eyebrow="โปรไฟล์ร้านค้า"
                 title="ข้อมูลทั่วไป"
-                titleClassName="my-[10px] text-[clamp(1.65rem,2.1vw,2.35rem)] leading-[1.05] tracking-[-0.045em]"
-                className="grid h-fit min-h-0 content-start px-5 py-5 max-[820px]:px-4 max-[820px]:py-4"
+                titleClassName="my-[7px] text-[clamp(1.28rem,1.55vw,1.66rem)] leading-[1.05] tracking-[-0.035em] max-[520px]:text-[1.48rem]"
+                className="grid h-fit min-h-0 min-w-0 content-start overflow-hidden px-3.5 py-3.5 max-[820px]:px-3.5 max-[820px]:py-3.5 max-[640px]:px-3 max-[640px]:py-3"
               >
                 <div className="grid gap-[18px]">
                   <OwnerProfileClient
@@ -418,19 +421,29 @@ function renderOwnerScreen(
                 eyebrow="สัญลักษณ์"
                 title="โลโก้ร้าน"
                 actions={<OwnerLogoStatusPill />}
-                titleClassName="my-[10px] text-[clamp(1.65rem,2.1vw,2.35rem)] leading-[1.05] tracking-[-0.045em]"
-                className="grid h-fit min-h-0 content-start px-5 py-5 max-[820px]:px-4 max-[820px]:py-4"
+                titleClassName="my-[7px] text-[clamp(1.42rem,1.76vw,1.8rem)] leading-[1.05] tracking-[-0.04em]"
+                className="grid h-fit min-h-0 min-w-0 content-start px-3.5 py-3.5 max-[820px]:px-3.5 max-[820px]:py-3.5 max-[640px]:px-3 max-[640px]:py-3"
               >
                 <OwnerLogoClient />
               </PanelCard>
+
+              <PanelCard
+                eyebrow="ธีม"
+                title="เปลี่ยนธีม"
+                actions={<OwnerThemeStatusPill />}
+                titleClassName="my-[8px] text-[clamp(1.5rem,1.9vw,1.8rem)] leading-[1.05] tracking-[-0.04em] max-[520px]:text-[1.68rem]"
+                className="grid h-fit min-h-0 min-w-0 content-start overflow-hidden px-4 py-4 max-[820px]:px-4 max-[820px]:py-4 max-[640px]:px-3.5 max-[640px]:py-3.5"
+              >
+                <OwnerThemeClient />
+              </PanelCard>
             </div>
 
-            <div className="grid h-fit min-w-0 gap-[18px] max-[820px]:gap-4">
+            <div className="grid h-fit min-w-0 gap-[14px] max-[820px]:gap-4">
               <PanelCard
                 eyebrow="การรับเงิน"
                 title="QR / ข้อมูลโอน"
-                titleClassName="my-[10px] text-[clamp(1.42rem,1.7vw,1.5rem)] leading-[1.08] tracking-[-0.035em]"
-                className="grid h-fit min-h-0 min-w-0 content-start px-5 py-5 max-[820px]:px-4 max-[820px]:py-4"
+                titleClassName="my-[8px] text-[clamp(1.26rem,1.46vw,1.38rem)] leading-[1.08] tracking-[-0.03em]"
+                className="grid h-fit min-h-0 min-w-0 content-start px-4 py-4 max-[820px]:px-4 max-[820px]:py-4 max-[640px]:px-3.5 max-[640px]:py-3.5"
               >
                 <OwnerPaymentSettingsClient initialSettings={paymentSettings} />
               </PanelCard>

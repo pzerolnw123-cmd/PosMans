@@ -46,9 +46,9 @@ type BackofficeShellAlertContextValue = {
 
 const BackofficeShellAlertContext = createContext<BackofficeShellAlertContextValue | null>(null);
 
-const eyebrowClass = "m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[#6b7a94]";
+const eyebrowClass = "m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[var(--eyebrow)]";
 const storeBrandNameClass =
-  "bg-[linear-gradient(135deg,#ffffff_0%,#e8ddff_28%,#b79cff_58%,#7f6cff_100%)] bg-clip-text font-black tracking-normal text-transparent drop-shadow-[0_8px_20px_rgba(127,108,255,0.22)]";
+  "bg-[linear-gradient(135deg,var(--foreground-inverse)_0%,color-mix(in_srgb,var(--brand)_16%,white)_30%,color-mix(in_srgb,var(--brand)_48%,white)_58%,var(--brand-strong)_100%)] bg-clip-text font-black tracking-normal text-transparent";
 const statusStoreNameClass =
   "bg-[linear-gradient(135deg,#ffffff_0%,#e8fff4_30%,#8df0bb_66%,#34d47b_100%)] bg-clip-text font-black tracking-normal text-transparent drop-shadow-[0_8px_20px_rgba(46,212,122,0.18)]";
 const successAlertClass =
@@ -165,8 +165,8 @@ export function BackofficeShell({
                   href={item.href}
                   className={
                     item.active
-                      ? "inline-flex min-h-[48px] items-center gap-3 rounded-xl bg-[linear-gradient(135deg,#7b6cff_0%,#c86bff_48%,#ff7ac8_100%)] px-[18px] py-3 font-semibold text-white shadow-[rgba(255,122,200,0.26)_0_8px_18px] max-[640px]:min-h-[44px] max-[640px]:px-[14px] max-[640px]:py-2.5"
-                      : "inline-flex min-h-[48px] items-center gap-3 rounded-xl px-[18px] py-3 font-semibold text-[var(--foreground)] transition duration-150 hover:translate-x-[2px] hover:bg-[rgba(108,92,231,0.08)] max-[640px]:min-h-[44px] max-[640px]:px-[14px] max-[640px]:py-2.5"
+                      ? "inline-flex min-h-[48px] items-center gap-3 rounded-xl border border-[var(--accent-border)] bg-[linear-gradient(135deg,var(--brand)_0%,var(--brand-strong)_100%)] px-[18px] py-3 font-semibold text-[var(--button-text)] shadow-[var(--brand-shadow)_0_8px_18px] max-[640px]:min-h-[44px] max-[640px]:px-[14px] max-[640px]:py-2.5"
+                      : "inline-flex min-h-[48px] items-center gap-3 rounded-xl px-[18px] py-3 font-semibold text-[var(--foreground)] transition duration-150 hover:translate-x-[2px] hover:bg-[var(--brand-soft)] max-[640px]:min-h-[44px] max-[640px]:px-[14px] max-[640px]:py-2.5"
                   }
                   aria-current={item.active ? "page" : undefined}
                 >
@@ -183,7 +183,7 @@ export function BackofficeShell({
                 shellAlert.tone === "success"
                   ? successAlertClass
                   : shellAlert.tone === "info"
-                  ? "border-[rgba(108,92,231,0.26)] bg-[linear-gradient(180deg,rgba(30,20,52,0.88),rgba(22,14,30,0.94))]"
+                  ? "border-[var(--accent-border)] bg-[linear-gradient(180deg,var(--accent-surface),rgba(255,255,255,0.02))]"
                   : "border-[rgba(232,93,117,0.26)] bg-[linear-gradient(180deg,rgba(52,20,30,0.88),rgba(30,14,22,0.94))]"
               }`}
             >
@@ -192,7 +192,7 @@ export function BackofficeShell({
                   shellAlert.tone === "success"
                     ? successAlertEyebrowClass
                     : shellAlert.tone === "info"
-                    ? "text-[rgba(200,178,255,0.72)]"
+                    ? "text-[var(--accent-text)]"
                     : "text-[rgba(255,178,194,0.72)]"
                 }`}
               >
@@ -200,7 +200,7 @@ export function BackofficeShell({
               </p>
               <p
                 className={`mt-2 text-[0.95rem] leading-[1.55] ${
-                  shellAlert.tone === "success" ? successAlertMessageClass : shellAlert.tone === "info" ? "text-[#c89dff]" : "text-[#ff9db0]"
+                  shellAlert.tone === "success" ? successAlertMessageClass : shellAlert.tone === "info" ? "text-[var(--foreground)]" : "text-[#ff9db0]"
                 }`}
               >
                 {shellAlert.message}
