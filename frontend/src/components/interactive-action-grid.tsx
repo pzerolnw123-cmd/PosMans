@@ -17,7 +17,7 @@ export function InteractiveActionGrid({
 
   return (
     <div className="grid gap-[10px]">
-      <div className={columns === 2 ? "grid grid-cols-2 gap-[10px] max-[720px]:grid-cols-1" : "grid grid-cols-3 gap-[10px] max-[1180px]:grid-cols-2 max-[720px]:grid-cols-1"}>
+      <div className={columns === 2 ? "grid grid-cols-2 gap-[10px] max-[900px]:grid-cols-1" : "grid grid-cols-3 gap-[10px] max-[1180px]:grid-cols-2 max-[640px]:grid-cols-1"}>
         {items.map((item) => {
           const selectedClass = selected === item;
 

@@ -219,7 +219,7 @@ function ConfirmPaymentSettingsModal({ busy, enabled, recipientLabel, bankSummar
     <div className="fixed inset-0 z-[300] grid place-items-center bg-[rgba(7,10,16,0.55)] p-4 backdrop-blur-[16px]">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(108,92,231,0.12),transparent_48%)]" />
 
-      <div className="relative z-[1] grid w-[calc(100vw-32px)] max-w-[380px] gap-5 overflow-hidden rounded-none border border-[rgba(108,92,231,0.2)] bg-[linear-gradient(180deg,rgba(22,27,38,0.99),rgba(26,30,42,0.98))] p-5 shadow-[rgba(0,0,0,0.6)_0_40px_100px]">
+      <div className="relative z-[1] grid w-[calc(100vw-32px)] max-w-[380px] gap-5 overflow-hidden rounded-none border border-[rgba(108,92,231,0.2)] bg-[linear-gradient(180deg,rgba(22,27,38,0.99),rgba(26,30,42,0.98))] p-5 shadow-[rgba(0,0,0,0.6)_0_40px_100px] max-[640px]:gap-4 max-[640px]:p-4">
         <div className="grid gap-3">
           <p className="m-0 text-left text-[0.7rem] font-bold uppercase tracking-[0.28em] text-[#9f91ff]">ยืนยันการบันทึก</p>
           <h2 className="m-0 text-[1.25rem] leading-tight tracking-[-0.04em] text-white">ต้องการบันทึกการตั้งค่านี้ใช่ไหม</h2>
@@ -253,7 +253,7 @@ function ConfirmPaymentSettingsModal({ busy, enabled, recipientLabel, bankSummar
           </p>
         </div>
 
-        <div className="grid grid-cols-2 gap-3 pt-1">
+        <div className="grid grid-cols-2 gap-3 pt-1 max-[520px]:grid-cols-1">
           <button type="button" className={`${activeGhostButtonClass} py-2.5 text-[0.92rem]`} onClick={onClose} disabled={busy}>
             ยกเลิก
           </button>
@@ -394,7 +394,7 @@ export function OwnerPasswordClient() {
     setSubmitState({ status: "saving", message: "กำลังอัปเดตรหัสผ่าน..." });
 
     try {
-      const csrfToken = await ensureCsrfToken();
+      const csrfToken = await ensureCsrfToken({ forceRefresh: true });
       const response = await fetch("/api/auth/password", {
         method: "PATCH",
         credentials: "same-origin",
@@ -451,7 +451,7 @@ export function OwnerPasswordClient() {
           onToggle={() => setVisibleFields((current) => ({ ...current, confirmPassword: !current.confirmPassword }))}
         />
       </div>
-      <div className="mt-5 flex flex-wrap justify-start gap-[10px] max-[720px]:[&>*]:w-full">
+      <div className="mt-5 flex flex-wrap justify-start gap-[10px] max-[900px]:[&>*]:w-full">
         <button type="submit" className={primaryButtonClass} disabled={pending}>
           {pending ? "กำลังอัปเดต..." : "อัปเดตรหัสผ่าน"}
         </button>
@@ -465,7 +465,6 @@ export function OwnerLogoClient({ compact = false }: { compact?: boolean }) {
   const router = useRouter();
   const { previewUrl, setPreviewUrl, saved, setSaved, setSavedLogo } = useOwnerLogo();
   const [fileName, setFileName] = useState("");
-  const [message, setMessage] = useState("");
   const [cropDraft, setCropDraft] = useState<CropDraft | null>(null);
   const [cropZoom, setCropZoom] = useState(1);
   const [cropOffset, setCropOffset] = useState({ x: 0, y: 0 });
@@ -480,6 +479,10 @@ export function OwnerLogoClient({ compact = false }: { compact?: boolean }) {
     };
   }, [cropDraft]);
 
+  function showLogoAlert(message: string) {
+    setShellAlert({ message, tone: "danger" });
+  }
+
   async function handleLogoChange(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     event.target.value = "";
@@ -489,13 +492,13 @@ export function OwnerLogoClient({ compact = false }: { compact?: boolean }) {
     }
 
     if (!logoFileTypes.has(file.type)) {
-      setMessage("รองรับไฟล์ PNG, JPG หรือ WebP");
+      showLogoAlert("รองรับไฟล์ PNG, JPG หรือ WebP");
       event.target.value = "";
       return;
     }
 
     if (file.size > maxLogoFileSize) {
-      setMessage("ไฟล์โลโก้ต้องไม่เกิน 2MB");
+      showLogoAlert("ไฟล์โลโก้ต้องไม่เกิน 2 MB");
       event.target.value = "";
       return;
     }
@@ -508,12 +511,11 @@ export function OwnerLogoClient({ compact = false }: { compact?: boolean }) {
       setCropDraft({ fileName: file.name, objectUrl, image });
       setCropZoom(1);
       setCropOffset({ x: 0, y: 0 });
-      setMessage("");
     } catch (error) {
       if (objectUrl) {
         URL.revokeObjectURL(objectUrl);
       }
-      setMessage(error instanceof Error ? error.message : "ไม่สามารถเตรียมรูปภาพสำหรับคร็อบได้");
+      showLogoAlert(error instanceof Error ? error.message : "ไม่สามารถเตรียมรูปภาพสำหรับคร็อบได้");
     }
   }
 
@@ -548,9 +550,8 @@ export function OwnerLogoClient({ compact = false }: { compact?: boolean }) {
       setPendingLogoBlob(croppedBlob);
       setFileName(cropDraft.fileName);
       setCropDraft(null);
-      setMessage("");
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "คร็อปรูปโลโก้ไม่สำเร็จ");
+      showLogoAlert(error instanceof Error ? error.message : "คร็อปรูปโลโก้ไม่สำเร็จ");
     } finally {
       setCropBusy(false);
     }
@@ -578,7 +579,7 @@ export function OwnerLogoClient({ compact = false }: { compact?: boolean }) {
         throw new Error("ยังไม่มี public URL สำหรับโลโก้ร้าน");
       }
 
-      const csrfToken = await ensureCsrfToken();
+      const csrfToken = await ensureCsrfToken({ forceRefresh: true });
       const response = await fetch("/api/auth/owner-logo", {
         method: "PATCH",
         credentials: "same-origin",
@@ -628,7 +629,7 @@ export function OwnerLogoClient({ compact = false }: { compact?: boolean }) {
 
   if (compact) {
     return (
-      <div className="grid gap-3">
+      <div className="grid gap-4 max-[640px]:gap-3">
         <label
           className="grid aspect-square min-h-[206px] cursor-pointer place-items-center overflow-hidden rounded-[14px] border border-dashed border-[rgba(100,120,160,0.32)] bg-[rgba(14,18,28,0.64)]"
           aria-label="เลือกโลโก้ร้าน"
@@ -650,7 +651,6 @@ export function OwnerLogoClient({ compact = false }: { compact?: boolean }) {
             บันทึกรูปภาพโลโก้ร้าน
           </button>
         ) : null}
-        {message ? <p className="text-[0.8rem] leading-[1.45] text-[var(--danger)]">{message}</p> : null}
         {cropModal}
       </div>
     );
@@ -658,7 +658,7 @@ export function OwnerLogoClient({ compact = false }: { compact?: boolean }) {
 
   return (
     <div className="mt-2 grid gap-4">
-      <div className="flex flex-wrap justify-start gap-3 max-[720px]:[&>*]:w-full">
+      <div className="flex flex-wrap justify-start gap-3 max-[900px]:[&>*]:w-full">
         <label className={`${primaryButtonClass} cursor-pointer`}>
           <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" className="opacity-80" aria-hidden="true">
             <g fill="none" stroke="currentColor" strokeWidth="2">
@@ -676,11 +676,10 @@ export function OwnerLogoClient({ compact = false }: { compact?: boolean }) {
       </div>
 
       {previewUrl && !saved ? (
-        <button type="button" className={`${primaryButtonClass} w-fit max-[720px]:w-full`} onClick={handleLogoSave}>
+        <button type="button" className={`${primaryButtonClass} w-fit max-[900px]:w-full`} onClick={handleLogoSave}>
           บันทึกรูปภาพโลโก้ร้าน
         </button>
       ) : null}
-      {message ? <p className="text-[0.86rem] leading-[1.5] text-[var(--danger)]">{message}</p> : null}
       {cropModal}
     </div>
   );
@@ -742,6 +741,14 @@ export function OwnerProfileClient({
   const profileChanged = normalizedForm.storeName !== normalizedSavedForm.storeName || normalizedForm.ownerName !== normalizedSavedForm.ownerName;
   const canSaveProfile = profileChanged && Boolean(normalizedForm.storeName && normalizedForm.ownerName);
 
+  function handleReset() {
+    setForm({ storeName: "", ownerName: "" });
+    setSubmitState({
+      status: "idle",
+      message: "แก้ชื่อร้านและชื่อเจ้าของร้าน แล้วบันทึกเพื่ออัปเดต Status Store",
+    });
+  }
+
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
@@ -760,7 +767,7 @@ export function OwnerProfileClient({
     setSubmitState({ status: "saving", message: "กำลังบันทึกข้อมูลร้าน..." });
 
     try {
-      const csrfToken = await ensureCsrfToken();
+      const csrfToken = await ensureCsrfToken({ forceRefresh: true });
       const response = await fetch("/api/auth/owner-profile", {
         method: "PATCH",
         credentials: "same-origin",
@@ -817,8 +824,8 @@ export function OwnerProfileClient({
           />
         </label>
       </div>
-      <div className="mt-5 flex flex-wrap justify-start gap-3 max-[720px]:[&>*]:w-full">
-        <button type="button" className={activeGhostButtonClass} onClick={() => setForm(savedForm)} disabled={pending || !hasFormValues}>
+      <div className="mt-5 flex flex-wrap justify-start gap-3 max-[900px]:[&>*]:w-full">
+        <button type="button" className={activeGhostButtonClass} onClick={handleReset} disabled={pending || !hasFormValues}>
           รีเซ็ต
         </button>
         <button type="submit" className={primaryButtonClass} disabled={pending || !canSaveProfile}>
@@ -1350,7 +1357,7 @@ export function OwnerPaymentSettingsClient({ initialSettings }: { initialSetting
     setSubmitState({ status: "saving", message: "กำลังบันทึกการรับชำระเงิน..." });
 
     try {
-      const csrfToken = await ensureCsrfToken();
+      const csrfToken = await ensureCsrfToken({ forceRefresh: true });
       const response = await fetch("/api/auth/owner-payment-settings", {
         method: "PATCH",
         credentials: "same-origin",
@@ -1503,10 +1510,10 @@ export function OwnerPaymentSettingsClient({ initialSettings }: { initialSetting
   return (
     <form className="mt-2" onSubmit={handleSubmit}>
       <div className="grid gap-3">
-        <div className="flex items-center justify-between gap-3 rounded-[10px] border border-[var(--border)] bg-[rgba(14,18,28,0.55)] px-3 py-2.5">
+        <div className="flex items-center justify-between gap-3 rounded-[10px] border border-[var(--border)] bg-[rgba(14,18,28,0.55)] px-3 py-2.5 max-[640px]:flex-col max-[640px]:items-start">
           <span className="grid min-w-0 gap-1">
             <span className="truncate text-[0.95rem] font-bold leading-[1.45] text-white">เปิดใช้ QR / ข้อมูลโอน</span>
-            <span className="truncate text-[0.8rem] leading-[1.45] text-[var(--foreground-soft)]">แสดงใน Payment และเช็กสลิป</span>
+            <span className="text-[0.8rem] leading-[1.45] text-[var(--foreground-soft)] max-[640px]:text-[0.78rem]">แสดงใน Payment และเช็กสลิป</span>
           </span>
           <span className="stock-toggle-uiverse shrink-0">
             <span className="check" aria-hidden="true">
@@ -1562,10 +1569,10 @@ export function OwnerPaymentSettingsClient({ initialSettings }: { initialSetting
           </span>
         </div>
 
-        <div className="grid gap-2">
+        <div className="grid gap-2.5">
           <span className={fieldLabelClass}>ประเภทผู้รับเงิน</span>
           <span className="text-[0.78rem] leading-[1.45] text-[var(--foreground-soft)]">คุณสามารถกรอกเบอร์พร้อมเพย์, เลขบัตรประชาชน, เลขผู้เสียภาษี, หรือรูป QR พร้อมกับข้อมูลบัญชีธนาคารได้</span>
-          <div className="grid grid-cols-1 gap-1 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
             {promptPayRecipientOptions.map((option) => (
               <button
                 key={option.value}
@@ -1646,7 +1653,7 @@ export function OwnerPaymentSettingsClient({ initialSettings }: { initialSetting
         ) : null}
 
         {usesBankAccount ? (
-          <div className="grid gap-2.5">
+          <div className="grid gap-3">
             <label className="grid gap-1">
               <span className={fieldLabelClass}>ชื่อบัญชี</span>
               <input
@@ -1676,7 +1683,7 @@ export function OwnerPaymentSettingsClient({ initialSettings }: { initialSetting
                   </span>
                 </button>
                 {bankDropdownOpen ? (
-                  <div className="absolute bottom-[calc(100%+10px)] left-0 right-0 z-20 overflow-hidden border border-[rgba(122,110,255,0.24)] bg-[linear-gradient(180deg,rgba(28,32,48,0.98),rgba(21,25,37,0.98))] shadow-[rgba(7,10,16,0.55)_0_18px_40px]">
+                  <div className="absolute bottom-[calc(100%+10px)] left-0 right-0 z-20 overflow-hidden border border-[rgba(122,110,255,0.24)] bg-[linear-gradient(180deg,rgba(28,32,48,0.98),rgba(21,25,37,0.98))] shadow-[rgba(7,10,16,0.55)_0_18px_40px] max-[640px]:bottom-auto max-[640px]:top-[calc(100%+10px)]">
                     <div className="max-h-[240px] overflow-y-auto py-2 [&::-webkit-scrollbar]:w-[6px] [&::-webkit-scrollbar-track]:bg-[rgba(15,19,29,0.78)] [&::-webkit-scrollbar-thumb]:bg-[linear-gradient(180deg,rgba(240,106,223,0.8),rgba(169,108,255,0.8))] hover:[&::-webkit-scrollbar-thumb]:bg-[linear-gradient(180deg,rgba(240,106,223,1),rgba(169,108,255,1))]">
                       {thaiBankOptions.map((bankName) => {
                         const active = form.bankName === bankName;
@@ -1716,19 +1723,19 @@ export function OwnerPaymentSettingsClient({ initialSettings }: { initialSetting
         ) : null}
 
         {usesStaticQr ? (
-          <div className="grid gap-2 rounded-[10px] border border-[var(--border)] bg-[rgba(14,18,28,0.55)] p-3">
-            <div className="flex items-center justify-between gap-3">
+          <div className="grid gap-2.5 rounded-[10px] border border-[var(--border)] bg-[rgba(14,18,28,0.55)] p-3">
+            <div className="flex items-center justify-between gap-3 max-[640px]:flex-col max-[640px]:items-stretch">
               <div className="min-w-0">
                 <strong className="block text-[0.95rem] leading-[1.3] text-white">Static QR</strong>
                 <span className="block truncate text-[0.76rem] text-[var(--foreground-soft)]">ตรวจยอดจากสลิปเอง</span>
               </div>
-              <label className={`${activeGhostButtonClass} min-h-[36px] shrink-0 cursor-pointer px-3 text-[0.86rem]`}>
+              <label className={`${activeGhostButtonClass} min-h-[36px] shrink-0 cursor-pointer px-3 text-[0.86rem] max-[640px]:w-full`}>
                 {uploadingQr ? "กำลังอัปโหลด..." : "อัปโหลด QR"}
                 <input className="sr-only" type="file" accept="image/png,image/jpeg,image/webp" onChange={handleQrUpload} disabled={effectivelyDisabled} />
               </label>
             </div>
             {form.paymentQrImageUrl ? (
-              <div className="flex items-center gap-2 rounded-[10px] border border-[rgba(100,120,160,0.12)] bg-[rgba(255,255,255,0.03)] p-2">
+              <div className="flex items-center gap-2 rounded-[10px] border border-[rgba(100,120,160,0.12)] bg-[rgba(255,255,255,0.03)] p-2 max-[520px]:grid max-[520px]:grid-cols-[44px_minmax(0,1fr)]">
                 <span className="h-11 w-11 shrink-0 rounded-[8px] border border-[rgba(100,120,160,0.18)] bg-cover bg-center" style={{ backgroundImage: `url(${form.paymentQrImageUrl})` }} />
                 <span className="min-w-0 flex-1 truncate text-[0.82rem] text-[var(--foreground-soft)]">มีรูป QR แล้ว</span>
                 <button
@@ -1744,12 +1751,12 @@ export function OwnerPaymentSettingsClient({ initialSettings }: { initialSetting
           </div>
         ) : null}
 
-        <p className="m-0 truncate whitespace-nowrap text-[0.8rem] leading-[1.35] text-[var(--foreground-soft)]">
+        <p className="m-0 text-[0.8rem] leading-[1.45] text-[var(--foreground-soft)] [overflow-wrap:anywhere]">
           {submitState.status === "success" || submitState.status === "saving" ? submitState.message : paymentHintMessage}
         </p>
       </div>
 
-      <div className="mt-3 flex flex-wrap justify-start gap-3 max-[720px]:[&>*]:w-full">
+      <div className="mt-4 flex flex-wrap justify-start gap-3 max-[900px]:[&>*]:w-full">
         <button
           type="button"
           className={compactFooterGhostButtonClass}

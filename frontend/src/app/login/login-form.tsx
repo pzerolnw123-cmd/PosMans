@@ -37,7 +37,7 @@ function ErrorBox({ children, light = false }: { children: string; light?: boole
 
 function PinDots({ filled }: { filled: number }) {
   return (
-    <div className="flex justify-center gap-3">
+    <div className="flex justify-center gap-3 max-[420px]:gap-2">
       {Array.from({ length: pinLength }).map((_, index) => (
         <span
           key={index}
@@ -238,14 +238,14 @@ export function LoginForm() {
         : `กรอก PIN ปัจจุบันของ ${challengeUser.username} เพื่อเข้าสู่หลังบ้าน`;
 
     return (
-      <div className="w-[min(100%,460px)] rounded-[24px] bg-[rgba(12,16,24,0.96)] p-[18px] text-white shadow-[rgba(11,16,24,0.24)_0_0_0_1px,rgba(11,16,24,0.34)_0_24px_70px]">
-        <div className="rounded-[20px] border border-[rgba(255,255,255,0.08)] p-[18px]">
+      <div className="w-[min(100%,520px)] rounded-[24px] bg-[rgba(12,16,24,0.96)] p-[18px] text-white shadow-[rgba(11,16,24,0.24)_0_0_0_1px,rgba(11,16,24,0.34)_0_24px_70px] max-[640px]:p-3">
+        <div className="rounded-[20px] border border-[rgba(255,255,255,0.08)] p-[18px] max-[640px]:p-4">
           <div className="flex items-start justify-between gap-4 max-[720px]:flex-col max-[720px]:items-stretch">
             <div>
               <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[rgba(255,255,255,0.58)]">
                 {challengeMode === "setup" ? "PIN Setup" : "PIN Access"}
               </p>
-              <h1 className="my-[10px] text-[2.2rem] leading-none tracking-[-0.065em] text-white">{title}</h1>
+              <h1 className="my-[10px] text-[clamp(1.8rem,5vw,2.2rem)] leading-none tracking-[-0.065em] text-white">{title}</h1>
               <p className="m-0 text-[rgba(255,255,255,0.68)]">{description}</p>
             </div>
             <button
@@ -275,7 +275,7 @@ export function LoginForm() {
 
           {error ? <ErrorBox light>{error}</ErrorBox> : null}
 
-          <div className="mt-[18px] grid grid-cols-3 gap-[14px]">
+          <div className="mt-[18px] grid grid-cols-3 gap-[14px] max-[420px]:gap-[10px]">
             {keypad.map((key) => {
               if (key === "") {
                 return <div key="empty" />;
@@ -287,7 +287,7 @@ export function LoginForm() {
                     key={key}
                     type="button"
                     onClick={removeDigit}
-                    className="h-16 rounded-full bg-transparent text-[2rem] text-white transition hover:-translate-y-px hover:bg-[rgba(255,255,255,0.08)] disabled:cursor-not-allowed disabled:opacity-40"
+                    className="h-16 rounded-full bg-transparent text-[2rem] text-white transition hover:-translate-y-px hover:bg-[rgba(255,255,255,0.08)] disabled:cursor-not-allowed disabled:opacity-40 max-[420px]:h-14 max-[420px]:text-[1.7rem]"
                     disabled={pending || (!pin.length && !confirmPin.length)}
                     aria-label="Delete last digit"
                   >
@@ -304,7 +304,7 @@ export function LoginForm() {
                   key={key}
                   type="button"
                   onClick={() => appendDigit(key)}
-                  className="h-16 rounded-full bg-transparent text-[2rem] text-white transition hover:-translate-y-px hover:bg-[rgba(255,255,255,0.08)] disabled:cursor-not-allowed disabled:opacity-40"
+                  className="h-16 rounded-full bg-transparent text-[2rem] text-white transition hover:-translate-y-px hover:bg-[rgba(255,255,255,0.08)] disabled:cursor-not-allowed disabled:opacity-40 max-[420px]:h-14 max-[420px]:text-[1.7rem]"
                   disabled={pending || maxReached}
                 >
                   {key}
@@ -342,7 +342,7 @@ export function LoginForm() {
   return (
     <form
       onSubmit={handlePasswordSubmit}
-      className="w-[min(100%,460px)] rounded-[22px] border border-[var(--border)] bg-[var(--surface)] p-7 shadow-[var(--shadow-card)] backdrop-blur-[14px]"
+      className="w-[min(100%,520px)] rounded-[22px] border border-[var(--border)] bg-[var(--surface)] p-7 shadow-[var(--shadow-card)] backdrop-blur-[14px] max-[820px]:p-5 max-[640px]:p-4"
     >
       <PillLabel>Step 1 of 2</PillLabel>
       <h1 className="my-[10px] text-[clamp(2rem,2.9vw,3.3rem)] leading-[0.98] tracking-[-0.065em]">เข้าสู่ระบบด้วยบัญชีร้าน</h1>

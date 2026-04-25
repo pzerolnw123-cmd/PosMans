@@ -1,6 +1,10 @@
 export const csrfCookieName =
   process.env.NEXT_PUBLIC_CSRF_COOKIE_NAME || "pos_mans_session_csrf";
 
+type EnsureCsrfTokenOptions = {
+  forceRefresh?: boolean;
+};
+
 export function readCookie(name: string) {
   if (typeof document === "undefined") {
     return null;
@@ -11,9 +15,9 @@ export function readCookie(name: string) {
   return match ? decodeURIComponent(match.slice(name.length + 1)) : null;
 }
 
-export async function ensureCsrfToken() {
+export async function ensureCsrfToken(options: EnsureCsrfTokenOptions = {}) {
   const existing = readCookie(csrfCookieName);
-  if (existing) {
+  if (existing && !options.forceRefresh) {
     return existing;
   }
 

@@ -87,7 +87,7 @@ export function ProductDetailPanel({
   const isSaveDisabled = saveBusy || deleteBusy || !isDirty || !selectedProduct?.name?.trim() || (selectedProduct?.price ?? 0) <= 0 || stockInvalid;
 
   return (
-    <section className="grid w-[calc(100%+22px)] min-h-full grid-rows-[auto_minmax(0,1fr)] overflow-hidden rounded-none border border-[var(--border)] bg-[rgba(22,27,38,0.76)] px-5 py-5 shadow-[var(--shadow-soft)] backdrop-blur-[14px] max-[1180px]:w-full max-[1180px]:px-4 max-[1180px]:py-4">
+    <section className="grid w-[calc(100%+22px)] min-h-full grid-rows-[auto_minmax(0,1fr)] overflow-hidden rounded-none border border-[var(--border)] bg-[rgba(22,27,38,0.76)] px-5 py-5 shadow-[var(--shadow-soft)] backdrop-blur-[14px] max-[1366px]:w-full max-[1180px]:px-4 max-[1180px]:py-4 max-[640px]:px-3.5 max-[640px]:py-3.5">
       <div className="flex items-start justify-between gap-3 max-[720px]:flex-col max-[720px]:items-stretch">
         <div>
           <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[#6b7a94]">รายละเอียดสินค้า</p>
@@ -100,9 +100,9 @@ export function ProductDetailPanel({
 
       {selectedProduct ? (
         <div className="min-h-0 overflow-auto pr-1">
-          <div className="mt-[10px] grid grid-cols-[minmax(0,65%)_minmax(132px,1fr)] items-stretch gap-3 max-[720px]:grid-cols-1">
+          <div className="mt-[10px] grid grid-cols-[minmax(0,65%)_minmax(132px,1fr)] items-stretch gap-3 max-[960px]:grid-cols-1">
             <div className="grid max-w-[312px] gap-[10px] max-[720px]:max-w-none">
-              <div className="h-[186px] w-full overflow-hidden rounded-[14px] border border-[rgba(100,120,160,0.14)] bg-[rgba(255,255,255,0.04)] max-[1180px]:h-[96px]">
+              <div className="h-[186px] w-full overflow-hidden rounded-[14px] border border-[rgba(100,120,160,0.14)] bg-[rgba(255,255,255,0.04)] max-[1180px]:h-[148px] max-[720px]:h-[186px]">
                 {selectedProduct.imageUrl && canUseNextImage(selectedProduct.imageUrl) ? (
                   <Image
                     src={selectedProduct.imageUrl}
@@ -122,10 +122,10 @@ export function ProductDetailPanel({
 
             </div>
 
-            <div className="relative h-[186px] max-[1180px]:h-[96px]">
+            <div className="relative h-[186px] max-[1180px]:h-[148px] max-[960px]:h-auto max-[960px]:grid max-[960px]:gap-3">
               <button
                 type="button"
-                className={`${primaryButtonClass} absolute left-0 top-[12px] min-h-[46px] w-full rounded-[12px] px-4 disabled:cursor-not-allowed disabled:opacity-50`}
+                className={`${primaryButtonClass} absolute left-0 top-[12px] min-h-[46px] w-full rounded-[12px] px-4 disabled:cursor-not-allowed disabled:opacity-50 max-[960px]:static`}
                 onClick={onCreateNewProduct}
                 disabled={saveBusy || deleteBusy || (selectedProduct && selectedProduct.code === "DRAFT-NEW")}
               >
@@ -135,8 +135,8 @@ export function ProductDetailPanel({
               <div
                 className={
                   selectedProduct.trackStock
-                    ? "absolute left-1/2 top-[92px] inline-grid w-fit -translate-x-1/2 justify-items-center gap-3 text-[0.78rem] font-bold text-[#8cffbd] max-[1180px]:top-[56px]"
-                    : "absolute left-1/2 top-[92px] inline-grid w-fit -translate-x-1/2 justify-items-center gap-3 text-[0.78rem] font-bold text-[var(--foreground-soft)] max-[1180px]:top-[56px]"
+                    ? "absolute left-1/2 top-[92px] inline-grid w-fit -translate-x-1/2 justify-items-center gap-3 text-[0.78rem] font-bold text-[#8cffbd] max-[1180px]:top-[56px] max-[960px]:static max-[960px]:left-auto max-[960px]:top-auto max-[960px]:w-full max-[960px]:translate-x-0"
+                    : "absolute left-1/2 top-[92px] inline-grid w-fit -translate-x-1/2 justify-items-center gap-3 text-[0.78rem] font-bold text-[var(--foreground-soft)] max-[1180px]:top-[56px] max-[960px]:static max-[960px]:left-auto max-[960px]:top-auto max-[960px]:w-full max-[960px]:translate-x-0"
                 }
               >
                 <span className="stock-toggle-uiverse">
@@ -319,7 +319,7 @@ export function ProductDetailPanel({
             </div>
           </div>
 
-          <div className="mt-[10px] grid gap-[10px] sm:grid-cols-2 xl:grid-cols-2">
+          <div className="mt-[10px] grid gap-[10px] sm:grid-cols-2 xl:grid-cols-2 max-[520px]:grid-cols-1">
             <button
               type="button"
               className={`${secondaryButtonClass} disabled:opacity-40`}

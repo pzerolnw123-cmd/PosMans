@@ -20,11 +20,11 @@ export default async function LoginPage() {
 
   return (
     <main>
-      <div className="mx-auto w-[min(1400px,calc(100%-32px))] px-0 pb-7 pt-[18px] max-[720px]:w-[min(100%-20px,100%)] max-[720px]:pt-2.5">
-        <div className="flex items-center justify-between gap-4 rounded-[18px] border border-[var(--border)] bg-[rgba(22,27,38,0.85)] px-5 py-4 shadow-[var(--shadow-soft)] max-[720px]:flex-col max-[720px]:items-stretch">
+      <div className="mx-auto w-[min(1400px,calc(100%-32px))] px-0 pb-7 pt-[18px] max-[1180px]:w-[min(100%-24px,100%)] max-[720px]:w-[min(100%-16px,100%)] max-[720px]:pt-2.5">
+        <div className="flex items-center justify-between gap-4 rounded-[18px] border border-[var(--border)] bg-[rgba(22,27,38,0.85)] px-5 py-4 shadow-[var(--shadow-soft)] max-[820px]:px-4 max-[720px]:flex-col max-[720px]:items-stretch max-[640px]:px-3.5">
           <div>
             <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[#6b7a94]">Secure Access</p>
-            <p className="mt-1 text-[0.92rem] text-[var(--foreground-soft)]">Username + PIN flow redesigned to match the new backoffice direction</p>
+            <p className="mt-1 max-w-[52ch] text-[0.92rem] leading-[1.6] text-[var(--foreground-soft)]">Username + PIN flow redesigned to match the new backoffice direction</p>
           </div>
           <Link
             href="/"
@@ -34,8 +34,8 @@ export default async function LoginPage() {
           </Link>
         </div>
 
-        <section className="mt-[18px] grid gap-[18px] [grid-template-columns:minmax(0,0.98fr)_minmax(0,0.9fr)] max-[1180px]:grid-cols-1">
-          <article className="min-h-full rounded-[22px] border border-[var(--border)] bg-[var(--surface)] p-7 shadow-[var(--shadow-card)] backdrop-blur-[14px]">
+        <section className="mt-[18px] grid gap-[18px] [grid-template-columns:minmax(0,0.98fr)_minmax(0,0.9fr)] max-[1280px]:grid-cols-1 max-[820px]:gap-4">
+          <article className="min-h-full rounded-[22px] border border-[var(--border)] bg-[var(--surface)] p-7 shadow-[var(--shadow-card)] backdrop-blur-[14px] max-[820px]:p-5 max-[640px]:p-4">
             <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[#6b7a94]">Login Experience</p>
             <h1 className="mt-[10px] max-w-[12ch] text-[clamp(2rem,2.9vw,3.3rem)] leading-[0.98] tracking-[-0.065em]">
               เข้าสู่ระบบแบบเป็นขั้นตอน และยังคงหน้าตาเดียวกับระบบจัดการร้าน
@@ -60,7 +60,7 @@ export default async function LoginPage() {
             </div>
           </article>
 
-          <div className="grid min-h-[calc(100vh-52px)] items-center max-[1180px]:min-h-0">
+          <div className="grid min-h-[calc(100vh-52px)] items-center justify-items-end max-[1280px]:min-h-0 max-[1280px]:justify-items-center">
             <LoginForm />
           </div>
         </section>

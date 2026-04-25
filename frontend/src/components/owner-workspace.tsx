@@ -177,7 +177,7 @@ function renderOwnerScreen(
       description: "รวมการค้นบิล ซ้ำพิมพ์ และส่งสลิปแบบย่อในจอเดียว",
       actions: <StatusPill tone="success">เชื่อมบิลขายจริง</StatusPill>,
       body: (
-        <section className="grid h-full min-h-0 grid-rows-[156px_minmax(0,1fr)] gap-[18px] max-[1180px]:grid-rows-[auto_minmax(0,1fr)]">
+        <section className="grid h-full min-h-0 grid-rows-[156px_minmax(0,1fr)] gap-[18px] max-[1180px]:grid-rows-[auto_minmax(0,1fr)] max-[820px]:gap-4">
           <PageHeader
             eyebrow="Receipt Desk"
             title="ใบเสร็จ"
@@ -208,7 +208,7 @@ function renderOwnerScreen(
             }
           />
 
-          <div className="grid min-h-0 grid-cols-[minmax(0,1.25fr)_minmax(320px,0.75fr)] gap-[18px] max-[1180px]:grid-cols-1">
+          <div className="grid min-h-0 grid-cols-[minmax(0,1.25fr)_minmax(320px,0.75fr)] gap-[18px] max-[1280px]:grid-cols-1">
             <PanelCard eyebrow="Today" title="ตัวชี้วัดสำคัญวันนี้" description="ตัวเลขหลักที่เจ้าของร้านใช้ตัดสินใจ" className="grid min-h-0 content-start px-[18px] py-4">
               <div className="grid gap-[18px]">
                 <ThreeUpStats items={[["ยอดขาย", "28,450"], ["บิลเฉลี่ย", "412"], ["ช่วงพีค", "12:30"]]} />
@@ -275,7 +275,7 @@ function renderOwnerScreen(
             }
           />
 
-          <div className="grid min-h-0 grid-cols-[minmax(0,1.25fr)_minmax(320px,0.75fr)] gap-[18px] max-[1180px]:grid-cols-1">
+          <div className="grid min-h-0 grid-cols-[minmax(0,1.25fr)_minmax(320px,0.75fr)] gap-[18px] max-[1280px]:grid-cols-1">
             <PanelCard eyebrow="Store Pulse" title="สถานะวันนี้" description="ตัวเลขหลักของร้านในวันเดียว" className="grid min-h-0 content-start px-[18px] py-4">
               <div className="grid gap-[18px]">
                 <ThreeUpStats items={[["ออเดอร์เปิด", "8"], ["ยอดขายสด", "28.4K"], ["พนักงานเข้าเวร", "6"]]} />
@@ -334,7 +334,7 @@ function renderOwnerScreen(
             }
           />
 
-          <div className="grid min-h-0 grid-cols-[minmax(0,1.1fr)_minmax(320px,0.9fr)] gap-[18px] max-[1180px]:grid-cols-1">
+          <div className="grid min-h-0 grid-cols-[minmax(0,1.1fr)_minmax(320px,0.9fr)] gap-[18px] max-[1280px]:grid-cols-1">
             <PanelCard eyebrow="Cost Inputs" title="ข้อมูลต้นทุน" description="กรอกต้นทุนต่อหน่วย ค่าบรรจุภัณฑ์ และราคาขายที่ต้องการ" className="grid min-h-0 content-start px-[18px] py-4">
               <div className="grid gap-[14px]">
                 {[
@@ -387,22 +387,22 @@ function renderOwnerScreen(
             }
           />
 
-          <div className="grid min-h-0 grid-cols-[minmax(280px,1fr)_minmax(280px,1fr)_minmax(280px,1fr)] items-start gap-[18px] max-[1180px]:grid-cols-[repeat(2,minmax(280px,1fr))] max-[760px]:grid-cols-1">
+          <div className="grid min-h-0 grid-cols-[minmax(280px,1fr)_minmax(280px,1fr)_minmax(280px,1fr)] items-start gap-[18px] max-[1366px]:grid-cols-[repeat(2,minmax(280px,1fr))] max-[980px]:grid-cols-1 max-[820px]:gap-4">
             <PanelCard
               eyebrow="ความปลอดภัยของบัญชี"
               title="เปลี่ยนรหัสผ่าน"
               titleClassName="my-[10px] text-[clamp(1.65rem,2.1vw,2.35rem)] leading-[1.05] tracking-[-0.045em]"
-              className="grid h-fit min-h-0 content-start px-5 py-5"
+              className="grid h-fit min-h-0 content-start px-5 py-5 max-[820px]:px-4 max-[820px]:py-4"
             >
               <OwnerPasswordClient />
             </PanelCard>
 
-            <div className="grid gap-[18px]">
+            <div className="grid gap-[18px] max-[820px]:gap-4">
               <PanelCard
                 eyebrow="โปรไฟล์ร้านค้า"
                 title="ข้อมูลทั่วไป"
                 titleClassName="my-[10px] text-[clamp(1.65rem,2.1vw,2.35rem)] leading-[1.05] tracking-[-0.045em]"
-                className="grid h-fit min-h-0 content-start px-5 py-5"
+                className="grid h-fit min-h-0 content-start px-5 py-5 max-[820px]:px-4 max-[820px]:py-4"
               >
                 <div className="grid gap-[18px]">
                   <OwnerProfileClient
@@ -419,18 +419,18 @@ function renderOwnerScreen(
                 title="โลโก้ร้าน"
                 actions={<OwnerLogoStatusPill />}
                 titleClassName="my-[10px] text-[clamp(1.65rem,2.1vw,2.35rem)] leading-[1.05] tracking-[-0.045em]"
-                className="grid h-fit min-h-0 content-start px-5 py-5"
+                className="grid h-fit min-h-0 content-start px-5 py-5 max-[820px]:px-4 max-[820px]:py-4"
               >
                 <OwnerLogoClient />
               </PanelCard>
             </div>
 
-            <div className="grid h-fit min-w-0 gap-[18px]">
+            <div className="grid h-fit min-w-0 gap-[18px] max-[820px]:gap-4">
               <PanelCard
                 eyebrow="การรับเงิน"
                 title="QR / ข้อมูลโอน"
                 titleClassName="my-[10px] text-[clamp(1.42rem,1.7vw,1.5rem)] leading-[1.08] tracking-[-0.035em]"
-                className="grid h-fit min-h-0 min-w-0 content-start px-5 py-5"
+                className="grid h-fit min-h-0 min-w-0 content-start px-5 py-5 max-[820px]:px-4 max-[820px]:py-4"
               >
                 <OwnerPaymentSettingsClient initialSettings={paymentSettings} />
               </PanelCard>
@@ -471,7 +471,7 @@ export function OwnerWorkspace({ session, paymentStore, activeSection }: OwnerWo
   const showFooterCards = !screen.standalone;
   const shell = (
     <BackofficeShell
-      className="h-[calc(100vh-24px)] max-[1180px]:h-auto"
+      className="workspace-screen-content h-[calc(100vh-24px)] max-[1180px]:h-auto"
       brandName="Menu Store"
       brandSubtitle="โหมดใช้งานหลักสำหรับเจ้าของร้านที่ต้องการขาย จัดการสินค้า ดูรายงาน และควบคุมภาพหน้าร้านได้จากบัญชีเดียว"
       eyebrow="OWNER WORKSPACE"
@@ -517,8 +517,8 @@ export function OwnerWorkspace({ session, paymentStore, activeSection }: OwnerWo
   );
 
   return (
-    <main className="h-screen overflow-hidden max-[1180px]:h-auto max-[1180px]:overflow-auto">
-      <div className="mx-auto h-screen w-[min(1400px,calc(100%-32px))] px-0 py-3 max-[1180px]:h-auto max-[1180px]:py-3 max-[720px]:w-[min(100%-20px,100%)] max-[720px]:pt-2.5">
+    <main className="workspace-screen-shell h-screen overflow-hidden max-[1180px]:h-auto max-[1180px]:overflow-auto">
+      <div className="workspace-screen-frame mx-auto h-screen w-[min(1400px,calc(100%-32px))] px-0 py-3 max-[1180px]:h-auto max-[1180px]:w-[min(100%-24px,100%)] max-[1180px]:py-3 max-[820px]:w-[min(100%-16px,100%)] max-[720px]:pt-2.5">
         <OwnerLogoProvider initialLogoUrl={session.user.store?.logoUrl}>{shell}</OwnerLogoProvider>
       </div>
     </main>

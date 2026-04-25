@@ -148,25 +148,25 @@ export function BackofficeShell({
   return (
     <BackofficeShellAlertContext.Provider value={contextValue}>
       <div
-        className={`relative mx-auto grid h-full min-h-0 w-full max-w-[1600px] translate-x-[-149px] grid-cols-[304px_minmax(0,1fr)] items-start gap-[18px] max-[1380px]:translate-x-0 max-[1180px]:grid-cols-1 ${className}`.trim()}
+        className={`relative mx-auto grid h-full min-h-0 w-full max-w-[1600px] translate-x-[-149px] grid-cols-[304px_minmax(0,1fr)] items-start gap-[18px] max-[1380px]:translate-x-0 max-[1180px]:gap-4 max-[1180px]:grid-cols-1 ${className}`.trim()}
       >
-        <div className="grid gap-[14px]">
-          <aside className="h-fit overflow-hidden rounded-none border border-[var(--border)] bg-[var(--surface)] p-3 shadow-[var(--shadow-card)] backdrop-blur-[14px]">
+        <div className="grid gap-[14px] max-[1180px]:gap-4">
+          <aside className="h-fit overflow-hidden rounded-none border border-[var(--border)] bg-[var(--surface)] p-3 shadow-[var(--shadow-card)] backdrop-blur-[14px] max-[1180px]:p-2.5 max-[640px]:p-2">
             <div className="border-b border-b-[var(--border)] px-[10px] pb-[18px] pt-[14px]">
               <p className={eyebrowClass}>{eyebrow}</p>
               <h1 className={`my-[10px] text-[clamp(2rem,2.4vw,2.6rem)] leading-[1.02] ${storeBrandNameClass}`}>{brandName}</h1>
               <p className="m-0 text-[0.99rem] leading-[1.7] text-[var(--foreground-soft)]">{brandSubtitle}</p>
             </div>
 
-            <nav className="grid gap-[8px] px-[2px] py-3" aria-label="Primary navigation">
+            <nav className="grid gap-[8px] px-[2px] py-3 max-[1180px]:grid-cols-2 max-[700px]:grid-cols-1 max-[640px]:gap-[6px]" aria-label="Primary navigation">
               {sidebarItems.map((item) => (
                 <Link
                   key={item.label}
                   href={item.href}
                   className={
                     item.active
-                      ? "inline-flex min-h-[48px] items-center gap-3 rounded-xl bg-[linear-gradient(135deg,#7b6cff_0%,#c86bff_48%,#ff7ac8_100%)] px-[18px] py-3 font-semibold text-white shadow-[rgba(255,122,200,0.26)_0_8px_18px]"
-                      : "inline-flex min-h-[48px] items-center gap-3 rounded-xl px-[18px] py-3 font-semibold text-[var(--foreground)] transition duration-150 hover:translate-x-[2px] hover:bg-[rgba(108,92,231,0.08)]"
+                      ? "inline-flex min-h-[48px] items-center gap-3 rounded-xl bg-[linear-gradient(135deg,#7b6cff_0%,#c86bff_48%,#ff7ac8_100%)] px-[18px] py-3 font-semibold text-white shadow-[rgba(255,122,200,0.26)_0_8px_18px] max-[640px]:min-h-[44px] max-[640px]:px-[14px] max-[640px]:py-2.5"
+                      : "inline-flex min-h-[48px] items-center gap-3 rounded-xl px-[18px] py-3 font-semibold text-[var(--foreground)] transition duration-150 hover:translate-x-[2px] hover:bg-[rgba(108,92,231,0.08)] max-[640px]:min-h-[44px] max-[640px]:px-[14px] max-[640px]:py-2.5"
                   }
                   aria-current={item.active ? "page" : undefined}
                 >
@@ -207,9 +207,23 @@ export function BackofficeShell({
               </p>
             </section>
           ) : null}
+
+          <div className="hidden rounded-none border border-[var(--border)] bg-[var(--surface)] p-3 shadow-[var(--shadow-card)] backdrop-blur-[14px] max-[1380px]:block">
+            <StoreStatusSummary brandName={profileName} statusStoreContent={statusStoreContent} />
+            <div className="mt-4">
+              <ProfileSummaryCard
+                profileName={profileName}
+                profileSubtitle={profileSubtitle}
+                profileStatus={profileStatus}
+                profileMeta={profileMeta}
+                profileRole={profileRole}
+                profileAction={profileAction}
+              />
+            </div>
+          </div>
         </div>
 
-        <div className="grid h-full min-h-0 gap-[18px] overflow-hidden">{children}</div>
+        <div className="grid h-full min-h-0 gap-[18px] overflow-hidden max-[1366px]:overflow-visible max-[1180px]:gap-4">{children}</div>
 
         <aside className="absolute left-full top-0 ml-[18px] flex h-fit w-[280px] rounded-none border border-[var(--border)] bg-[var(--surface)] p-3 shadow-[var(--shadow-card)] backdrop-blur-[14px] max-[1380px]:hidden">
           <div className="flex w-full flex-col">
@@ -260,7 +274,7 @@ export function PanelCard({
 }) {
   return (
     <section
-      className={`rounded-none border border-[var(--border)] bg-[var(--surface)] px-6 py-5 shadow-[var(--shadow-card)] backdrop-blur-[14px] ${className}`.trim()}
+      className={`rounded-none border border-[var(--border)] bg-[var(--surface)] px-6 py-5 shadow-[var(--shadow-card)] backdrop-blur-[14px] max-[820px]:px-4 max-[820px]:py-4 max-[640px]:px-3.5 max-[640px]:py-3.5 ${className}`.trim()}
     >
       <div className="flex items-start justify-between gap-4 max-[720px]:flex-col max-[720px]:items-stretch">
         <div>

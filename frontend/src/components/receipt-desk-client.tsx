@@ -320,7 +320,6 @@ export function ReceiptDeskClient() {
       return;
     }
 
-    event.preventDefault();
     event.currentTarget.scrollTop = drag.scrollTop - (event.clientY - drag.startY);
     updateReceiptScrollbar();
   }
@@ -387,15 +386,15 @@ export function ReceiptDeskClient() {
   }
 
   return (
-    <div className="grid min-h-0 grid-cols-[minmax(0,1.25fr)_minmax(320px,0.75fr)] items-start gap-[18px] max-[1180px]:grid-cols-1">
-      <section className="relative z-20 grid h-fit max-h-[calc(100vh-220px)] min-h-0 content-start gap-[18px] overflow-visible rounded-none border border-[var(--border)] bg-[rgba(22,27,38,0.76)] px-5 py-[18px] shadow-[var(--shadow-soft)]">
+    <div className="grid min-h-0 grid-cols-[minmax(0,1.25fr)_minmax(320px,0.75fr)] items-start gap-[18px] max-[1366px]:grid-cols-1 max-[820px]:gap-4">
+      <section className="relative z-20 grid h-fit max-h-[calc(100vh-220px)] min-h-0 content-start gap-[18px] overflow-visible rounded-none border border-[var(--border)] bg-[rgba(22,27,38,0.76)] px-5 py-[18px] shadow-[var(--shadow-soft)] max-[1366px]:max-h-none max-[820px]:px-4 max-[820px]:py-4">
         <div className="flex items-start justify-between gap-4 max-[720px]:flex-col max-[720px]:items-stretch">
           <div>
             <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[#6b7a94]">Recent Receipts</p>
             <strong className="my-[10px] block text-[clamp(1.8rem,3vw,2.35rem)] leading-none tracking-[-0.06em] text-white">บิลล่าสุด</strong>
             <p className="m-0 text-[0.95rem] text-[var(--foreground-soft)]">เลือกวันที่เพื่อดูและพิมพ์ใบเสร็จจากยอดขายจริง</p>
           </div>
-          <div className="grid min-w-[280px] justify-items-end gap-2 max-[720px]:w-full max-[720px]:min-w-0 max-[720px]:justify-items-stretch">
+          <div className="grid min-w-[280px] justify-items-end gap-2 max-[900px]:w-full max-[900px]:min-w-0 max-[900px]:justify-items-stretch">
             <StatusPill>{pagination.totalItems} รายการ</StatusPill>
             <div className="grid w-full gap-2">
               <span className="text-[0.78rem] font-bold text-[var(--foreground-soft)]">เลือกวันที่เอง</span>
@@ -412,7 +411,7 @@ export function ReceiptDeskClient() {
                 </button>
 
                 {calendarOpen ? (
-                  <div className="absolute right-0 top-[calc(100%+8px)] z-[80] w-full max-w-[340px] overflow-y-auto rounded-none border border-[rgba(100,120,160,0.24)] bg-[#101722] p-3 shadow-[rgba(0,0,0,0.36)_0_18px_38px] max-h-[min(360px,calc(100vh-260px))]">
+                  <div className="absolute right-0 top-[calc(100%+8px)] z-[80] w-full max-w-[340px] overflow-y-auto rounded-none border border-[rgba(100,120,160,0.24)] bg-[#101722] p-3 shadow-[rgba(0,0,0,0.36)_0_18px_38px] max-h-[min(360px,calc(100vh-260px))] max-[520px]:left-0 max-[520px]:right-auto max-[520px]:max-w-none">
                     <div className="mb-3 flex items-center justify-between gap-2">
                       <button
                         type="button"
@@ -529,7 +528,7 @@ export function ReceiptDeskClient() {
                   }
                   onClick={() => void selectReceipt(receipt)}
                 >
-                  <span className="flex items-center justify-between gap-3">
+                  <span className="flex items-center justify-between gap-3 max-[520px]:flex-col max-[520px]:items-start">
                     <strong className="text-[1.02rem] text-white">{receipt.code}</strong>
                     <strong className="text-white">{formatBaht(receipt.total)}</strong>
                   </span>
@@ -561,7 +560,7 @@ export function ReceiptDeskClient() {
         </div>
       </section>
 
-      <section className="grid h-fit min-h-0 content-start gap-[18px] rounded-none border border-[var(--border)] bg-[rgba(22,27,38,0.76)] px-5 py-[18px] shadow-[var(--shadow-soft)]">
+      <section className="grid h-fit min-h-0 content-start gap-[18px] rounded-none border border-[var(--border)] bg-[rgba(22,27,38,0.76)] px-5 py-[18px] shadow-[var(--shadow-soft)] max-[820px]:px-4 max-[820px]:py-4">
         <div>
           <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[#6b7a94]">Print & Share</p>
           <strong className="my-[10px] block text-[clamp(1.65rem,2.7vw,2.2rem)] leading-none tracking-[-0.06em] text-white">งานหลังปิดบิล</strong>
@@ -570,7 +569,7 @@ export function ReceiptDeskClient() {
 
         {selectedReceipt ? (
           <>
-            <div className="relative mx-auto grid max-h-[min(520px,calc(100vh-320px))] min-h-0 w-full max-w-[295px] grid-rows-[auto_minmax(0,1fr)_auto] gap-3 overflow-hidden rounded-none border border-[rgba(100,120,160,0.14)] bg-[rgba(14,18,28,0.72)] px-5 py-4">
+            <div className="relative mx-auto grid max-h-[min(520px,calc(100vh-320px))] min-h-0 w-full max-w-[320px] grid-rows-[auto_minmax(0,1fr)_auto] gap-3 overflow-hidden rounded-none border border-[rgba(100,120,160,0.14)] bg-[rgba(14,18,28,0.72)] px-5 py-4 max-[520px]:max-w-none max-[520px]:px-4">
                 <div className="text-center">
                   <p className="m-0 text-[0.6rem] font-bold uppercase tracking-[0.28em] text-[#6b7a94]">Receipt Preview</p>
                   <strong className="mt-3 block truncate whitespace-nowrap text-[0.85rem] leading-[1.2] text-white">{selectedReceipt.code}</strong>
@@ -583,8 +582,8 @@ export function ReceiptDeskClient() {
                     ref={receiptScrollRef}
                     className={
                       receiptScrollMetric.visible
-                        ? "sales-cart-scroll grid h-full min-h-0 cursor-grab select-none content-start gap-2 overflow-y-auto overflow-x-hidden py-0 pl-0 pr-4 active:cursor-grabbing"
-                        : "grid h-full min-h-0 select-none content-start gap-2 overflow-hidden py-0 pl-0 pr-0"
+                        ? "sales-cart-scroll grid h-full min-h-0 touch-none cursor-grab select-none content-start gap-2 overflow-y-auto overflow-x-hidden py-0 pl-0 pr-4 active:cursor-grabbing"
+                        : "grid h-full min-h-0 touch-none select-none content-start gap-2 overflow-hidden py-0 pl-0 pr-0"
                     }
                     onScroll={updateReceiptScrollbar}
                     onPointerDown={handleReceiptPointerDown}
@@ -611,10 +610,10 @@ export function ReceiptDeskClient() {
                 </div>
 
                 <div className="grid gap-2 text-[0.86rem]">
-                  <div className="flex justify-between gap-3"><span className="text-[var(--foreground-soft)]">Subtotal</span><strong className="text-white">{formatBaht(selectedReceipt.subtotal)}</strong></div>
-                  <div className="flex justify-between gap-3"><span className="text-[var(--foreground-soft)]">Discount</span><strong className="text-white">{formatBaht(selectedReceipt.discount)}</strong></div>
-                  <div className="flex justify-between gap-3"><span className="text-[var(--foreground-soft)]">Tax</span><strong className="text-white">{formatBaht(selectedReceipt.tax)}</strong></div>
-                  <div className="flex justify-between gap-3 border-t border-t-[rgba(100,120,160,0.14)] pt-2 text-[1rem]"><span className="text-white">สุทธิ</span><strong className="text-white">{formatBaht(selectedReceipt.total)}</strong></div>
+                  <div className="flex justify-between gap-3 max-[420px]:flex-col max-[420px]:items-start"><span className="text-[var(--foreground-soft)]">Subtotal</span><strong className="text-white">{formatBaht(selectedReceipt.subtotal)}</strong></div>
+                  <div className="flex justify-between gap-3 max-[420px]:flex-col max-[420px]:items-start"><span className="text-[var(--foreground-soft)]">Discount</span><strong className="text-white">{formatBaht(selectedReceipt.discount)}</strong></div>
+                  <div className="flex justify-between gap-3 max-[420px]:flex-col max-[420px]:items-start"><span className="text-[var(--foreground-soft)]">Tax</span><strong className="text-white">{formatBaht(selectedReceipt.tax)}</strong></div>
+                  <div className="flex justify-between gap-3 border-t border-t-[rgba(100,120,160,0.14)] pt-2 text-[1rem] max-[420px]:flex-col max-[420px]:items-start"><span className="text-white">สุทธิ</span><strong className="text-white">{formatBaht(selectedReceipt.total)}</strong></div>
                 </div>
                 {detailLoading ? (
                   <div className="absolute inset-0 z-20 grid place-items-center bg-[rgba(14,18,28,0.68)] backdrop-blur-[1px]">

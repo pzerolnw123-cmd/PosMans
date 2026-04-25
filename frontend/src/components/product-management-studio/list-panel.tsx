@@ -40,7 +40,7 @@ export function ProductListPanel({
   onSelectProduct,
 }: ProductListPanelProps) {
   return (
-    <div className="ml-auto grid w-[96%] gap-3 self-start max-[1180px]:w-full">
+    <div className="ml-auto grid w-[96%] gap-3 self-start max-[1366px]:w-full max-[820px]:gap-4">
       <section className="grid grid-rows-[auto_auto_auto] self-start overflow-hidden rounded-none border border-[var(--border)] bg-[rgba(22,27,38,0.76)] px-5 py-[18px] shadow-[var(--shadow-soft)] backdrop-blur-[14px] max-[1180px]:px-4 max-[1180px]:py-4">
         <div className="flex items-start justify-between gap-3 max-[720px]:flex-col max-[720px]:items-stretch">
           <div>
@@ -53,7 +53,7 @@ export function ProductListPanel({
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-[10px] pt-3">
+        <div className="flex flex-wrap gap-[10px] pt-3 max-[640px]:gap-2">
           {categoryOptions.map((category) => {
             const active = activeCategory === category;
 
@@ -152,10 +152,10 @@ export function ProductListPanel({
                   type="button"
                   className={
                     active
-                      ? "mx-auto grid min-h-[124px] w-[97%] grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 rounded-[18px] border border-[rgba(108,92,231,0.5)] bg-[rgba(108,92,231,0.08)] px-3 py-3 text-left shadow-[rgba(108,92,231,0.08)_0_6px_12px] transition hover:-translate-y-px"
+                      ? "mx-auto grid min-h-[124px] w-full grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 rounded-[18px] border border-[rgba(108,92,231,0.5)] bg-[rgba(108,92,231,0.08)] px-3 py-3 text-left shadow-[rgba(108,92,231,0.08)_0_6px_12px] transition hover:-translate-y-px max-[520px]:grid-cols-[62px_minmax(0,1fr)]"
                       : selectionTransitionLocked
-                        ? "mx-auto grid min-h-[124px] w-[97%] grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 rounded-[18px] border border-[var(--border)] bg-[rgba(22,27,38,0.58)] px-3 py-3 text-left"
-                        : "mx-auto grid min-h-[124px] w-[97%] grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 rounded-[18px] border border-[var(--border)] bg-[rgba(22,27,38,0.58)] px-3 py-3 text-left transition hover:-translate-y-px hover:shadow-[rgba(0,0,0,0.1)_0_4px_8px]"
+                        ? "mx-auto grid min-h-[124px] w-full grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 rounded-[18px] border border-[var(--border)] bg-[rgba(22,27,38,0.58)] px-3 py-3 text-left max-[520px]:grid-cols-[62px_minmax(0,1fr)]"
+                        : "mx-auto grid min-h-[124px] w-full grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 rounded-[18px] border border-[var(--border)] bg-[rgba(22,27,38,0.58)] px-3 py-3 text-left transition hover:-translate-y-px hover:shadow-[rgba(0,0,0,0.1)_0_4px_8px] max-[520px]:grid-cols-[62px_minmax(0,1fr)]"
                   }
                   onClick={() => onSelectProduct(item.id)}
                 >
@@ -176,7 +176,7 @@ export function ProductListPanel({
                     <p className="mt-1.5 text-[0.88rem] text-[#6b7a94]">{item.code}</p>
                   </div>
 
-                  <div className="flex flex-col items-end self-center whitespace-nowrap pl-2">
+                  <div className="flex flex-col items-end self-center whitespace-nowrap pl-2 max-[520px]:col-span-2 max-[520px]:items-start max-[520px]:pl-0">
                     <div className="text-[1.05rem] font-bold text-[#a0b8d8]">{formatPrice(item.price)}</div>
                     <div className="mt-2">
                       <StatusPill tone={saleStatusLabel === "พร้อมขาย" ? "success" : "ghost"}>{saleStatusLabel}</StatusPill>

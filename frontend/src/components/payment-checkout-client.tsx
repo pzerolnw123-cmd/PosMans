@@ -362,7 +362,7 @@ export function PaymentCheckoutClient({ paymentSettings }: { paymentSettings: Ow
     return (
       <div className={wrapperClass}>
         {!compact ? (
-          <div className="flex items-start justify-between gap-3">
+          <div className="flex items-start justify-between gap-3 max-[860px]:flex-col">
             <div>
               <strong className="block text-white">QR PromptPay / โอนเงิน</strong>
               <span className="text-[0.86rem] leading-[1.5] text-[var(--foreground-soft)]">
@@ -378,7 +378,7 @@ export function PaymentCheckoutClient({ paymentSettings }: { paymentSettings: Ow
             ยังไม่ได้เปิดใช้ QR PromptPay <br />ในหน้าตั้งค่า
           </div>
         ) : dynamicPromptPayReady ? (
-          <div className={compact ? "grid justify-items-center gap-4 text-center" : "grid grid-cols-[148px_minmax(0,1fr)] items-center gap-4 max-[720px]:grid-cols-1"}>
+          <div className={compact ? "grid justify-items-center gap-4 text-center" : "grid grid-cols-[148px_minmax(0,1fr)] items-center gap-4 max-[860px]:grid-cols-1"}>
             {promptPayQrDataUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={promptPayQrDataUrl} alt="PromptPay QR" className={compact ? "aspect-square w-full max-w-[240px] rounded-none bg-white p-3 shadow-[rgba(108,92,231,0.2)_0_0_24px]" : "h-[148px] w-[148px] rounded-none border border-[rgba(108,92,231,0.28)] bg-white p-2 shadow-[rgba(108,92,231,0.14)_0_0_15px]"} />
@@ -389,7 +389,7 @@ export function PaymentCheckoutClient({ paymentSettings }: { paymentSettings: Ow
             )}
             <div className={compact ? "grid w-full max-w-[240px] gap-3 text-[0.9rem] leading-[1.45] text-[rgba(229,223,255,0.78)]" : "grid gap-2 text-[0.9rem] text-[var(--foreground-soft)]"}>
               {compact ? (
-                <div className="flex items-start justify-between gap-4 text-left">
+                <div className="flex items-start justify-between gap-4 text-left max-[520px]:flex-col">
                   <div className="grid min-w-0 gap-1.5">
                     <strong className="block leading-[1.28] text-white">QR PromptPay / โอนเงิน</strong>
                     <span className="text-[0.78rem] leading-[1.55] text-[var(--foreground-soft)]">ยอดถูกฝังใน QR แล้ว</span>
@@ -406,11 +406,11 @@ export function PaymentCheckoutClient({ paymentSettings }: { paymentSettings: Ow
             </div>
           </div>
         ) : staticQrReady ? (
-          <div className={compact ? "grid justify-items-center gap-4 text-center" : "grid grid-cols-[148px_minmax(0,1fr)] items-center gap-4 max-[720px]:grid-cols-1"}>
+          <div className={compact ? "grid justify-items-center gap-4 text-center" : "grid grid-cols-[148px_minmax(0,1fr)] items-center gap-4 max-[860px]:grid-cols-1"}>
             <span className={compact ? "aspect-square w-full max-w-[240px] bg-cover bg-center bg-white" : "h-[148px] w-[148px] rounded-[12px] border border-white/10 bg-cover bg-center bg-white"} style={{ backgroundImage: `url(${paymentSettings.paymentQrImageUrl})` }} />
             <div className={compact ? "grid w-full max-w-[240px] gap-3 text-[0.9rem] leading-[1.45] text-[rgba(229,223,255,0.78)]" : "grid gap-2 text-[0.9rem] text-[var(--foreground-soft)]"}>
               {compact ? (
-                <div className="flex items-start justify-between gap-4 text-left">
+                <div className="flex items-start justify-between gap-4 text-left max-[520px]:flex-col">
                   <div className="grid min-w-0 gap-1.5">
                     <strong className="block leading-[1.28] text-white">Static QR จากธนาคาร</strong>
                     <span className="text-[0.78rem] leading-[1.55] text-[var(--foreground-soft)]">ให้ลูกค้าโอนยอดนี้</span>
@@ -445,7 +445,7 @@ export function PaymentCheckoutClient({ paymentSettings }: { paymentSettings: Ow
     return (
       <div className={wrapperClass}>
         {!compact ? (
-          <div className="flex items-start justify-between gap-3">
+          <div className="flex items-start justify-between gap-3 max-[860px]:flex-col">
             <div>
               <strong className="block text-white">ข้อมูลโอนเงินผ่านธนาคาร</strong>
               <span className="text-[0.86rem] leading-[1.5] text-[var(--foreground-soft)]">ให้ลูกค้าโอนเข้าบัญชีด้านล่าง</span>
@@ -453,7 +453,7 @@ export function PaymentCheckoutClient({ paymentSettings }: { paymentSettings: Ow
             <strong className="whitespace-nowrap text-white">{formatBaht(billTotal)}</strong>
           </div>
         ) : (
-          <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center justify-between gap-3 max-[520px]:flex-col max-[520px]:items-start">
             <strong className="text-[0.95rem] text-white">ยอดโอน {formatBaht(billTotal)}</strong>
             <span className="text-[0.75rem] font-bold text-[#ffcf7a]">ตรวจสลิปหลังโอน</span>
           </div>
@@ -535,8 +535,8 @@ export function PaymentCheckoutClient({ paymentSettings }: { paymentSettings: Ow
   const paymentMethodLabel = paymentMethods.find((m) => m.value === displayedPaymentMethod)?.label || "อื่นๆ";
 
   return (
-    <div className="grid h-full min-h-0 grid-cols-[minmax(0,1fr)_minmax(0,1fr)_280px] gap-[18px] max-[1280px]:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] max-[1180px]:grid-cols-1">
-      <section className="grid min-h-0 grid-rows-[auto_minmax(0,1fr)_auto] gap-[16px] rounded-none border border-[var(--border)] bg-[rgba(22,27,38,0.76)] px-5 py-[18px] shadow-[var(--shadow-soft)]">
+    <div className="grid h-full min-h-0 grid-cols-[minmax(0,1fr)_minmax(0,1fr)_280px] gap-[18px] max-[1366px]:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] max-[1180px]:grid-cols-1 max-[820px]:gap-4">
+      <section className="grid min-h-0 grid-rows-[auto_minmax(0,1fr)_auto] gap-[16px] rounded-none border border-[var(--border)] bg-[rgba(22,27,38,0.76)] px-5 py-[18px] shadow-[var(--shadow-soft)] max-[820px]:px-4 max-[820px]:py-4">
         <div>
           <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[#6b7a94]">Bill Summary</p>
           <strong className="my-[10px] block text-[1.4rem] leading-none tracking-[-0.04em] text-white">
@@ -554,8 +554,8 @@ export function PaymentCheckoutClient({ paymentSettings }: { paymentSettings: Ow
                 ref={billScrollRef}
                 className={
                   billScrollMetric.visible
-                    ? "sales-cart-scroll grid h-full min-h-0 cursor-grab select-none content-start gap-3 overflow-y-auto overflow-x-hidden py-0 pl-0 pr-4 active:cursor-grabbing"
-                    : "grid h-full min-h-0 select-none content-start gap-3 overflow-hidden py-0 pl-0 pr-0"
+                    ? "sales-cart-scroll grid h-full min-h-0 touch-none cursor-grab select-none content-start gap-3 overflow-y-auto overflow-x-hidden py-0 pl-0 pr-4 active:cursor-grabbing"
+                    : "grid h-full min-h-0 touch-none select-none content-start gap-3 overflow-hidden py-0 pl-0 pr-0"
                 }
                 onScroll={updateBillScrollbar}
                 onPointerDown={handleBillPointerDown}
@@ -565,7 +565,7 @@ export function PaymentCheckoutClient({ paymentSettings }: { paymentSettings: Ow
                 onPointerLeave={stopBillDrag}
               >
                 {billItems.map((item) => (
-                  <div key={item.key} className="grid grid-cols-[52px_minmax(0,1fr)_auto] items-center gap-3 rounded-none border border-[rgba(100,120,160,0.14)] bg-[rgba(255,255,255,0.03)] p-3">
+                  <div key={item.key} className="grid grid-cols-[52px_minmax(0,1fr)_auto] items-center gap-3 rounded-none border border-[rgba(100,120,160,0.14)] bg-[rgba(255,255,255,0.03)] p-3 max-[520px]:grid-cols-[52px_minmax(0,1fr)]">
                     {item.imageUrl ? (
                       <span className="h-[52px] w-[52px] rounded-[10px] border border-[rgba(100,120,160,0.14)] bg-cover bg-center" style={{ backgroundImage: `url(${item.imageUrl})` }} />
                     ) : (
@@ -575,7 +575,7 @@ export function PaymentCheckoutClient({ paymentSettings }: { paymentSettings: Ow
                       <strong className="truncate text-base leading-[1.2] text-white">{item.name}</strong>
                       <span className="text-[0.92rem] text-[var(--foreground-soft)]">{formatBaht(item.unitPrice)} x {item.quantity}</span>
                     </div>
-                    <strong className="text-base leading-[1.2] text-white">{formatBaht(item.lineTotal)}</strong>
+                    <strong className="text-base leading-[1.2] text-white max-[520px]:col-span-2 max-[520px]:justify-self-end">{formatBaht(item.lineTotal)}</strong>
                   </div>
                 ))}
               </div>
@@ -602,7 +602,7 @@ export function PaymentCheckoutClient({ paymentSettings }: { paymentSettings: Ow
             ["ภาษี", formatBaht(billTax)],
             ["สุทธิ", formatBaht(billTotal)],
           ].map(([label, value]) => (
-            <div key={label} className="flex items-center justify-between gap-3">
+            <div key={label} className="flex items-center justify-between gap-3 max-[420px]:flex-col max-[420px]:items-start">
               <span className="text-[0.95rem] text-[var(--foreground-soft)]">{label}</span>
               <strong className="text-base leading-[1.2] text-white">{value}</strong>
             </div>
@@ -610,7 +610,7 @@ export function PaymentCheckoutClient({ paymentSettings }: { paymentSettings: Ow
         </div>
       </section>
 
-      <section className="grid h-fit content-start gap-[16px] rounded-none border border-[var(--border)] bg-[rgba(22,27,38,0.76)] px-5 py-[18px] shadow-[var(--shadow-soft)]">
+      <section className="grid h-fit content-start gap-[16px] rounded-none border border-[var(--border)] bg-[rgba(22,27,38,0.76)] px-5 py-[18px] shadow-[var(--shadow-soft)] max-[820px]:px-4 max-[820px]:py-4">
         <div>
           <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[#6b7a94]">Payment Methods</p>
           <strong className="my-[10px] block text-[1.4rem] leading-none tracking-[-0.04em] text-white">{completedSale ? "วิธีชำระล่าสุด" : "เลือกวิธีชำระ"}</strong>
@@ -678,7 +678,7 @@ export function PaymentCheckoutClient({ paymentSettings }: { paymentSettings: Ow
               />
             </label>
           </div>
-          <label className="grid gap-2">
+          <label className="grid gap-2 max-[640px]:gap-1.5">
             <span className="flex items-center gap-2 text-[0.92rem] text-[var(--foreground-soft)]">
               ภาษี <span className="text-[0.72rem] font-bold text-[#ff8fa2] bg-[#ff8fa2]/10 px-1.5 py-0.5 rounded-[4px]">%</span>
             </span>
@@ -702,7 +702,7 @@ export function PaymentCheckoutClient({ paymentSettings }: { paymentSettings: Ow
           <label className="grid gap-2">
             <span className="text-[0.92rem] text-[var(--foreground-soft)]">หมายเหตุบิล</span>
             <textarea
-              className="min-h-[116px] rounded-none border border-[rgba(100,120,160,0.22)] bg-[rgba(14,18,28,0.7)] px-[14px] py-3 text-[var(--foreground)] outline-none transition placeholder:text-[#556070] focus:border-[rgba(108,92,231,0.55)] focus:shadow-[inset_0_0_0_1px_var(--ring)] disabled:cursor-not-allowed disabled:opacity-70 flex-shrink-0 resize-none [&::-webkit-scrollbar]:w-[6px] [&::-webkit-scrollbar-track]:bg-[rgba(15,19,29,0.78)] [&::-webkit-scrollbar-thumb]:bg-[linear-gradient(180deg,rgba(240,106,223,0.8),rgba(169,108,255,0.8))] hover:[&::-webkit-scrollbar-thumb]:bg-[linear-gradient(180deg,rgba(240,106,223,1),rgba(169,108,255,1))]"
+              className="min-h-[116px] rounded-none border border-[rgba(100,120,160,0.22)] bg-[rgba(14,18,28,0.7)] px-[14px] py-3 text-[var(--foreground)] outline-none transition placeholder:text-[#556070] focus:border-[rgba(108,92,231,0.55)] focus:shadow-[inset_0_0_0_1px_var(--ring)] disabled:cursor-not-allowed disabled:opacity-70 flex-shrink-0 resize-none max-[640px]:min-h-[96px] [&::-webkit-scrollbar]:w-[6px] [&::-webkit-scrollbar-track]:bg-[rgba(15,19,29,0.78)] [&::-webkit-scrollbar-thumb]:bg-[linear-gradient(180deg,rgba(240,106,223,0.8),rgba(169,108,255,0.8))] hover:[&::-webkit-scrollbar-thumb]:bg-[linear-gradient(180deg,rgba(240,106,223,1),rgba(169,108,255,1))]"
               value={completedSale ? completedSale.note || "" : note}
               onChange={(event) => setNote(event.target.value)}
               disabled={Boolean(completedSale)}
@@ -721,7 +721,7 @@ export function PaymentCheckoutClient({ paymentSettings }: { paymentSettings: Ow
         </div>
       </section>
 
-      <section className="grid h-fit gap-[16px] rounded-none border border-[var(--border)] bg-[rgba(22,27,38,0.76)] px-5 py-[18px] shadow-[var(--shadow-soft)] max-[1280px]:col-span-2 max-[1180px]:col-span-1">
+      <section className="grid h-fit gap-[16px] rounded-none border border-[var(--border)] bg-[rgba(22,27,38,0.76)] px-5 py-[18px] shadow-[var(--shadow-soft)] max-[1366px]:col-span-2 max-[1180px]:col-span-1 max-[820px]:px-4 max-[820px]:py-4">
         <div>
           <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[#6b7a94]">Quick Panel</p>
           <strong className="my-[10px] block text-[1.4rem] leading-none tracking-[-0.04em] text-white">สถานะชำระเงิน</strong>

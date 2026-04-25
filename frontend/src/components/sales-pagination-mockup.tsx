@@ -400,7 +400,7 @@ export function SalesPaginationMockup() {
   }
 
   return (
-    <div className="grid h-full min-h-0 grid-cols-[minmax(0,1fr)_320px] gap-[18px] max-[1180px]:grid-cols-1">
+    <div className="grid h-full min-h-0 grid-cols-[minmax(0,1fr)_320px] gap-[18px] max-[1366px]:grid-cols-1 max-[820px]:gap-4">
       <section className="grid min-h-0 grid-rows-[auto_minmax(0,1fr)_auto] gap-[18px]" aria-label="sales main area">
         <div className="rounded-none border border-[rgba(100,120,160,0.18)] bg-[linear-gradient(180deg,rgba(22,27,38,0.94),rgba(18,22,34,0.9))] px-[22px] py-5">
           <div className="flex flex-wrap gap-[10px]">
@@ -426,7 +426,7 @@ export function SalesPaginationMockup() {
           </div>
         </div>
 
-        <div className="grid min-h-0 grid-cols-3 content-start items-start gap-4 overflow-visible p-1 max-[720px]:grid-cols-2" aria-label="products">
+          <div className="grid min-h-0 grid-cols-3 content-start items-start gap-4 overflow-visible p-1 max-[900px]:grid-cols-2 max-[520px]:grid-cols-1" aria-label="products">
           {loading ? (
             Array.from({ length: 6 }).map((_, index) => (
               <article
@@ -452,8 +452,8 @@ export function SalesPaginationMockup() {
                   key={product.id}
                   className={
                     activePulse
-                      ? "relative grid h-[226px] animate-[cart-card-pop_520ms_cubic-bezier(.2,.8,.2,1)] content-start gap-3 overflow-hidden rounded-none border border-[rgba(240,106,223,0.46)] bg-[linear-gradient(180deg,rgba(38,30,58,0.95),rgba(22,27,38,0.92))] p-[14px] pb-[68px] shadow-[rgba(240,106,223,0.16)_0_14px_32px]"
-                      : "relative grid h-[226px] content-start gap-3 overflow-hidden rounded-none border border-[rgba(100,120,160,0.18)] bg-[linear-gradient(180deg,rgba(26,32,48,0.92),rgba(22,27,38,0.92))] p-[14px] pb-[68px] transition duration-200 hover:-translate-y-0.5 hover:border-[rgba(240,106,223,0.26)]"
+                      ? "relative grid h-[226px] animate-[cart-card-pop_520ms_cubic-bezier(.2,.8,.2,1)] content-start gap-3 overflow-hidden rounded-none border border-[rgba(240,106,223,0.46)] bg-[linear-gradient(180deg,rgba(38,30,58,0.95),rgba(22,27,38,0.92))] p-[14px] pb-[68px] shadow-[rgba(240,106,223,0.16)_0_14px_32px] max-[640px]:h-auto max-[640px]:min-h-[226px]"
+                      : "relative grid h-[226px] content-start gap-3 overflow-hidden rounded-none border border-[rgba(100,120,160,0.18)] bg-[linear-gradient(180deg,rgba(26,32,48,0.92),rgba(22,27,38,0.92))] p-[14px] pb-[68px] transition duration-200 hover:-translate-y-0.5 hover:border-[rgba(240,106,223,0.26)] max-[640px]:h-auto max-[640px]:min-h-[226px]"
                   }
                 >
                   {added ? (
@@ -564,8 +564,8 @@ export function SalesPaginationMockup() {
               ref={cartScrollRef}
               className={
                 cartScrollMetric.visible
-                  ? "sales-cart-scroll grid h-full min-h-0 cursor-grab select-none content-start gap-3 overflow-y-auto overflow-x-hidden py-0 pl-0 pr-4 active:cursor-grabbing"
-                  : "grid h-full min-h-0 select-none content-start gap-3 overflow-hidden py-0 pl-0 pr-0"
+                   ? "sales-cart-scroll grid h-full min-h-0 touch-none cursor-grab select-none content-start gap-3 overflow-y-auto overflow-x-hidden py-0 pl-0 pr-4 active:cursor-grabbing"
+                   : "grid h-full min-h-0 touch-none select-none content-start gap-3 overflow-hidden py-0 pl-0 pr-0"
               }
               onScroll={updateCartScrollbar}
               onPointerDown={handleCartPointerDown}

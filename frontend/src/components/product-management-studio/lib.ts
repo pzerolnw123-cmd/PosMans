@@ -26,7 +26,7 @@ export async function requestJson<T>(path: string, init?: RequestInit) {
   const headers = new Headers(init?.headers);
 
   if (init?.method && init.method !== "GET") {
-    const csrfToken = (await ensureCsrfToken()) || readCookie(csrfCookieName);
+    const csrfToken = (await ensureCsrfToken({ forceRefresh: true })) || readCookie(csrfCookieName);
     if (!csrfToken) {
       throw new Error("ไม่สามารถเริ่มต้น CSRF token ได้");
     }
@@ -165,7 +165,7 @@ export async function createCroppedBlob(draft: CropDraft, zoom: number, offsetX:
 }
 
 export async function requestSignedUpload(fileName: string, contentType: string, contentLength: number, purpose: "STORE_LOGO" | "PAYMENT_QR" | "PRODUCT_IMAGE") {
-  const csrfToken = (await ensureCsrfToken()) || readCookie(csrfCookieName);
+  const csrfToken = (await ensureCsrfToken({ forceRefresh: true })) || readCookie(csrfCookieName);
   if (!csrfToken) {
     throw new Error("ไม่สามารถเริ่มต้น CSRF token ได้");
   }

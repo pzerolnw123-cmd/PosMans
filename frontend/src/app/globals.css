@@ -283,3 +283,17 @@ main {
     box-shadow: rgba(240, 106, 223, 0.1) 0 6px 16px;
   }
 }
+
+@media (max-width: 1440px) and (max-height: 920px) {
+  .workspace-screen-shell {
+    height: auto !important;
+    min-height: 100vh;
+    overflow: auto !important;
+  }
+
+  .workspace-screen-frame,
+  .workspace-screen-content {
+    height: auto !important;
+    min-height: 0;
+  }
+}
