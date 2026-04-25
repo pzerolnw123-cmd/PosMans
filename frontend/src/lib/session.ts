@@ -36,6 +36,10 @@ export type SessionPayload = {
   csrfToken?: string;
 };
 
+export type OwnerPaymentSettingsPayload = {
+  store: NonNullable<SessionUser["store"]>;
+};
+
 const sessionCookieName = process.env.NEXT_PUBLIC_SESSION_COOKIE_NAME || "pos_mans_session";
 
 export const getCurrentSession = cache(async () => {
@@ -64,6 +68,33 @@ export const getCurrentSession = cache(async () => {
   }
 
   return response.json() as Promise<SessionPayload>;
+});
+
+export const getOwnerPaymentSettings = cache(async () => {
+  const cookieStore = await cookies();
+  const sessionCookie = cookieStore.get(sessionCookieName);
+
+  if (!sessionCookie?.value) {
+    return null;
+  }
+
+  const cookieHeader = cookieStore
+    .getAll()
+    .map((cookie) => `${cookie.name}=${cookie.value}`)
+    .join("; ");
+
+  const response = await fetch(`${backendUrl}/api/auth/owner-payment-settings`, {
+    headers: {
+      cookie: cookieHeader,
+    },
+    cache: "no-store",
+  });
+
+  if (!response.ok) {
+    return null;
+  }
+
+  return response.json() as Promise<OwnerPaymentSettingsPayload>;
 });
 
 export async function requireSession() {

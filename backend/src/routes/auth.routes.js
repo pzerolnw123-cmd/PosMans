@@ -176,6 +176,10 @@ const ownerLogoSchema = z
 
 const storePaymentSelect = {
   id: true,
+  name: true,
+  slug: true,
+  logoUrl: true,
+  logoUploadedKey: true,
   promptPayEnabled: true,
   promptPayRecipientType: true,
   promptPayId: true,
@@ -330,6 +334,28 @@ function buildPublicUser(user) {
           paymentQrUploadedKey: user.store.paymentQrUploadedKey,
         }
       : null,
+  };
+}
+
+function buildSessionUserResponse(user) {
+  if (!user?.store) {
+    return user;
+  }
+
+  const {
+    promptPayId,
+    promptPayMobileId,
+    promptPayNationalId,
+    promptPayTaxId,
+    bankAccountName,
+    bankAccountNumber,
+    paymentQrImageUrl,
+    ...store
+  } = user.store;
+
+  return {
+    ...user,
+    store,
   };
 }
 
@@ -665,8 +691,43 @@ router.patch("/password", requireTrustedOrigin, requireCsrf, requireAuth, async 
       data: { passwordHash: await hashPassword(parsed.newPassword) },
     });
 
+    await prisma.session.deleteMany({
+      where: {
+        userId: user.id,
+        id: { not: req.session.id },
+      },
+    });
+
+    await writeAuditLog({
+      action: "PASSWORD_CHANGED",
+      actorUserId: user.id,
+      status: "success",
+      ipAddress: req.ip,
+      userAgent: req.get("user-agent") || null,
+      metadata: { revokedOtherSessions: true },
+    });
+
     res.set("Cache-Control", "no-store");
     res.json({ success: true });
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.get("/owner-payment-settings", requireStoreRole(["OWNER"]), async (req, res, next) => {
+  try {
+    const storeId = req.session.user.storeId;
+    const store = await prisma.store.findUnique({
+      where: { id: storeId },
+      select: storePaymentSelect,
+    });
+
+    if (!store) {
+      return res.status(404).json({ error: "Store not found" });
+    }
+
+    res.set("Cache-Control", "no-store");
+    res.json({ store });
   } catch (error) {
     next(error);
   }
@@ -844,7 +905,7 @@ router.get("/me", requireAuth, async (req, res, next) => {
   try {
     res.set("Cache-Control", "no-store");
     res.json({
-      user: req.session.user,
+      user: buildSessionUserResponse(req.session.user),
       session: { expiresAt: req.session.expiresAt },
     });
   } catch (error) {

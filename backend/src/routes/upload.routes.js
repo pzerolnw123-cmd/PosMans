@@ -11,9 +11,10 @@ const router = express.Router();
 
 const uploadSchema = z.object({
   fileName: safeTextSchema("fileName", 160),
-  contentType: z.string().min(1).max(120),
+  contentType: z.enum(["image/jpeg", "image/png", "image/webp"]),
   contentLength: z.number().int().positive(),
-});
+  purpose: z.enum(["STORE_LOGO", "PAYMENT_QR", "PRODUCT_IMAGE"]),
+}).strict();
 
 function uploadPrefixForSession(session) {
   if (session.user.storeRole === "OWNER" && session.user.storeId) {
@@ -58,6 +59,7 @@ router.post(
         metadata: {
           scope: prefix,
           storeId: req.session.user.storeId || null,
+          purpose: parsed.purpose,
           contentType: parsed.contentType,
           contentLength: parsed.contentLength,
         },

@@ -1,7 +1,7 @@
 const path = require("node:path");
 const crypto = require("node:crypto");
-const { PutObjectCommand, DeleteObjectCommand, S3Client } = require("@aws-sdk/client-s3");
-const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
+const { DeleteObjectCommand, S3Client } = require("@aws-sdk/client-s3");
+const { createPresignedPost } = require("@aws-sdk/s3-presigned-post");
 const { env } = require("../config/env");
 const { AppError } = require("../utils/app-error");
 
@@ -9,8 +9,9 @@ const allowedMimeTypes = new Map([
   ["image/jpeg", ["jpg", "jpeg"]],
   ["image/png", ["png"]],
   ["image/webp", ["webp"]],
-  ["application/pdf", ["pdf"]],
 ]);
+
+const uploadPurposes = new Set(["STORE_LOGO", "PAYMENT_QR", "PRODUCT_IMAGE"]);
 
 let r2Client = null;
 
@@ -36,10 +37,14 @@ function getR2Client() {
   return r2Client;
 }
 
-function validateUploadRequest({ fileName, contentType, contentLength }) {
+function validateUploadRequest({ fileName, contentType, contentLength, purpose }) {
   const normalizedContentType = contentType.toLowerCase();
   const extension = path.extname(fileName).replace(".", "").toLowerCase();
   const allowedExtensions = allowedMimeTypes.get(normalizedContentType);
+
+  if (!uploadPurposes.has(purpose)) {
+    throw new AppError("Unsupported upload purpose", 400, { code: "BAD_UPLOAD_PURPOSE" });
+  }
 
   if (!allowedExtensions) {
     throw new AppError("Unsupported file type", 400, { code: "BAD_FILE_TYPE" });
@@ -72,25 +77,31 @@ function normalizeObjectPrefix(prefix) {
     .join("/");
 }
 
-async function createPresignedUpload({ fileName, contentType, contentLength }, { prefix } = {}) {
-  const validated = validateUploadRequest({ fileName, contentType, contentLength });
+async function createPresignedUpload({ fileName, contentType, contentLength, purpose }, { prefix } = {}) {
+  const validated = validateUploadRequest({ fileName, contentType, contentLength, purpose });
   const objectPrefix = normalizeObjectPrefix(prefix);
   const objectKey = `${objectPrefix}/${crypto.randomUUID()}.${validated.extension}`;
-  const command = new PutObjectCommand({
+  const presignedPost = await createPresignedPost(getR2Client(), {
     Bucket: env.R2_BUCKET,
     Key: objectKey,
-    ContentType: validated.contentType,
+    Fields: {
+      key: objectKey,
+      "Content-Type": validated.contentType,
+    },
+    Conditions: [
+      ["content-length-range", 1, env.MAX_UPLOAD_BYTES],
+      ["eq", "$key", objectKey],
+      ["eq", "$Content-Type", validated.contentType],
+    ],
+    Expires: 60,
   });
-  const putUrl = await getSignedUrl(getR2Client(), command, { expiresIn: 60 });
 
   return {
     objectKey,
     upload: {
-      method: "PUT",
-      url: putUrl,
-      headers: {
-        "Content-Type": validated.contentType,
-      },
+      method: "POST",
+      url: presignedPost.url,
+      fields: presignedPost.fields,
     },
     maxUploadBytes: env.MAX_UPLOAD_BYTES,
     publicUrl: env.R2_PUBLIC_BASE_URL ? `${env.R2_PUBLIC_BASE_URL.replace(/\/$/, "")}/${objectKey}` : null,

@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { requireOwnerSession } from "@/lib/session";
+import { getOwnerPaymentSettings, requireOwnerSession } from "@/lib/session";
 import { OwnerWorkspace, type OwnerSectionKey } from "@/components/owner-workspace";
 
 const validSections: OwnerSectionKey[] = ["sales", "payments", "receipts", "reports", "menu", "overview", "calculator", "settings"];
@@ -16,6 +16,7 @@ export default async function OwnerSectionPage({
   }
 
   const session = await requireOwnerSession();
+  const paymentSettings = await getOwnerPaymentSettings();
 
-  return <OwnerWorkspace session={session} activeSection={section as OwnerSectionKey} />;
+  return <OwnerWorkspace session={session} paymentStore={paymentSettings?.store || null} activeSection={section as OwnerSectionKey} />;
 }

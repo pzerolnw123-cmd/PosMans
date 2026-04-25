@@ -23,6 +23,7 @@ export type OwnerSectionKey = "sales" | "payments" | "receipts" | "reports" | "m
 
 type OwnerWorkspaceProps = {
   session: SessionPayload;
+  paymentStore: NonNullable<SessionPayload["user"]["store"]> | null;
   activeSection: OwnerSectionKey;
 };
 
@@ -445,7 +446,7 @@ function renderOwnerScreen(
   return screens[activeSection];
 }
 
-export function OwnerWorkspace({ session, activeSection }: OwnerWorkspaceProps) {
+export function OwnerWorkspace({ session, paymentStore, activeSection }: OwnerWorkspaceProps) {
   const rawStoreName = session.user.store?.name?.trim() || "";
   const rawOwnerName = session.user.displayName.trim();
   const formStoreName = unsetStoreNames.has(rawStoreName) ? "" : rawStoreName;
@@ -454,17 +455,17 @@ export function OwnerWorkspace({ session, activeSection }: OwnerWorkspaceProps) 
   const ownerName = formOwnerName || ownerNamePrompt;
   const roleLabel = formatRoleLabel(session);
   const paymentSettings: OwnerPaymentSettingsValue = {
-    promptPayEnabled: Boolean(session.user.store?.promptPayEnabled),
-    promptPayRecipientType: session.user.store?.promptPayRecipientType || "MOBILE",
-    promptPayId: session.user.store?.promptPayId || "",
-    promptPayMobileId: session.user.store?.promptPayMobileId || "",
-    promptPayNationalId: session.user.store?.promptPayNationalId || "",
-    promptPayTaxId: session.user.store?.promptPayTaxId || "",
-    bankName: session.user.store?.bankName || "",
-    bankAccountName: session.user.store?.bankAccountName || "",
-    bankAccountNumber: session.user.store?.bankAccountNumber || "",
-    paymentQrImageUrl: session.user.store?.paymentQrImageUrl || "",
-    paymentQrUploadedKey: session.user.store?.paymentQrUploadedKey || "",
+    promptPayEnabled: Boolean(paymentStore?.promptPayEnabled),
+    promptPayRecipientType: paymentStore?.promptPayRecipientType || "MOBILE",
+    promptPayId: paymentStore?.promptPayId || "",
+    promptPayMobileId: paymentStore?.promptPayMobileId || "",
+    promptPayNationalId: paymentStore?.promptPayNationalId || "",
+    promptPayTaxId: paymentStore?.promptPayTaxId || "",
+    bankName: paymentStore?.bankName || "",
+    bankAccountName: paymentStore?.bankAccountName || "",
+    bankAccountNumber: paymentStore?.bankAccountNumber || "",
+    paymentQrImageUrl: paymentStore?.paymentQrImageUrl || "",
+    paymentQrUploadedKey: paymentStore?.paymentQrUploadedKey || "",
   };
   const screen = renderOwnerScreen(activeSection, storeName, ownerName, formStoreName, formOwnerName, paymentSettings);
   const showFooterCards = !screen.standalone;

@@ -571,7 +571,7 @@ export function OwnerLogoClient({ compact = false }: { compact?: boolean }) {
         return;
       }
 
-      const signedUpload = await requestSignedUpload(`store-logo-${Date.now()}.webp`, "image/webp", pendingLogoBlob.size);
+      const signedUpload = await requestSignedUpload(`store-logo-${Date.now()}.webp`, "image/webp", pendingLogoBlob.size, "STORE_LOGO");
       await uploadBlobToR2(signedUpload, pendingLogoBlob);
 
       if (!signedUpload.publicUrl) {
@@ -1307,7 +1307,7 @@ export function OwnerPaymentSettingsClient({ initialSettings }: { initialSetting
       setSubmitState({ status: "saving", message: "กำลังอัปโหลด Static QR..." });
 
       const croppedBlob = await createCroppedBlob(qrCropDraft, qrCropZoom, qrCropOffset.x, qrCropOffset.y);
-      const signedUpload = await requestSignedUpload(`payment-qr-${Date.now()}.webp`, "image/webp", croppedBlob.size);
+      const signedUpload = await requestSignedUpload(`payment-qr-${Date.now()}.webp`, "image/webp", croppedBlob.size, "PAYMENT_QR");
       await uploadBlobToR2(signedUpload, croppedBlob);
 
       const publicUrl = signedUpload.publicUrl;

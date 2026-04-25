@@ -7,6 +7,7 @@ const { saleCheckoutLimiter } = require("../middleware/rate-limiters");
 const { AppError } = require("../utils/app-error");
 const { writeAuditLog } = require("../utils/audit");
 const { env } = require("../config/env");
+const { safeTextSchema } = require("../utils/xss");
 
 const router = express.Router();
 
@@ -25,7 +26,7 @@ const createSaleSchema = z
     paymentMethod: z.enum(paymentMethods).default("CASH"),
     discount: z.number().int().min(0).max(1_000_000).default(0),
     tax: z.number().int().min(0).max(1_000_000).default(0),
-    note: z.string().trim().max(300).optional().nullable(),
+    note: safeTextSchema("note", 300).optional().nullable(),
   })
   .strict();
 

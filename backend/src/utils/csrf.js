@@ -10,8 +10,29 @@ function csrfCookieOptions() {
   };
 }
 
+function signCsrfSecret(secret) {
+  return crypto.createHmac("sha256", env.SESSION_HASH_SECRET).update(secret).digest("hex");
+}
+
 function issueCsrfToken() {
-  return crypto.randomBytes(24).toString("hex");
+  const secret = crypto.randomBytes(24).toString("hex");
+  return `${secret}.${signCsrfSecret(secret)}`;
+}
+
+function isValidCsrfToken(token) {
+  if (typeof token !== "string") {
+    return false;
+  }
+
+  const [secret, signature, extra] = token.split(".");
+  if (!/^[0-9a-f]{48}$/i.test(secret) || !/^[0-9a-f]{64}$/i.test(signature) || extra) {
+    return false;
+  }
+
+  const expected = signCsrfSecret(secret);
+  const expectedBuffer = Buffer.from(expected, "hex");
+  const actualBuffer = Buffer.from(signature, "hex");
+  return expectedBuffer.length === actualBuffer.length && crypto.timingSafeEqual(expectedBuffer, actualBuffer);
 }
 
 function setCsrfCookie(res, token) {
@@ -31,6 +52,7 @@ function readCsrfFromRequest(req) {
 
 module.exports = {
   issueCsrfToken,
+  isValidCsrfToken,
   setCsrfCookie,
   clearCsrfCookie,
   readCsrfFromRequest,

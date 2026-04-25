@@ -164,7 +164,7 @@ export async function createCroppedBlob(draft: CropDraft, zoom: number, offsetX:
   return blob;
 }
 
-export async function requestSignedUpload(fileName: string, contentType: string, contentLength: number) {
+export async function requestSignedUpload(fileName: string, contentType: string, contentLength: number, purpose: "STORE_LOGO" | "PAYMENT_QR" | "PRODUCT_IMAGE") {
   const csrfToken = (await ensureCsrfToken()) || readCookie(csrfCookieName);
   if (!csrfToken) {
     throw new Error("ไม่สามารถเริ่มต้น CSRF token ได้");
@@ -177,7 +177,7 @@ export async function requestSignedUpload(fileName: string, contentType: string,
       "content-type": "application/json",
       "x-csrf-token": csrfToken,
     },
-    body: JSON.stringify({ fileName, contentType, contentLength }),
+    body: JSON.stringify({ fileName, contentType, contentLength, purpose }),
   });
 
   if (!response.ok) {
@@ -192,11 +192,24 @@ export async function uploadBlobToR2(payload: SignedUploadPayload, blob: Blob) {
   let response: Response;
 
   try {
-    response = await fetch(payload.upload.url, {
-      method: payload.upload.method,
-      headers: payload.upload.headers,
-      body: blob,
-    });
+    if (payload.upload.method === "POST") {
+      const formData = new FormData();
+      for (const [key, value] of Object.entries(payload.upload.fields || {})) {
+        formData.append(key, value);
+      }
+      formData.append("file", blob);
+
+      response = await fetch(payload.upload.url, {
+        method: "POST",
+        body: formData,
+      });
+    } else {
+      response = await fetch(payload.upload.url, {
+        method: payload.upload.method,
+        headers: payload.upload.headers,
+        body: blob,
+      });
+    }
   } catch (error) {
     if (error instanceof TypeError) {
       throw new Error("อัปโหลดไปที่ R2 ไม่ได้เพราะ CORS ของ bucket ยังไม่อนุญาต localhost:3000");

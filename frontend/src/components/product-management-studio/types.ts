@@ -43,9 +43,10 @@ export type SignedUploadPayload = {
   maxUploadBytes: number;
   publicUrl: string | null;
   upload: {
-    method: "PUT";
+    method: "PUT" | "POST";
     url: string;
-    headers: Record<string, string>;
+    headers?: Record<string, string>;
+    fields?: Record<string, string>;
   };
 };
 

@@ -240,7 +240,8 @@ export function ProductManagementStudio() {
         const signedUpload = await requestSignedUpload(
           `${selectedProduct.code.toLowerCase()}-${Date.now()}.webp`,
           "image/webp",
-          pendingUploadBlob.size
+          pendingUploadBlob.size,
+          "PRODUCT_IMAGE"
         );
         await uploadBlobToR2(signedUpload, pendingUploadBlob);
         finalUploadedKey = signedUpload.objectKey;

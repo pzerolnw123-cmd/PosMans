@@ -25,7 +25,7 @@ const productCreateSchema = z.object({
   lowStockThreshold: z.number().int().min(0).max(1_000_000).default(0),
   imageUrl: safeUrlSchema("imageUrl").optional().nullable(),
   uploadedKey: z.string().max(255).optional().nullable(),
-});
+}).strict();
 
 const productUpdateSchema = z.object({
   name: safeTextSchema("name", 120).optional(),
@@ -37,7 +37,7 @@ const productUpdateSchema = z.object({
   lowStockThreshold: z.number().int().min(0).max(1_000_000).optional(),
   imageUrl: safeUrlSchema("imageUrl").optional().nullable(),
   uploadedKey: z.string().max(255).optional().nullable(),
-});
+}).strict();
 
 const productListQuerySchema = z.object({
   category: z.enum(["ทั้งหมด", ...productCategories]).optional().default("ทั้งหมด"),
