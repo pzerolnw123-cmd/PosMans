@@ -55,6 +55,17 @@ const successAlertClass =
   "border-[rgba(92,230,196,0.22)] bg-[linear-gradient(180deg,rgba(14,45,44,0.86),rgba(10,25,30,0.96))]";
 const successAlertEyebrowClass = "text-[rgba(169,245,226,0.72)]";
 const successAlertMessageClass = "text-[#b7f8e5]";
+const sidebarShellClass =
+  "h-fit overflow-hidden rounded-none border border-[var(--border)] bg-[var(--surface)] p-3 shadow-[var(--shadow-card)] backdrop-blur-[14px] max-[1180px]:p-2.5 max-[640px]:p-2";
+const sidebarHeaderClass = "border-b border-b-[var(--border)] px-[10px] pb-[18px] pt-[14px]";
+const sidebarEyebrowClass = eyebrowClass;
+const sidebarBrandNameClass =
+  "bg-[linear-gradient(135deg,var(--foreground-inverse)_0%,color-mix(in_srgb,var(--brand)_16%,white)_30%,color-mix(in_srgb,var(--brand)_48%,white)_58%,var(--brand-strong)_100%)] bg-clip-text font-black tracking-normal text-transparent";
+const sidebarSubtitleClass = "m-0 text-[0.99rem] leading-[1.7] text-[var(--foreground-soft)]";
+const sidebarActiveLinkClass =
+  "inline-flex min-h-[48px] items-center gap-3 rounded-xl border border-[var(--accent-border)] bg-[linear-gradient(135deg,var(--brand)_0%,var(--brand-strong)_100%)] px-[18px] py-3 font-semibold text-[var(--button-text)] shadow-[var(--brand-shadow)_0_8px_18px] max-[640px]:min-h-[44px] max-[640px]:px-[14px] max-[640px]:py-2.5";
+const sidebarInactiveLinkClass =
+  "inline-flex min-h-[48px] items-center gap-3 rounded-xl px-[18px] py-3 font-semibold text-[var(--foreground)] transition duration-150 hover:translate-x-[2px] hover:bg-[var(--brand-soft)] max-[640px]:min-h-[44px] max-[640px]:px-[14px] max-[640px]:py-2.5";
 
 function ProfileSummaryCard({
   profileName,
@@ -151,11 +162,11 @@ export function BackofficeShell({
         className={`relative mx-auto grid h-full min-h-0 w-full max-w-[1600px] translate-x-[-149px] grid-cols-[304px_minmax(0,1fr)] items-start gap-[18px] max-[1380px]:translate-x-0 max-[1180px]:gap-4 max-[1180px]:grid-cols-1 ${className}`.trim()}
       >
         <div className="grid gap-[14px] max-[1180px]:gap-4">
-          <aside className="h-fit overflow-hidden rounded-none border border-[var(--border)] bg-[var(--surface)] p-3 shadow-[var(--shadow-card)] backdrop-blur-[14px] max-[1180px]:p-2.5 max-[640px]:p-2">
-            <div className="border-b border-b-[var(--border)] px-[10px] pb-[18px] pt-[14px]">
-              <p className={eyebrowClass}>{eyebrow}</p>
-              <h1 className={`my-[10px] text-[clamp(2rem,2.4vw,2.6rem)] leading-[1.02] ${storeBrandNameClass}`}>{brandName}</h1>
-              <p className="m-0 text-[0.99rem] leading-[1.7] text-[var(--foreground-soft)]">{brandSubtitle}</p>
+          <aside className={sidebarShellClass}>
+            <div className={sidebarHeaderClass}>
+              <p className={sidebarEyebrowClass}>{eyebrow}</p>
+              <h1 className={`my-[10px] text-[clamp(2rem,2.4vw,2.6rem)] leading-[1.02] ${sidebarBrandNameClass}`}>{brandName}</h1>
+              <p className={sidebarSubtitleClass}>{brandSubtitle}</p>
             </div>
 
             <nav className="grid gap-[8px] px-[2px] py-3 max-[1180px]:grid-cols-2 max-[700px]:grid-cols-1 max-[640px]:gap-[6px]" aria-label="Primary navigation">
@@ -163,15 +174,13 @@ export function BackofficeShell({
                 <Link
                   key={item.label}
                   href={item.href}
-                  className={
-                    item.active
-                      ? "inline-flex min-h-[48px] items-center gap-3 rounded-xl border border-[var(--accent-border)] bg-[linear-gradient(135deg,var(--brand)_0%,var(--brand-strong)_100%)] px-[18px] py-3 font-semibold text-[var(--button-text)] shadow-[var(--brand-shadow)_0_8px_18px] max-[640px]:min-h-[44px] max-[640px]:px-[14px] max-[640px]:py-2.5"
-                      : "inline-flex min-h-[48px] items-center gap-3 rounded-xl px-[18px] py-3 font-semibold text-[var(--foreground)] transition duration-150 hover:translate-x-[2px] hover:bg-[var(--brand-soft)] max-[640px]:min-h-[44px] max-[640px]:px-[14px] max-[640px]:py-2.5"
-                  }
+                  className={item.active ? sidebarActiveLinkClass : sidebarInactiveLinkClass}
                   aria-current={item.active ? "page" : undefined}
                 >
-                  {item.icon ? <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center opacity-90">{item.icon}</span> : null}
-                  <span className="leading-none">{item.label}</span>
+                  {item.icon ? (
+                    <span className={`inline-flex h-5 w-5 shrink-0 items-center justify-center ${item.active ? "text-white opacity-100" : "opacity-90"}`}>{item.icon}</span>
+                  ) : null}
+                  <span className={`leading-none ${item.active ? "text-white" : ""}`}>{item.label}</span>
                 </Link>
               ))}
             </nav>

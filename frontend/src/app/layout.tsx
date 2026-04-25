@@ -1,15 +1,20 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { getCurrentSession } from "@/lib/session";
 
 const themeInitScript = `(() => {
   try {
-    const savedTheme = window.localStorage.getItem("pos-mans-owner-theme");
-    if (
-      savedTheme === "violet" ||
-      savedTheme === "light" ||
-      savedTheme === "dark"
-    ) {
-      document.documentElement.dataset.storeTheme = savedTheme;
+    const hasServerTheme = document.documentElement.dataset.userThemeSource === "server";
+    if (hasServerTheme) {
+      const serverTheme = document.documentElement.dataset.storeTheme;
+      if (serverTheme === "violet" || serverTheme === "light" || serverTheme === "dark") {
+        window.localStorage.setItem("pos-mans-owner-theme", serverTheme);
+      }
+    } else {
+      const savedTheme = window.localStorage.getItem("pos-mans-owner-theme");
+      if (savedTheme === "violet" || savedTheme === "light" || savedTheme === "dark") {
+        document.documentElement.dataset.storeTheme = savedTheme;
+      }
     }
   } catch {}
 })();`;
@@ -19,13 +24,23 @@ export const metadata: Metadata = {
   description: "Owner and superadmin workspaces for POS MANS",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const session = await getCurrentSession();
+  const ownerTheme = session?.user.storeRole === "OWNER" && session.user.ownerTheme ? session.user.ownerTheme : "violet";
+  const userThemeSource = session?.user.storeRole === "OWNER" && session.user.ownerTheme ? "server" : "local";
+
   return (
-    <html lang="th" suppressHydrationWarning data-scroll-behavior="smooth" data-store-theme="violet">
+    <html
+      lang="th"
+      suppressHydrationWarning
+      data-scroll-behavior="smooth"
+      data-store-theme={ownerTheme}
+      data-user-theme-source={userThemeSource}
+    >
       <body suppressHydrationWarning>
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
         {children}

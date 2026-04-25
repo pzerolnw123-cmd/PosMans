@@ -16,6 +16,7 @@ const sessionUserSelect = {
   id: true,
   username: true,
   displayName: true,
+  ownerTheme: true,
   platformRole: true,
   storeRole: true,
   storeId: true,

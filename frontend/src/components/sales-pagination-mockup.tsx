@@ -402,7 +402,7 @@ export function SalesPaginationMockup() {
   return (
     <div className="grid h-full min-h-0 grid-cols-[minmax(0,1fr)_320px] gap-[18px] max-[1366px]:grid-cols-1 max-[820px]:gap-4">
       <section className="grid min-h-0 grid-rows-[auto_minmax(0,1fr)_auto] gap-[18px]" aria-label="sales main area">
-        <div className="rounded-none border border-[rgba(100,120,160,0.18)] bg-[linear-gradient(180deg,rgba(22,27,38,0.94),rgba(18,22,34,0.9))] px-[22px] py-5">
+        <div className="rounded-none border border-[var(--border)] bg-[var(--surface)] px-[22px] py-5 shadow-[var(--shadow-soft)]">
           <div className="flex flex-wrap gap-[10px]">
             {categoryOptions.map((category) => {
               const active = activeCategory === category;
@@ -413,8 +413,8 @@ export function SalesPaginationMockup() {
                   type="button"
                   className={
                     active
-                      ? "inline-flex min-h-10 items-center gap-[10px] rounded-[10px] border border-[rgba(108,92,231,0.5)] bg-[rgba(108,92,231,0.14)] px-[18px] font-bold text-[var(--brand-strong)] shadow-[rgba(108,92,231,0.1)_0_6px_12px] transition hover:-translate-y-px"
-                      : "inline-flex min-h-10 items-center gap-[10px] rounded-[10px] border border-[var(--border)] bg-[rgba(22,27,38,0.8)] px-[18px] font-bold text-[var(--foreground)] transition hover:-translate-y-px hover:shadow-[var(--shadow-soft)]"
+                      ? "inline-flex min-h-10 items-center gap-[10px] rounded-[10px] border border-[var(--accent-border)] bg-[var(--accent-surface)] px-[18px] font-bold text-[var(--brand-strong)] shadow-[var(--brand-shadow)_0_6px_12px] transition hover:-translate-y-px"
+                      : "inline-flex min-h-10 items-center gap-[10px] rounded-[10px] border border-[var(--border)] bg-[var(--surface-muted)] px-[18px] font-bold text-[var(--foreground)] transition hover:-translate-y-px hover:shadow-[var(--shadow-soft)]"
                   }
                   onClick={() => handleCategoryChange(category)}
                 >
@@ -431,11 +431,11 @@ export function SalesPaginationMockup() {
             Array.from({ length: 6 }).map((_, index) => (
               <article
                 key={`loading-${index}`}
-                className="grid h-[226px] animate-pulse content-start gap-3 rounded-none border border-[rgba(100,120,160,0.18)] bg-[linear-gradient(180deg,rgba(26,32,48,0.72),rgba(22,27,38,0.72))] p-[14px]"
+                className="grid h-[226px] animate-pulse content-start gap-3 rounded-none border border-[var(--border)] bg-[var(--panel-elevated)] p-[14px]"
               >
-                <div className="h-[96px] w-[118px] rounded-xl border border-[rgba(100,120,160,0.14)] bg-[rgba(255,255,255,0.04)]" />
-                <div className="h-4 w-3/4 rounded bg-[rgba(255,255,255,0.08)]" />
-                <div className="h-3 w-1/2 rounded bg-[rgba(255,255,255,0.06)]" />
+                <div className="h-[96px] w-[118px] rounded-xl border border-[rgba(100,120,160,0.14)] bg-[var(--panel-subtle)]" />
+                <div className="h-4 w-3/4 rounded bg-[var(--panel-subtle)]" />
+                <div className="h-3 w-1/2 rounded bg-[var(--surface-muted)]" />
               </article>
             ))
           ) : products.length > 0 ? (
@@ -452,8 +452,8 @@ export function SalesPaginationMockup() {
                   key={product.id}
                   className={
                     activePulse
-                      ? "relative grid h-[226px] animate-[cart-card-pop_520ms_cubic-bezier(.2,.8,.2,1)] content-start gap-3 overflow-hidden rounded-none border border-[rgba(240,106,223,0.46)] bg-[linear-gradient(180deg,rgba(38,30,58,0.95),rgba(22,27,38,0.92))] p-[14px] pb-[68px] shadow-[rgba(240,106,223,0.16)_0_14px_32px] max-[640px]:h-auto max-[640px]:min-h-[226px]"
-                      : "relative grid h-[226px] content-start gap-3 overflow-hidden rounded-none border border-[rgba(100,120,160,0.18)] bg-[linear-gradient(180deg,rgba(26,32,48,0.92),rgba(22,27,38,0.92))] p-[14px] pb-[68px] transition duration-200 hover:-translate-y-0.5 hover:border-[rgba(240,106,223,0.26)] max-[640px]:h-auto max-[640px]:min-h-[226px]"
+                      ? "relative grid h-[226px] animate-[cart-card-pop_520ms_cubic-bezier(.2,.8,.2,1)] content-start gap-3 overflow-hidden rounded-none border border-[rgba(240,106,223,0.46)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--accent-surface)_70%,white),var(--surface)_78%)] p-[14px] pb-[68px] shadow-[rgba(240,106,223,0.16)_0_14px_32px] max-[640px]:h-auto max-[640px]:min-h-[226px]"
+                      : "relative grid h-[226px] content-start gap-3 overflow-hidden rounded-none border border-[var(--border)] bg-[var(--panel-elevated)] p-[14px] pb-[68px] transition duration-200 hover:-translate-y-0.5 hover:border-[rgba(240,106,223,0.26)] max-[640px]:h-auto max-[640px]:min-h-[226px]"
                   }
                 >
                   {added ? (
@@ -473,10 +473,10 @@ export function SalesPaginationMockup() {
                         aria-label={product.name}
                       />
                     ) : (
-                      <div className="h-[96px] w-[118px] rounded-xl border border-[rgba(100,120,160,0.14)] bg-[rgba(255,255,255,0.04)]" />
+                      <div className="h-[96px] w-[118px] rounded-xl border border-[rgba(100,120,160,0.14)] bg-[var(--panel-subtle)]" />
                     )}
                     <div className="grid justify-items-end gap-1 text-right">
-                      <b className="text-base leading-[1.2] text-white">{formatBaht(product.price)}</b>
+                      <b className="text-base leading-[1.2] text-[var(--foreground)]">{formatBaht(product.price)}</b>
                       <span className={saleStatusLabel === "พร้อมขาย" ? "text-[0.78rem] font-bold text-[#75e6a1]" : "text-[0.78rem] font-bold text-[var(--foreground-soft)]"}>{saleStatusLabel}</span>
                       <span className="max-w-[86px] text-[0.62rem] leading-[1.2] text-[var(--foreground-soft)]">{product.category}</span>
                       <span className="max-w-[86px] truncate text-[0.6rem] font-bold uppercase tracking-[0.1em] text-[var(--foreground-soft)]">
@@ -490,14 +490,14 @@ export function SalesPaginationMockup() {
                     </div>
                   </div>
                   <div className="grid gap-1.5">
-                    <strong className="text-base leading-[1.2] text-white">{product.name}</strong>
+                    <strong className="text-base leading-[1.2] text-[var(--foreground)]">{product.name}</strong>
                   </div>
                   <button
                     type="button"
                     className={
                       ready
-                        ? "absolute bottom-[14px] left-[14px] inline-flex h-[42px] min-w-[126px] items-center justify-center gap-2 rounded-[10px] border border-transparent bg-[linear-gradient(135deg,#f06adf_0%,#a96cff_100%)] px-4 text-[0.92rem] font-bold text-white shadow-[rgba(240,106,223,0.22)_0_8px_18px] transition duration-200 hover:-translate-y-0.5 hover:shadow-[rgba(240,106,223,0.32)_0_12px_24px] active:scale-95"
-                        : "absolute bottom-[14px] left-[14px] inline-flex h-[42px] min-w-[126px] cursor-not-allowed items-center justify-center gap-2 rounded-[10px] border border-[var(--border)] bg-[rgba(255,255,255,0.04)] px-4 text-[0.92rem] font-bold text-[var(--foreground-soft)] opacity-60"
+                        ? "absolute bottom-[14px] left-[14px] inline-flex h-[42px] min-w-[126px] items-center justify-center gap-2 rounded-[10px] border border-transparent bg-[linear-gradient(135deg,var(--brand)_0%,var(--brand-strong)_100%)] px-4 text-[0.92rem] font-bold text-[var(--button-text)] shadow-[var(--brand-shadow)_0_8px_18px] transition duration-200 hover:-translate-y-0.5 hover:shadow-[var(--brand-shadow)_0_12px_24px] active:scale-95"
+                        : "absolute bottom-[14px] left-[14px] inline-flex h-[42px] min-w-[126px] cursor-not-allowed items-center justify-center gap-2 rounded-[10px] border border-[var(--border)] bg-[var(--surface-muted)] px-4 text-[0.92rem] font-bold text-[var(--foreground-soft)] opacity-60"
                     }
                     disabled={!ready}
                     onClick={() => handleAddToCart(product)}
@@ -509,7 +509,7 @@ export function SalesPaginationMockup() {
               );
             })
           ) : (
-            <div className="col-span-full grid min-h-[172px] place-items-center rounded-none border border-dashed border-[rgba(100,120,160,0.22)] bg-[rgba(22,27,38,0.58)] p-6 text-center text-[var(--foreground-soft)]">
+            <div className="col-span-full grid min-h-[172px] place-items-center rounded-none border border-dashed border-[rgba(100,120,160,0.22)] bg-[var(--panel-subtle)] p-6 text-center text-[var(--foreground-soft)]">
               {error || "ยังไม่มีสินค้าในร้าน"}
             </div>
           )}
@@ -518,7 +518,7 @@ export function SalesPaginationMockup() {
         <div className="flex items-center justify-between gap-4 border-t border-t-[rgba(100,120,160,0.12)] pt-3 max-[720px]:flex-col max-[720px]:items-stretch">
           <button
             type="button"
-            className="inline-flex h-[52px] w-[152px] items-center justify-center rounded-2xl border border-[var(--border)] bg-[rgba(22,27,38,0.8)] px-4 font-bold text-[var(--foreground)] transition hover:-translate-y-px hover:border-[var(--border-strong)] hover:shadow-[rgba(0,0,0,0.15)_0_5px_10px] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:shadow-none max-[720px]:w-full"
+            className="inline-flex h-[52px] w-[152px] items-center justify-center rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] px-4 font-bold text-[var(--foreground)] transition hover:-translate-y-px hover:border-[var(--border-strong)] hover:shadow-[rgba(0,0,0,0.15)_0_5px_10px] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:shadow-none max-[720px]:w-full"
             disabled={pageIndex === 0 || loading}
             onClick={() => setPageIndex((current) => Math.max(0, current - 1))}
           >
@@ -527,13 +527,13 @@ export function SalesPaginationMockup() {
 
           <div className="grid justify-items-center gap-1 text-center">
             <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[#6b7a94]">Menu Pagination</p>
-            <strong className="text-[1rem] tracking-[-0.03em] text-white">หน้ารายการ {pageIndex + 1}</strong>
+            <strong className="text-[1rem] tracking-[-0.03em] text-[var(--foreground)]">หน้ารายการ {pageIndex + 1}</strong>
             <span className="text-[0.92rem] text-[var(--foreground-soft)]">แสดง {products.length} เมนูในหน้านี้</span>
           </div>
 
           <button
             type="button"
-            className="inline-flex h-[52px] w-[152px] items-center justify-center rounded-2xl border border-transparent bg-[linear-gradient(135deg,var(--brand)_0%,#8070f0_100%)] px-4 font-bold text-white shadow-[rgba(108,92,231,0.18)_0_6px_14px] transition hover:-translate-y-px disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0 max-[720px]:w-full"
+            className="inline-flex h-[52px] w-[152px] items-center justify-center rounded-2xl border border-transparent bg-[linear-gradient(135deg,var(--brand)_0%,var(--brand-strong)_100%)] px-4 font-bold text-[var(--button-text)] shadow-[var(--brand-shadow)_0_6px_14px] transition hover:-translate-y-px disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0 max-[720px]:w-full"
             disabled={pageIndex >= totalPages - 1 || loading}
             onClick={() => setPageIndex((current) => Math.min(totalPages - 1, current + 1))}
           >
@@ -545,15 +545,15 @@ export function SalesPaginationMockup() {
       <aside
         className={
           cartPulse
-            ? "grid min-h-0 animate-[cart-panel-pulse_560ms_ease-out] grid-rows-[auto_minmax(0,1fr)_auto_auto] gap-[18px] rounded-none border border-[rgba(240,106,223,0.38)] bg-[rgba(22,27,38,0.66)] p-[18px] shadow-[rgba(240,106,223,0.12)_0_16px_36px] max-[720px]:p-4"
-            : "grid min-h-0 grid-rows-[auto_minmax(0,1fr)_auto_auto] gap-[18px] rounded-none border border-[var(--border)] bg-[rgba(22,27,38,0.58)] p-[18px] shadow-[var(--shadow-soft)] max-[720px]:p-4"
+            ? "grid min-h-0 animate-[cart-panel-pulse_560ms_ease-out] grid-rows-[auto_minmax(0,1fr)_auto_auto] gap-[18px] rounded-none border border-[rgba(240,106,223,0.38)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--accent-surface)_70%,var(--surface)),var(--panel-strong)_82%)] p-[18px] shadow-[rgba(240,106,223,0.12)_0_16px_36px] max-[720px]:p-4"
+            : "grid min-h-0 grid-rows-[auto_minmax(0,1fr)_auto_auto] gap-[18px] rounded-none border border-[var(--border)] bg-[var(--panel-strong)] p-[18px] shadow-[var(--shadow-soft)] max-[720px]:p-4"
         }
         aria-label="cart layout"
       >
         <div className="flex items-center justify-between gap-3 max-[720px]:flex-col max-[720px]:items-stretch">
           <div>
             <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[#6b7a94]">Current Bill</p>
-            <strong className="my-[10px] block text-[1.4rem] leading-none tracking-[-0.04em] text-white">{itemCount > 0 ? "ตะกร้าปัจจุบัน" : "ยังไม่มีบิล"}</strong>
+            <strong className="my-[10px] block text-[1.4rem] leading-none tracking-[-0.04em] text-[var(--foreground)]">{itemCount > 0 ? "ตะกร้าปัจจุบัน" : "ยังไม่มีบิล"}</strong>
           </div>
           <StatusPill>{itemCount} รายการ</StatusPill>
         </div>
@@ -583,7 +583,7 @@ export function SalesPaginationMockup() {
                     className={
                       highlighted
                         ? "grid animate-[cart-row-enter_340ms_cubic-bezier(.2,.8,.2,1)] grid-cols-[75px_minmax(0,1fr)] items-start gap-3 rounded-none border border-[rgba(240,106,223,0.32)] bg-[rgba(240,106,223,0.09)] p-[10px] shadow-[rgba(240,106,223,0.12)_0_8px_18px]"
-                        : "grid grid-cols-[75px_minmax(0,1fr)] items-start gap-3 rounded-none border border-[rgba(100,120,160,0.14)] bg-[rgba(255,255,255,0.03)] p-[10px]"
+                        : "grid grid-cols-[75px_minmax(0,1fr)] items-start gap-3 rounded-none border border-[rgba(100,120,160,0.14)] bg-[var(--surface)] p-[10px]"
                     }
                   >
                     {item.product.imageUrl ? (
@@ -594,19 +594,19 @@ export function SalesPaginationMockup() {
                         aria-label={item.product.name}
                       />
                     ) : (
-                      <span className="grid h-[52px] w-[52px] place-items-center rounded-[10px] border border-[rgba(100,120,160,0.14)] bg-[rgba(255,255,255,0.04)] text-[var(--foreground-soft)]">
+                      <span className="grid h-[52px] w-[52px] place-items-center rounded-[10px] border border-[rgba(100,120,160,0.14)] bg-[var(--surface-muted)] text-[var(--foreground-soft)]">
                         <BasketIcon size={18} />
                       </span>
                     )}
                     <div className="grid min-w-0 gap-2 pt-0.5">
                       <div className="grid min-w-0 gap-1">
-                        <strong className="truncate text-[0.95rem] leading-[1.25] text-white">{item.product.name}</strong>
+                        <strong className="truncate text-[0.95rem] leading-[1.25] text-[var(--foreground)]">{item.product.name}</strong>
                         <span className="text-[0.78rem] text-[var(--foreground-soft)]">
                           {formatBaht(item.product.price)} x {item.quantity}
                         </span>
                       </div>
                       <div className="flex items-center justify-between gap-2">
-                        <div className="inline-flex h-8 items-center rounded-[10px] border border-[var(--border)] bg-[rgba(10,13,20,0.42)]">
+                        <div className="inline-flex h-8 items-center rounded-[10px] border border-[var(--border)] bg-[var(--surface-muted)]">
                           <button
                             type="button"
                             className="grid h-8 w-8 place-items-center text-[1rem] font-bold text-[var(--foreground)] transition hover:bg-[rgba(255,255,255,0.06)] disabled:cursor-not-allowed disabled:text-[var(--foreground-soft)] disabled:opacity-45 disabled:hover:bg-transparent"
@@ -616,7 +616,7 @@ export function SalesPaginationMockup() {
                           >
                             -
                           </button>
-                          <span className="grid h-8 min-w-8 place-items-center text-[0.85rem] font-bold text-white">{item.quantity}</span>
+                          <span className="grid h-8 min-w-8 place-items-center text-[0.85rem] font-bold text-[var(--foreground)]">{item.quantity}</span>
                           <button
                             type="button"
                             className="grid h-8 w-8 place-items-center text-[1rem] font-bold text-[var(--foreground)] transition hover:bg-[rgba(255,255,255,0.06)] disabled:cursor-not-allowed disabled:text-[var(--foreground-soft)] disabled:opacity-45 disabled:hover:bg-transparent"
@@ -641,18 +641,18 @@ export function SalesPaginationMockup() {
               })}
             </div>
             {cartScrollMetric.visible ? (
-              <span className="pointer-events-none absolute bottom-0 right-0 top-0 w-[7px] bg-[rgba(15,19,29,0.78)]">
+              <span className="pointer-events-none absolute bottom-0 right-0 top-0 w-[7px] bg-[var(--scroll-track)]">
                 <span
-                  className="absolute left-0 w-full rounded-full bg-[linear-gradient(180deg,rgba(240,106,223,0.98),rgba(169,108,255,0.94))] shadow-[rgba(240,106,223,0.24)_0_0_14px]"
+                  className="absolute left-0 w-full rounded-full bg-[var(--scroll-thumb)] shadow-[rgba(240,106,223,0.24)_0_0_14px]"
                   style={{ top: `${cartScrollMetric.top}%`, height: `${cartScrollMetric.height}%` }}
                 />
               </span>
             ) : null}
           </div>
         ) : (
-          <div className="grid min-h-0 place-items-center rounded-none border border-dashed border-[rgba(100,120,160,0.2)] bg-[rgba(255,255,255,0.02)] p-5 text-center">
+          <div className="grid min-h-0 place-items-center rounded-none border border-dashed border-[rgba(100,120,160,0.2)] bg-[var(--panel-subtle)] p-5 text-center">
             <div className="grid max-w-[220px] gap-2">
-              <strong className="text-base leading-[1.35] text-white">เริ่มเพิ่มสินค้าเข้าตะกร้า</strong>
+              <strong className="text-base leading-[1.35] text-[var(--foreground)]">เริ่มเพิ่มสินค้าเข้าตะกร้า</strong>
               <span className="text-[0.92rem] leading-[1.55] text-[var(--foreground-soft)]">กดปุ่มเพิ่มตะกร้าบนสินค้า รายการจะเด้งเข้ามาตรงนี้ทันที</span>
             </div>
           </div>
@@ -665,7 +665,7 @@ export function SalesPaginationMockup() {
           ].map(([label, value]) => (
             <div key={label} className="flex items-center justify-between gap-3 max-[720px]:flex-col max-[720px]:items-stretch">
               <span className="m-0 text-[0.95rem] text-[var(--foreground-soft)]">{label}</span>
-              <strong className="text-base leading-[1.2] text-white">{value}</strong>
+              <strong className="text-base leading-[1.2] text-[var(--foreground)]">{value}</strong>
             </div>
           ))}
         </div>
@@ -673,7 +673,7 @@ export function SalesPaginationMockup() {
         <div className="grid grid-cols-2 gap-3 max-[720px]:grid-cols-1">
           <button
             type="button"
-            className="inline-flex h-[52px] items-center justify-center rounded-2xl border border-[var(--border)] bg-[rgba(22,27,38,0.8)] px-[18px] font-bold text-[var(--foreground)] transition hover:-translate-y-px hover:border-[var(--border-strong)] hover:shadow-[rgba(0,0,0,0.15)_0_5px_10px] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:shadow-none"
+            className="inline-flex h-[52px] items-center justify-center rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] px-[18px] font-bold text-[var(--foreground)] transition hover:-translate-y-px hover:border-[var(--border-strong)] hover:shadow-[rgba(0,0,0,0.15)_0_5px_10px] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:shadow-none"
             disabled={cartItems.length === 0}
             onClick={() => setCartItems([])}
           >
@@ -681,7 +681,7 @@ export function SalesPaginationMockup() {
           </button>
           <button
             type="button"
-            className="inline-flex h-[52px] items-center justify-center rounded-2xl border border-transparent bg-[linear-gradient(135deg,var(--brand)_0%,#8070f0_100%)] px-[18px] font-bold text-white shadow-[rgba(108,92,231,0.18)_0_6px_14px] transition hover:-translate-y-px disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
+            className="inline-flex h-[52px] items-center justify-center rounded-2xl border border-transparent bg-[linear-gradient(135deg,var(--brand)_0%,var(--brand-strong)_100%)] px-[18px] font-bold text-[var(--button-text)] shadow-[var(--brand-shadow)_0_6px_14px] transition hover:-translate-y-px disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
             disabled={cartItems.length === 0}
             onClick={handleGoToPayment}
           >

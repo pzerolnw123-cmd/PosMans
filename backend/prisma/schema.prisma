@@ -16,6 +16,12 @@ enum StoreRole {
   OWNER
 }
 
+enum OwnerTheme {
+  violet
+  light
+  dark
+}
+
 enum AuditAction {
   CSRF_ISSUED
   LOGIN_SUCCEEDED
@@ -123,6 +129,7 @@ model User {
   pinHash         String?
   platformRole    PlatformRole     @default(NONE)
   storeRole       StoreRole?
+  ownerTheme      OwnerTheme       @default(violet)
   storeId         String?
   isActive        Boolean          @default(true)
   lastLoginAt     DateTime?

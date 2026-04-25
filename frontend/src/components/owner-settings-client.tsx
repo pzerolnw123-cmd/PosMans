@@ -163,6 +163,25 @@ function applyOwnerTheme(theme: OwnerThemeId) {
   }
 }
 
+async function persistOwnerTheme(theme: OwnerThemeId) {
+  const csrfToken = await ensureCsrfToken();
+  const response = await fetch("/api/auth/owner-theme", {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      "X-CSRF-Token": csrfToken || "",
+    },
+    body: JSON.stringify({ theme }),
+  });
+
+  if (!response.ok) {
+    const payload = await response.json().catch(() => null);
+    throw new Error(payload?.error || "ไม่สามารถบันทึกธีมของผู้ใช้ได้");
+  }
+
+  return response.json().catch(() => null);
+}
+
 const promptPayRecipientOptions: Array<{ value: PromptPayRecipientType; label: string; helper: string }> = [
   { value: "MOBILE", label: "เบอร์พร้อมเพย์", helper: "เบอร์มือถือ 10 หลัก" },
   { value: "NATIONAL_ID", label: "เลขบัตรประชาชน", helper: "เลข 13 หลัก" },
@@ -497,14 +516,20 @@ export function OwnerThemeStatusPill() {
 }
 
 export function OwnerThemeClient() {
+  const { setShellAlert } = useBackofficeShellAlert();
   const [themePickerOpen, setThemePickerOpen] = useState(false);
-  const [activeTheme, setActiveTheme] = useState<OwnerThemeId>("violet");
+  const [activeTheme, setActiveTheme] = useState<OwnerThemeId | null>(null);
+  const [savingTheme, setSavingTheme] = useState(false);
 
   useEffect(() => {
     setActiveTheme(readOwnerTheme());
   }, []);
 
   useEffect(() => {
+    if (!activeTheme) {
+      return;
+    }
+
     applyOwnerTheme(activeTheme);
   }, [activeTheme]);
 
@@ -545,13 +570,32 @@ export function OwnerThemeClient() {
 
       <ThemePickerModal
         open={themePickerOpen}
-        activeTheme={activeTheme}
+        activeTheme={activeThemeOption.id}
         onSelect={(theme) => {
+          const previousTheme = activeTheme || "violet";
           setActiveTheme(theme);
           setThemePickerOpen(false);
+          setSavingTheme(true);
+
+          void persistOwnerTheme(theme)
+            .then(() => {
+              setShellAlert({ message: "บันทึกธีมของผู้ใช้เรียบร้อยแล้ว", tone: "success" });
+            })
+            .catch((error) => {
+              setActiveTheme(previousTheme);
+              applyOwnerTheme(previousTheme);
+              setShellAlert({
+                message: error instanceof Error ? error.message : "ไม่สามารถบันทึกธีมของผู้ใช้ได้",
+                tone: "danger",
+              });
+            })
+            .finally(() => {
+              setSavingTheme(false);
+            });
         }}
         onClose={() => setThemePickerOpen(false)}
       />
+      {savingTheme ? <p className="m-0 text-[0.76rem] leading-[1.45] text-[var(--foreground-soft)]">กำลังบันทึกธีมของผู้ใช้...</p> : null}
       {false ? (
         <div className="grid gap-2.5 overflow-hidden rounded-none border border-[rgba(100,120,160,0.16)] bg-[rgba(255,255,255,0.03)] p-3 max-[520px]:p-2.5">
           <div className="grid gap-2 sm:grid-cols-3">

@@ -2,15 +2,11 @@ import { backendResponse, buildBackendHeaders, proxyToBackend } from "@/lib/prox
 
 export async function PATCH(request: Request) {
   const body = await request.text();
-  const response = await proxyToBackend("/api/auth/owner-profile", {
+  const response = await proxyToBackend("/api/auth/owner-theme", {
     method: "PATCH",
     headers: buildBackendHeaders(request, { csrf: true, contentType: true, refererPath: "/owner/settings" }),
     body,
   });
 
   return backendResponse(response);
-}
-
-export async function GET() {
-  return new Response("Method Not Allowed", { status: 405 });
 }

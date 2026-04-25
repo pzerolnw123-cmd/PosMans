@@ -64,6 +64,12 @@ const ownerProfileSchema = z
   })
   .strict();
 
+const ownerThemeSchema = z
+  .object({
+    theme: z.enum(["violet", "light", "dark"]),
+  })
+  .strict();
+
 const promptPayRecipientTypes = ["MOBILE", "NATIONAL_ID", "TAX_ID", "STATIC_QR", "BANK_ACCOUNT"];
 const nullablePlainText = (fieldName, max = 120) =>
   z
@@ -747,7 +753,7 @@ router.patch("/owner-profile", requireTrustedOrigin, requireCsrf, requireStoreRo
       prisma.user.update({
         where: { id: req.session.user.id },
         data: { displayName: parsed.ownerName },
-        select: { id: true, displayName: true },
+        select: { id: true, displayName: true, ownerTheme: true },
       }),
     ]);
 
@@ -768,9 +774,38 @@ router.patch("/owner-profile", requireTrustedOrigin, requireCsrf, requireStoreRo
       user: {
         id: user.id,
         displayName: user.displayName,
+        ownerTheme: user.ownerTheme,
         store,
       },
     });
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.patch("/owner-theme", requireTrustedOrigin, requireCsrf, requireStoreRole(["OWNER"]), async (req, res, next) => {
+  try {
+    const parsed = ownerThemeSchema.parse(req.body);
+
+    const user = await prisma.user.update({
+      where: { id: req.session.user.id },
+      data: { ownerTheme: parsed.theme },
+      select: { id: true, ownerTheme: true, storeId: true },
+    });
+
+    await writeAuditLog({
+      action: "STORE_PROFILE_UPDATED",
+      actorUserId: req.session.user.id,
+      status: "success",
+      ipAddress: req.ip,
+      userAgent: req.get("user-agent") || null,
+      targetType: "user",
+      targetId: user.id,
+      metadata: { ownerTheme: user.ownerTheme, storeId: user.storeId },
+    });
+
+    res.set("Cache-Control", "no-store");
+    res.json({ success: true, user });
   } catch (error) {
     next(error);
   }
