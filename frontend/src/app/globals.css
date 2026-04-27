@@ -1,168 +1,25 @@
 @import "tailwindcss";
 
-:root {
-  --background: #0e1117;
-  --foreground: #e4e8f0;
-  --foreground-soft: #8b97ad;
-  --foreground-inverse: #ffffff;
-  --surface: rgba(22, 27, 38, 0.92);
-  --surface-strong: #1a2030;
-  --surface-muted: rgba(26, 32, 48, 0.72);
-  --panel-elevated: linear-gradient(180deg, rgba(22, 27, 38, 0.94), rgba(18, 22, 34, 0.92));
-  --panel-subtle: rgba(255, 255, 255, 0.03);
-  --panel-strong: rgba(22, 27, 38, 0.76);
-  --field-bg: rgba(14, 18, 28, 0.7);
-  --field-placeholder: #556070;
-  --border: rgba(100, 120, 160, 0.18);
-  --border-strong: rgba(120, 140, 180, 0.28);
-  --brand: #6c5ce7;
-  --brand-strong: #7c6ef0;
-  --brand-soft: rgba(108, 92, 231, 0.16);
-  --brand-shadow: rgba(108, 92, 231, 0.18);
-  --accent-border: rgba(108, 92, 231, 0.44);
-  --accent-surface: rgba(108, 92, 231, 0.12);
-  --accent-text: #b9aeff;
-  --button-text: #ffffff;
-  --success: #2ed47a;
-  --success-soft: rgba(46, 212, 122, 0.14);
-  --danger: #e85d75;
-  --danger-soft: rgba(232, 93, 117, 0.14);
-  --shadow-card:
-    rgba(0, 0, 0, 0.25) 0 0 0 1px,
-    rgba(0, 0, 0, 0.2) 0 8px 18px,
-    rgba(0, 0, 0, 0.25) 0 16px 34px;
-  --shadow-soft:
-    rgba(0, 0, 0, 0.18) 0 0 0 1px,
-    rgba(0, 0, 0, 0.14) 0 6px 12px;
-  --ring: rgba(108, 92, 231, 0.3);
-  --background-glow-left: rgba(108, 92, 231, 0.1);
-  --background-glow-right: rgba(56, 103, 214, 0.08);
-  --background-start: #0e1117;
-  --background-mid: #111620;
-  --background-end: #0e1117;
-  --modal-backdrop: rgba(7, 10, 16, 0.62);
-  --modal-surface: linear-gradient(180deg, rgba(22, 27, 38, 0.99), rgba(20, 24, 35, 0.98));
-  --modal-shadow: rgba(0, 0, 0, 0.6) 0 40px 100px;
-  --eyebrow: #6b7a94;
-  --scroll-track: rgba(15, 19, 29, 0.78);
-  --scroll-thumb: linear-gradient(180deg, rgba(240, 106, 223, 0.98), rgba(169, 108, 255, 0.94));
-  --scroll-thumb-hover: linear-gradient(180deg, rgba(240, 106, 223, 1), rgba(169, 108, 255, 1));
-}
+/* ═══════════════════════════════════════════════════════════════════════════
+ * Theme system
+ *
+ * Each theme lives in its own file under `src/styles/themes/`.
+ *   _base.css  — shared design tokens (default = Midnight Violet)
+ *   violet.css — intentionally empty; inherits from base
+ *   light.css  — Snow Blue overrides
+ *   dark.css   — Midnight Gold overrides
+ *
+ * To add a new theme: create a new file, define the
+ * `html[data-store-theme="<name>"]` selector, and @import it below.
+ * ═══════════════════════════════════════════════════════════════════════════ */
+@import "../styles/themes/_base.css";
+@import "../styles/themes/violet.css";
+@import "../styles/themes/light.css";
+@import "../styles/themes/dark.css";
 
-html[data-store-theme="ocean"] {
-  --brand: #0ea5e9;
-  --brand-strong: #38bdf8;
-  --brand-soft: rgba(14, 165, 233, 0.16);
-  --brand-shadow: rgba(14, 165, 233, 0.2);
-  --ring: rgba(14, 165, 233, 0.28);
-  --background-glow-left: rgba(14, 165, 233, 0.12);
-  --background-glow-right: rgba(37, 99, 235, 0.1);
-  --background-start: #07131d;
-  --background-mid: #0b1b29;
-  --background-end: #08121c;
-}
-
-html[data-store-theme="sunset"] {
-  --brand: #f97316;
-  --brand-strong: #fb7185;
-  --brand-soft: rgba(249, 115, 22, 0.18);
-  --brand-shadow: rgba(249, 115, 22, 0.18);
-  --ring: rgba(251, 113, 133, 0.3);
-  --background-glow-left: rgba(249, 115, 22, 0.11);
-  --background-glow-right: rgba(236, 72, 153, 0.1);
-  --background-start: #17100f;
-  --background-mid: #211314;
-  --background-end: #120d0f;
-}
-
-html[data-store-theme="light"] {
-  --background: #eef4fb;
-  --foreground: #142033;
-  --foreground-soft: #5f7291;
-  --foreground-inverse: #ffffff;
-  --surface: #ffffff;
-  --surface-strong: #ffffff;
-  --surface-muted: #f5f9ff;
-  --field-bg: rgba(247, 250, 255, 0.98);
-  --field-placeholder: #7f90a8;
-  --border: rgba(129, 157, 196, 0.26);
-  --border-strong: rgba(71, 118, 183, 0.34);
-  --brand: #0f5fd7;
-  --brand-strong: #2f7ff5;
-  --brand-soft: rgba(47, 127, 245, 0.12);
-  --brand-shadow: rgba(11, 61, 145, 0.18);
-  --panel-elevated: linear-gradient(180deg, #ffffff, #fbfdff);
-  --panel-subtle: #eef5ff;
-  --panel-strong: #ffffff;
-  --accent-border: rgba(96, 163, 255, 0.42);
-  --accent-surface: rgba(47, 127, 245, 0.1);
-  --accent-text: #0f5fd7;
-  --shadow-card:
-    rgba(68, 99, 142, 0.08) 0 0 0 1px,
-    rgba(54, 85, 128, 0.12) 0 10px 22px,
-    rgba(54, 85, 128, 0.08) 0 18px 40px;
-  --shadow-soft:
-    rgba(68, 99, 142, 0.08) 0 0 0 1px,
-    rgba(68, 99, 142, 0.1) 0 8px 18px;
-  --ring: rgba(96, 163, 255, 0.28);
-  --background-glow-left: rgba(47, 127, 245, 0.12);
-  --background-glow-right: rgba(94, 163, 255, 0.14);
-  --background-start: #f8fbff;
-  --background-mid: #eef5ff;
-  --background-end: #e9f1fb;
-  --modal-backdrop: rgba(229, 238, 249, 0.74);
-  --modal-surface: linear-gradient(180deg, rgba(255, 255, 255, 0.99), rgba(247, 250, 255, 0.98));
-  --modal-shadow: rgba(42, 74, 118, 0.18) 0 30px 80px;
-  --eyebrow: #5f7291;
-  --scroll-track: rgba(202, 217, 237, 0.72);
-  --scroll-thumb: linear-gradient(180deg, rgba(110, 181, 255, 0.96), rgba(47, 127, 245, 0.92));
-  --scroll-thumb-hover: linear-gradient(180deg, rgba(133, 194, 255, 1), rgba(47, 127, 245, 1));
-}
-
-html[data-store-theme="dark"] {
-  --background: #080808;
-  --foreground: #f7f2d8;
-  --foreground-soft: #bdb58d;
-  --foreground-inverse: #0e0e0e;
-  --surface: rgba(16, 16, 16, 0.94);
-  --surface-strong: #121212;
-  --surface-muted: rgba(24, 24, 24, 0.92);
-  --panel-elevated: linear-gradient(180deg, rgba(18, 18, 18, 0.96), rgba(10, 10, 10, 0.94));
-  --panel-subtle: rgba(31, 31, 31, 0.78);
-  --panel-strong: rgba(16, 16, 16, 0.92);
-  --field-bg: rgba(20, 20, 20, 0.96);
-  --field-placeholder: #8c8667;
-  --border: rgba(217, 184, 64, 0.18);
-  --border-strong: rgba(245, 211, 78, 0.34);
-  --brand: #f4c430;
-  --brand-strong: #ffd84d;
-  --brand-soft: rgba(244, 196, 48, 0.14);
-  --brand-shadow: rgba(244, 196, 48, 0.2);
-  --accent-border: rgba(244, 196, 48, 0.34);
-  --accent-surface: rgba(244, 196, 48, 0.1);
-  --accent-text: #ffd84d;
-  --button-text: #161616;
-  --shadow-card:
-    rgba(0, 0, 0, 0.42) 0 0 0 1px,
-    rgba(0, 0, 0, 0.4) 0 12px 26px,
-    rgba(0, 0, 0, 0.28) 0 20px 44px;
-  --shadow-soft:
-    rgba(0, 0, 0, 0.32) 0 0 0 1px,
-    rgba(0, 0, 0, 0.28) 0 8px 16px;
-  --ring: rgba(244, 196, 48, 0.2);
-  --background-glow-left: rgba(244, 196, 48, 0.08);
-  --background-glow-right: rgba(255, 216, 77, 0.06);
-  --background-start: #050505;
-  --background-mid: #0b0b0b;
-  --background-end: #090909;
-  --modal-backdrop: rgba(4, 4, 4, 0.72);
-  --modal-surface: linear-gradient(180deg, rgba(19, 19, 19, 0.99), rgba(12, 12, 12, 0.98));
-  --modal-shadow: rgba(0, 0, 0, 0.62) 0 40px 100px;
-  --eyebrow: #b7aa74;
-  --scroll-track: rgba(30, 30, 30, 0.78);
-  --scroll-thumb: linear-gradient(180deg, rgba(255, 216, 77, 0.96), rgba(244, 196, 48, 0.92));
-  --scroll-thumb-hover: linear-gradient(180deg, rgba(255, 216, 77, 1), rgba(244, 196, 48, 1));
-}
+/* ═══════════════════════════════════════════════════════════════════════════
+ * Global resets & element styles
+ * ═══════════════════════════════════════════════════════════════════════════ */
 
 * {
   box-sizing: border-box;
@@ -191,6 +48,10 @@ a {
   text-decoration: none;
 }
 
+button {
+  cursor: pointer;
+}
+
 button,
 input,
 select,
@@ -206,6 +67,11 @@ input::-ms-clear {
 main {
   position: relative;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * Component styles
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
 
 .sales-cart-scroll {
   scrollbar-width: none;
@@ -238,15 +104,7 @@ main {
     0 8px 22px rgba(108, 92, 231, 0.18);
 }
 
-@keyframes app-loader-rotation {
-  0% {
-    transform: rotate(0deg);
-  }
-
-  100% {
-    transform: rotate(360deg);
-  }
-}
+/* ── Toggle (stock) ── */
 
 .stock-toggle-uiverse .check {
   --size: 24px;
@@ -352,20 +210,34 @@ main {
   opacity: 0.58;
 }
 
+/* ═══════════════════════════════════════════════════════════════════════════
+ * Keyframes
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+@keyframes app-loader-rotation {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
 @keyframes cart-card-pop {
   0% {
     transform: translateY(0) scale(1);
-    box-shadow: rgba(240, 106, 223, 0) 0 0 0 0;
+    box-shadow: transparent 0 0 0 0;
   }
 
   38% {
-    transform: translateY(-5px) scale(1.018);
-    box-shadow: rgba(240, 106, 223, 0.28) 0 18px 34px;
+    transform: translateY(-4px) scale(1);
+    box-shadow: var(--cart-shadow-strong) 0 12px 24px;
   }
 
   100% {
     transform: translateY(0) scale(1);
-    box-shadow: rgba(240, 106, 223, 0.12) 0 10px 24px;
+    box-shadow: var(--cart-shadow-mid) 0 8px 20px;
   }
 }
 
@@ -388,39 +260,41 @@ main {
 
 @keyframes cart-panel-pulse {
   0% {
-    box-shadow: rgba(240, 106, 223, 0) 0 0 0 0;
+    box-shadow: transparent 0 0 0 0;
   }
 
   44% {
-    box-shadow:
-      rgba(240, 106, 223, 0.2) 0 0 0 1px,
-      rgba(240, 106, 223, 0.2) 0 18px 42px;
+    box-shadow: var(--cart-shadow-strong) 0 12px 28px;
   }
 
   100% {
-    box-shadow: var(--shadow-soft);
+    box-shadow: var(--cart-shadow-strong) 0 8px 24px;
   }
 }
 
 @keyframes cart-row-enter {
   0% {
     opacity: 0;
-    transform: translateY(8px);
-    box-shadow: rgba(240, 106, 223, 0) 0 0 0;
+    transform: translateY(6px);
+    box-shadow: transparent 0 0 0;
   }
 
   55% {
     opacity: 1;
     transform: translateY(0);
-    box-shadow: rgba(240, 106, 223, 0.16) 0 10px 22px;
+    box-shadow: var(--cart-shadow-mid) 0 6px 14px;
   }
 
   100% {
     opacity: 1;
     transform: translateY(0);
-    box-shadow: rgba(240, 106, 223, 0.1) 0 6px 16px;
+    box-shadow: var(--cart-shadow-mid) 0 4px 10px;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * Responsive overrides
+ * ═══════════════════════════════════════════════════════════════════════════ */
 
 @media (max-width: 1440px) and (max-height: 920px) {
   .workspace-screen-shell {

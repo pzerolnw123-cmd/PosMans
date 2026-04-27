@@ -25,7 +25,7 @@ export function LogoutButton() {
           router.refresh();
         });
       }}
-      className="mt-[14px] inline-flex min-h-[42px] w-full items-center justify-center gap-[10px] rounded-[10px] border border-[var(--border)] bg-[rgba(22,27,38,0.8)] px-[18px] font-bold text-[var(--foreground)] transition hover:-translate-y-px hover:border-[var(--border-strong)] hover:shadow-[rgba(0,0,0,0.15)_0_5px_10px] disabled:cursor-not-allowed disabled:opacity-[0.62] disabled:shadow-none"
+      className="mt-[14px] inline-flex min-h-[42px] w-full items-center justify-center gap-[10px] rounded-[10px] border border-[var(--border)] bg-[var(--surface-muted)] px-[18px] font-bold text-[var(--foreground)] transition hover:-translate-y-px hover:border-[var(--border-strong)] hover:shadow-[rgba(0,0,0,0.15)_0_5px_10px] disabled:cursor-not-allowed disabled:opacity-[0.62] disabled:shadow-none"
     >
       {pending ? "กำลังออกจากระบบ..." : "ออกจากระบบ"}
     </button>

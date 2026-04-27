@@ -87,10 +87,10 @@ export function ProductDetailPanel({
   const isSaveDisabled = saveBusy || deleteBusy || !isDirty || !selectedProduct?.name?.trim() || (selectedProduct?.price ?? 0) <= 0 || stockInvalid;
 
   return (
-    <section className="grid w-[calc(100%+22px)] min-h-full grid-rows-[auto_minmax(0,1fr)] overflow-hidden rounded-none border border-[var(--border)] bg-[rgba(22,27,38,0.76)] px-5 py-5 shadow-[var(--shadow-soft)] backdrop-blur-[14px] max-[1366px]:w-full max-[1180px]:px-4 max-[1180px]:py-4 max-[640px]:px-3.5 max-[640px]:py-3.5">
+    <section className="grid w-[calc(100%+22px)] min-h-full grid-rows-[auto_minmax(0,1fr)] overflow-hidden rounded-none border border-[var(--border)] bg-[var(--panel-strong)] px-5 py-5 shadow-[var(--shadow-soft)] backdrop-blur-[14px] max-[1366px]:w-full max-[1180px]:px-4 max-[1180px]:py-4 max-[640px]:px-3.5 max-[640px]:py-3.5">
       <div className="flex items-start justify-between gap-3 max-[720px]:flex-col max-[720px]:items-stretch">
         <div>
-          <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[#6b7a94]">รายละเอียดสินค้า</p>
+          <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[var(--eyebrow)]">รายละเอียดสินค้า</p>
           <h2 className="my-[8px] text-[clamp(1.45rem,2.2vw,2rem)] leading-[0.98] tracking-[-0.06em]">
             {selectedProduct && selectedProduct.code === "DRAFT-NEW" ? "เพิ่มสินค้าใหม่" : "แก้ไขสินค้า"}
           </h2>
@@ -102,7 +102,7 @@ export function ProductDetailPanel({
         <div className="min-h-0 overflow-auto pr-1">
           <div className="mt-[10px] grid grid-cols-[minmax(0,65%)_minmax(132px,1fr)] items-stretch gap-3 max-[960px]:grid-cols-1">
             <div className="grid max-w-[312px] gap-[10px] max-[720px]:max-w-none">
-              <div className="h-[186px] w-full overflow-hidden rounded-[14px] border border-[rgba(100,120,160,0.14)] bg-[rgba(255,255,255,0.04)] max-[1180px]:h-[148px] max-[720px]:h-[186px]">
+              <div className="h-[186px] w-full overflow-hidden rounded-[14px] border border-[var(--border)] bg-[var(--panel-subtle)] max-[1180px]:h-[148px] max-[720px]:h-[186px]">
                 {selectedProduct.imageUrl && canUseNextImage(selectedProduct.imageUrl) ? (
                   <Image
                     src={selectedProduct.imageUrl}
@@ -116,7 +116,7 @@ export function ProductDetailPanel({
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={selectedProduct.imageUrl} alt={selectedProduct.name} className="block h-full w-full object-cover object-center" decoding="async" />
                 ) : (
-                  <div className="h-full w-full bg-[rgba(255,255,255,0.02)]" />
+                  <div className="h-full w-full bg-[var(--panel-subtle)]" />
                 )}
               </div>
 
@@ -151,7 +151,7 @@ export function ProductDetailPanel({
                     <label htmlFor={`stock-toggle-${selectedProduct.id}`} />
                   </span>
                 </span>
-                <span className={selectedProduct.trackStock ? "inline-flex whitespace-nowrap items-center gap-2 rounded-none border border-[rgba(167,139,250,0.34)] bg-[rgba(91,70,166,0.32)] px-3 py-2 text-[#c8b8ff]" : "inline-flex whitespace-nowrap items-center gap-2 rounded-none border border-[rgba(167,139,250,0.22)] bg-[rgba(37,32,58,0.78)] px-3 py-2 text-[#a99bf2]"}>
+                <span className={selectedProduct.trackStock ? "inline-flex whitespace-nowrap items-center gap-2 rounded-none border border-[var(--accent-border)] bg-[var(--accent-surface)] px-3 py-2 text-[var(--accent-text)]" : "inline-flex whitespace-nowrap items-center gap-2 rounded-none border border-[var(--border-strong)] bg-[var(--surface-muted)] px-3 py-2 text-[var(--foreground-soft)]"}>
                   {selectedProduct.trackStock ? "ทำการเปิดสต๊อก" : "ทำการปิดสต๊อก"}
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
                     <path fill="none" stroke="currentColor" strokeLinejoin="round" d="M1.583 4.5L8 1.583L14.417 4.5m-12.834 0L8 7.417M1.583 4.5v6.417L8 14.417m0-7L14.417 4.5M8 7.417v7M14.417 4.5v6.417L8 14.417M10.5 13V9.5m2 2.5V8.5" />
@@ -205,14 +205,14 @@ export function ProductDetailPanel({
                     </span>
                   </div>
                   {isCategoryOpen && (
-                    <div className="absolute left-0 top-[calc(100%+8px)] z-50 w-full overflow-hidden rounded-[16px] border border-[var(--border)] bg-[rgba(22,27,38,0.95)] shadow-[0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-xl animate-in fade-in zoom-in-95 duration-100">
+                    <div className="absolute left-0 top-[calc(100%+8px)] z-50 w-full overflow-hidden rounded-[16px] border border-[var(--border)] bg-[var(--surface)] shadow-[0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-xl animate-in fade-in zoom-in-95 duration-100">
                       <div className="flex flex-col py-2">
                         {["อาหาร", "เครื่องดื่ม", "ของหวาน/ขนม", "รองเท้า", "อะไหล่ / อุปกรณ์เสริม"].map((cat) => (
                           <button
                             key={cat}
                             type="button"
-                            className={`flex items-center px-4 py-[10px] text-[0.95rem] transition-colors hover:bg-[rgba(255,255,255,0.06)] active:bg-[rgba(255,255,255,0.02)] ${
-                              selectedProduct.category === cat ? "text-[rgba(108,92,231,1)] font-bold bg-[rgba(108,92,231,0.08)]" : "text-[rgba(255,255,255,0.8)]"
+                            className={`flex items-center px-4 py-[10px] text-[0.95rem] transition-colors hover:bg-[var(--surface-muted)] active:bg-[var(--surface-strong)] ${
+                              selectedProduct.category === cat ? "text-[var(--brand)] font-bold bg-[var(--brand-soft)]" : "text-[var(--foreground)]"
                             }`}
                             onClick={() => {
                               onUpdateProduct({ category: cat as ProductItem["category"] });
@@ -268,7 +268,7 @@ export function ProductDetailPanel({
                     onBlur={() => {
                       setPriceDraft(null);
                     }}
-                    className="w-full rounded-xl border border-[rgba(100,120,160,0.12)] bg-[rgba(22,27,38,0.56)] px-4 py-3 text-[0.96rem] text-white outline-none transition-all focus:border-[var(--primary)] focus:bg-[rgba(22,27,38,0.8)] focus:shadow-[0_0_0_4px_rgba(108,92,231,0.1)] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    className="w-full rounded-xl border border-[var(--border)] bg-[var(--field-bg)] px-4 py-3 text-[0.96rem] text-[var(--foreground)] outline-none transition-all focus:border-[var(--brand)] focus:bg-[var(--surface-muted)] focus:shadow-[0_0_0_4px_var(--brand-soft)] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                   />
                 </Field>
 
@@ -294,8 +294,8 @@ export function ProductDetailPanel({
                 </div>
               </div>
 
-              <div className="flex h-full flex-col gap-3 rounded-[14px] border border-[var(--border)] bg-[linear-gradient(180deg,rgba(20,25,36,0.78),rgba(16,20,30,0.82))] p-3">
-                <span className="text-[0.92rem] font-semibold text-[#6b7a94]">รูปภาพสินค้า</span>
+              <div className="flex h-full flex-col gap-3 rounded-[14px] border border-[var(--border)] bg-[var(--panel-elevated)] p-3">
+                <span className="text-[0.92rem] font-semibold text-[var(--eyebrow)]">รูปภาพสินค้า</span>
                 <p className="m-0 text-[0.88rem] leading-[1.5] text-[var(--foreground-soft)]">
                   {compactMode ? "JPG, PNG, WEBP ไม่เกิน 5 MB" : "อัปโหลด JPG, PNG หรือ WEBP แล้วครอปเป็นรูปสี่เหลี่ยมจัตุรัส"}
                 </p>
@@ -398,10 +398,10 @@ export function ProductDetailPanel({
           </div>
         </div>
       ) : (
-        <div className="mt-4 grid place-items-center rounded-[16px] border border-dashed border-[var(--border)] bg-[rgba(18,22,34,0.72)] p-6 text-center">
+        <div className="mt-4 grid place-items-center rounded-[16px] border border-dashed border-[var(--border)] bg-[var(--surface-muted)] p-6 text-center">
           <div className="grid gap-3">
             {productsLoading ? <Loader className="mx-auto" label="กำลังโหลดสินค้า" /> : null}
-            <strong className="text-[1.08rem] tracking-[-0.03em] text-white">{productsLoading ? "กำลังโหลดสินค้า..." : "ยังไม่มีสินค้าในรายการ"}</strong>
+            <strong className="text-[1.08rem] tracking-[-0.03em] text-[var(--foreground)]">{productsLoading ? "กำลังโหลดสินค้า..." : "ยังไม่มีสินค้าในรายการ"}</strong>
             <p className="m-0 text-[0.92rem] leading-[1.6] text-[var(--foreground-soft)]">
               {productsLoading ? "ระบบกำลังดึงข้อมูลสินค้าจาก backend" : "เริ่มต้นด้วยการเพิ่มสินค้าใหม่ แล้วระบบจะเปิดฟอร์มแก้ไขให้อัตโนมัติ"}
             </p>

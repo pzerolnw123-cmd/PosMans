@@ -48,19 +48,21 @@ const BackofficeShellAlertContext = createContext<BackofficeShellAlertContextVal
 
 const eyebrowClass = "m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[var(--eyebrow)]";
 const storeBrandNameClass =
-  "bg-[linear-gradient(135deg,var(--foreground-inverse)_0%,color-mix(in_srgb,var(--brand)_16%,white)_30%,color-mix(in_srgb,var(--brand)_48%,white)_58%,var(--brand-strong)_100%)] bg-clip-text font-black tracking-normal text-transparent";
+  "bg-[linear-gradient(135deg,var(--brand-text-start,var(--foreground-inverse))_0%,color-mix(in_srgb,var(--brand)_16%,var(--brand-text-mix,white))_30%,color-mix(in_srgb,var(--brand)_48%,var(--brand-text-mix,white))_58%,var(--brand-strong)_100%)] bg-clip-text font-black tracking-normal text-transparent";
 const statusStoreNameClass =
-  "bg-[linear-gradient(135deg,#ffffff_0%,#e8fff4_30%,#8df0bb_66%,#34d47b_100%)] bg-clip-text font-black tracking-normal text-transparent drop-shadow-[0_8px_20px_rgba(46,212,122,0.18)]";
-const successAlertClass =
-  "border-[rgba(92,230,196,0.22)] bg-[linear-gradient(180deg,rgba(14,45,44,0.86),rgba(10,25,30,0.96))]";
-const successAlertEyebrowClass = "text-[rgba(169,245,226,0.72)]";
-const successAlertMessageClass = "text-[#b7f8e5]";
+  "bg-[linear-gradient(135deg,var(--status-text-start,#ffffff)_0%,var(--status-text-mid1,#e8fff4)_30%,var(--status-text-mid2,#8df0bb)_66%,var(--status-text-end,#34d47b)_100%)] bg-clip-text font-black tracking-normal text-transparent drop-shadow-[var(--status-text-shadow,0_8px_20px_rgba(46,212,122,0.18))]";
+const successAlertClass = "border-[var(--alert-success-border)] [background:var(--alert-success-bg)]";
+const successAlertEyebrowClass = "text-[var(--alert-success-eyebrow)]";
+const successAlertMessageClass = "text-[var(--alert-success-text)]";
+const dangerAlertClass = "border-[var(--alert-danger-border)] [background:var(--alert-danger-bg)]";
+const dangerAlertEyebrowClass = "text-[var(--alert-danger-eyebrow)]";
+const dangerAlertMessageClass = "text-[var(--alert-danger-text)]";
 const sidebarShellClass =
   "h-fit overflow-hidden rounded-none border border-[var(--border)] bg-[var(--surface)] p-3 shadow-[var(--shadow-card)] backdrop-blur-[14px] max-[1180px]:p-2.5 max-[640px]:p-2";
 const sidebarHeaderClass = "border-b border-b-[var(--border)] px-[10px] pb-[18px] pt-[14px]";
 const sidebarEyebrowClass = eyebrowClass;
 const sidebarBrandNameClass =
-  "bg-[linear-gradient(135deg,var(--foreground-inverse)_0%,color-mix(in_srgb,var(--brand)_16%,white)_30%,color-mix(in_srgb,var(--brand)_48%,white)_58%,var(--brand-strong)_100%)] bg-clip-text font-black tracking-normal text-transparent";
+  "bg-[linear-gradient(135deg,var(--brand-text-start,var(--foreground-inverse))_0%,color-mix(in_srgb,var(--brand)_16%,var(--brand-text-mix,white))_30%,color-mix(in_srgb,var(--brand)_48%,var(--brand-text-mix,white))_58%,var(--brand-strong)_100%)] bg-clip-text font-black tracking-normal text-transparent";
 const sidebarSubtitleClass = "m-0 text-[0.99rem] leading-[1.7] text-[var(--foreground-soft)]";
 const sidebarActiveLinkClass =
   "inline-flex min-h-[48px] items-center gap-3 rounded-xl border border-[var(--accent-border)] bg-[linear-gradient(135deg,var(--brand)_0%,var(--brand-strong)_100%)] px-[18px] py-3 font-semibold text-[var(--button-text)] shadow-[var(--brand-shadow)_0_8px_18px] max-[640px]:min-h-[44px] max-[640px]:px-[14px] max-[640px]:py-2.5";
@@ -188,29 +190,26 @@ export function BackofficeShell({
 
           {shellAlert ? (
             <section
-              className={`rounded-none border px-4 py-3 shadow-[rgba(0,0,0,0.16)_0_8px_18px] ${
-                shellAlert.tone === "success"
+              className={`rounded-none border px-4 py-3 shadow-[rgba(0,0,0,0.16)_0_8px_18px] ${shellAlert.tone === "success"
                   ? successAlertClass
                   : shellAlert.tone === "info"
-                  ? "border-[var(--accent-border)] bg-[linear-gradient(180deg,var(--accent-surface),rgba(255,255,255,0.02))]"
-                  : "border-[rgba(232,93,117,0.26)] bg-[linear-gradient(180deg,rgba(52,20,30,0.88),rgba(30,14,22,0.94))]"
-              }`}
+                    ? "border-[var(--accent-border)] bg-[linear-gradient(180deg,var(--accent-surface),rgba(255,255,255,0.02))]"
+                    : dangerAlertClass
+                }`}
             >
               <p
-                className={`m-0 text-[0.72rem] font-bold uppercase tracking-[0.24em] ${
-                  shellAlert.tone === "success"
+                className={`m-0 text-[0.72rem] font-bold uppercase tracking-[0.24em] ${shellAlert.tone === "success"
                     ? successAlertEyebrowClass
                     : shellAlert.tone === "info"
-                    ? "text-[var(--accent-text)]"
-                    : "text-[rgba(255,178,194,0.72)]"
-                }`}
+                      ? "text-[var(--accent-text)]"
+                      : dangerAlertEyebrowClass
+                  }`}
               >
                 {shellAlert.tone === "success" ? "Success" : shellAlert.tone === "info" ? "Information" : "System Alert"}
               </p>
               <p
-                className={`mt-2 text-[0.95rem] leading-[1.55] ${
-                  shellAlert.tone === "success" ? successAlertMessageClass : shellAlert.tone === "info" ? "text-[var(--foreground)]" : "text-[#ff9db0]"
-                }`}
+                className={`mt-2 text-[0.95rem] leading-[1.55] ${shellAlert.tone === "success" ? successAlertMessageClass : shellAlert.tone === "info" ? "text-[var(--foreground)]" : dangerAlertMessageClass
+                  }`}
               >
                 {shellAlert.message}
               </p>

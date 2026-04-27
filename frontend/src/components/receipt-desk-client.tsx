@@ -405,7 +405,7 @@ export function ReceiptDeskClient() {
                   onClick={() => setCalendarOpen((open) => !open)}
                 >
                   <span>{selectedDate ? formatDateTime(`${selectedDate}T00:00:00+07:00`).replace(" 00:00", "") : "เลือกจากปฏิทิน"}</span>
-                    <span className="absolute inset-y-0 right-4 flex items-center" aria-hidden="true">
+                  <span className="absolute inset-y-0 right-4 flex items-center" aria-hidden="true">
                     <span className="block h-2 w-2 rotate-45 border-b-2 border-r-2 border-[var(--accent-text)]" />
                   </span>
                 </button>
@@ -569,57 +569,57 @@ export function ReceiptDeskClient() {
 
         {selectedReceipt ? (
           <>
-            <div className="relative mx-auto grid max-h-[min(520px,calc(100vh-320px))] min-h-0 w-full max-w-[320px] grid-rows-[auto_minmax(0,1fr)_auto] gap-3 overflow-hidden rounded-none border border-[rgba(100,120,160,0.14)] bg-[var(--field-bg)] px-5 py-4 max-[520px]:max-w-none max-[520px]:px-4">
-                <div className="text-center">
-                  <p className="m-0 text-[0.6rem] font-bold uppercase tracking-[0.28em] text-[var(--eyebrow)]">Receipt Preview</p>
-                  <strong className="mt-3 block truncate whitespace-nowrap text-[0.85rem] leading-[1.2] text-[var(--foreground)]">{selectedReceipt.code}</strong>
-                  <p className="mt-2 text-[0.7rem] text-[var(--foreground-soft)]">{selectedReceipt.store?.name || "Menu Store"}</p>
-                  <p className="mt-1 text-[0.78rem] text-[var(--foreground-soft)]">{formatDateTime(selectedReceipt.createdAt)}</p>
-                </div>
+            <div className="relative mx-auto grid max-h-[min(520px,calc(100vh-320x))] min-h-0 w-full max-w-[320px] grid-rows-[auto_minmax(0,1fr)_auto] gap-3 overflow-hidden rounded-none border border-[rgba(100,120,160,0.14)] bg-[var(--field-bg)] px-5 py-4 max-[520px]:max-w-none max-[520px]:px-4">
+              <div className="text-center">
+                <p className="m-0 text-[0.6rem] font-bold uppercase tracking-[0.28em] text-[var(--eyebrow)]">Receipt Preview</p>
+                <strong className="mt-3 block truncate whitespace-nowrap text-[0.85rem] leading-[1.2] text-[var(--foreground)]">{selectedReceipt.code}</strong>
+                <p className="mt-2 text-[0.7rem] text-[var(--foreground-soft)]">{selectedReceipt.store?.name || "Menu Store"}</p>
+                <p className="mt-1 text-[0.78rem] text-[var(--foreground-soft)]">{formatDateTime(selectedReceipt.createdAt)}</p>
+              </div>
 
-                <div className="relative max-h-[150px] min-h-0 border-y border-y-[rgba(100,120,160,0.14)] py-3">
-                  <div
-                    ref={receiptScrollRef}
-                    className={
-                      receiptScrollMetric.visible
-                        ? "sales-cart-scroll grid h-full min-h-0 touch-none cursor-grab select-none content-start gap-2 overflow-y-auto overflow-x-hidden py-0 pl-0 pr-4 active:cursor-grabbing"
-                        : "grid h-full min-h-0 touch-none select-none content-start gap-2 overflow-hidden py-0 pl-0 pr-0"
-                    }
-                    onScroll={updateReceiptScrollbar}
-                    onPointerDown={handleReceiptPointerDown}
-                    onPointerMove={handleReceiptPointerMove}
-                    onPointerUp={stopReceiptDrag}
-                    onPointerCancel={stopReceiptDrag}
-                    onPointerLeave={stopReceiptDrag}
-                  >
-                    {selectedReceipt.items.map((item) => (
-                      <div key={item.id} className="grid grid-cols-[minmax(0,1fr)_auto] gap-3 text-[0.84rem]">
-                        <span className="truncate text-[var(--foreground-soft)]">{item.name} x {item.quantity}</span>
-                        <strong className="text-[var(--foreground)]">{formatBaht(item.lineTotal)}</strong>
-                      </div>
-                    ))}
-                  </div>
-                  {receiptScrollMetric.visible ? (
-                    <span className="pointer-events-none absolute bottom-3 right-0 top-3 w-[7px] bg-[var(--scroll-track)]">
-                      <span
-                        className="absolute left-0 w-full rounded-full bg-[var(--scroll-thumb)] shadow-[var(--brand-shadow)_0_0_14px]"
-                        style={{ top: `${receiptScrollMetric.top}%`, height: `${receiptScrollMetric.height}%` }}
-                      />
-                    </span>
-                  ) : null}
+              <div className="relative max-h-[180px] min-h-0 border-y border-y-[rgba(100,120,160,0.14)] py-3">
+                <div
+                  ref={receiptScrollRef}
+                  className={
+                    receiptScrollMetric.visible
+                      ? "sales-cart-scroll grid h-full min-h-0 touch-none cursor-grab select-none content-start gap-2 overflow-y-auto overflow-x-hidden py-0 pl-0 pr-4 active:cursor-grabbing"
+                      : "grid h-full min-h-0 touch-none select-none content-start gap-2 overflow-hidden py-0 pl-0 pr-0"
+                  }
+                  onScroll={updateReceiptScrollbar}
+                  onPointerDown={handleReceiptPointerDown}
+                  onPointerMove={handleReceiptPointerMove}
+                  onPointerUp={stopReceiptDrag}
+                  onPointerCancel={stopReceiptDrag}
+                  onPointerLeave={stopReceiptDrag}
+                >
+                  {selectedReceipt.items.map((item) => (
+                    <div key={item.id} className="grid grid-cols-[minmax(0,1fr)_auto] gap-3 text-[0.84rem]">
+                      <span className="truncate text-[var(--foreground-soft)]">{item.name} x {item.quantity}</span>
+                      <strong className="text-[var(--foreground)]">{formatBaht(item.lineTotal)}</strong>
+                    </div>
+                  ))}
                 </div>
-
-                <div className="grid gap-2 text-[0.86rem]">
-                  <div className="flex justify-between gap-3 max-[420px]:flex-col max-[420px]:items-start"><span className="text-[var(--foreground-soft)]">Subtotal</span><strong className="text-[var(--foreground)]">{formatBaht(selectedReceipt.subtotal)}</strong></div>
-                  <div className="flex justify-between gap-3 max-[420px]:flex-col max-[420px]:items-start"><span className="text-[var(--foreground-soft)]">Discount</span><strong className="text-[var(--foreground)]">{formatBaht(selectedReceipt.discount)}</strong></div>
-                  <div className="flex justify-between gap-3 max-[420px]:flex-col max-[420px]:items-start"><span className="text-[var(--foreground-soft)]">Tax</span><strong className="text-[var(--foreground)]">{formatBaht(selectedReceipt.tax)}</strong></div>
-                  <div className="flex justify-between gap-3 border-t border-t-[rgba(100,120,160,0.14)] pt-2 text-[1rem] max-[420px]:flex-col max-[420px]:items-start"><span className="text-[var(--foreground)]">สุทธิ</span><strong className="text-[var(--foreground)]">{formatBaht(selectedReceipt.total)}</strong></div>
-                </div>
-                {detailLoading ? (
-                  <div className="absolute inset-0 z-20 grid place-items-center bg-[color:color-mix(in_srgb,var(--field-bg)_82%,transparent)] backdrop-blur-[1px]">
-                    <Loader size={42} label="กำลังโหลดรายละเอียด" />
-                  </div>
+                {receiptScrollMetric.visible ? (
+                  <span className="pointer-events-none absolute bottom-3 right-0 top-3 w-[7px] rounded-full bg-[var(--scroll-track)]">
+                    <span
+                      className="absolute left-0 w-full rounded-full [background:var(--scroll-thumb)] shadow-[var(--brand-shadow)_0_0_14px]"
+                      style={{ top: `${receiptScrollMetric.top}%`, height: `${receiptScrollMetric.height}%` }}
+                    />
+                  </span>
                 ) : null}
+              </div>
+
+              <div className="grid gap-2 text-[0.86rem]">
+                <div className="flex justify-between gap-3 max-[420px]:flex-col max-[420px]:items-start"><span className="text-[var(--foreground-soft)]">Subtotal</span><strong className="text-[var(--foreground)]">{formatBaht(selectedReceipt.subtotal)}</strong></div>
+                <div className="flex justify-between gap-3 max-[420px]:flex-col max-[420px]:items-start"><span className="text-[var(--foreground-soft)]">Discount</span><strong className="text-[var(--foreground)]">{formatBaht(selectedReceipt.discount)}</strong></div>
+                <div className="flex justify-between gap-3 max-[420px]:flex-col max-[420px]:items-start"><span className="text-[var(--foreground-soft)]">Tax</span><strong className="text-[var(--foreground)]">{formatBaht(selectedReceipt.tax)}</strong></div>
+                <div className="flex justify-between gap-3 border-t border-t-[rgba(100,120,160,0.14)] pt-2 text-[1rem] max-[420px]:flex-col max-[420px]:items-start"><span className="text-[var(--foreground)]">สุทธิ</span><strong className="text-[var(--foreground)]">{formatBaht(selectedReceipt.total)}</strong></div>
+              </div>
+              {detailLoading ? (
+                <div className="absolute inset-0 z-20 grid place-items-center bg-[color:color-mix(in_srgb,var(--field-bg)_82%,transparent)] backdrop-blur-[1px]">
+                  <Loader size={42} label="กำลังโหลดรายละเอียด" />
+                </div>
+              ) : null}
             </div>
 
             <div className="grid grid-cols-2 gap-3 max-[720px]:grid-cols-1">

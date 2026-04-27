@@ -1,12 +1,11 @@
 "use client";
 
-import type { ChangeEvent, FormEvent, ReactNode } from "react";
-import { createContext, useContext, useEffect, useRef, useState, useSyncExternalStore } from "react";
+import type { ChangeEvent, FormEvent } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { useBackofficeShellAlert } from "@/components/backoffice-shell";
 import { CropModal } from "@/components/product-management-studio/crop-modal";
-import { StatusPill } from "@/components/ui-primitives";
 import {
   clampOffset,
   createCroppedBlob,
@@ -18,268 +17,29 @@ import {
 } from "@/components/product-management-studio/lib";
 import type { CropDraft } from "@/components/product-management-studio/types";
 import { ensureCsrfToken } from "@/lib/csrf";
-
-const inputClass =
-  "h-[46px] w-full rounded-[10px] border border-[rgba(100,120,160,0.22)] bg-[var(--field-bg)] px-[14px] text-[var(--foreground)] outline-none transition placeholder:text-[var(--field-placeholder)] focus:border-[var(--brand-strong)] focus:shadow-[0_0_0_4px_var(--ring)] disabled:cursor-not-allowed disabled:opacity-[0.62]";
-
-const primaryButtonClass =
-  "inline-flex min-h-[42px] items-center justify-center gap-[10px] rounded-[10px] border border-transparent bg-[linear-gradient(135deg,var(--brand)_0%,var(--brand-strong)_100%)] px-[18px] font-bold text-[var(--button-text)] shadow-[var(--brand-shadow)_0_6px_14px] transition hover:-translate-y-px disabled:cursor-not-allowed disabled:opacity-[0.62]";
-
-const activeGhostButtonClass =
-  "inline-flex min-h-[42px] items-center justify-center gap-[10px] rounded-[10px] border border-[var(--border)] bg-[var(--surface-muted)] px-[18px] font-bold text-[var(--foreground)] transition hover:-translate-y-px hover:border-[var(--border-strong)] hover:shadow-[rgba(0,0,0,0.15)_0_5px_10px] disabled:cursor-not-allowed disabled:text-[var(--foreground-soft)] disabled:opacity-[0.62]";
-
-const dangerGhostButtonClass =
-  "inline-flex min-h-[42px] items-center justify-center gap-[10px] rounded-[10px] border border-[rgba(232,93,117,0.3)] bg-[rgba(232,93,117,0.08)] px-[18px] font-bold text-[#ff8fa2] transition hover:-translate-y-px hover:border-[rgba(232,93,117,0.5)] hover:bg-[rgba(232,93,117,0.14)] disabled:cursor-not-allowed disabled:opacity-[0.62]";
-
-const fieldLabelClass = "text-[0.9rem] font-semibold text-[var(--foreground-soft)]";
-const compactBankInputClass =
-  "h-[42px] w-full rounded-[10px] border border-[rgba(100,120,160,0.22)] bg-[var(--field-bg)] px-3 text-[0.95rem] text-[var(--foreground)] outline-none transition placeholder:text-[var(--field-placeholder)] focus:border-[var(--brand-strong)] focus:shadow-[0_0_0_4px_var(--ring)] disabled:cursor-not-allowed disabled:opacity-[0.62]";
-const compactFooterGhostButtonClass =
-  "inline-flex min-h-[38px] items-center justify-center gap-[8px] rounded-[10px] border border-[var(--border)] bg-[var(--surface-muted)] px-[14px] text-[0.92rem] font-bold text-[var(--foreground)] transition hover:-translate-y-px hover:border-[var(--border-strong)] hover:shadow-[rgba(0,0,0,0.15)_0_5px_10px] disabled:cursor-not-allowed disabled:text-[var(--foreground-soft)] disabled:opacity-[0.62]";
-const compactFooterPrimaryButtonClass =
-  "inline-flex min-h-[38px] items-center justify-center gap-[8px] rounded-[10px] border border-transparent bg-[linear-gradient(135deg,var(--brand)_0%,var(--brand-strong)_100%)] px-[16px] text-[0.9rem] font-bold text-[var(--button-text)] shadow-[var(--brand-shadow)_0_6px_14px] transition hover:-translate-y-px disabled:cursor-not-allowed disabled:opacity-[0.62]";
-const passwordInputWrapClass =
-  "grid h-[46px] grid-cols-[minmax(0,1fr)_42px] items-center rounded-[10px] border border-[rgba(100,120,160,0.22)] bg-[var(--field-bg)] transition focus-within:border-[var(--brand-strong)] focus-within:shadow-[0_0_0_4px_var(--ring)]";
-
-const passwordInputClass =
-  "h-full min-w-0 rounded-l-[10px] border-0 bg-transparent px-[14px] text-[var(--foreground)] outline-none placeholder:text-[#556070] disabled:cursor-not-allowed disabled:opacity-[0.62]";
-
-const passwordToggleClass =
-  "inline-flex h-full w-[42px] items-center justify-center rounded-r-[10px] text-[var(--foreground-soft)] transition hover:bg-[rgba(255,255,255,0.04)] hover:text-[var(--foreground)] disabled:cursor-not-allowed disabled:opacity-[0.62]";
-
-type SubmitState = {
-  status: "idle" | "saving" | "success" | "error";
-  message: string;
-};
-
-type ConfirmPaymentSettingsModalProps = {
-  busy: boolean;
-  enabled: boolean;
-  autoEnabled?: boolean;
-  recipientLabel: string;
-  bankSummary?: ReactNode;
-  promptPaySummary?: ReactNode;
-  onClose: () => void;
-  onConfirm: () => void;
-};
-
-type OwnerLogoContextValue = {
-  previewUrl: string;
-  setPreviewUrl: (url: string) => void;
-  saved: boolean;
-  setSaved: (saved: boolean) => void;
-  setSavedLogo: (url: string) => void;
-};
-
-const OwnerLogoContext = createContext<OwnerLogoContextValue | null>(null);
-
-const logoFileTypes = new Set(["image/png", "image/jpeg", "image/webp"]);
-const maxLogoFileSize = 2 * 1024 * 1024;
-const paymentQrFileTypes = new Set(["image/png", "image/jpeg", "image/webp"]);
-const maxPaymentQrFileSize = 2 * 1024 * 1024;
-const ownerThemeStorageKey = "pos-mans-owner-theme";
-export type PromptPayRecipientType = "MOBILE" | "NATIONAL_ID" | "TAX_ID" | "STATIC_QR" | "BANK_ACCOUNT";
-export type OwnerThemeId = "violet" | "light" | "dark";
-
-export type OwnerPaymentSettingsValue = {
-  promptPayEnabled: boolean;
-  promptPayRecipientType: PromptPayRecipientType;
-  promptPayId: string;
-  promptPayMobileId: string;
-  promptPayNationalId: string;
-  promptPayTaxId: string;
-  bankName: string;
-  bankAccountName: string;
-  bankAccountNumber: string;
-  paymentQrImageUrl: string;
-  paymentQrUploadedKey: string;
-};
-
-type PromptPayDrafts = Record<"MOBILE" | "NATIONAL_ID" | "TAX_ID", string>;
-
-const ownerThemeOptions: Array<{
-  id: OwnerThemeId;
-  label: string;
-  description: string;
-  preview: string;
-}> = [
-  {
-    id: "violet",
-    label: "Midnight Violet",
-    description: "โทนหลักดั้งเดิมของระบบ ให้ฟีลเข้ม คม และเน้น accent แบบม่วง",
-    preview: "linear-gradient(135deg, #6c5ce7 0%, #8070f0 100%)",
-  },
-  {
-    id: "light",
-    label: "Snow Blue",
-    description: "พื้นหลังสีขาว ปุ่มโทนฟ้า และการ์ดสีขาว สำหรับหน้าร้านที่ดูสะอาดและสว่าง",
-    preview: "linear-gradient(135deg, #ffffff 0%, #dcedff 40%, #2b8cff 100%)",
-  },
-  {
-    id: "dark",
-    label: "Midnight Gold",
-    description: "พื้นหลังสีดำ ปุ่มโทนเหลือง และการ์ดสีดำ ให้ภาพรวมคมเข้มและเด่นชัด",
-    preview: "linear-gradient(135deg, #0f0f0f 0%, #1c1c1c 42%, #f4c430 100%)",
-  },
-];
-
-function isOwnerTheme(value: string | undefined | null): value is OwnerThemeId {
-  return ownerThemeOptions.some((option) => option.id === value);
-}
-
-function readOwnerTheme(): OwnerThemeId {
-  if (typeof window === "undefined") {
-    return "violet";
-  }
-
-  const currentTheme = document.documentElement.dataset.storeTheme;
-  if (isOwnerTheme(currentTheme)) {
-    return currentTheme;
-  }
-
-  try {
-    const savedTheme = window.localStorage.getItem(ownerThemeStorageKey);
-    if (isOwnerTheme(savedTheme)) {
-      return savedTheme;
-    }
-  } catch {
-    // Ignore localStorage access issues and fall back to the default theme.
-  }
-
-  return "violet";
-}
-
-function applyOwnerTheme(theme: OwnerThemeId) {
-  if (typeof document === "undefined") {
-    return;
-  }
-
-  document.documentElement.dataset.storeTheme = theme;
-
-  try {
-    window.localStorage.setItem(ownerThemeStorageKey, theme);
-  } catch {
-    // Persisting the theme is optional; the visual update should still work.
-  }
-}
-
-async function persistOwnerTheme(theme: OwnerThemeId) {
-  const csrfToken = await ensureCsrfToken();
-  const response = await fetch("/api/auth/owner-theme", {
-    method: "PATCH",
-    headers: {
-      "Content-Type": "application/json",
-      "X-CSRF-Token": csrfToken || "",
-    },
-    body: JSON.stringify({ theme }),
-  });
-
-  if (!response.ok) {
-    const payload = await response.json().catch(() => null);
-    throw new Error(payload?.error || "ไม่สามารถบันทึกธีมของผู้ใช้ได้");
-  }
-
-  return response.json().catch(() => null);
-}
-
-const promptPayRecipientOptions: Array<{ value: PromptPayRecipientType; label: string; helper: string }> = [
-  { value: "MOBILE", label: "เบอร์พร้อมเพย์", helper: "เบอร์มือถือ 10 หลัก" },
-  { value: "NATIONAL_ID", label: "เลขบัตรประชาชน", helper: "เลข 13 หลัก" },
-  { value: "TAX_ID", label: "เลขผู้เสียภาษี", helper: "เลข 13 หลักของกิจการ" },
-  { value: "STATIC_QR", label: "Static QR", helper: "อัปโหลด QR ธนาคาร" },
-  { value: "BANK_ACCOUNT", label: "บัญชีธนาคาร", helper: "fallback เมื่อไม่มี QR" },
-];
-
-const thaiBankOptions = [
-  "ธนาคารกสิกรไทย",
-  "ธนาคารกรุงไทย",
-  "ธนาคารกรุงเทพ",
-  "ธนาคารไทยพาณิชย์",
-  "ธนาคารกรุงศรีอยุธยา",
-  "ธนาคารทหารไทยธนชาต",
-  "ธนาคารออมสิน",
-  "ธนาคารเพื่อการเกษตรและสหกรณ์การเกษตร",
-  "ธนาคารอาคารสงเคราะห์",
-  "ธนาคารยูโอบี",
-  "ธนาคารซีไอเอ็มบี ไทย",
-  "ธนาคารแลนด์ แอนด์ เฮ้าส์",
-  "ธนาคารเกียรตินาคินภัทร",
-];
-export function OwnerLogoProvider({ children, initialLogoUrl = "" }: { children: ReactNode; initialLogoUrl?: string | null }) {
-  const normalizedInitialLogoUrl = initialLogoUrl || "";
-  const [previewUrl, setPreviewUrl] = useState(normalizedInitialLogoUrl);
-  const [saved, setSaved] = useState(Boolean(normalizedInitialLogoUrl));
-
-  useEffect(() => {
-    setPreviewUrl(normalizedInitialLogoUrl);
-    setSaved(Boolean(normalizedInitialLogoUrl));
-  }, [normalizedInitialLogoUrl]);
-
-  useEffect(() => {
-    return () => {
-      if (previewUrl.startsWith("blob:")) {
-        URL.revokeObjectURL(previewUrl);
-      }
-    };
-  }, [previewUrl]);
-
-  function setSavedLogo(url: string) {
-    setPreviewUrl(url);
-    setSaved(true);
-  }
-
-  return (
-    <OwnerLogoContext.Provider value={{ previewUrl, setPreviewUrl, saved, setSaved, setSavedLogo }}>
-      {children}
-    </OwnerLogoContext.Provider>
-  );
-}
-
-function useOwnerLogo() {
-  const context = useContext(OwnerLogoContext);
-
-  if (!context) {
-    throw new Error("useOwnerLogo must be used inside OwnerLogoProvider");
-  }
-
-  return context;
-}
-
-async function readApiMessage(response: Response, fallback: string) {
-  const data = (await response.json().catch(() => null)) as { error?: string } | null;
-  return data?.error || fallback;
-}
-
-function readBlobAsDataUrl(blob: Blob) {
-  return new Promise<string>((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result || ""));
-    reader.onerror = () => reject(new Error("ไม่สามารถอ่านไฟล์โลโก้หลังคร็อปได้"));
-    reader.readAsDataURL(blob);
-  });
-}
-
-function EyeIcon({ open }: { open: boolean }) {
-  return (
-    <svg aria-hidden="true" className="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none">
-      <path
-        d="M3.5 12s3-5.5 8.5-5.5 8.5 5.5 8.5 5.5-3 5.5-8.5 5.5S3.5 12 3.5 12Z"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M12 14.6a2.6 2.6 0 1 0 0-5.2 2.6 2.6 0 0 0 0 5.2Z"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      {!open ? <path d="M5 19 19 5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" /> : null}
-    </svg>
-  );
-}
+import type {
+  ConfirmPaymentSettingsModalProps,
+  OwnerPaymentSettingsValue,
+  PromptPayDrafts,
+  PromptPayRecipientType,
+  SubmitState,
+} from "./shared";
+import {
+  activeGhostButtonClass,
+  compactBankInputClass,
+  compactFooterGhostButtonClass,
+  compactFooterPrimaryButtonClass,
+  dangerGhostButtonClass,
+  fieldLabelClass,
+  inputClass,
+  maxPaymentQrFileSize,
+  normalizeDigitInput,
+  paymentQrFileTypes,
+  primaryButtonClass,
+  promptPayRecipientOptions,
+  readApiMessage,
+  thaiBankOptions,
+} from "./shared";
 
 function ConfirmPaymentSettingsModal({ busy, enabled, recipientLabel, bankSummary, promptPaySummary, onClose, onConfirm }: ConfirmPaymentSettingsModalProps) {
   const mounted = useSyncExternalStore(
@@ -353,835 +113,6 @@ function ConfirmPaymentSettingsModal({ busy, enabled, recipientLabel, bankSummar
     </div>,
     document.body,
   );
-}
-
-function SelectedLogoStatus({ saved }: { saved: boolean }) {
-  return (
-    <p className="inline-flex items-center gap-2 text-[0.86rem] leading-[1.5] text-[var(--foreground-soft)]">
-      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" className="opacity-80 text-[var(--success)]" aria-hidden="true">
-        <path fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="2" d="m7 12l3.488 3.837a.2.2 0 0 0 .296 0L17 9" />
-      </svg>
-      {saved ? "คุณมีรูปภาพโลโก้แล้ว" : "เลือกรูปภาพแล้ว"}
-    </p>
-  );
-}
-
-export function OwnerLogoStatusPill() {
-  const { previewUrl, saved } = useOwnerLogo();
-
-  if (!previewUrl) {
-    return null;
-  }
-
-  return <SelectedLogoStatus saved={saved} />;
-}
-
-function ThemeSparkleIcon({ className = "" }: { className?: string }) {
-  return (
-    <svg aria-hidden="true" className={className} viewBox="0 0 24 24" fill="none">
-      <path
-        d="m12 3 1.72 4.28L18 9l-4.28 1.72L12 15l-1.72-4.28L6 9l4.28-1.72L12 3Zm7 10 1 2.5 2.5 1-2.5 1L19 20l-1-2.5-2.5-1 2.5-1L19 13ZM5 14l1.1 2.9L9 18l-2.9 1.1L5 22l-1.1-2.9L1 18l2.9-1.1L5 14Z"
-        stroke="currentColor"
-        strokeWidth="1.45"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-function ThemePickerModal({
-  open,
-  activeTheme,
-  onSelect,
-  onClose,
-}: {
-  open: boolean;
-  activeTheme: OwnerThemeId;
-  onSelect: (theme: OwnerThemeId) => void;
-  onClose: () => void;
-}) {
-  const mounted = useSyncExternalStore(
-    () => () => undefined,
-    () => true,
-    () => false,
-  );
-
-  useEffect(() => {
-    if (!open) {
-      return;
-    }
-
-    function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") {
-        onClose();
-      }
-    }
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [open, onClose]);
-
-  if (!mounted || !open) {
-    return null;
-  }
-
-  return createPortal(
-    <div
-      className="fixed inset-0 z-[320] grid place-items-center bg-[var(--modal-backdrop)] p-3 backdrop-blur-[16px] max-[640px]:p-2.5"
-      onClick={onClose}
-    >
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,var(--brand-soft),transparent_52%)]" />
-      <div
-        className="relative z-[1] grid max-h-[min(560px,calc(100vh-24px))] w-[min(540px,calc(100vw-24px))] gap-3 overflow-y-auto overflow-x-hidden rounded-[20px] border border-[var(--border)] bg-[var(--modal-surface)] p-4 shadow-[var(--modal-shadow)] max-[640px]:max-h-[min(520px,calc(100vh-20px))] max-[640px]:gap-2.5 max-[640px]:rounded-[16px] max-[640px]:p-3.5"
-        onClick={(event) => event.stopPropagation()}
-      >
-        <div className="flex items-start justify-between gap-3">
-          <div className="grid gap-1.5">
-            <span className="inline-flex items-center gap-2 text-[0.72rem] font-bold uppercase tracking-[0.24em] text-[var(--brand-strong)]">
-              <ThemeSparkleIcon className="h-3.5 w-3.5" />
-              Theme Switch
-            </span>
-            <div className="grid gap-1">
-              <h3 className="m-0 text-[1.4rem] leading-tight tracking-[-0.05em] text-[var(--foreground)] max-[640px]:text-[1.2rem]">เลือกธีมร้านของคุณ</h3>
-              <p className="m-0 text-[0.88rem] leading-[1.6] text-[var(--foreground-soft)] max-[640px]:text-[0.8rem]">
-                เปลี่ยนโทนสีของ owner workspace แล้วดูผลได้ทันที
-              </p>
-            </div>
-          </div>
-          <button
-            type="button"
-            className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--surface-muted)] text-[var(--foreground-soft)] transition hover:border-[var(--border-strong)] hover:text-[var(--foreground)]"
-            onClick={onClose}
-            aria-label="ปิดหน้าต่างเลือกธีม"
-          >
-            <span className="text-[1.2rem] leading-none">×</span>
-          </button>
-        </div>
-
-        <div className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
-          {ownerThemeOptions.map((option) => {
-            const active = option.id === activeTheme;
-
-            return (
-              <button
-                key={option.id}
-                type="button"
-                className={
-                  active
-                    ? "grid min-w-0 gap-2 rounded-[16px] border border-[var(--brand-strong)] bg-[linear-gradient(180deg,var(--brand-soft),rgba(255,255,255,0.02))] p-2.5 text-left text-[var(--foreground)] shadow-[var(--brand-shadow)_0_14px_28px] transition"
-                    : "grid min-w-0 gap-2 rounded-[16px] border border-[var(--border)] bg-[var(--surface-muted)] p-2.5 text-left text-[var(--foreground-soft)] transition hover:border-[var(--border-strong)] hover:bg-[var(--surface)] hover:text-[var(--foreground)]"
-                }
-                onClick={() => onSelect(option.id)}
-              >
-                <span
-                  className="block h-12 rounded-[12px] border border-[var(--border)]"
-                  style={{ background: option.preview }}
-                  aria-hidden="true"
-                />
-                <div className="grid gap-1">
-                  <span className="text-[0.9rem] font-bold leading-[1.2]">{option.label}</span>
-                  <span className={`text-[0.72rem] leading-[1.4] ${active ? "text-[var(--foreground)]" : "text-[var(--foreground-soft)]"}`}>
-                    {option.description}
-                  </span>
-                </div>
-              </button>
-            );
-          })}
-        </div>
-
-        <div className="flex items-center justify-between gap-3 rounded-[14px] border border-[var(--border)] bg-[var(--surface-muted)] px-3.5 py-2.5 max-[640px]:flex-col max-[640px]:items-stretch max-[640px]:px-3">
-          <p className="m-0 text-[0.76rem] leading-[1.45] text-[var(--foreground-soft)]">
-            ธีมจะถูกบันทึกไว้ในเบราว์เซอร์นี้ และมีผลกับสี accent ของ workspace ฝั่งเจ้าของร้าน
-          </p>
-          <button type="button" className={`${activeGhostButtonClass} min-h-[36px] shrink-0 px-3.5 text-[0.84rem]`} onClick={onClose}>
-            เสร็จสิ้น
-          </button>
-        </div>
-      </div>
-    </div>,
-    document.body,
-  );
-}
-
-export function OwnerThemeStatusPill() {
-  return (
-    <StatusPill tone="success">
-      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-        <path d="m5 12 4.2 4.2L19 6.5" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
-      คุณมีธีมร้านแล้ว
-    </StatusPill>
-  );
-}
-
-export function OwnerThemeClient() {
-  const { setShellAlert } = useBackofficeShellAlert();
-  const [themePickerOpen, setThemePickerOpen] = useState(false);
-  const [activeTheme, setActiveTheme] = useState<OwnerThemeId | null>(null);
-  const [savingTheme, setSavingTheme] = useState(false);
-
-  useEffect(() => {
-    setActiveTheme(readOwnerTheme());
-  }, []);
-
-  useEffect(() => {
-    if (!activeTheme) {
-      return;
-    }
-
-    applyOwnerTheme(activeTheme);
-  }, [activeTheme]);
-
-  const activeThemeOption = ownerThemeOptions.find((option) => option.id === activeTheme) || ownerThemeOptions[0];
-
-  return (
-    <div className="mt-1 grid min-w-0 gap-2 max-[520px]:gap-2">
-      <button
-        type="button"
-        className="grid min-w-0 gap-2 rounded-[12px] border border-[var(--border)] bg-[var(--surface-muted)] p-3 text-left transition hover:border-[var(--border-strong)] hover:bg-[var(--surface)] max-[520px]:rounded-[11px] max-[520px]:p-2.5"
-        onClick={() => setThemePickerOpen(true)}
-        aria-expanded={themePickerOpen}
-        aria-haspopup="dialog"
-      >
-        <div className="flex min-w-0 items-start justify-between gap-2.5 max-[520px]:gap-2">
-          <div className="min-w-0 flex-1">
-            <span className="text-[0.72rem] font-bold uppercase tracking-[0.22em] text-[var(--eyebrow)]">ธีมที่กำลังใช้</span>
-            <strong className="mt-1 block break-words text-[0.94rem] leading-tight text-[var(--foreground)] max-[520px]:text-[0.86rem]">{activeThemeOption.label}</strong>
-          </div>
-          <span
-            className="h-9 w-9 shrink-0 rounded-[11px] border border-[rgba(255,255,255,0.12)] shadow-[rgba(0,0,0,0.2)_0_10px_20px] max-[520px]:h-8 max-[520px]:w-8"
-            style={{ background: activeThemeOption.preview }}
-            aria-hidden="true"
-          />
-        </div>
-        <p className="m-0 text-[0.78rem] leading-[1.45] text-[var(--foreground-soft)] max-[520px]:text-[0.72rem]">{activeThemeOption.description}</p>
-      </button>
-
-      <button
-        type="button"
-        className="hidden"
-        onClick={() => setThemePickerOpen((open) => !open)}
-        aria-expanded={themePickerOpen}
-      >
-        <ThemeSparkleIcon className="h-[18px] w-[18px] shrink-0 opacity-90 max-[520px]:h-4 max-[520px]:w-4" />
-        เลือกธีมร้านของคุณใหม่
-      </button>
-
-      <ThemePickerModal
-        open={themePickerOpen}
-        activeTheme={activeThemeOption.id}
-        onSelect={(theme) => {
-          const previousTheme = activeTheme || "violet";
-          setActiveTheme(theme);
-          setThemePickerOpen(false);
-          setSavingTheme(true);
-
-          void persistOwnerTheme(theme)
-            .then(() => {
-              setShellAlert({ message: "บันทึกธีมของผู้ใช้เรียบร้อยแล้ว", tone: "success" });
-            })
-            .catch((error) => {
-              setActiveTheme(previousTheme);
-              applyOwnerTheme(previousTheme);
-              setShellAlert({
-                message: error instanceof Error ? error.message : "ไม่สามารถบันทึกธีมของผู้ใช้ได้",
-                tone: "danger",
-              });
-            })
-            .finally(() => {
-              setSavingTheme(false);
-            });
-        }}
-        onClose={() => setThemePickerOpen(false)}
-      />
-      {savingTheme ? <p className="m-0 text-[0.76rem] leading-[1.45] text-[var(--foreground-soft)]">กำลังบันทึกธีมของผู้ใช้...</p> : null}
-      {false ? (
-        <div className="grid gap-2.5 overflow-hidden rounded-none border border-[rgba(100,120,160,0.16)] bg-[rgba(255,255,255,0.03)] p-3 max-[520px]:p-2.5">
-          <div className="grid gap-2 sm:grid-cols-3">
-            {ownerThemeOptions.map((option) => {
-              const active = option.id === activeTheme;
-
-              return (
-                <button
-                  key={option.id}
-                  type="button"
-                  className={
-                    active
-                      ? "grid min-w-0 gap-2 rounded-[12px] border border-[var(--brand-strong)] bg-[var(--brand-soft)] p-2.5 text-left text-[var(--foreground)] shadow-[rgba(0,0,0,0.16)_0_10px_18px] max-[520px]:rounded-[10px] max-[520px]:p-2"
-                      : "grid min-w-0 gap-2 rounded-[12px] border border-[rgba(100,120,160,0.16)] bg-[var(--field-bg)] p-2.5 text-left text-[var(--foreground-soft)] transition hover:border-[var(--border-strong)] hover:text-[var(--foreground)] max-[520px]:rounded-[10px] max-[520px]:p-2"
-                  }
-                  onClick={() => setActiveTheme(option.id)}
-                >
-                  <span
-                    className="block h-10 rounded-[10px] border border-[rgba(255,255,255,0.12)] max-[520px]:h-8"
-                    style={{ background: option.preview }}
-                    aria-hidden="true"
-                  />
-                  <span className="break-words text-[0.84rem] font-bold leading-[1.35] max-[520px]:text-[0.76rem]">{option.label}</span>
-                </button>
-              );
-            })}
-          </div>
-          <p className="m-0 text-[0.75rem] leading-[1.45] text-[var(--foreground-soft)] max-[520px]:text-[0.7rem]">
-            ธีมจะถูกบันทึกไว้ในเบราว์เซอร์นี้ และมีผลกับสี accent ของ workspace ฝั่งเจ้าของร้าน
-          </p>
-        </div>
-      ) : null}
-    </div>
-  );
-}
-
-function PasswordField({
-  label,
-  placeholder,
-  autoComplete,
-  value,
-  visible,
-  disabled,
-  onChange,
-  onToggle,
-}: {
-  label: string;
-  placeholder: string;
-  autoComplete: string;
-  value: string;
-  visible: boolean;
-  disabled: boolean;
-  onChange: (value: string) => void;
-  onToggle: () => void;
-}) {
-  return (
-    <label className="grid gap-2">
-      <span className={fieldLabelClass}>{label}</span>
-      <span className={passwordInputWrapClass}>
-        <input
-          className={passwordInputClass}
-          placeholder={placeholder}
-          type={visible ? "text" : "password"}
-          autoComplete={autoComplete}
-          value={value}
-          onChange={(event) => onChange(event.target.value)}
-          disabled={disabled}
-          maxLength={128}
-        />
-        <button
-          type="button"
-          className={passwordToggleClass}
-          onClick={onToggle}
-          disabled={disabled}
-          aria-label={visible ? `ซ่อน${label}` : `แสดง${label}`}
-          title={visible ? `ซ่อน${label}` : `แสดง${label}`}
-        >
-          <EyeIcon open={visible} />
-        </button>
-      </span>
-    </label>
-  );
-}
-
-export function OwnerPasswordClient() {
-  const { setShellAlert } = useBackofficeShellAlert();
-  const [form, setForm] = useState({
-    currentPassword: "",
-    newPassword: "",
-    confirmPassword: "",
-  });
-  const [visibleFields, setVisibleFields] = useState({
-    currentPassword: false,
-    newPassword: false,
-    confirmPassword: false,
-  });
-  const [submitState, setSubmitState] = useState<SubmitState>({
-    status: "idle",
-    message: "กรอกรหัสผ่านปัจจุบันและรหัสผ่านใหม่เพื่ออัปเดตบัญชีเจ้าของร้าน",
-  });
-
-  const pending = submitState.status === "saving";
-
-  function showAlert(message: string, status: SubmitState["status"]) {
-    setSubmitState({ status, message });
-    setShellAlert({ message, tone: status === "error" ? "danger" : "success" });
-  }
-
-  function validatePasswordForm() {
-    if (!form.currentPassword) {
-      return "กรุณาระบุรหัสผ่านปัจจุบัน";
-    }
-    if (!form.newPassword) {
-      return "กรุณาระบุรหัสผ่านใหม่";
-    }
-    if (!form.confirmPassword) {
-      return "กรุณายืนยันรหัสผ่านใหม่";
-    }
-
-    if (form.currentPassword.length < 8 || form.newPassword.length < 8 || form.confirmPassword.length < 8) {
-      return "รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร";
-    }
-
-    if (form.newPassword !== form.confirmPassword) {
-      return "รหัสผ่านใหม่และช่องยืนยันไม่ตรงกัน";
-    }
-
-    return null;
-  }
-
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-
-    const validationError = validatePasswordForm();
-    if (validationError) {
-      showAlert(validationError, "error");
-      return;
-    }
-
-    setSubmitState({ status: "saving", message: "กำลังอัปเดตรหัสผ่าน..." });
-
-    try {
-      const csrfToken = await ensureCsrfToken({ forceRefresh: true });
-      const response = await fetch("/api/auth/password", {
-        method: "PATCH",
-        credentials: "same-origin",
-        headers: {
-          "content-type": "application/json",
-          "x-csrf-token": csrfToken || "",
-        },
-        body: JSON.stringify(form),
-      });
-
-      if (!response.ok) {
-        showAlert(await readApiMessage(response, "อัปเดตรหัสผ่านไม่สำเร็จ"), "error");
-        return;
-      }
-
-      setForm({ currentPassword: "", newPassword: "", confirmPassword: "" });
-      showAlert("อัปเดตรหัสผ่านเรียบร้อยแล้ว", "success");
-    } catch {
-      showAlert("เชื่อมต่อระบบไม่ได้ กรุณาลองอีกครั้ง", "error");
-    }
-  }
-
-  return (
-    <form className="mt-2" onSubmit={handleSubmit} noValidate>
-      <div className="grid gap-4">
-        <PasswordField
-          label="รหัสผ่านปัจจุบัน"
-          placeholder="รหัสผ่านปัจจุบัน"
-          autoComplete="current-password"
-          value={form.currentPassword}
-          visible={visibleFields.currentPassword}
-          disabled={pending}
-          onChange={(value) => setForm((current) => ({ ...current, currentPassword: value }))}
-          onToggle={() => setVisibleFields((current) => ({ ...current, currentPassword: !current.currentPassword }))}
-        />
-        <PasswordField
-          label="รหัสผ่านใหม่"
-          placeholder="รหัสผ่านใหม่"
-          autoComplete="new-password"
-          value={form.newPassword}
-          visible={visibleFields.newPassword}
-          disabled={pending}
-          onChange={(value) => setForm((current) => ({ ...current, newPassword: value }))}
-          onToggle={() => setVisibleFields((current) => ({ ...current, newPassword: !current.newPassword }))}
-        />
-        <PasswordField
-          label="ยืนยันรหัสผ่านใหม่"
-          placeholder="ยืนยันรหัสผ่านใหม่"
-          autoComplete="new-password"
-          value={form.confirmPassword}
-          visible={visibleFields.confirmPassword}
-          disabled={pending}
-          onChange={(value) => setForm((current) => ({ ...current, confirmPassword: value }))}
-          onToggle={() => setVisibleFields((current) => ({ ...current, confirmPassword: !current.confirmPassword }))}
-        />
-      </div>
-      <div className="mt-5 flex flex-wrap justify-start gap-[10px] max-[900px]:[&>*]:w-full">
-        <button type="submit" className={primaryButtonClass} disabled={pending}>
-          {pending ? "กำลังอัปเดต..." : "อัปเดตรหัสผ่าน"}
-        </button>
-      </div>
-    </form>
-  );
-}
-
-export function OwnerLogoClient({ compact = false }: { compact?: boolean }) {
-  const { setShellAlert } = useBackofficeShellAlert();
-  const router = useRouter();
-  const { previewUrl, setPreviewUrl, saved, setSaved, setSavedLogo } = useOwnerLogo();
-  const [fileName, setFileName] = useState("");
-  const [cropDraft, setCropDraft] = useState<CropDraft | null>(null);
-  const [cropZoom, setCropZoom] = useState(1);
-  const [cropOffset, setCropOffset] = useState({ x: 0, y: 0 });
-  const [cropBusy, setCropBusy] = useState(false);
-  const [pendingLogoBlob, setPendingLogoBlob] = useState<Blob | null>(null);
-
-  useEffect(() => {
-    return () => {
-      if (cropDraft?.objectUrl) {
-        URL.revokeObjectURL(cropDraft.objectUrl);
-      }
-    };
-  }, [cropDraft]);
-
-  function showLogoAlert(message: string) {
-    setShellAlert({ message, tone: "danger" });
-  }
-
-  async function handleLogoChange(event: ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0];
-    event.target.value = "";
-
-    if (!file) {
-      return;
-    }
-
-    if (!logoFileTypes.has(file.type)) {
-      showLogoAlert("รองรับไฟล์ PNG, JPG หรือ WebP");
-      event.target.value = "";
-      return;
-    }
-
-    if (file.size > maxLogoFileSize) {
-      showLogoAlert("ไฟล์โลโก้ต้องไม่เกิน 2 MB");
-      event.target.value = "";
-      return;
-    }
-
-    let objectUrl = "";
-
-    try {
-      objectUrl = createImageObjectUrl(file);
-      const image = await loadImage(objectUrl);
-      setCropDraft({ fileName: file.name, objectUrl, image });
-      setCropZoom(1);
-      setCropOffset({ x: 0, y: 0 });
-    } catch (error) {
-      if (objectUrl) {
-        URL.revokeObjectURL(objectUrl);
-      }
-      showLogoAlert(error instanceof Error ? error.message : "ไม่สามารถเตรียมรูปภาพสำหรับคร็อบได้");
-    }
-  }
-
-  function handleCropZoomChange(nextZoom: number) {
-    if (!cropDraft) {
-      return;
-    }
-
-    setCropOffset((current) => clampOffset(cropDraft.image, nextZoom, current.x, current.y, CROP_VIEWPORT_SIZE));
-    setCropZoom(nextZoom);
-  }
-
-  function handleCropOffsetChange(nextX: number, nextY: number) {
-    if (!cropDraft) {
-      return;
-    }
-
-    setCropOffset(clampOffset(cropDraft.image, cropZoom, nextX, nextY, CROP_VIEWPORT_SIZE));
-  }
-
-  async function handleCropConfirm() {
-    if (!cropDraft) {
-      return;
-    }
-
-    try {
-      setCropBusy(true);
-      const croppedBlob = await createCroppedBlob(cropDraft, cropZoom, cropOffset.x, cropOffset.y);
-      const nextPreviewUrl = await readBlobAsDataUrl(croppedBlob);
-      setPreviewUrl(nextPreviewUrl);
-      setSaved(false);
-      setPendingLogoBlob(croppedBlob);
-      setFileName(cropDraft.fileName);
-      setCropDraft(null);
-    } catch (error) {
-      showLogoAlert(error instanceof Error ? error.message : "คร็อปรูปโลโก้ไม่สำเร็จ");
-    } finally {
-      setCropBusy(false);
-    }
-  }
-
-  function handleCropClose() {
-    if (cropBusy) {
-      return;
-    }
-
-    setCropDraft(null);
-  }
-
-  async function handleLogoSave() {
-    try {
-      if (!previewUrl || !pendingLogoBlob) {
-        setShellAlert({ message: "เลือกรูปภาพโลโก้ก่อนบันทึก", tone: "danger" });
-        return;
-      }
-
-      const signedUpload = await requestSignedUpload(`store-logo-${Date.now()}.webp`, "image/webp", pendingLogoBlob.size, "STORE_LOGO");
-      await uploadBlobToR2(signedUpload, pendingLogoBlob);
-
-      if (!signedUpload.publicUrl) {
-        throw new Error("ยังไม่มี public URL สำหรับโลโก้ร้าน");
-      }
-
-      const csrfToken = await ensureCsrfToken({ forceRefresh: true });
-      const response = await fetch("/api/auth/owner-logo", {
-        method: "PATCH",
-        credentials: "same-origin",
-        headers: {
-          "content-type": "application/json",
-          "x-csrf-token": csrfToken || "",
-        },
-        body: JSON.stringify({
-          logoUrl: signedUpload.publicUrl,
-          uploadedKey: signedUpload.objectKey,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error(await readApiMessage(response, "บันทึกรูปภาพโลโก้ร้านไม่สำเร็จ"));
-      }
-
-      setSavedLogo(signedUpload.publicUrl);
-      setPendingLogoBlob(null);
-      setShellAlert({ message: "บันทึกรูปภาพโลโก้ร้านแล้ว", tone: "success" });
-      router.refresh();
-    } catch (error) {
-      setShellAlert({
-        message: error instanceof Error ? error.message : "บันทึกรูปภาพโลโก้ร้านไม่สำเร็จ",
-        tone: "danger",
-      });
-    }
-  }
-
-  const cropModal = cropDraft ? (
-    <CropModal
-      draft={cropDraft}
-      zoom={cropZoom}
-      offsetX={cropOffset.x}
-      offsetY={cropOffset.y}
-      busy={cropBusy}
-      title="ครอปรูปภาพโลโก้ร้าน"
-      description="ลากภาพเพื่อจัดตำแหน่ง และใช้ตัวเลื่อนเพื่อซูมให้โลโก้อยู่ในกรอบสี่เหลี่ยม"
-      confirmLabel="ยืนยันรูปโลโก้"
-      busyLabel="กำลังคร็อป..."
-      onClose={handleCropClose}
-      onConfirm={handleCropConfirm}
-      onZoomChange={handleCropZoomChange}
-      onOffsetChange={handleCropOffsetChange}
-    />
-  ) : null;
-
-  if (compact) {
-    return (
-      <div className="grid gap-4 max-[640px]:gap-3">
-        <label
-          className="grid aspect-square min-h-[206px] cursor-pointer place-items-center overflow-hidden rounded-[14px] border border-dashed border-[rgba(100,120,160,0.32)] bg-[var(--field-bg)]"
-          aria-label="เลือกโลโก้ร้าน"
-        >
-          {previewUrl ? (
-            <span
-              className="h-full w-full bg-contain bg-center bg-no-repeat"
-              style={{ backgroundImage: `url(${previewUrl})` }}
-              role="img"
-              aria-label={fileName || "โลโก้ร้าน"}
-            />
-          ) : (
-            <span className="text-[0.95rem] font-semibold text-[var(--foreground-soft)]">โลโก้ร้าน</span>
-          )}
-          <input className="sr-only" type="file" accept="image/png,image/jpeg,image/webp" onChange={handleLogoChange} />
-        </label>
-        {previewUrl ? (
-          <button type="button" className={`${primaryButtonClass} min-h-[38px] text-[0.86rem]`} onClick={handleLogoSave}>
-            บันทึกรูปภาพโลโก้ร้าน
-          </button>
-        ) : null}
-        {cropModal}
-      </div>
-    );
-  }
-
-  return (
-    <div className="mt-2 grid gap-4">
-      <div className="flex flex-wrap justify-start gap-3 max-[900px]:[&>*]:w-full">
-        <label className={`${primaryButtonClass} cursor-pointer`}>
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" className="opacity-80" aria-hidden="true">
-            <g fill="none" stroke="currentColor" strokeWidth="2">
-              <rect width="14" height="14" x="5" y="5" rx="4" />
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="m5.14 15.32l3.55-3.754A1.75 1.75 0 0 1 9.969 11c.479 0 .938.204 1.277.566L15.387 16m-1.806-1.934l1.432-1.533a1.75 1.75 0 0 1 1.277-.566c.48 0 .939.204 1.277.566l1.274 1.43m-5.063-4.63h.009"
-              />
-            </g>
-          </svg>
-          {saved ? "เลือกโลโก้ร้านของคุณใหม่" : "เลือกรูปภาพโลโก้ร้านของคุณ"}
-          <input className="sr-only" type="file" accept="image/png,image/jpeg,image/webp" onChange={handleLogoChange} />
-        </label>
-      </div>
-
-      {previewUrl && !saved ? (
-        <button type="button" className={`${primaryButtonClass} w-fit max-[900px]:w-full`} onClick={handleLogoSave}>
-          บันทึกรูปภาพโลโก้ร้าน
-        </button>
-      ) : null}
-      {cropModal}
-    </div>
-  );
-}
-
-export function OwnerLogoStatusPreview() {
-  const { previewUrl } = useOwnerLogo();
-
-  if (previewUrl) {
-    return (
-      <div className="grid aspect-square min-h-[206px] place-items-center overflow-hidden">
-        <span
-          className="h-[74%] w-[74%] bg-contain bg-center bg-no-repeat"
-          style={{ backgroundImage: `url(${previewUrl})` }}
-          role="img"
-          aria-label="โลโก้ร้าน"
-        />
-      </div>
-    );
-  }
-
-  return (
-    <div className="grid aspect-square min-h-[206px] place-items-center overflow-hidden rounded-[14px] border border-dashed border-[rgba(100,120,160,0.32)] bg-[var(--field-bg)]">
-      <span className="text-[0.95rem] font-semibold text-[var(--foreground-soft)]">โลโก้ร้าน</span>
-    </div>
-  );
-}
-
-export function OwnerProfileClient({
-  storeName,
-  ownerName,
-  storeNamePlaceholder = "ชื่อร้าน",
-  ownerNamePlaceholder = "ชื่อเจ้าของร้าน",
-}: {
-  storeName: string;
-  ownerName: string;
-  storeNamePlaceholder?: string;
-  ownerNamePlaceholder?: string;
-}) {
-  const { setShellAlert } = useBackofficeShellAlert();
-  const router = useRouter();
-  const [savedForm, setSavedForm] = useState({ storeName, ownerName });
-  const [form, setForm] = useState({ storeName, ownerName });
-  const [submitState, setSubmitState] = useState<SubmitState>({
-    status: "idle",
-    message: "แก้ชื่อร้านและชื่อเจ้าของร้าน แล้วบันทึกเพื่ออัปเดต Status Store",
-  });
-
-  const pending = submitState.status === "saving";
-  const normalizedForm = {
-    storeName: form.storeName.trim(),
-    ownerName: form.ownerName.trim(),
-  };
-  const normalizedSavedForm = {
-    storeName: savedForm.storeName.trim(),
-    ownerName: savedForm.ownerName.trim(),
-  };
-  const hasFormValues = Boolean(normalizedForm.storeName || normalizedForm.ownerName);
-  const profileChanged = normalizedForm.storeName !== normalizedSavedForm.storeName || normalizedForm.ownerName !== normalizedSavedForm.ownerName;
-  const canSaveProfile = profileChanged && Boolean(normalizedForm.storeName && normalizedForm.ownerName);
-
-  function handleReset() {
-    setForm({ storeName: "", ownerName: "" });
-    setSubmitState({
-      status: "idle",
-      message: "แก้ชื่อร้านและชื่อเจ้าของร้าน แล้วบันทึกเพื่ออัปเดต Status Store",
-    });
-  }
-
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-
-    const nextForm = normalizedForm;
-
-    if (!nextForm.storeName || !nextForm.ownerName) {
-      setSubmitState({ status: "error", message: "กรอกชื่อร้านและชื่อเจ้าของร้านให้ครบก่อนบันทึก" });
-      setShellAlert({ message: "กรอกชื่อร้านและชื่อเจ้าของร้านให้ครบก่อนบันทึก", tone: "danger" });
-      return;
-    }
-
-    if (!profileChanged) {
-      return;
-    }
-
-    setSubmitState({ status: "saving", message: "กำลังบันทึกข้อมูลร้าน..." });
-
-    try {
-      const csrfToken = await ensureCsrfToken({ forceRefresh: true });
-      const response = await fetch("/api/auth/owner-profile", {
-        method: "PATCH",
-        credentials: "same-origin",
-        headers: {
-          "content-type": "application/json",
-          "x-csrf-token": csrfToken || "",
-        },
-        body: JSON.stringify(nextForm),
-      });
-
-      if (!response.ok) {
-        const errorMessage = await readApiMessage(response, "บันทึกข้อมูลร้านไม่สำเร็จ");
-        setSubmitState({ status: "error", message: errorMessage });
-        setShellAlert({ message: errorMessage, tone: "danger" });
-        return;
-      }
-
-      setForm(nextForm);
-      setSavedForm(nextForm);
-      setSubmitState({ status: "success", message: "บันทึกข้อมูลร้านแล้ว Status Store จะอัปเดตตามข้อมูลล่าสุด" });
-      setShellAlert({ message: "บันทึกข้อมูลร้านแล้ว", tone: "success" });
-      router.refresh();
-    } catch {
-      setSubmitState({ status: "error", message: "เชื่อมต่อระบบไม่ได้ กรุณาลองอีกครั้ง" });
-      setShellAlert({ message: "เชื่อมต่อระบบไม่ได้ กรุณาลองอีกครั้ง", tone: "danger" });
-    }
-  }
-
-  return (
-    <form className="mt-2" onSubmit={handleSubmit}>
-      <div className="grid gap-4">
-        <label className="grid gap-2">
-          <span className={fieldLabelClass}>ชื่อร้าน</span>
-          <input
-            className={inputClass}
-            value={form.storeName}
-            placeholder={storeNamePlaceholder}
-            onChange={(event) => setForm((current) => ({ ...current, storeName: event.target.value }))}
-            disabled={pending}
-            required
-            maxLength={80}
-          />
-        </label>
-        <label className="grid gap-2">
-          <span className={fieldLabelClass}>ชื่อเจ้าของร้าน</span>
-          <input
-            className={inputClass}
-            value={form.ownerName}
-            placeholder={ownerNamePlaceholder}
-            onChange={(event) => setForm((current) => ({ ...current, ownerName: event.target.value }))}
-            disabled={pending}
-            required
-            maxLength={80}
-          />
-        </label>
-      </div>
-      <div className="mt-5 flex flex-wrap justify-start gap-3 max-[900px]:[&>*]:w-full">
-        <button type="button" className={activeGhostButtonClass} onClick={handleReset} disabled={pending || !hasFormValues}>
-          รีเซ็ต
-        </button>
-        <button type="submit" className={primaryButtonClass} disabled={pending || !canSaveProfile}>
-          {pending ? "กำลังบันทึก..." : "บันทึกข้อมูลร้าน"}
-        </button>
-      </div>
-    </form>
-  );
-}
-
-function normalizeDigitInput(value: string) {
-  return value.replace(/[\s-]/g, "");
 }
 
 function normalizePaymentSettings(value: OwnerPaymentSettingsValue): OwnerPaymentSettingsValue {
@@ -1360,7 +291,7 @@ function preparePaymentSettingsForSubmit(
     const rawHasNationalId = Boolean(value.promptPayNationalId);
     const rawHasTaxId = Boolean(value.promptPayTaxId);
     const rawHasStaticQr = Boolean(value.paymentQrImageUrl);
-    
+
     const hasAllBankFields = Boolean(value.bankName && value.bankAccountName && value.bankAccountNumber);
     const hasAnyRawPromptPay = rawHasMobile || rawHasNationalId || rawHasTaxId || rawHasStaticQr;
 
@@ -1460,12 +391,12 @@ function clearPaymentSettingsForType(settings: OwnerPaymentSettingsValue, type: 
 function resolveEditorType(settings: OwnerPaymentSettingsValue): PromptPayRecipientType {
   const hasAnyData = Boolean(
     settings.promptPayMobileId ||
-      settings.promptPayNationalId ||
-      settings.promptPayTaxId ||
-      settings.paymentQrImageUrl ||
-      settings.paymentQrUploadedKey ||
-      settings.bankName ||
-      settings.bankAccountNumber
+    settings.promptPayNationalId ||
+    settings.promptPayTaxId ||
+    settings.paymentQrImageUrl ||
+    settings.paymentQrUploadedKey ||
+    settings.bankName ||
+    settings.bankAccountNumber
   );
 
   // If there is absolutely no data left in the configuration, default back to the primary Mobile PromptPay tab.
@@ -1521,7 +452,7 @@ export function OwnerPaymentSettingsClient({ initialSettings }: { initialSetting
   const targetPreviewForm = confirmSaveOpen && submitAutoEnabled ? { ...form, promptPayEnabled: true } : form;
   const submitPreviewSettings = preparePaymentSettingsForSubmit(targetPreviewForm, editorType, savedSettings.promptPayEnabled);
   const validationMessage = bankFormIncomplete ? "กรอกข้อมูลบัญชีธนาคารให้ครบก่อนบันทึก" : validatePaymentSettings(submitPreviewSettings, editorType);
-  
+
   // Localize the dirty check so the Save button only activates if the CURRENTLY VIEWED tab or global switch actually has changes.
   const isGlobalSwitchDirty = form.promptPayEnabled !== savedSettings.promptPayEnabled;
   const isActiveTabDirty = (() => {
@@ -1771,7 +702,7 @@ export function OwnerPaymentSettingsClient({ initialSettings }: { initialSetting
     const optimisticForm = { ...form, promptPayEnabled: requiresAutoEnable ? true : form.promptPayEnabled };
     const nextSettings = preparePaymentSettingsForSubmit(optimisticForm, editorType, savedSettings.promptPayEnabled);
     const errorMessage = validatePaymentSettings(nextSettings, editorType);
-    
+
     if (errorMessage) {
       setSubmitState({ status: "error", message: errorMessage });
       setShellAlert({ message: errorMessage, tone: "danger" });
@@ -1809,9 +740,8 @@ export function OwnerPaymentSettingsClient({ initialSettings }: { initialSetting
       busy={submitState.status === "saving"}
       enabled={submitPreviewSettings.promptPayEnabled}
       autoEnabled={submitAutoEnabled}
-      recipientLabel={`${promptPayRecipientOptions.find((option) => option.value === submitPreviewSettings.promptPayRecipientType)?.label || "-"}${
-        submitPreviewSettings.bankName && submitPreviewSettings.bankAccountNumber && submitPreviewSettings.promptPayRecipientType !== "BANK_ACCOUNT" ? " และ โอนเงินธนาคาร" : ""
-      }`}
+      recipientLabel={`${promptPayRecipientOptions.find((option) => option.value === submitPreviewSettings.promptPayRecipientType)?.label || "-"}${submitPreviewSettings.bankName && submitPreviewSettings.bankAccountNumber && submitPreviewSettings.promptPayRecipientType !== "BANK_ACCOUNT" ? " และ โอนเงินธนาคาร" : ""
+        }`}
       promptPaySummary={
         submitPreviewSettings.promptPayMobileId
           ? (
@@ -1853,8 +783,8 @@ export function OwnerPaymentSettingsClient({ initialSettings }: { initialSetting
 
   return (
     <form className="mt-2" onSubmit={handleSubmit}>
-      <div className="grid gap-3">
-        <div className="flex items-center justify-between gap-3 rounded-[10px] border border-[var(--border)] bg-[var(--field-bg)] px-3 py-2.5 max-[640px]:flex-col max-[640px]:items-start">
+      <div className="grid gap-2.5">
+        <div className="flex items-center justify-between gap-3 rounded-[10px] border border-[var(--border)] bg-[var(--field-bg)] px-3 py-2 max-[640px]:flex-col max-[640px]:items-start">
           <span className="grid min-w-0 gap-1">
             <span className="truncate text-[0.95rem] font-bold leading-[1.45] text-[var(--foreground)]">เปิดใช้ QR / ข้อมูลโอน</span>
             <span className="text-[0.8rem] leading-[1.45] text-[var(--foreground-soft)] max-[640px]:text-[0.78rem]">แสดงใน Payment และเช็กสลิป</span>
@@ -1867,10 +797,10 @@ export function OwnerPaymentSettingsClient({ initialSettings }: { initialSetting
                 checked={form.promptPayEnabled}
                 onChange={async (event) => {
                   const isChecked = event.target.checked;
-                  
+
                   // Only block if they actually have unsaved DATA typed into the inputs.
                   // We ignore `promptPayRecipientType` changes because simply clicking tabs mutates it, which creates false positives.
-                  const hasAnyUnsavedChanges = 
+                  const hasAnyUnsavedChanges =
                     form.promptPayMobileId !== savedSettings.promptPayMobileId ||
                     form.promptPayNationalId !== savedSettings.promptPayNationalId ||
                     form.promptPayTaxId !== savedSettings.promptPayTaxId ||
@@ -1886,8 +816,8 @@ export function OwnerPaymentSettingsClient({ initialSettings }: { initialSetting
                     return; // Immediately snap the controlled switch back!
                   }
 
-                  // If they are attempting to turn the switch ON, strictly validate the form BEFORE allowing it.
                   if (isChecked) {
+                    // They want to turn ON the CURRENT tab. Validate the CURRENT form so they get the correct error message.
                     const testFormAsEnabled = { ...form, promptPayEnabled: true };
                     const testPrepared = preparePaymentSettingsForSubmit(testFormAsEnabled, editorType, savedSettings.promptPayEnabled);
                     const testBankIncomplete = editorType === "BANK_ACCOUNT" && Boolean(testFormAsEnabled.bankName || testFormAsEnabled.bankAccountName || testFormAsEnabled.bankAccountNumber) && !(testFormAsEnabled.bankName && testFormAsEnabled.bankAccountName && testFormAsEnabled.bankAccountNumber);
@@ -1897,13 +827,20 @@ export function OwnerPaymentSettingsClient({ initialSettings }: { initialSetting
                       setShellAlert({ message: validationError, tone: "danger" });
                       return; // Immediately snap the controlled switch back to OFF! 
                     }
-                  }
 
-                  const nextForm = { ...form, promptPayEnabled: isChecked };
-                  
-                  // Proceed with a guaranteed valid optimistic toggle
-                  setForm(nextForm);
-                  await performSubmit(nextForm);
+                    const nextForm = { ...form, promptPayEnabled: true };
+                    setForm(nextForm);
+                    await performSubmit(nextForm);
+                  } else {
+                    // They want to turn OFF. Since there are no unsaved changes, they just want to disable the feature.
+                    // Use savedSettings to prevent wiping their data if they happened to click an empty tab before toggling.
+                    const nextForm = { ...savedSettings, promptPayEnabled: false };
+
+                    setEditorType(savedSettings.promptPayRecipientType);
+                    setForm(nextForm);
+                    setPromptPayDrafts(createPromptPayDrafts(nextForm));
+                    await performSubmit(nextForm);
+                  }
                 }}
                 disabled={pending}
                 aria-label={form.promptPayEnabled ? "ปิดใช้ QR และข้อมูลโอนในหน้า Payment" : "เปิดใช้ QR และข้อมูลโอนในหน้า Payment"}
@@ -1913,9 +850,9 @@ export function OwnerPaymentSettingsClient({ initialSettings }: { initialSetting
           </span>
         </div>
 
-        <div className="grid gap-2.5">
+        <div className="grid gap-2">
           <span className={fieldLabelClass}>ประเภทผู้รับเงิน</span>
-          <span className="text-[0.78rem] leading-[1.45] text-[var(--foreground-soft)]">คุณสามารถกรอกเบอร์พร้อมเพย์, เลขบัตรประชาชน, เลขผู้เสียภาษี, หรือรูป QR พร้อมกับข้อมูลบัญชีธนาคารได้</span>
+          <span className="text-[0.78rem] leading-[1.2] text-[var(--foreground-soft)]">คุณสามารถกรอกเบอร์พร้อมเพย์, เลขบัตรประชาชน, เลขผู้เสียภาษี, หรือรูป QR พร้อมกับข้อมูลบัญชีธนาคารได้</span>
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
             {promptPayRecipientOptions.map((option) => (
               <button
@@ -1923,14 +860,13 @@ export function OwnerPaymentSettingsClient({ initialSettings }: { initialSetting
                 type="button"
                 className={
                   editorType === option.value
-                    ? `grid min-h-[54px] content-center gap-0.5 rounded-[10px] border px-3 py-1.5 text-left text-[var(--foreground)] transition-colors ${
-                        option.value === "BANK_ACCOUNT"
-                          ? "border-[rgba(232,93,117,0.52)] bg-[rgba(232,93,117,0.14)] text-[#ffb0bd]"
-                          : "border-[var(--accent-border)] bg-[var(--accent-surface)]"
-                      } ${option.value === "BANK_ACCOUNT" ? "col-span-1 sm:col-span-2 mx-auto w-full sm:max-w-[calc(50%_-_2px)] justify-items-center text-center" : ""}`
+                    ? `grid min-h-[46px] content-center gap-0.5 rounded-[10px] border px-3 py-1 text-left text-[var(--foreground)] transition-colors ${option.value === "BANK_ACCOUNT"
+                      ? "border-[rgba(232,93,117,0.52)] bg-[rgba(232,93,117,0.14)] text-[#ffb0bd]"
+                      : "border-[var(--accent-border)] bg-[var(--accent-surface)]"
+                    } ${option.value === "BANK_ACCOUNT" ? "col-span-1 sm:col-span-2 mx-auto w-full sm:max-w-[calc(50%_-_2px)] justify-items-center text-center" : ""}`
                     : option.value === "BANK_ACCOUNT"
-                      ? "col-span-1 sm:col-span-2 mx-auto grid min-h-[54px] w-full sm:max-w-[calc(50%_-_2px)] content-center justify-items-center gap-0.5 rounded-[10px] border border-[rgba(232,93,117,0.34)] bg-[rgba(232,93,117,0.08)] px-3 py-1.5 text-center text-[#ff9daf] transition hover:border-[rgba(232,93,117,0.5)] hover:bg-[rgba(232,93,117,0.12)]"
-                      : "grid min-h-[54px] content-center gap-0.5 rounded-[10px] border border-[var(--border)] bg-[var(--surface-muted)] px-3 py-1.5 text-left text-[var(--foreground)] transition hover:border-[var(--border-strong)]"
+                      ? "col-span-1 sm:col-span-2 mx-auto grid min-h-[46px] w-full sm:max-w-[calc(50%_-_2px)] content-center justify-items-center gap-0.5 rounded-[10px] border border-[rgba(232,93,117,0.34)] bg-[rgba(232,93,117,0.08)] px-3 py-1 text-center text-[#ff9daf] transition hover:border-[rgba(232,93,117,0.5)] hover:bg-[rgba(232,93,117,0.12)]"
+                      : "grid min-h-[46px] content-center gap-0.5 rounded-[10px] border border-[var(--border)] bg-[var(--surface-muted)] px-3 py-1 text-left text-[var(--foreground)] transition hover:border-[var(--border-strong)]"
                 }
                 onClick={() => {
                   if (option.value === editorType) {
@@ -1997,7 +933,7 @@ export function OwnerPaymentSettingsClient({ initialSettings }: { initialSetting
         ) : null}
 
         {usesBankAccount ? (
-          <div className="grid gap-3">
+          <div className="grid gap-2.5">
             <label className="grid gap-1">
               <span className={fieldLabelClass}>ชื่อบัญชี</span>
               <input
@@ -2027,8 +963,8 @@ export function OwnerPaymentSettingsClient({ initialSettings }: { initialSetting
                   </span>
                 </button>
                 {bankDropdownOpen ? (
-                  <div className="absolute bottom-[calc(100%+10px)] left-0 right-0 z-20 overflow-hidden border border-[rgba(122,110,255,0.24)] bg-[linear-gradient(180deg,rgba(28,32,48,0.98),rgba(21,25,37,0.98))] shadow-[rgba(7,10,16,0.55)_0_18px_40px] max-[640px]:bottom-auto max-[640px]:top-[calc(100%+10px)]">
-                    <div className="max-h-[240px] overflow-y-auto py-2 [&::-webkit-scrollbar]:w-[6px] [&::-webkit-scrollbar-track]:bg-[rgba(15,19,29,0.78)] [&::-webkit-scrollbar-thumb]:bg-[linear-gradient(180deg,rgba(240,106,223,0.8),rgba(169,108,255,0.8))] hover:[&::-webkit-scrollbar-thumb]:bg-[linear-gradient(180deg,rgba(240,106,223,1),rgba(169,108,255,1))]">
+                  <div className="absolute bottom-[calc(100%+10px)] left-0 right-0 z-20 overflow-hidden border border-[var(--border-strong)] bg-[var(--panel-elevated)] shadow-[var(--shadow-card)] max-[640px]:bottom-auto max-[640px]:top-[calc(100%+10px)]">
+                    <div className="max-h-[240px] overflow-y-auto py-2 [&::-webkit-scrollbar]:w-[6px] [&::-webkit-scrollbar-track]:bg-[var(--scroll-track)] [&::-webkit-scrollbar-thumb]:[background:var(--scroll-thumb)] hover:[&::-webkit-scrollbar-thumb]:[background:var(--scroll-thumb-hover)]">
                       {thaiBankOptions.map((bankName) => {
                         const active = form.bankName === bankName;
 
@@ -2100,7 +1036,7 @@ export function OwnerPaymentSettingsClient({ initialSettings }: { initialSetting
         </p>
       </div>
 
-      <div className="mt-4 flex flex-wrap justify-start gap-3 max-[900px]:[&>*]:w-full">
+      <div className="mt-3 flex flex-wrap justify-start gap-3 max-[900px]:[&>*]:w-full">
         <button
           type="button"
           className={compactFooterGhostButtonClass}
@@ -2161,3 +1097,4 @@ export function OwnerPaymentSettingsClient({ initialSettings }: { initialSetting
     </form>
   );
 }
+

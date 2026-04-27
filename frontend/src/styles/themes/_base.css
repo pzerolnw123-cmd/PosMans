@@ -1,0 +1,107 @@
+/*
+ * _base.css — Shared design tokens (default: Midnight Violet).
+ *
+ * These CSS custom properties define the visual foundation of the entire
+ * application.  Theme-specific overrides import this file first and then
+ * reassign only the tokens that change.
+ *
+ * Selector:  :root  (no data-store-theme qualifier — this IS the default)
+ */
+
+:root {
+  /* ── Backgrounds ── */
+  --background: #0e1117;
+  --background-start: #0e1117;
+  --background-mid: #111620;
+  --background-end: #0e1117;
+  --background-glow-left: rgba(108, 92, 231, 0.1);
+  --background-glow-right: rgba(56, 103, 214, 0.08);
+
+  /* ── Foreground / text ── */
+  --foreground: #e4e8f0;
+  --foreground-soft: #8b97ad;
+  --foreground-inverse: #ffffff;
+
+  /* ── Surfaces ── */
+  --surface: rgba(22, 27, 38, 0.92);
+  --surface-strong: #1a2030;
+  --surface-muted: rgba(26, 32, 48, 0.72);
+
+  /* ── Panels ── */
+  --panel-elevated: linear-gradient(180deg, rgba(22, 27, 38, 0.94), rgba(18, 22, 34, 0.92));
+  --panel-subtle: rgba(255, 255, 255, 0.03);
+  --panel-strong: rgba(22, 27, 38, 0.76);
+
+  /* ── Fields / inputs ── */
+  --field-bg: rgba(14, 18, 28, 0.7);
+  --field-placeholder: #556070;
+
+  /* ── Borders ── */
+  --border: rgba(100, 120, 160, 0.18);
+  --border-strong: rgba(120, 140, 180, 0.28);
+
+  /* ── Brand / accent ── */
+  --brand: #6c5ce7;
+  --brand-strong: #7c6ef0;
+  --brand-soft: rgba(108, 92, 231, 0.16);
+  --brand-shadow: rgba(108, 92, 231, 0.18);
+  --accent-border: rgba(108, 92, 231, 0.44);
+  --accent-surface: rgba(108, 92, 231, 0.12);
+  --accent-text: #b9aeff;
+  --button-text: #ffffff;
+
+  /* ── Semantic ── */
+  --success: #2ed47a;
+  --success-soft: rgba(46, 212, 122, 0.14);
+  --danger: #e85d75;
+  --danger-soft: rgba(232, 93, 117, 0.14);
+
+  /* ── Shell Alerts ── */
+  --alert-success-bg: linear-gradient(180deg, rgba(14, 45, 44, 0.86), rgba(10, 25, 30, 0.96));
+  --alert-success-border: rgba(92, 230, 196, 0.22);
+  --alert-success-text: #b7f8e5;
+  --alert-success-eyebrow: rgba(169, 245, 226, 0.72);
+
+  --alert-danger-bg: linear-gradient(180deg, rgba(52, 20, 30, 0.88), rgba(30, 14, 22, 0.94));
+  --alert-danger-border: rgba(232, 93, 117, 0.26);
+  --alert-danger-text: #ff9db0;
+  --alert-danger-eyebrow: rgba(255, 178, 194, 0.72);
+
+  /* ── Cart Animations ── */
+  --cart-glow-border: rgba(240, 106, 223, 0.46);
+  --cart-glow-border-soft: rgba(240, 106, 223, 0.26);
+  --cart-glow-bg: linear-gradient(180deg, var(--accent-surface), var(--surface) 78%);
+  --cart-panel-border: rgba(240, 106, 223, 0.38);
+  --cart-panel-bg: linear-gradient(180deg, color-mix(in srgb, var(--accent-surface) 70%, var(--surface)), var(--panel-strong) 82%);
+  --cart-row-bg: rgba(240, 106, 223, 0.09);
+  --cart-row-border: rgba(240, 106, 223, 0.32);
+  --cart-shadow-strong: rgba(240, 106, 223, 0.28);
+  --cart-shadow-mid: rgba(240, 106, 223, 0.16);
+  --cart-shadow-soft: rgba(240, 106, 223, 0.12);
+  --cart-badge-bg: rgba(18, 64, 42, 0.9);
+  --cart-badge-text: #8cffbd;
+  --cart-badge-border: rgba(117, 230, 161, 0.28);
+
+  /* ── Shadows ── */
+  --shadow-card:
+    rgba(0, 0, 0, 0.25) 0 0 0 1px,
+    rgba(0, 0, 0, 0.2) 0 8px 18px,
+    rgba(0, 0, 0, 0.25) 0 16px 34px;
+  --shadow-soft:
+    rgba(0, 0, 0, 0.18) 0 0 0 1px,
+    rgba(0, 0, 0, 0.14) 0 6px 12px;
+
+  /* ── Focus ring ── */
+  --ring: rgba(108, 92, 231, 0.3);
+
+  /* ── Modal ── */
+  --modal-backdrop: rgba(7, 10, 16, 0.62);
+  --modal-surface: linear-gradient(180deg, rgba(22, 27, 38, 0.99), rgba(20, 24, 35, 0.98));
+  --modal-shadow: rgba(0, 0, 0, 0.6) 0 40px 100px;
+
+  /* ── Misc UI ── */
+  --eyebrow: #6b7a94;
+  --scroll-track: rgba(15, 19, 29, 0.78);
+  --scroll-thumb: linear-gradient(180deg, var(--brand), var(--brand-strong));
+  --scroll-thumb-hover: linear-gradient(180deg, var(--brand-strong), var(--brand));
+}

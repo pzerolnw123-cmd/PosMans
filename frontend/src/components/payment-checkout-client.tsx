@@ -580,9 +580,9 @@ export function PaymentCheckoutClient({ paymentSettings }: { paymentSettings: Ow
                 ))}
               </div>
               {billScrollMetric.visible ? (
-                <span className="pointer-events-none absolute bottom-0 right-0 top-0 w-[7px] bg-[var(--scroll-track)]">
+                <span className="pointer-events-none absolute bottom-0 right-0 top-0 w-[7px] rounded-full bg-[var(--scroll-track)]">
                   <span
-                    className="absolute left-0 w-full rounded-full bg-[var(--scroll-thumb)] shadow-[var(--brand-shadow)_0_0_14px]"
+                    className="absolute left-0 w-full rounded-full [background:var(--scroll-thumb)] shadow-[var(--brand-shadow)_0_0_14px]"
                     style={{ top: `${billScrollMetric.top}%`, height: `${billScrollMetric.height}%` }}
                   />
                 </span>
@@ -702,7 +702,7 @@ export function PaymentCheckoutClient({ paymentSettings }: { paymentSettings: Ow
           <label className="grid gap-2">
             <span className="text-[0.92rem] text-[var(--foreground-soft)]">หมายเหตุบิล</span>
             <textarea
-              className="min-h-[116px] rounded-none border border-[rgba(100,120,160,0.22)] bg-[var(--field-bg)] px-[14px] py-3 text-[var(--foreground)] outline-none transition placeholder:text-[var(--field-placeholder)] focus:border-[var(--brand-strong)] focus:shadow-[inset_0_0_0_1px_var(--ring)] disabled:cursor-not-allowed disabled:opacity-70 flex-shrink-0 resize-none max-[640px]:min-h-[96px] [&::-webkit-scrollbar]:w-[6px] [&::-webkit-scrollbar-track]:bg-[var(--scroll-track)] [&::-webkit-scrollbar-thumb]:bg-[var(--scroll-thumb)] hover:[&::-webkit-scrollbar-thumb]:bg-[var(--scroll-thumb-hover)]"
+              className="min-h-[116px] rounded-none border border-[rgba(100,120,160,0.22)] bg-[var(--field-bg)] px-[14px] py-3 text-[var(--foreground)] outline-none transition placeholder:text-[var(--field-placeholder)] focus:border-[var(--brand-strong)] focus:shadow-[inset_0_0_0_1px_var(--ring)] disabled:cursor-not-allowed disabled:opacity-70 flex-shrink-0 resize-none max-[640px]:min-h-[96px] [&::-webkit-scrollbar]:w-[6px] [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-[var(--scroll-track)] [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:[background:var(--scroll-thumb)] hover:[&::-webkit-scrollbar-thumb]:[background:var(--scroll-thumb-hover)]"
               value={completedSale ? completedSale.note || "" : note}
               onChange={(event) => setNote(event.target.value)}
               disabled={Boolean(completedSale)}

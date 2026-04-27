@@ -1,0 +1,101 @@
+/*
+ * light.css — Snow Blue theme.
+ *
+ * Overrides the base (Midnight Violet) tokens with a bright, white-
+ * background palette paired with blue accents.
+ */
+
+html[data-store-theme="light"] {
+  --background: #eef4fb;
+  --foreground: #142033;
+  --foreground-soft: #5f7291;
+  --foreground-inverse: #ffffff;
+
+  --surface: #ffffff;
+  --surface-strong: #ffffff;
+  --surface-muted: #f5f9ff;
+
+  --field-bg: rgba(247, 250, 255, 0.98);
+  --field-placeholder: #7f90a8;
+
+  --border: rgba(129, 157, 196, 0.26);
+  --border-strong: rgba(71, 118, 183, 0.34);
+
+  --brand: #0f5fd7;
+  --brand-strong: #2f7ff5;
+  --brand-soft: rgba(47, 127, 245, 0.12);
+  --brand-shadow: rgba(11, 61, 145, 0.18);
+  --brand-text-start: var(--brand);
+  --brand-text-mix: var(--brand);
+
+  --panel-elevated: #ffffff;
+  --panel-subtle: #eef5ff;
+  --panel-strong: #ffffff;
+
+  --accent-border: rgba(96, 163, 255, 0.42);
+  --accent-surface: rgba(47, 127, 245, 0.1);
+  --accent-text: #0f5fd7;
+
+  --danger: #e11d48;
+  --danger-soft: rgba(225, 29, 72, 0.1);
+
+  --success: #059669;
+  --success-soft: rgba(5, 150, 105, 0.15);
+
+  --status-text-start: var(--success);
+  --status-text-mid1: var(--success);
+  --status-text-mid2: var(--success);
+  --status-text-end: var(--success);
+  --status-text-shadow: none;
+
+  /* ── Shell Alerts ── */
+  --alert-success-bg: #ffffff;
+  --alert-success-border: #059669;
+  --alert-success-text: #000000;
+  --alert-success-eyebrow: #000000;
+
+  --alert-danger-bg: #ffffff;
+  --alert-danger-border: #e11d48;
+  --alert-danger-text: #be123c;
+  --alert-danger-eyebrow: #e11d48;
+
+  /* ── Cart Animations ── */
+  --cart-glow-border: var(--accent-border);
+  --cart-glow-border-soft: var(--accent-border);
+  --cart-glow-bg: var(--panel-elevated);
+  --cart-panel-border: var(--accent-border);
+  --cart-panel-bg: var(--panel-strong);
+  --cart-row-bg: var(--surface);
+  --cart-row-border: var(--accent-border);
+  --cart-shadow-strong: var(--brand-shadow);
+  --cart-shadow-mid: var(--brand-shadow);
+  --cart-shadow-soft: var(--brand-shadow);
+  --cart-badge-bg: var(--brand);
+  --cart-badge-text: var(--button-text);
+  --cart-badge-border: var(--accent-border);
+
+  --shadow-card:
+    rgba(68, 99, 142, 0.08) 0 0 0 1px,
+    rgba(54, 85, 128, 0.12) 0 10px 22px,
+    rgba(54, 85, 128, 0.08) 0 18px 40px;
+  --shadow-soft:
+    rgba(68, 99, 142, 0.08) 0 0 0 1px,
+    rgba(68, 99, 142, 0.1) 0 8px 18px;
+
+  --ring: rgba(96, 163, 255, 0.28);
+  --background-glow-left: rgba(47, 127, 245, 0.12);
+  --background-glow-right: rgba(94, 163, 255, 0.14);
+  --background-start: #f8fbff;
+  --background-mid: #eef5ff;
+  --background-end: #e9f1fb;
+
+  /* ── Modals ── */
+  --modal-backdrop: rgba(210, 222, 238, 0.78);
+  --modal-surface: #ffffff;
+  --modal-shadow: rgba(42, 74, 118, 0.22) 0 30px 80px;
+
+  --eyebrow: #5f7291;
+  --scroll-track: rgba(202, 217, 237, 0.72);
+  --scroll-thumb: linear-gradient(180deg, rgba(110, 181, 255, 0.96), rgba(47, 127, 245, 0.92));
+  --scroll-thumb-hover: linear-gradient(180deg, rgba(133, 194, 255, 1), rgba(47, 127, 245, 1));
+}
