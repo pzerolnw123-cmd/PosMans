@@ -15,7 +15,6 @@ import {
   uploadBlobToR2,
 } from "@/components/product-management-studio/lib";
 import type { CropDraft } from "@/components/product-management-studio/types";
-import { StatusPill } from "@/components/ui-primitives";
 import { ensureCsrfToken } from "@/lib/csrf";
 import type { OwnerLogoContextValue } from "./shared";
 import {

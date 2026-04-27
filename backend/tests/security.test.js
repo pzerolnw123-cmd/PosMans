@@ -1378,6 +1378,32 @@ describe("backend security hardening", () => {
     expect(prisma.saleOrder.create).not.toHaveBeenCalled();
   });
 
+  test("accepts empty sale notes and stores them as null", async () => {
+    const app = createApp();
+    mockOwnerSession();
+    prisma.product.findMany.mockResolvedValue([buildProduct()]);
+
+    const response = await request(app)
+      .post("/api/sales")
+      .set("Origin", "http://localhost:3000")
+      .set("Cookie", ["pos_mans_session=session-token", "pos_mans_session_csrf=csrf-token"])
+      .set("x-csrf-token", "csrf-token")
+      .send({
+        paymentMethod: "CASH",
+        note: "   ",
+        items: [{ productId: "product-1", quantity: 1 }],
+      });
+
+    expect(response.status).toBe(201);
+    expect(prisma.saleOrder.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          note: null,
+        }),
+      }),
+    );
+  });
+
   test("rejects javascript urls", () => {
     expect(() => assertSafeHttpUrl("javascript:alert(1)", "link")).toThrow();
   });

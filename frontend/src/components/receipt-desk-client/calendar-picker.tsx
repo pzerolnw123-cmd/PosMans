@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { formatDateTime, monthLabel, buildCalendarDays, toDateInputValue, shiftDateInputValue, parseDateInput } from "./shared";
+import { formatDateTime, monthLabel, buildCalendarDays, toDateInputValue, parseDateInput } from "./shared";
 
 export type CalendarPickerProps = {
   selectedDate: string;
@@ -14,15 +14,6 @@ export function CalendarPicker({ selectedDate, onSelectDate }: CalendarPickerPro
   });
 
   const today = useMemo(() => toDateInputValue(new Date()), []);
-  const yesterday = useMemo(() => shiftDateInputValue(-1), []);
-  const datePreset =
-    selectedDate === ""
-      ? "all"
-      : selectedDate === today
-        ? "today"
-        : selectedDate === yesterday
-          ? "yesterday"
-          : "custom";
 
   const calendarDays = useMemo(() => buildCalendarDays(calendarMonth), [calendarMonth]);
 

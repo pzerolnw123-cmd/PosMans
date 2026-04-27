@@ -43,7 +43,11 @@ export function ReceiptViewer({ receipt, detailLoading, actionMessage, setAction
   }
 
   useLayoutEffect(() => {
-    updateReceiptScrollbar();
+    const frameId = window.requestAnimationFrame(() => {
+      updateReceiptScrollbar();
+    });
+
+    return () => window.cancelAnimationFrame(frameId);
   }, [receipt?.id, receipt?.items.length]);
 
   function handleReceiptPointerDown(event: PointerEvent<HTMLDivElement>) {

@@ -47,8 +47,6 @@ type BackofficeShellAlertContextValue = {
 const BackofficeShellAlertContext = createContext<BackofficeShellAlertContextValue | null>(null);
 
 const eyebrowClass = "m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[var(--eyebrow)]";
-const storeBrandNameClass =
-  "bg-[linear-gradient(135deg,var(--brand-text-start,var(--foreground-inverse))_0%,color-mix(in_srgb,var(--brand)_16%,var(--brand-text-mix,white))_30%,color-mix(in_srgb,var(--brand)_48%,var(--brand-text-mix,white))_58%,var(--brand-strong)_100%)] bg-clip-text font-black tracking-normal text-transparent";
 const statusStoreNameClass =
   "bg-[linear-gradient(135deg,var(--status-text-start,#ffffff)_0%,var(--status-text-mid1,#e8fff4)_30%,var(--status-text-mid2,#8df0bb)_66%,var(--status-text-end,#34d47b)_100%)] bg-clip-text font-black tracking-normal text-transparent drop-shadow-[var(--status-text-shadow,0_8px_20px_rgba(46,212,122,0.18))]";
 const successAlertClass = "border-[var(--alert-success-border)] [background:var(--alert-success-bg)]";

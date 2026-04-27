@@ -2,7 +2,9 @@ const { ZodError } = require("zod");
 const { AppError } = require("../utils/app-error");
 
 function errorHandler(err, _req, res, _next) {
+  console.log("[errorHandler] Error:", err.constructor.name, err.message);
   if (err instanceof ZodError) {
+    console.log("[errorHandler] ZodError details:", JSON.stringify(err.issues));
     return res.status(400).json({
       error: "Invalid request data",
       details: err.issues.map((issue) => ({ path: issue.path.join("."), message: issue.message })),

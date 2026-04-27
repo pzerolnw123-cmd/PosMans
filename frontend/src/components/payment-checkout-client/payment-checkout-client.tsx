@@ -9,19 +9,14 @@ import type { OwnerPaymentSettingsValue } from "@/components/owner-settings-clie
 
 import type { CompletedSale, PaymentMethod, SaleResponse, StoredCartItem } from "./shared";
 import {
-  crc16Ccitt,
-  createPromptPayPayload,
-  emv,
   formatBaht,
+  createPromptPayPayload,
   latestSaleStorageKey,
-  normalizePromptPayProxy,
   paymentMethods,
-  promptPayRecipientOptionsLabel,
   readLatestSale,
   salesCartStorageKey,
 } from "./shared";
 import { QrPaymentInstructions, TransferInstructions } from "./payment-instructions";
-
 
 export function PaymentCheckoutClient({ paymentSettings }: { paymentSettings: OwnerPaymentSettingsValue }) {
   const router = useRouter();
@@ -127,7 +122,11 @@ export function PaymentCheckoutClient({ paymentSettings }: { paymentSettings: Ow
   }, []);
 
   useLayoutEffect(() => {
-    updateBillScrollbar();
+    const frameId = window.requestAnimationFrame(() => {
+      updateBillScrollbar();
+    });
+
+    return () => window.cancelAnimationFrame(frameId);
   }, [billItems.length]);
 
   useEffect(() => {
@@ -237,13 +236,14 @@ export function PaymentCheckoutClient({ paymentSettings }: { paymentSettings: Ow
     setBusy(true);
     setError("");
     try {
+      const normalizedNote = note.trim();
       const response = await requestJson<SaleResponse>("/api/sales", {
         method: "POST",
         body: JSON.stringify({
           paymentMethod,
           discount,
           tax,
-          note,
+          note: normalizedNote.length > 0 ? normalizedNote : null,
           items: items.map((item) => ({
             productId: item.productId,
             quantity: item.quantity,
@@ -324,7 +324,9 @@ export function PaymentCheckoutClient({ paymentSettings }: { paymentSettings: Ow
                     )}
                     <div className="grid min-w-0 gap-1">
                       <strong className="truncate text-base leading-[1.2] text-[var(--foreground)]">{item.name}</strong>
-                      <span className="text-[0.92rem] text-[var(--foreground-soft)]">{formatBaht(item.unitPrice)} x {item.quantity}</span>
+                      <span className="text-[0.92rem] text-[var(--foreground-soft)]">
+                        {formatBaht(item.unitPrice)} x {item.quantity}
+                      </span>
                     </div>
                     <strong className="text-base leading-[1.2] text-[var(--foreground)] max-[520px]:col-span-2 max-[520px]:justify-self-end">{formatBaht(item.lineTotal)}</strong>
                   </div>
@@ -409,7 +411,7 @@ export function PaymentCheckoutClient({ paymentSettings }: { paymentSettings: Ow
             )}
             <label className={`grid gap-2 ${paymentMethod !== "CASH" || completedSale ? "col-span-2" : ""}`}>
               <span className="flex items-center gap-2 text-[0.92rem] text-[var(--foreground-soft)]">
-                ส่วนลด <span className="text-[0.72rem] font-bold text-[#8cffbd] bg-[#8cffbd]/10 px-1.5 py-0.5 rounded-[4px]">%</span>
+                ส่วนลด <span className="rounded-[4px] bg-[#8cffbd]/10 px-1.5 py-0.5 text-[0.72rem] font-bold text-[#8cffbd]">%</span>
               </span>
               <input
                 className={`${inputClass} [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
@@ -431,7 +433,7 @@ export function PaymentCheckoutClient({ paymentSettings }: { paymentSettings: Ow
           </div>
           <label className="grid gap-2 max-[640px]:gap-1.5">
             <span className="flex items-center gap-2 text-[0.92rem] text-[var(--foreground-soft)]">
-              ภาษี <span className="text-[0.72rem] font-bold text-[#ff8fa2] bg-[#ff8fa2]/10 px-1.5 py-0.5 rounded-[4px]">%</span>
+              ภาษี <span className="rounded-[4px] bg-[#ff8fa2]/10 px-1.5 py-0.5 text-[0.72rem] font-bold text-[#ff8fa2]">%</span>
             </span>
             <input
               className={`${inputClass} [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
@@ -466,7 +468,12 @@ export function PaymentCheckoutClient({ paymentSettings }: { paymentSettings: Ow
           <button type="button" className={`${secondaryButtonClass} min-h-[52px] rounded-2xl`} onClick={() => router.push("/owner/sales")}>
             {completedSale ? "เปิดออเดอร์ใหม่" : "กลับไปขาย"}
           </button>
-          <button type="button" className={`${primaryButtonClass} min-h-[52px] rounded-2xl`} disabled={items.length === 0 || busy || discount > subtotal || Boolean(completedSale) || cashPaymentMissingReceivedAmount || (paymentMethod === "QR" && !qrPaymentConfigured) || (paymentMethod === "TRANSFER" && !transferPaymentConfigured)} onClick={handleConfirmPayment}>
+          <button
+            type="button"
+            className={`${primaryButtonClass} min-h-[52px] rounded-2xl`}
+            disabled={items.length === 0 || busy || discount > subtotal || Boolean(completedSale) || cashPaymentMissingReceivedAmount || (paymentMethod === "QR" && !qrPaymentConfigured) || (paymentMethod === "TRANSFER" && !transferPaymentConfigured)}
+            onClick={handleConfirmPayment}
+          >
             {busy ? "กำลังยืนยัน..." : "ยืนยันการชำระ"}
           </button>
         </div>
@@ -479,9 +486,25 @@ export function PaymentCheckoutClient({ paymentSettings }: { paymentSettings: Ow
         </div>
         <div className="grid gap-2">
           {!completedSale && qrPaymentSelected ? (
-            QrPaymentInstructions({ compact: true, qrPaymentSelected, completedSale: Boolean(completedSale), billTotal, paymentSettings, dynamicPromptPayReady, staticQrReady, promptPayQrDataUrl })
+            <QrPaymentInstructions
+              compact
+              qrPaymentSelected={qrPaymentSelected}
+              completedSale={Boolean(completedSale)}
+              billTotal={billTotal}
+              paymentSettings={paymentSettings}
+              dynamicPromptPayReady={dynamicPromptPayReady}
+              staticQrReady={staticQrReady}
+              promptPayQrDataUrl={promptPayQrDataUrl}
+            />
           ) : !completedSale && transferSelected ? (
-            TransferInstructions({ compact: true, transferSelected, completedSale: Boolean(completedSale), billTotal, paymentSettings, bankInfoFilled })
+            <TransferInstructions
+              compact
+              transferSelected={transferSelected}
+              completedSale={Boolean(completedSale)}
+              billTotal={billTotal}
+              paymentSettings={paymentSettings}
+              bankInfoFilled={bankInfoFilled}
+            />
           ) : (
             <>
               {completedSale ? (
@@ -498,7 +521,9 @@ export function PaymentCheckoutClient({ paymentSettings }: { paymentSettings: Ow
               )}
               <div className="rounded-none border border-[rgba(100,120,160,0.14)] bg-[var(--panel-subtle)] px-3.5 py-3">
                 <span className="text-[0.82rem] text-[var(--foreground-soft)]">จำนวนรายการ</span>
-                <strong className="mt-1 block text-[1.05rem] leading-[1.1] text-[var(--foreground)]">{billItems.length} รายการ / {itemCount} ชิ้น</strong>
+                <strong className="mt-1 block text-[1.05rem] leading-[1.1] text-[var(--foreground)]">
+                  {billItems.length} รายการ / {itemCount} ชิ้น
+                </strong>
               </div>
               <div className="rounded-none border border-[rgba(100,120,160,0.14)] bg-[var(--panel-subtle)] px-3.5 py-3">
                 <span className="text-[0.82rem] text-[var(--foreground-soft)]">ยอดสุทธิ</span>

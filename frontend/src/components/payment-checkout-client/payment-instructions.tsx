@@ -109,7 +109,6 @@ export function QrPaymentInstructions({
 export function TransferInstructions({
   compact = false,
   transferSelected,
-  completedSale,
   billTotal,
   paymentSettings,
   bankInfoFilled,

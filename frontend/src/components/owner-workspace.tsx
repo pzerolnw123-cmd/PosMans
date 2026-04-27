@@ -385,9 +385,7 @@ function renderOwnerScreen(
             eyebrow="Store Settings"
             title="ตั้งค่าร้าน"
             description="จัดการชื่อร้าน ชื่อเจ้าของร้าน และรหัสผ่านของบัญชีเจ้าของร้าน"
-            actions={
-              <StatusPill tone="success">พร้อมตั้งค่าแล้ว</StatusPill>
-            }
+            actions={<StatusPill tone="success">พร้อมตั้งค่าแล้ว</StatusPill>}
           />
 
           <div className="grid min-h-0 grid-cols-[minmax(250px,1fr)_minmax(250px,1fr)_minmax(250px,1fr)] items-start gap-[12px] max-[1366px]:grid-cols-[repeat(2,minmax(250px,1fr))] max-[980px]:grid-cols-1 max-[820px]:gap-4">
@@ -448,7 +446,6 @@ function renderOwnerScreen(
                 <OwnerPaymentSettingsClient initialSettings={paymentSettings} />
               </PanelCard>
             </div>
-
           </div>
         </section>
       ),

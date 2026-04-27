@@ -41,6 +41,15 @@ export type SaleResponse = {
   sale: CompletedSale;
 };
 
+export type BillItem = {
+  key: string;
+  name: string;
+  unitPrice: number;
+  quantity: number;
+  lineTotal: number;
+  imageUrl?: string | null;
+};
+
 export const paymentMethods: Array<{ value: PaymentMethod; label: string }> = [
   { value: "CASH", label: "เงินสด" },
   { value: "QR", label: "QR PromptPay" },

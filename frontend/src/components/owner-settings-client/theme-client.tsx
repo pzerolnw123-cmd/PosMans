@@ -220,12 +220,7 @@ export function OwnerThemeStatusPill() {
 export function OwnerThemeClient() {
   const { setShellAlert } = useBackofficeShellAlert();
   const [themePickerOpen, setThemePickerOpen] = useState(false);
-  const [activeTheme, setActiveTheme] = useState<OwnerThemeId | null>(null);
-  const [savingTheme, setSavingTheme] = useState(false);
-
-  useEffect(() => {
-    setActiveTheme(readOwnerTheme());
-  }, []);
+  const [activeTheme, setActiveTheme] = useState<OwnerThemeId>(() => readOwnerTheme());
 
   useEffect(() => {
     if (!activeTheme) {
@@ -277,7 +272,6 @@ export function OwnerThemeClient() {
           const previousTheme = activeTheme || "violet";
           setActiveTheme(theme);
           setThemePickerOpen(false);
-          setSavingTheme(true);
 
           void persistOwnerTheme(theme)
             .then(() => {
@@ -290,9 +284,6 @@ export function OwnerThemeClient() {
                 message: error instanceof Error ? error.message : "ไม่สามารถบันทึกธีมของผู้ใช้ได้",
                 tone: "danger",
               });
-            })
-            .finally(() => {
-              setSavingTheme(false);
             });
         }}
         onClose={() => setThemePickerOpen(false)}
