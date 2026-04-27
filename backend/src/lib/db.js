@@ -2,8 +2,12 @@ const { PrismaPg } = require("@prisma/adapter-pg");
 const { PrismaClient } = require("../generated/prisma");
 const { env } = require("../config/env");
 
+const { Pool } = require("pg");
+
 const globalForPrisma = global;
-const adapter = new PrismaPg({ connectionString: env.DATABASE_URL });
+
+const pool = new Pool({ connectionString: env.DATABASE_URL });
+const adapter = new PrismaPg(pool);
 
 const prisma =
   globalForPrisma.prisma ||

@@ -1,7 +1,7 @@
 const path = require("node:path");
 const crypto = require("node:crypto");
-const { DeleteObjectCommand, S3Client } = require("@aws-sdk/client-s3");
-const { createPresignedPost } = require("@aws-sdk/s3-presigned-post");
+const { DeleteObjectCommand, PutObjectCommand, S3Client } = require("@aws-sdk/client-s3");
+const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 const { env } = require("../config/env");
 const { AppError } = require("../utils/app-error");
 
@@ -81,27 +81,23 @@ async function createPresignedUpload({ fileName, contentType, contentLength, pur
   const validated = validateUploadRequest({ fileName, contentType, contentLength, purpose });
   const objectPrefix = normalizeObjectPrefix(prefix);
   const objectKey = `${objectPrefix}/${crypto.randomUUID()}.${validated.extension}`;
-  const presignedPost = await createPresignedPost(getR2Client(), {
+  const command = new PutObjectCommand({
     Bucket: env.R2_BUCKET,
     Key: objectKey,
-    Fields: {
-      key: objectKey,
-      "Content-Type": validated.contentType,
-    },
-    Conditions: [
-      ["content-length-range", 1, env.MAX_UPLOAD_BYTES],
-      ["eq", "$key", objectKey],
-      ["eq", "$Content-Type", validated.contentType],
-    ],
-    Expires: 60,
+    ContentType: validated.contentType,
+    ContentLength: validated.contentLength,
   });
+
+  const url = await getSignedUrl(getR2Client(), command, { expiresIn: 60 });
 
   return {
     objectKey,
     upload: {
-      method: "POST",
-      url: presignedPost.url,
-      fields: presignedPost.fields,
+      method: "PUT",
+      url,
+      headers: {
+        "Content-Type": validated.contentType,
+      },
     },
     maxUploadBytes: env.MAX_UPLOAD_BYTES,
     publicUrl: env.R2_PUBLIC_BASE_URL ? `${env.R2_PUBLIC_BASE_URL.replace(/\/$/, "")}/${objectKey}` : null,
