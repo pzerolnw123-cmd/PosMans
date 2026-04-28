@@ -1,27 +1,23 @@
 import type { ReactNode } from "react";
 import { PanelCard } from "@/components/backoffice-shell";
-import {
-  OwnerLogoClient,
-  OwnerLogoStatusPill,
-  OwnerPasswordClient,
-  OwnerPaymentSettingsClient,
-  OwnerProfileClient,
-  OwnerThemeClient,
-  OwnerThemeStatusPill,
-  type OwnerPaymentSettingsValue,
-} from "@/components/owner-settings-client";
-import { PaymentCheckoutClient } from "@/components/payment-checkout-client";
-import { ProductManagementStudio } from "@/components/product-management-studio";
-import { ReceiptDeskClient } from "@/components/receipt-desk-client";
+import type { OwnerPaymentSettingsValue } from "@/components/owner-settings-client/shared";
 import { ListStack, NoteStack, ThreeUpStats } from "@/components/owner-workspace/shared";
-import { SalesPaginationMockup } from "@/components/sales-pagination-mockup";
-import { PageHeader, StatusPill, inputClass } from "@/components/ui-primitives";
+import { PageHeader, StatusPill } from "@/components/ui-primitives";
 import type { OwnerSectionKey } from "@/components/owner-workspace";
 
 const storeNamePrompt = "กรอกชื่อร้าน";
 const ownerNamePrompt = "กรอกชื่อของคุณ";
 
-export function renderOwnerScreen(
+type OwnerScreen = {
+  eyebrow: string;
+  title: string;
+  description: string;
+  actions?: ReactNode;
+  body: ReactNode;
+  standalone?: boolean;
+};
+
+export async function renderOwnerScreen(
   activeSection: OwnerSectionKey,
   storeName: string,
   ownerName: string,
@@ -29,18 +25,9 @@ export function renderOwnerScreen(
   formOwnerName: string,
   paymentSettings: OwnerPaymentSettingsValue,
 ) {
-  const screens: Record<
-    OwnerSectionKey,
-    {
-      eyebrow: string;
-      title: string;
-      description: string;
-      actions?: ReactNode;
-      body: ReactNode;
-      standalone?: boolean;
-    }
-  > = {
-    sales: {
+  if (activeSection === "sales") {
+    const { SalesPaginationMockup } = await import("@/components/sales-pagination-mockup");
+    return {
       eyebrow: "Sales Floor",
       title: "ขายหน้าร้าน",
       description: "โครงหน้าขายแบบอิง reference เดิม แต่ย้ายไปใช้ Tailwind utility ใน JSX เพื่อให้ปรับหน้านี้ได้ตรงจุด",
@@ -62,8 +49,12 @@ export function renderOwnerScreen(
         </section>
       ),
       standalone: true,
-    },
-    payments: {
+    } satisfies OwnerScreen;
+  }
+
+  if (activeSection === "payments") {
+    const { PaymentCheckoutClient } = await import("@/components/payment-checkout-client");
+    return {
       eyebrow: "Checkout",
       title: "ชำระเงิน",
       description: "รับตะกร้าจากหน้าขาย เลือกวิธีรับเงิน ใส่ส่วนลดหรือภาษี แล้วบันทึกบิลจริง",
@@ -84,8 +75,12 @@ export function renderOwnerScreen(
         </section>
       ),
       standalone: true,
-    },
-    receipts: {
+    } satisfies OwnerScreen;
+  }
+
+  if (activeSection === "receipts") {
+    const { ReceiptDeskClient } = await import("@/components/receipt-desk-client");
+    return {
       eyebrow: "Receipt Desk",
       title: "ใบเสร็จ",
       description: "รวมการค้นบิล ซ้ำพิมพ์ และส่งสลิปแบบย่อในจอเดียว",
@@ -103,75 +98,47 @@ export function renderOwnerScreen(
         </section>
       ),
       standalone: true,
-    },
-    reports: {
+    } satisfies OwnerScreen;
+  }
+
+  if (activeSection === "reports") {
+    const { ReportsSalesChart } = await import("@/components/reports-sales-chart");
+    return {
       eyebrow: "Reports",
       title: "รายงาน",
-      description: "มุมมองอ่านเร็วสำหรับยอดขาย บิลเฉลี่ย และสิ่งที่ต้องจับตาในวันเดียว",
-      actions: <StatusPill tone="success">อัปเดตล่าสุด 5 นาทีที่แล้ว</StatusPill>,
+      description: "มุมมองยอดขายจริงแบบอ่านเร็ว พร้อมกราฟแนวโน้มตามช่วงเวลาที่เลือก",
+      actions: <StatusPill tone="success">ข้อมูลยอดขายจริง</StatusPill>,
       body: (
-        <section className="grid h-full min-h-0 grid-rows-[138px_minmax(0,1fr)] gap-[14px] max-[1180px]:grid-rows-[auto_minmax(0,1fr)] max-[820px]:gap-4">
+        <section className="grid h-full min-h-0 grid-rows-[156px_minmax(0,1fr)] gap-[18px] max-[1180px]:grid-rows-[auto_minmax(0,1fr)] max-[820px]:gap-4">
           <PageHeader
             eyebrow="Reports"
             title="รายงาน"
+            description="ติดตามยอดขายรายชั่วโมง รายวัน และสรุปสินค้าขายดีจากบิลจริง"
             actions={
-              <>
-                <StatusPill tone="success">อัปเดตล่าสุด 5 นาทีที่แล้ว</StatusPill>
-                <div className="h-5 w-[132px] rounded-full border border-[var(--border)] bg-[var(--overlay-white-06)] max-[720px]:w-full" />
-              </>
+              <StatusPill tone="success">ข้อมูลยอดขายจริง</StatusPill>
             }
           />
 
-          <div className="grid min-h-0 grid-cols-[minmax(0,1.25fr)_minmax(320px,0.75fr)] gap-[18px] max-[1280px]:grid-cols-1">
-            <PanelCard eyebrow="Today" title="ตัวชี้วัดสำคัญวันนี้" description="ตัวเลขหลักที่เจ้าของร้านใช้ตัดสินใจ" className="grid min-h-0 content-start px-[18px] py-4">
-              <div className="grid gap-[18px]">
-                <ThreeUpStats items={[["ยอดขาย", "28,450"], ["บิลเฉลี่ย", "412"], ["ช่วงพีค", "12:30"]]} />
-                <div className="grid gap-[10px] rounded-[16px] border border-[var(--border)] bg-[var(--panel-subtle)] p-4">
-                  {[
-                    ["ยอดเช้า", "8,450 บาท"],
-                    ["ยอดเที่ยง", "12,280 บาท"],
-                    ["ยอดเย็น", "7,720 บาท"],
-                    ["บิลที่ยังไม่ปิด", "3 บิล"],
-                  ].map(([label, value]) => (
-                    <div key={label} className="flex items-center justify-between gap-3 rounded-xl border border-[var(--border-hairline)] bg-[var(--surface-muted)] px-4 py-3">
-                      <span className="text-[var(--foreground-soft)]">{label}</span>
-                      <strong>{value}</strong>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </PanelCard>
-
-            <PanelCard eyebrow="Highlights" title="สิ่งที่ต้องจับตา" description="แทนกราฟยาวด้วยโน้ตที่อ่านจบเร็ว" className="grid min-h-0 content-start px-[18px] py-4">
-              <div className="grid gap-[18px]">
-                <NoteStack
-                  items={[
-                    "สินค้าขายดีที่สุดวันนี้คือ American Fried Rice",
-                    "ยอดขายเครื่องดื่มเพิ่มขึ้น 14% จากเมื่อวาน",
-                    "สาขานี้มี 3 บิลที่ยังไม่ปิดเก็บเงิน",
-                  ]}
-                />
-                <ListStack
-                  items={[
-                    { title: "12:30", subtitle: "ช่วงพีคของวัน", value: "67 ออเดอร์" },
-                    { title: "AOV", subtitle: "ค่าเฉลี่ยต่อบิล", value: "412 บาท" },
-                  ]}
-                />
-              </div>
-            </PanelCard>
-          </div>
+          <ReportsSalesChart />
         </section>
       ),
       standalone: true,
-    },
-    menu: {
+    } satisfies OwnerScreen;
+  }
+
+  if (activeSection === "menu") {
+    const { ProductManagementStudio } = await import("@/components/product-management-studio");
+    return {
       eyebrow: "Product Studio",
       title: "สินค้า",
       description: "จัดการสินค้าแบบหน้าจอเดียวตามมุมมองร้าน ใช้รายการด้านขวาและฟอร์มแก้ไขด้านซ้ายตามภาพอ้างอิง",
       body: <ProductManagementStudio />,
       standalone: true,
-    },
-    overview: {
+    } satisfies OwnerScreen;
+  }
+
+  if (activeSection === "overview") {
+    return {
       eyebrow: "Overview",
       title: "ภาพรวมร้าน",
       description: "หน้ารวมสำหรับ owner โดยไม่ปะปนเรื่อง platform-level control ของ superadmin",
@@ -229,63 +196,45 @@ export function renderOwnerScreen(
         </section>
       ),
       standalone: true,
-    },
-    calculator: {
+    } satisfies OwnerScreen;
+  }
+
+  if (activeSection === "calculator") {
+    const { ProfitCalculatorClient } = await import("@/components/profit-calculator-client");
+    return {
       eyebrow: "Cost Calculator",
       title: "คำนวณ",
-      description: "ช่วยคำนวณต้นทุน ราคาขาย และกำไรขั้นต้นสำหรับสินค้าแต่ละรายการ",
+      description: "ดึงยอดขายจริง แล้วให้เจ้าของร้านกรอกต้นทุนเองเพื่อประเมินกำไร",
       actions: <StatusPill tone="success">พร้อมคำนวณ</StatusPill>,
       body: (
-        <section className="grid h-full min-h-0 grid-rows-[144px_minmax(0,1fr)] gap-[12px] max-[1180px]:grid-rows-[auto_minmax(0,1fr)] max-[820px]:gap-4">
+        <section className="grid h-full min-h-0 grid-rows-[156px_minmax(0,1fr)] gap-[18px] max-[1180px]:grid-rows-[auto_minmax(0,1fr)] max-[820px]:gap-4">
           <PageHeader
             eyebrow="Cost Calculator"
             title="คำนวณ"
+            description="เลือกช่วงยอดขายจริง แล้วกรอกต้นทุนเพื่อดูภาพกำไรของร้าน"
             actions={
-              <>
-                <StatusPill tone="success">พร้อมคำนวณ</StatusPill>
-                <div className="h-5 w-[120px] rounded-full border border-[var(--border)] bg-[var(--overlay-white-06)] max-[720px]:w-full" />
-              </>
+              <StatusPill tone="success">พร้อมคำนวณ</StatusPill>
             }
           />
 
-          <div className="grid min-h-0 grid-cols-[minmax(0,1.1fr)_minmax(320px,0.9fr)] gap-[18px] max-[1280px]:grid-cols-1">
-            <PanelCard eyebrow="Cost Inputs" title="ข้อมูลต้นทุน" description="กรอกต้นทุนต่อหน่วย ค่าบรรจุภัณฑ์ และราคาขายที่ต้องการ" className="grid min-h-0 content-start px-[18px] py-4">
-              <div className="grid gap-[14px]">
-                {[
-                  ["ต้นทุนวัตถุดิบ", "85"],
-                  ["ค่าบรรจุภัณฑ์", "12"],
-                  ["ค่าแรงเฉลี่ยต่อชิ้น", "18"],
-                  ["ราคาขาย", "159"],
-                ].map(([label, value]) => (
-                  <label key={label} className="grid gap-2">
-                    <span className="text-[0.92rem] text-[var(--foreground-soft)]">{label}</span>
-                    <input className={inputClass} defaultValue={value} />
-                  </label>
-                ))}
-              </div>
-            </PanelCard>
-
-            <PanelCard eyebrow="Profit Snapshot" title="สรุปกำไร" description="คำนวณเบื้องต้นเพื่อใช้ตั้งราคาขายหรือปรับโปรโมชั่น" className="grid min-h-0 content-start px-[18px] py-4">
-              <div className="grid gap-[18px]">
-                <ThreeUpStats items={[["ต้นทุนรวม", "115"], ["กำไรขั้นต้น", "44"], ["Margin", "27.7%"]]} />
-                <div className="grid gap-[10px] rounded-[16px] border border-[var(--border)] bg-[var(--panel-subtle)] p-4">
-                  <div className="flex items-center justify-between gap-3 rounded-xl border border-[var(--border-hairline)] bg-[var(--surface-muted)] px-4 py-3">
-                    <span className="text-[var(--foreground-soft)]">ราคาขายแนะนำ</span>
-                    <strong>฿169</strong>
-                  </div>
-                  <div className="flex items-center justify-between gap-3 rounded-xl border border-[var(--border-hairline)] bg-[var(--surface-muted)] px-4 py-3">
-                    <span className="text-[var(--foreground-soft)]">Break-even</span>
-                    <strong>฿115</strong>
-                  </div>
-                </div>
-              </div>
-            </PanelCard>
-          </div>
+          <ProfitCalculatorClient />
         </section>
       ),
       standalone: true,
-    },
-    settings: {
+    } satisfies OwnerScreen;
+  }
+
+  const {
+    OwnerLogoClient,
+    OwnerLogoStatusPill,
+    OwnerPasswordClient,
+    OwnerPaymentSettingsClient,
+    OwnerProfileClient,
+    OwnerThemeClient,
+    OwnerThemeStatusPill,
+  } = await import("@/components/owner-settings-client");
+
+  return {
       eyebrow: "Store Settings",
       title: "ตั้งค่าร้าน",
       description: "จัดการข้อมูลร้าน เจ้าของร้าน และรหัสผ่านของบัญชีนี้",
@@ -361,8 +310,5 @@ export function renderOwnerScreen(
         </section>
       ),
       standalone: true,
-    },
-  };
-
-  return screens[activeSection];
+    } satisfies OwnerScreen;
 }

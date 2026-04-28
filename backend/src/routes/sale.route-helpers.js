@@ -66,7 +66,25 @@ const saleSelect = {
   },
 };
 
-const saleListSelect = {
+const saleReceiptListSelect = {
+  id: true,
+  code: true,
+  status: true,
+  paymentMethod: true,
+  subtotal: true,
+  discount: true,
+  tax: true,
+  total: true,
+  note: true,
+  createdAt: true,
+  items: {
+    select: {
+      quantity: true,
+    },
+  },
+};
+
+const saleReceiptDetailSelect = {
   id: true,
   code: true,
   status: true,
@@ -155,6 +173,25 @@ function serializeReceipt(order) {
   };
 }
 
+function serializeReceiptSummary(order) {
+  return {
+    id: order.id,
+    code: order.code,
+    status: order.status,
+    paymentMethod: order.paymentMethod,
+    subtotal: order.subtotal,
+    discount: order.discount,
+    tax: order.tax,
+    total: order.total,
+    note: order.note,
+    createdAt: order.createdAt,
+    itemCount: order.items.reduce((count, item) => count + item.quantity, 0),
+    items: [],
+    createdBy: null,
+    store: null,
+  };
+}
+
 function mergeItems(items) {
   const merged = new Map();
   for (const item of items) {
@@ -233,9 +270,11 @@ module.exports = {
   createSaleSchema,
   saleListQuerySchema,
   saleSelect,
-  saleListSelect,
+  saleReceiptListSelect,
+  saleReceiptDetailSelect,
   serializeSale,
   serializeReceipt,
+  serializeReceiptSummary,
   mergeItems,
   nextSaleCode,
   bangkokDateRange,

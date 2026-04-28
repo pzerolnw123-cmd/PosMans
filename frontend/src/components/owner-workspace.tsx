@@ -3,7 +3,8 @@ import type { SessionPayload } from "@/lib/session";
 import { BackofficeShell, PanelCard } from "@/components/backoffice-shell";
 import { renderOwnerScreen } from "@/components/owner-workspace/render-owner-screen";
 import { LogoutButton } from "@/components/logout-button";
-import { OwnerLogoProvider, OwnerLogoStatusPreview, type OwnerPaymentSettingsValue } from "@/components/owner-settings-client";
+import type { OwnerPaymentSettingsValue } from "@/components/owner-settings-client/shared";
+import { OwnerLogoProvider, OwnerLogoStatusPreview } from "@/components/owner-settings-client/logo-client";
 import { NoteStack, ThreeUpStats } from "@/components/owner-workspace/shared";
 
 export type OwnerSectionKey = "sales" | "payments" | "receipts" | "reports" | "menu" | "overview" | "calculator" | "settings";
@@ -96,7 +97,7 @@ function formatRoleLabel(session: SessionPayload) {
 }
 
 
-export function OwnerWorkspace({ session, paymentStore, activeSection }: OwnerWorkspaceProps) {
+export async function OwnerWorkspace({ session, paymentStore, activeSection }: OwnerWorkspaceProps) {
   const rawStoreName = session.user.store?.name?.trim() || "";
   const rawOwnerName = session.user.displayName.trim();
   const formStoreName = unsetStoreNames.has(rawStoreName) ? "" : rawStoreName;
@@ -117,7 +118,7 @@ export function OwnerWorkspace({ session, paymentStore, activeSection }: OwnerWo
     paymentQrImageUrl: paymentStore?.paymentQrImageUrl || "",
     paymentQrUploadedKey: paymentStore?.paymentQrUploadedKey || "",
   };
-  const screen = renderOwnerScreen(activeSection, storeName, ownerName, formStoreName, formOwnerName, paymentSettings);
+  const screen = await renderOwnerScreen(activeSection, storeName, ownerName, formStoreName, formOwnerName, paymentSettings);
   const showFooterCards = !screen.standalone;
   const shell = (
     <BackofficeShell

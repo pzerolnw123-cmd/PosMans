@@ -10,3 +10,6 @@ backend/.env.*
 frontend/.env
 frontend/.env.*
 !frontend/.env.example
+
+# Generated Prisma client; recreate with `npm --prefix backend run db:generate`.
+backend/src/generated/prisma/

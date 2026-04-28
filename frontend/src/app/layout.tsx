@@ -20,7 +20,9 @@ const themeInitScript = `(() => {
         document.documentElement.dataset.storeTheme = defaultTheme;
       }
     }
-  } catch {}
+  } catch {
+    // Storage can be unavailable in private mode or hardened browsers; keep the server theme.
+  }
 })();`;
 
 export const metadata: Metadata = {

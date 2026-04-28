@@ -77,12 +77,12 @@ export function CalendarPicker({ selectedDate, onSelectDate }: CalendarPickerPro
                     type="button"
                     className={
                       active
-                        ? "h-8 rounded-none border border-[var(--accent-border)] bg-[var(--accent-surface)] text-[0.78rem] font-black text-[var(--foreground)] shadow-[var(--brand-shadow)_0_8px_18px]"
+                        ? `${isToday ? "calendar-today-day" : "calendar-active-day"} h-8 rounded-none border border-[var(--accent-border)] bg-[var(--accent-surface)] text-[0.78rem] font-black text-[var(--foreground)] shadow-[var(--brand-shadow)_0_8px_18px]`
                         : isToday
-                          ? "h-8 rounded-none border border-[var(--success-border)] bg-[var(--success-wash)] text-[0.78rem] font-black text-[var(--success)]"
+                          ? "calendar-today-day h-8 rounded-none border border-[var(--success-border)] bg-[var(--success-wash)] text-[0.78rem] font-black text-[var(--success)]"
                           : day.inMonth
                             ? "h-8 rounded-none border border-transparent text-[0.78rem] font-black text-[var(--foreground)] transition hover:border-[var(--accent-border)] hover:bg-[var(--accent-surface)]"
-                            : "h-8 rounded-none border border-transparent text-[0.78rem] font-black text-[var(--foreground-muted)] transition hover:text-[var(--foreground-soft)]"
+                            : "calendar-outside-day h-8 rounded-none border border-[var(--border-muted)] bg-[var(--surface-muted)] text-[0.78rem] font-black text-[var(--foreground-muted)] opacity-60 transition hover:border-[var(--border)] hover:opacity-80"
                     }
                     onClick={() => {
                       applyDateFilter(day.value);

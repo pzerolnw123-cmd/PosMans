@@ -163,7 +163,15 @@ export function PaymentCheckoutPanels({
             <button
               key={method.value}
               type="button"
-              className={displayedPaymentMethod === method.value ? `${primaryButtonClass} min-h-[52px] rounded-2xl` : `${secondaryButtonClass} min-h-[52px] rounded-2xl`}
+              className={`${secondaryButtonClass} min-h-[52px] rounded-2xl`}
+              style={
+                displayedPaymentMethod === method.value
+                  ? {
+                      backgroundColor: "color-mix(in srgb, var(--surface-muted) 82%, var(--foreground) 8%)",
+                      opacity: 1,
+                    }
+                  : undefined
+              }
               onClick={() => setPaymentMethod(method.value)}
               disabled={Boolean(completedSale) || method.value === "CARD"}
               aria-disabled={method.value === "CARD"}

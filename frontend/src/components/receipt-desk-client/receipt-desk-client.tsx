@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { requestJson } from "@/components/product-management-studio/lib";
 import { Loader, secondaryButtonClass, StatusPill } from "@/components/ui-primitives";
 import type { Receipt, ReceiptDetailResponse, ReceiptListResponse } from "./shared";
@@ -13,6 +13,7 @@ const pageSize = 4;
 export function ReceiptDeskClient() {
   const [receipts, setReceipts] = useState<Receipt[]>([]);
   const [selectedReceipt, setSelectedReceipt] = useState<Receipt | null>(null);
+  const [selectedReceiptId, setSelectedReceiptId] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState(() => toDateInputValue(new Date()));
   const [page, setPage] = useState(1);
   const [pagination, setPagination] = useState({ page: 1, pageSize, totalItems: 0, totalPages: 1 });
@@ -20,6 +21,8 @@ export function ReceiptDeskClient() {
   const [detailLoading, setDetailLoading] = useState(false);
   const [error, setError] = useState("");
   const [actionMessage, setActionMessage] = useState("");
+  const detailRequestRef = useRef(0);
+  const selectedReceiptRef = useRef<Receipt | null>(null);
 
   const today = useMemo(() => toDateInputValue(new Date()), []);
   const yesterday = useMemo(() => shiftDateInputValue(-1), []);
@@ -50,15 +53,23 @@ export function ReceiptDeskClient() {
         const response = await requestJson<ReceiptListResponse>(`/api/sales?${params.toString()}`);
         if (cancelled) return;
 
-        setReceipts(response.receipts);
+        const nextReceipts = response.receipts;
+        setReceipts(nextReceipts);
         setPagination(response.pagination);
-        setSelectedReceipt((current) => {
-          if (current && response.receipts.some((receipt) => receipt.id === current.id)) {
-            return current;
-          }
 
-          return response.receipts[0] || null;
-        });
+        const currentReceipt = selectedReceiptRef.current;
+        const currentStillVisible = currentReceipt && nextReceipts.some((receipt) => receipt.id === currentReceipt.id);
+        if (currentStillVisible) {
+          setSelectedReceiptId(currentReceipt.id);
+        } else {
+          const nextReceipt = nextReceipts[0] || null;
+          setSelectedReceiptId(nextReceipt?.id || null);
+          setSelectedReceipt(nextReceipt);
+          selectedReceiptRef.current = nextReceipt;
+          if (nextReceipt) {
+            void selectReceipt(nextReceipt);
+          }
+        }
         if (response.pagination.page !== page) {
           setPage(response.pagination.page);
         }
@@ -66,6 +77,8 @@ export function ReceiptDeskClient() {
         if (!cancelled) {
           setReceipts([]);
           setSelectedReceipt(null);
+          selectedReceiptRef.current = null;
+          setSelectedReceiptId(null);
           setError(loadError instanceof Error ? loadError.message : "โหลดใบเสร็จไม่สำเร็จ");
         }
       } finally {
@@ -82,17 +95,29 @@ export function ReceiptDeskClient() {
   }, [page, selectedDate]);
 
   async function selectReceipt(receipt: Receipt) {
+    const requestId = detailRequestRef.current + 1;
+    detailRequestRef.current = requestId;
     setActionMessage("");
+    setSelectedReceiptId(receipt.id);
     setSelectedReceipt(receipt);
+    selectedReceiptRef.current = receipt;
 
     try {
       setDetailLoading(true);
       const response = await requestJson<ReceiptDetailResponse>(`/api/sales/${receipt.id}`);
+      if (detailRequestRef.current !== requestId) {
+        return;
+      }
       setSelectedReceipt(response.receipt);
+      selectedReceiptRef.current = response.receipt;
     } catch (detailError) {
-      setActionMessage(detailError instanceof Error ? detailError.message : "โหลดรายละเอียดใบเสร็จไม่สำเร็จ");
+      if (detailRequestRef.current === requestId) {
+        setActionMessage(detailError instanceof Error ? detailError.message : "โหลดรายละเอียดใบเสร็จไม่สำเร็จ");
+      }
     } finally {
-      setDetailLoading(false);
+      if (detailRequestRef.current === requestId) {
+        setDetailLoading(false);
+      }
     }
   }
 
@@ -163,7 +188,7 @@ export function ReceiptDeskClient() {
             <div className="rounded-none border border-[var(--danger-border)] bg-[var(--danger-soft)] px-4 py-3 text-[var(--danger-bright)]">{error}</div>
           ) : receipts.length > 0 ? (
             receipts.map((receipt) => {
-              const active = selectedReceipt?.id === receipt.id;
+              const active = selectedReceiptId === receipt.id;
 
               return (
                 <button

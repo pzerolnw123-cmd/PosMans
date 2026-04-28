@@ -167,6 +167,7 @@ model SaleOrder {
 
   @@unique([storeId, code])
   @@index([storeId, createdAt])
+  @@index([storeId, createdAt, id])
   @@index([createdByUserId, createdAt])
 }
 

@@ -9,9 +9,11 @@ const {
   createSaleSchema,
   saleListQuerySchema,
   saleSelect,
-  saleListSelect,
+  saleReceiptListSelect,
+  saleReceiptDetailSelect,
   serializeSale,
   serializeReceipt,
+  serializeReceiptSummary,
   mergeItems,
   nextSaleCode,
   bangkokDateRange,
@@ -57,7 +59,7 @@ router.get("/", requireStoreRole(["OWNER"]), async (req, res, next) => {
       prisma.saleOrder.count({ where }),
       prisma.saleOrder.findMany({
         where,
-        select: saleListSelect,
+        select: saleReceiptListSelect,
         orderBy: [{ createdAt: "desc" }, { id: "desc" }],
         skip: (requestedPage - 1) * query.pageSize,
         take: query.pageSize,
@@ -68,9 +70,9 @@ router.get("/", requireStoreRole(["OWNER"]), async (req, res, next) => {
     const receipts =
       page === requestedPage
         ? requestedReceipts
-        : await prisma.saleOrder.findMany({
+          : await prisma.saleOrder.findMany({
             where,
-            select: saleListSelect,
+            select: saleReceiptListSelect,
             orderBy: [{ createdAt: "desc" }, { id: "desc" }],
             skip: (page - 1) * query.pageSize,
             take: query.pageSize,
@@ -78,7 +80,7 @@ router.get("/", requireStoreRole(["OWNER"]), async (req, res, next) => {
 
     res.set("Cache-Control", "no-store");
     res.json({
-      receipts: receipts.map(serializeReceipt),
+      receipts: receipts.map(serializeReceiptSummary),
       pagination: {
         page,
         pageSize: query.pageSize,
@@ -96,7 +98,7 @@ router.get("/:saleId", requireStoreRole(["OWNER"]), async (req, res, next) => {
     const storeId = await requireOwnerStoreId(req, res);
     const receipt = await prisma.saleOrder.findFirst({
       where: { id: req.params.saleId, storeId },
-      select: saleListSelect,
+      select: saleReceiptDetailSelect,
     });
 
     if (!receipt) {

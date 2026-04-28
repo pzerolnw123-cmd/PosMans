@@ -34,7 +34,7 @@ export function CropModal({
   onZoomChange,
   onOffsetChange,
   title = "ครอปรูปภาพสินค้า",
-  description = "ลากภาพเพื่อจัดตำแหน่ง และใช้ตัวเลื่อนเพื่อซูมก่อนอัปโหลดขึ้น R2",
+  description = "จัดตำแหน่งรูปภาพให้พอดีกับกรอบ แล้วกดยืนยัน",
   confirmLabel = "ยืนยันอัปโหลด",
   busyLabel = "อัปโหลด...",
 }: CropModalProps) {

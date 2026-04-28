@@ -1,7 +1,8 @@
 import { useLayoutEffect, useMemo, useRef, useState, type PointerEvent } from "react";
+import { useBackofficeShellAlert } from "@/components/backoffice-shell";
 import { Loader, primaryButtonClass, secondaryButtonClass } from "@/components/ui-primitives";
-import type { Receipt } from "./shared";
-import { createReceiptPdfBlob, formatBaht, formatDateTime, paymentMethodLabels } from "./shared";
+import type { Receipt } from "./receipt-format";
+import { formatBaht, formatDateTime, paymentMethodLabels, receiptPdfFileName } from "./receipt-format";
 
 export type ReceiptViewerProps = {
   receipt: Receipt | null;
@@ -11,6 +12,7 @@ export type ReceiptViewerProps = {
 };
 
 export function ReceiptViewer({ receipt, detailLoading, actionMessage, setActionMessage }: ReceiptViewerProps) {
+  const { setShellAlert } = useBackofficeShellAlert();
   const [receiptScrollMetric, setReceiptScrollMetric] = useState({ top: 0, height: 100, visible: false });
   const receiptScrollRef = useRef<HTMLDivElement | null>(null);
   const receiptDragRef = useRef({
@@ -89,6 +91,19 @@ export function ReceiptViewer({ receipt, detailLoading, actionMessage, setAction
     }
   }
 
+  function blobToBase64(blob: Blob) {
+    return new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const dataUrl = String(reader.result || "");
+        const [, base64 = ""] = dataUrl.split(",");
+        resolve(base64);
+      };
+      reader.onerror = () => reject(new Error("อ่านไฟล์ PDF ไม่สำเร็จ"));
+      reader.readAsDataURL(blob);
+    });
+  }
+
   async function handlePrint() {
     if (!receipt) return;
 
@@ -107,11 +122,30 @@ export function ReceiptViewer({ receipt, detailLoading, actionMessage, setAction
     pdfWindow.document.close();
 
     try {
+      const { createReceiptPdfBlob } = await import("./receipt-pdf");
       const pdfBlob = await createReceiptPdfBlob(receipt);
-      const pdfUrl = URL.createObjectURL(pdfBlob);
-      pdfWindow.location.href = `${pdfUrl}#zoom=page-width`;
+      const pdfBase64 = await blobToBase64(pdfBlob);
+      const response = await fetch(`/api/sales/${encodeURIComponent(receipt.id)}/receipt.pdf`, {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          fileName: receiptPdfFileName(receipt),
+          pdfBase64,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("เตรียม PDF สำหรับพิมพ์ไม่สำเร็จ");
+      }
+
+      const data = (await response.json()) as { url?: string };
+      if (!data.url) {
+        throw new Error("ไม่พบ URL สำหรับเปิด PDF");
+      }
+
+      pdfWindow.location.href = `${data.url}#zoom=page-width`;
       setActionMessage("");
-      pdfWindow.addEventListener("pagehide", () => URL.revokeObjectURL(pdfUrl), { once: true });
     } catch (printError) {
       pdfWindow.close();
       setActionMessage(printError instanceof Error ? printError.message : "สร้าง PDF ไม่สำเร็จ กรุณาลองอีกครั้ง");
@@ -131,14 +165,15 @@ export function ReceiptViewer({ receipt, detailLoading, actionMessage, setAction
 
     try {
       await navigator.clipboard.writeText(text);
-      setActionMessage("คัดลอกข้อมูลใบเสร็จแล้ว");
+      setActionMessage("");
+      setShellAlert({ message: "คัดลอกข้อมูลใบเสร็จแล้ว", tone: "success" });
     } catch {
       setActionMessage("คัดลอกไม่สำเร็จ กรุณาลองอีกครั้ง");
     }
   }
 
   return (
-    <section className="grid h-fit min-h-0 content-start gap-[18px] rounded-none border border-[var(--border)] bg-[var(--panel-strong)] px-5 py-[18px] shadow-[var(--shadow-soft)] max-[820px]:px-4 max-[820px]:py-4">
+    <section className="grid h-fit max-h-[calc(100vh-48px)] min-h-0 content-start gap-[14px] overflow-hidden rounded-none border border-[var(--border)] bg-[var(--panel-strong)] px-5 py-[18px] shadow-[var(--shadow-soft)] max-[820px]:px-4 max-[820px]:py-4">
       <div>
         <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[var(--eyebrow)]">Print & Share</p>
         <strong className="my-[10px] block text-[clamp(1.65rem,2.7vw,2.2rem)] leading-none tracking-[-0.06em] text-[var(--foreground)]">งานหลังปิดบิล</strong>
@@ -147,7 +182,7 @@ export function ReceiptViewer({ receipt, detailLoading, actionMessage, setAction
 
       {receipt ? (
         <>
-          <div className="relative mx-auto grid max-h-[min(520px,calc(100vh-320x))] min-h-0 w-full max-w-[320px] grid-rows-[auto_minmax(0,1fr)_auto] gap-3 overflow-hidden rounded-none border border-[var(--border-subtle)] bg-[var(--field-bg)] px-5 py-4 max-[520px]:max-w-none max-[520px]:px-4">
+          <div className="relative mx-auto grid max-h-[min(420px,calc(100vh-380px))] min-h-0 w-full max-w-[320px] grid-rows-[auto_minmax(0,1fr)_auto] gap-3 overflow-hidden rounded-none border border-[var(--border-subtle)] bg-[var(--field-bg)] px-5 py-4 max-[520px]:max-w-none max-[520px]:px-4">
             <div className="text-center">
               <p className="m-0 text-[0.6rem] font-bold uppercase tracking-[0.28em] text-[var(--eyebrow)]">Receipt Preview</p>
               <strong className="mt-3 block truncate whitespace-nowrap text-[0.85rem] leading-[1.2] text-[var(--foreground)]">{receipt.code}</strong>

@@ -2,7 +2,6 @@
 
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type PointerEvent } from "react";
 import { useRouter } from "next/navigation";
-import QRCode from "qrcode";
 import { useBackofficeShellAlert } from "@/components/backoffice-shell";
 import { invalidateProductListCache, requestJson } from "@/components/product-management-studio/lib";
 import { Loader } from "@/components/ui-primitives";
@@ -149,7 +148,8 @@ export function PaymentCheckoutClient({ paymentSettings }: { paymentSettings: Ow
         const rootStyle = getComputedStyle(document.documentElement);
         const qrForeground = rootStyle.getPropertyValue("--qr-foreground").trim() || rootStyle.getPropertyValue("--brand").trim();
         const qrBackground = rootStyle.getPropertyValue("--qr-background").trim() || rootStyle.getPropertyValue("--foreground-inverse").trim();
-        const dataUrl = await QRCode.toDataURL(payload, {
+        const { toDataURL } = await import("qrcode");
+        const dataUrl = await toDataURL(payload, {
           errorCorrectionLevel: "M",
           margin: 2,
           scale: 7,

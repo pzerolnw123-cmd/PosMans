@@ -216,13 +216,13 @@ export async function uploadBlobToR2(payload: SignedUploadPayload, blob: Blob) {
     }
   } catch (error) {
     if (error instanceof TypeError) {
-      throw new Error("อัปโหลดไปที่ R2 ไม่ได้เพราะ CORS ของ bucket ยังไม่อนุญาต localhost:3000");
+      throw new Error("อัปโหลดรูปภาพไม่สำเร็จ กรุณาตรวจสอบการตั้งค่าอัปโหลด");
     }
 
     throw error;
   }
 
   if (!response.ok) {
-    throw new Error("อัปโหลดไฟล์ไปที่ R2 ไม่สำเร็จ");
+    throw new Error("อัปโหลดไฟล์ไม่สำเร็จ");
   }
 }
