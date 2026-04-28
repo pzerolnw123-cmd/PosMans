@@ -1,36 +1,12 @@
-"use client";
+﻿"use client";
 
 import type { ChangeEvent } from "react";
 import { useEffect, useRef, useState } from "react";
 import { useBackofficeShellAlert } from "@/components/backoffice-shell";
-import { ConfirmDeleteModal } from "@/components/product-management-studio/confirm-delete-modal";
-import { CropModal } from "@/components/product-management-studio/crop-modal";
-import { ProductDetailPanel } from "@/components/product-management-studio/detail-panel";
-import {
-  ACCEPTED_IMAGE_TYPES,
-  clampOffset,
-  createCroppedBlob,
-  CROP_VIEWPORT_SIZE,
-  createImageObjectUrl,
-  loadImage,
-  MAX_IMAGE_BYTES,
-  requestJson,
-  requestProductList,
-  requestSignedUpload,
-  invalidateProductListCache,
-  revokeManagedObjectUrl,
-  uploadBlobToR2,
-} from "@/components/product-management-studio/lib";
-import { ProductListPanel } from "@/components/product-management-studio/list-panel";
-import {
-  categoryOptions,
-  isDraftProduct,
-  makeNewProduct,
-  type CropDraft,
-  type ProductCategory,
-  type ProductItem,
-} from "@/components/product-management-studio/types";
-import { PageHeader, StatusPill } from "@/components/ui-primitives";
+import { ProductManagementStudioLayout } from "@/components/product-management-studio/layout";
+import { ACCEPTED_IMAGE_TYPES, clampOffset, createCroppedBlob, CROP_VIEWPORT_SIZE, createImageObjectUrl, invalidateProductListCache, loadImage, MAX_IMAGE_BYTES, requestJson, requestSignedUpload, revokeManagedObjectUrl, uploadBlobToR2 } from "@/components/product-management-studio/lib";
+import { useProductListLoader } from "@/components/product-management-studio/use-product-list-loader";
+import { categoryOptions, isDraftProduct, makeNewProduct, type CropDraft, type ProductCategory, type ProductItem } from "@/components/product-management-studio/types";
 
 export function ProductManagementStudio() {
   const { setShellAlert } = useBackofficeShellAlert();
@@ -86,59 +62,7 @@ export function ProductManagementStudio() {
     };
   }, [setShellAlert, uploadError]);
 
-  useEffect(() => {
-    let cancelled = false;
-
-    async function loadProducts() {
-      try {
-        setProductsLoading(true);
-        const params = new URLSearchParams({
-          page: String(page),
-          pageSize: String(itemsPerPage),
-          category: activeCategory,
-        });
-        const response = await requestProductList(params);
-        if (cancelled) return;
-
-        setPagination(response.pagination);
-
-        if (response.pagination.page !== page) {
-          setPage(response.pagination.page);
-        }
-
-        const pendingDraft = pendingDraftRef.current;
-        const nextProducts = pendingDraft
-          ? [pendingDraft, ...response.products.filter((item) => item.id !== pendingDraft.id)]
-          : response.products;
-
-        if (nextProducts.length > 0) {
-          const limitedProducts = nextProducts.slice(0, itemsPerPage);
-          setProducts(limitedProducts);
-          setServerProducts(response.products);
-          setSelectedId((current) => (limitedProducts.some((item) => item.id === current) ? current : limitedProducts[0].id));
-          return;
-        }
-
-        setProducts([]);
-        setServerProducts([]);
-        setSelectedId("");
-      } catch (error) {
-        if (!cancelled) {
-          setUploadError(error instanceof Error ? error.message : "โหลดรายการสินค้าไม่สำเร็จ");
-        }
-      } finally {
-        if (!cancelled) {
-          setProductsLoading(false);
-        }
-      }
-    }
-
-    loadProducts();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [activeCategory, itemsPerPage, page]);
+  useProductListLoader({ activeCategory, itemsPerPage, page, pendingDraftRef, setPage, setPagination, setProducts, setProductsLoading, setSelectedId, setServerProducts, setUploadError });
 
   const effectiveSelectedId = pendingDraftRef.current?.id ?? selectedId;
   const selectedProduct = products.find((item) => item.id === effectiveSelectedId) ?? products[0] ?? null;
@@ -518,92 +442,5 @@ export function ProductManagementStudio() {
     }
   }
 
-  return (
-    <div
-      className={
-        compactMode
-          ? "grid h-full min-h-0 grid-rows-[minmax(0,1fr)] gap-[18px]"
-          : "grid h-full min-h-0 grid-rows-[156px_minmax(0,1fr)] gap-[18px] max-[1180px]:grid-rows-[auto_minmax(0,1fr)] max-[820px]:gap-4"
-      }
-    >
-      {!compactMode ? (
-        <PageHeader
-          eyebrow="Product Studio"
-          title="สินค้า"
-          description={
-            <>
-              จัดการรายการสินค้าของคุณ ทั้งการแก้ไขราคา หมวดหมู่ และสถานะการขาย <br /> พร้อมระบบอัปโหลดรูปภาพที่รวดเร็ว
-            </>
-          }
-          actions={<StatusPill tone="success">พร้อมใช้งานแล้ว</StatusPill>}
-        />
-      ) : null}
-
-      <div className="grid min-h-0 items-start gap-[18px] [grid-template-columns:minmax(400px,1fr)_minmax(0,1.3fr)] max-[1366px]:grid-cols-1 max-[820px]:gap-4">
-        <ProductDetailPanel
-          compactMode={compactMode}
-          productsLoading={productsLoading}
-          saveBusy={saveBusy}
-          deleteBusy={deleteBusy}
-          isDirty={isDirty}
-          selectedProduct={selectedProduct}
-          onCreateNewProduct={handleCreateNewProduct}
-          onUpdateProduct={updateSelectedProduct}
-          onSaveChanges={handleSaveChanges}
-          onChooseImageClick={handleChooseImageClick}
-          onBackToProducts={handleBackToProducts}
-          onToggleSaleStatus={handleToggleSaleStatus}
-          onToggleStock={handleToggleStock}
-          onResetForm={handleResetForm}
-          onDeleteConfirmed={handleDeleteRequest}
-        />
-
-        <ProductListPanel
-          activeCategory={activeCategory}
-          currentPage={currentPage}
-          filteredCount={pagination.totalItems}
-          itemsPerPage={itemsPerPage}
-          productsLoading={productsLoading}
-          selectionTransitionLocked={Boolean(pendingDraftRef.current)}
-          selectedId={effectiveSelectedId}
-          totalPages={totalPages}
-          visibleProducts={visibleProducts}
-          onCategoryChange={handleCategoryChange}
-          onPageChange={setPage}
-          onSelectProduct={setSelectedId}
-        />
-      </div>
-
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/jpeg,image/png,image/webp"
-        className="hidden"
-        onChange={handleFileSelection}
-      />
-
-      {cropDraft ? (
-        <CropModal
-          draft={cropDraft}
-          zoom={cropZoom}
-          offsetX={cropOffset.x}
-          offsetY={cropOffset.y}
-          busy={uploadBusy}
-          onClose={handleCropClose}
-          onConfirm={handleCropConfirm}
-          onZoomChange={handleCropZoomChange}
-          onOffsetChange={handleCropOffsetChange}
-        />
-      ) : null}
-
-      {isDeleteModalOpen && selectedProduct ? (
-        <ConfirmDeleteModal
-          product={selectedProduct}
-          busy={deleteBusy}
-          onClose={() => setIsDeleteModalOpen(false)}
-          onConfirm={handleFinalDelete}
-        />
-      ) : null}
-    </div>
-  );
+  return <ProductManagementStudioLayout compactMode={compactMode} productsLoading={productsLoading} saveBusy={saveBusy} deleteBusy={deleteBusy} isDirty={isDirty} selectedProduct={selectedProduct} activeCategory={activeCategory} currentPage={currentPage} filteredCount={pagination.totalItems} itemsPerPage={itemsPerPage} selectionTransitionLocked={Boolean(pendingDraftRef.current)} selectedId={effectiveSelectedId} totalPages={totalPages} visibleProducts={visibleProducts} fileInputRef={fileInputRef} cropDraft={cropDraft} cropZoom={cropZoom} cropOffset={cropOffset} uploadBusy={uploadBusy} isDeleteModalOpen={isDeleteModalOpen} onCreateNewProduct={handleCreateNewProduct} onUpdateProduct={updateSelectedProduct} onSaveChanges={handleSaveChanges} onChooseImageClick={handleChooseImageClick} onBackToProducts={handleBackToProducts} onToggleSaleStatus={handleToggleSaleStatus} onToggleStock={handleToggleStock} onResetForm={handleResetForm} onDeleteConfirmed={handleDeleteRequest} onCategoryChange={handleCategoryChange} onPageChange={setPage} onSelectProduct={setSelectedId} onFileSelection={handleFileSelection} onCropClose={handleCropClose} onCropConfirm={handleCropConfirm} onCropZoomChange={handleCropZoomChange} onCropOffsetChange={handleCropOffsetChange} onCloseDeleteModal={() => setIsDeleteModalOpen(false)} onFinalDelete={handleFinalDelete} />;
 }

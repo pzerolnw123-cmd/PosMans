@@ -132,7 +132,7 @@ export function ReceiptViewer({ receipt, detailLoading, actionMessage, setAction
 
       {receipt ? (
         <>
-          <div className="relative mx-auto grid max-h-[min(520px,calc(100vh-320x))] min-h-0 w-full max-w-[320px] grid-rows-[auto_minmax(0,1fr)_auto] gap-3 overflow-hidden rounded-none border border-[rgba(100,120,160,0.14)] bg-[var(--field-bg)] px-5 py-4 max-[520px]:max-w-none max-[520px]:px-4">
+          <div className="relative mx-auto grid max-h-[min(520px,calc(100vh-320x))] min-h-0 w-full max-w-[320px] grid-rows-[auto_minmax(0,1fr)_auto] gap-3 overflow-hidden rounded-none border border-[var(--border-subtle)] bg-[var(--field-bg)] px-5 py-4 max-[520px]:max-w-none max-[520px]:px-4">
             <div className="text-center">
               <p className="m-0 text-[0.6rem] font-bold uppercase tracking-[0.28em] text-[var(--eyebrow)]">Receipt Preview</p>
               <strong className="mt-3 block truncate whitespace-nowrap text-[0.85rem] leading-[1.2] text-[var(--foreground)]">{receipt.code}</strong>
@@ -140,7 +140,7 @@ export function ReceiptViewer({ receipt, detailLoading, actionMessage, setAction
               <p className="mt-1 text-[0.78rem] text-[var(--foreground-soft)]">{formatDateTime(receipt.createdAt)}</p>
             </div>
 
-            <div className="relative max-h-[180px] min-h-0 border-y border-y-[rgba(100,120,160,0.14)] py-3">
+            <div className="relative max-h-[180px] min-h-0 border-y border-y-[var(--border-subtle)] py-3">
               <div
                 ref={receiptScrollRef}
                 className={
@@ -176,7 +176,7 @@ export function ReceiptViewer({ receipt, detailLoading, actionMessage, setAction
               <div className="flex justify-between gap-3 max-[420px]:flex-col max-[420px]:items-start"><span className="text-[var(--foreground-soft)]">Subtotal</span><strong className="text-[var(--foreground)]">{formatBaht(receipt.subtotal)}</strong></div>
               <div className="flex justify-between gap-3 max-[420px]:flex-col max-[420px]:items-start"><span className="text-[var(--foreground-soft)]">Discount</span><strong className="text-[var(--foreground)]">{formatBaht(receipt.discount)}</strong></div>
               <div className="flex justify-between gap-3 max-[420px]:flex-col max-[420px]:items-start"><span className="text-[var(--foreground-soft)]">Tax</span><strong className="text-[var(--foreground)]">{formatBaht(receipt.tax)}</strong></div>
-              <div className="flex justify-between gap-3 border-t border-t-[rgba(100,120,160,0.14)] pt-2 text-[1rem] max-[420px]:flex-col max-[420px]:items-start"><span className="text-[var(--foreground)]">สุทธิ</span><strong className="text-[var(--foreground)]">{formatBaht(receipt.total)}</strong></div>
+              <div className="flex justify-between gap-3 border-t border-t-[var(--border-subtle)] pt-2 text-[1rem] max-[420px]:flex-col max-[420px]:items-start"><span className="text-[var(--foreground)]">สุทธิ</span><strong className="text-[var(--foreground)]">{formatBaht(receipt.total)}</strong></div>
             </div>
             {detailLoading ? (
               <div className="absolute inset-0 z-20 grid place-items-center bg-[color:color-mix(in_srgb,var(--field-bg)_82%,transparent)] backdrop-blur-[1px]">
@@ -194,7 +194,7 @@ export function ReceiptViewer({ receipt, detailLoading, actionMessage, setAction
             </button>
           </div>
 
-          <div className="grid gap-2 rounded-none border border-[rgba(100,120,160,0.14)] bg-[var(--panel-subtle)] px-3.5 py-3 text-[0.86rem]">
+          <div className="grid gap-2 rounded-none border border-[var(--border-subtle)] bg-[var(--panel-subtle)] px-3.5 py-3 text-[0.86rem]">
             <div className="flex justify-between gap-3"><span className="text-[var(--foreground-soft)]">วิธีชำระ</span><strong className="text-[var(--foreground)]">{paymentMethodLabels[receipt.paymentMethod]}</strong></div>
             <div className="flex justify-between gap-3"><span className="text-[var(--foreground-soft)]">จำนวนสินค้า</span><strong className="text-[var(--foreground)]">{selectedItemCount} ชิ้น</strong></div>
           </div>

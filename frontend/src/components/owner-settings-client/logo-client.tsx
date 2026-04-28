@@ -115,7 +115,7 @@ export function OwnerLogoStatusPreview() {
   }
 
   return (
-    <div className="grid aspect-square min-h-[206px] place-items-center overflow-hidden rounded-[14px] border border-dashed border-[rgba(100,120,160,0.32)] bg-[var(--field-bg)]">
+    <div className="grid aspect-square min-h-[206px] place-items-center overflow-hidden rounded-[14px] border border-dashed border-[var(--border-strong)] bg-[var(--field-bg)]">
       <span className="text-[0.95rem] font-semibold text-[var(--foreground-soft)]">โลโก้ร้าน</span>
     </div>
   );
@@ -294,7 +294,7 @@ export function OwnerLogoClient({ compact = false }: { compact?: boolean }) {
     return (
       <div className="grid gap-4 max-[640px]:gap-3">
         <label
-          className="grid aspect-square min-h-[206px] cursor-pointer place-items-center overflow-hidden rounded-[14px] border border-dashed border-[rgba(100,120,160,0.32)] bg-[var(--field-bg)]"
+          className="grid aspect-square min-h-[206px] cursor-pointer place-items-center overflow-hidden rounded-[14px] border border-dashed border-[var(--border-strong)] bg-[var(--field-bg)]"
           aria-label="เลือกโลโก้ร้าน"
         >
           {previewUrl ? (

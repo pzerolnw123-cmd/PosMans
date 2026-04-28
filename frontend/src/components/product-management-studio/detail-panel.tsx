@@ -1,16 +1,6 @@
-import { useState, useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import {
-  dangerButtonClass,
-  inputClass,
-  Loader,
-  primaryButtonClass,
-  secondaryButtonClass,
-  successButtonClass,
-  whiteButtonClass,
-  selectClass,
-  StatusPill,
-} from "@/components/ui-primitives";
+import { dangerButtonClass, inputClass, Loader, primaryButtonClass, secondaryButtonClass, selectClass, StatusPill, successButtonClass, whiteButtonClass } from "@/components/ui-primitives";
 import { canUseNextImage, Field } from "@/components/product-management-studio/shared";
 import type { ProductItem } from "@/components/product-management-studio/types";
 
@@ -135,7 +125,7 @@ export function ProductDetailPanel({
               <div
                 className={
                   selectedProduct.trackStock
-                    ? "absolute left-1/2 top-[92px] inline-grid w-fit -translate-x-1/2 justify-items-center gap-3 text-[0.78rem] font-bold text-[#8cffbd] max-[1180px]:top-[56px] max-[960px]:static max-[960px]:left-auto max-[960px]:top-auto max-[960px]:w-full max-[960px]:translate-x-0"
+                    ? "absolute left-1/2 top-[92px] inline-grid w-fit -translate-x-1/2 justify-items-center gap-3 text-[0.78rem] font-bold text-[var(--success-bright)] max-[1180px]:top-[56px] max-[960px]:static max-[960px]:left-auto max-[960px]:top-auto max-[960px]:w-full max-[960px]:translate-x-0"
                     : "absolute left-1/2 top-[92px] inline-grid w-fit -translate-x-1/2 justify-items-center gap-3 text-[0.78rem] font-bold text-[var(--foreground-soft)] max-[1180px]:top-[56px] max-[960px]:static max-[960px]:left-auto max-[960px]:top-auto max-[960px]:w-full max-[960px]:translate-x-0"
                 }
               >
@@ -205,7 +195,7 @@ export function ProductDetailPanel({
                     </span>
                   </div>
                   {isCategoryOpen && (
-                    <div className="absolute left-0 top-[calc(100%+8px)] z-50 w-full overflow-hidden rounded-[16px] border border-[var(--border)] bg-[var(--surface)] shadow-[0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-xl animate-in fade-in zoom-in-95 duration-100">
+                    <div className="absolute left-0 top-[calc(100%+8px)] z-50 w-full overflow-hidden rounded-[16px] border border-[var(--border)] bg-[var(--surface)] shadow-[var(--shadow-dropdown)] backdrop-blur-xl animate-in fade-in zoom-in-95 duration-100">
                       <div className="flex flex-col py-2">
                         {["อาหาร", "เครื่องดื่ม", "ของหวาน/ขนม", "รองเท้า", "อะไหล่ / อุปกรณ์เสริม"].map((cat) => (
                           <button
@@ -294,7 +284,7 @@ export function ProductDetailPanel({
                 </div>
               </div>
 
-              <div className="flex h-full flex-col gap-3 rounded-[14px] border border-[var(--border)] bg-[var(--panel-elevated)] p-3">
+              <div className="flex h-full flex-col gap-3 rounded-[14px] border border-[var(--border)] [background:var(--panel-elevated)] p-3">
                 <span className="text-[0.92rem] font-semibold text-[var(--eyebrow)]">รูปภาพสินค้า</span>
                 <p className="m-0 text-[0.88rem] leading-[1.5] text-[var(--foreground-soft)]">
                   {compactMode ? "JPG, PNG, WEBP ไม่เกิน 5 MB" : "อัปโหลด JPG, PNG หรือ WEBP แล้วครอปเป็นรูปสี่เหลี่ยมจัตุรัส"}
@@ -421,3 +411,4 @@ export function ProductDetailPanel({
     </section>
   );
 }
+

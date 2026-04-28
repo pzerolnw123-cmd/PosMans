@@ -7,7 +7,7 @@ export type SessionUser = {
   id: string;
   username: string;
   displayName: string;
-  ownerTheme?: "violet" | "light" | "dark";
+  ownerTheme?: "violet" | "light" | "dark" | "mono";
   platformRole: string;
   storeRole: string | null;
   storeId: string | null;

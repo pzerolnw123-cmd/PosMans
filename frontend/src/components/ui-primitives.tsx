@@ -6,16 +6,16 @@ export const ghostPillClass =
   "inline-flex items-center gap-1.5 whitespace-nowrap rounded-[8px] border border-[var(--border)] bg-[var(--surface-muted)] px-[8px] py-[2.5px] text-[0.7rem] font-bold text-[var(--foreground-soft)]";
 
 export const successPillClass =
-  "inline-flex items-center gap-1.5 whitespace-nowrap rounded-[8px] border border-[rgba(46,212,122,0.24)] bg-[var(--success-soft)] px-[8px] py-[2.5px] text-[0.7rem] font-bold text-[var(--success)]";
+  "inline-flex items-center gap-1.5 whitespace-nowrap rounded-[8px] border border-[var(--success-border)] bg-[var(--success-soft)] px-[8px] py-[2.5px] text-[0.7rem] font-bold text-[var(--success)]";
 
 export const primaryButtonClass =
-  "inline-flex min-h-[42px] items-center justify-center gap-[10px] rounded-[10px] border border-transparent bg-[linear-gradient(135deg,var(--brand)_0%,var(--brand-strong)_100%)] px-[18px] font-bold text-[var(--button-text)] shadow-[var(--brand-shadow)_0_6px_14px] transition hover:-translate-y-px disabled:cursor-not-allowed disabled:opacity-[0.62] disabled:shadow-none";
+  "inline-flex min-h-[42px] items-center justify-center gap-[10px] rounded-[10px] border border-transparent [background:var(--brand-gradient)] px-[18px] font-bold text-[var(--button-text)] shadow-[var(--brand-shadow)_0_6px_14px] transition hover:-translate-y-px disabled:cursor-not-allowed disabled:opacity-[0.62] disabled:shadow-none";
 
 export const secondaryButtonClass =
-  "inline-flex min-h-[42px] items-center justify-center gap-[10px] rounded-[10px] border border-[var(--border)] bg-[var(--surface-muted)] px-[18px] font-bold text-[var(--foreground)] transition hover:-translate-y-px hover:border-[var(--border-strong)] hover:shadow-[rgba(0,0,0,0.15)_0_5px_10px] disabled:cursor-not-allowed disabled:opacity-[0.62] disabled:shadow-none";
+  "inline-flex min-h-[42px] items-center justify-center gap-[10px] rounded-[10px] border border-[var(--border)] bg-[var(--surface-muted)] px-[18px] font-bold text-[var(--foreground)] transition hover:-translate-y-px hover:border-[var(--border-strong)] hover:shadow-[var(--shadow-hover)] disabled:cursor-not-allowed disabled:opacity-[0.62] disabled:shadow-none";
 
 export const ghostButtonClass =
-  "inline-flex min-h-[42px] items-center justify-center gap-[10px] rounded-[10px] border border-[var(--border)] bg-[var(--surface-muted)] px-[18px] font-bold text-[var(--foreground-soft)] transition hover:-translate-y-px hover:border-[var(--border-strong)] hover:shadow-[rgba(0,0,0,0.15)_0_5px_10px] disabled:cursor-not-allowed disabled:opacity-[0.62] disabled:shadow-none";
+  "inline-flex min-h-[42px] items-center justify-center gap-[10px] rounded-[10px] border border-[var(--border)] bg-[var(--surface-muted)] px-[18px] font-bold text-[var(--foreground-soft)] transition hover:-translate-y-px hover:border-[var(--border-strong)] hover:shadow-[var(--shadow-hover)] disabled:cursor-not-allowed disabled:opacity-[0.62] disabled:shadow-none";
 
 export const dangerButtonClass =
   "inline-flex min-h-[42px] items-center justify-center gap-[10px] rounded-[10px] border border-[color-mix(in_srgb,var(--danger)_24%,transparent)] bg-[color-mix(in_srgb,var(--danger)_10%,transparent)] px-[18px] font-bold text-[var(--danger)] transition hover:-translate-y-px hover:border-[color-mix(in_srgb,var(--danger)_35%,transparent)] hover:shadow-[0_5px_10px_color-mix(in_srgb,var(--danger)_12%,transparent)] disabled:cursor-not-allowed disabled:opacity-[0.62] disabled:shadow-none";
@@ -24,10 +24,10 @@ export const successButtonClass =
   "inline-flex min-h-[42px] items-center justify-center gap-[10px] rounded-[10px] border border-[color-mix(in_srgb,var(--success)_24%,transparent)] bg-[color-mix(in_srgb,var(--success)_10%,transparent)] px-[18px] font-bold text-[var(--success)] transition hover:-translate-y-px hover:border-[color-mix(in_srgb,var(--success)_35%,transparent)] hover:shadow-[0_5px_10px_color-mix(in_srgb,var(--success)_12%,transparent)] disabled:cursor-not-allowed disabled:opacity-[0.62] disabled:shadow-none";
 
 export const whiteButtonClass =
-  "inline-flex min-h-[42px] items-center justify-center gap-[10px] rounded-[10px] border border-[var(--border)] bg-[var(--panel-subtle)] px-[18px] font-bold text-[var(--foreground)] transition hover:-translate-y-px hover:border-[var(--border-strong)] hover:bg-[var(--surface-muted)] hover:shadow-[0_6px_12px_rgba(0,0,0,0.08)] disabled:cursor-not-allowed disabled:opacity-[0.62] disabled:shadow-none";
+  "inline-flex min-h-[42px] items-center justify-center gap-[10px] rounded-[10px] border border-[var(--border)] bg-[var(--panel-subtle)] px-[18px] font-bold text-[var(--foreground)] transition hover:-translate-y-px hover:border-[var(--border-strong)] hover:bg-[var(--surface-muted)] hover:shadow-[var(--shadow-hover-subtle)] disabled:cursor-not-allowed disabled:opacity-[0.62] disabled:shadow-none";
 
 export const inputClass =
-  "h-[46px] w-full rounded-[10px] border border-[rgba(100,120,160,0.22)] bg-[var(--field-bg)] px-[14px] pr-[18px] text-[var(--foreground)] outline-none transition placeholder:text-[var(--field-placeholder)] focus:border-[var(--brand-strong)] focus:shadow-[inset_0_0_0_1px_var(--ring)]";
+  "h-[46px] w-full rounded-[10px] border border-[var(--border-field)] bg-[var(--field-bg)] px-[14px] pr-[18px] text-[var(--foreground)] outline-none transition placeholder:text-[var(--field-placeholder)] focus:border-[var(--brand-strong)] focus:shadow-[inset_0_0_0_1px_var(--ring)]";
 
 export const selectClass = `${inputClass} appearance-none pr-[42px]`;
 
@@ -92,3 +92,4 @@ export function Loader({
     </div>
   );
 }
+

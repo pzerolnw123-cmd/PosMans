@@ -35,7 +35,7 @@ export function Field({
 }) {
   return (
     <label className={`grid gap-[8px] max-[1180px]:gap-[6px] ${className}`.trim()}>
-      <span className="text-[0.92rem] font-semibold text-[#6b7a94]">{label}</span>
+      <span className="text-[0.92rem] font-semibold text-[var(--eyebrow)]">{label}</span>
       {children}
     </label>
   );

@@ -139,7 +139,11 @@ export async function createCroppedBlob(draft: CropDraft, zoom: number, offsetX:
     throw new Error("ไม่สามารถสร้าง canvas สำหรับคร็อบรูปได้");
   }
 
-  context.fillStyle = "#0f1420";
+  const matteColor =
+    typeof document === "undefined"
+      ? "Canvas"
+      : getComputedStyle(document.documentElement).getPropertyValue("--image-placeholder").trim() || "Canvas";
+  context.fillStyle = matteColor;
   context.fillRect(0, 0, canvas.width, canvas.height);
   context.imageSmoothingEnabled = true;
   context.imageSmoothingQuality = "high";

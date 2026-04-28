@@ -33,21 +33,21 @@ export default async function HomePage() {
   return (
     <main>
       <div className="mx-auto w-[min(1400px,calc(100%-32px))] px-0 pb-7 pt-[18px] max-[1180px]:w-[min(100%-24px,100%)] max-[720px]:w-[min(100%-16px,100%)] max-[720px]:pt-2.5">
-        <div className="flex items-center justify-between gap-4 rounded-[18px] border border-[var(--border)] bg-[rgba(22,27,38,0.85)] px-5 py-4 shadow-[var(--shadow-soft)] max-[820px]:px-4 max-[720px]:flex-col max-[720px]:items-stretch max-[640px]:px-3.5">
+        <div className="flex items-center justify-between gap-4 rounded-[18px] border border-[var(--border)] bg-[var(--surface-glass)] px-5 py-4 shadow-[var(--shadow-soft)] max-[820px]:px-4 max-[720px]:flex-col max-[720px]:items-stretch max-[640px]:px-3.5">
           <div>
-            <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[#6b7a94]">POS MANS</p>
+            <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[var(--eyebrow)]">POS MANS</p>
             <p className="mt-1 max-w-[52ch] text-[0.92rem] leading-[1.6] text-[var(--foreground-soft)]">Store-first interface system inspired by your reference screen</p>
           </div>
           <div className="flex flex-wrap justify-end gap-[10px] max-[820px]:w-full max-[820px]:justify-stretch max-[820px]:[&>*]:flex-1 max-[720px]:[&>*]:w-full">
             <Link
               href="/login"
-              className="inline-flex min-h-[42px] items-center justify-center gap-[10px] rounded-[10px] border border-[var(--border)] bg-[rgba(22,27,38,0.8)] px-[18px] font-bold text-[var(--foreground)] transition hover:-translate-y-px hover:border-[var(--border-strong)] hover:shadow-[rgba(0,0,0,0.15)_0_5px_10px]"
+              className="inline-flex min-h-[42px] items-center justify-center gap-[10px] rounded-[10px] border border-[var(--border)] bg-[var(--surface-muted)] px-[18px] font-bold text-[var(--foreground)] transition hover:-translate-y-px hover:border-[var(--border-strong)] hover:shadow-[var(--shadow-hover)]"
             >
               เข้าสู่ระบบ
             </Link>
             <Link
               href={primaryHref}
-              className="inline-flex min-h-[42px] items-center justify-center gap-[10px] rounded-[10px] border border-transparent bg-[linear-gradient(135deg,var(--brand)_0%,#8070f0_100%)] px-[18px] font-bold text-white shadow-[rgba(108,92,231,0.18)_0_6px_14px] transition hover:-translate-y-px"
+              className="inline-flex min-h-[42px] items-center justify-center gap-[10px] rounded-[10px] border border-transparent [background:var(--brand-gradient)] px-[18px] font-bold text-[var(--foreground-inverse)] shadow-[var(--brand-shadow)_0_6px_14px] transition hover:-translate-y-px"
             >
               {primaryLabel}
             </Link>
@@ -56,7 +56,7 @@ export default async function HomePage() {
 
         <section className="mt-[18px] grid gap-[18px] grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] max-[1280px]:grid-cols-1 max-[820px]:gap-4">
           <article className="min-h-full rounded-[22px] border border-[var(--border)] bg-[var(--surface)] p-7 shadow-[var(--shadow-card)] backdrop-blur-[14px] max-[820px]:p-5 max-[640px]:p-4">
-            <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[#6b7a94]">Complete UI Refresh</p>
+            <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[var(--eyebrow)]">Complete UI Refresh</p>
             <h1 className="mt-[10px] max-w-[12ch] text-[clamp(2rem,2.9vw,3.3rem)] leading-[0.98] tracking-[-0.065em]">
               POS หลังบ้านที่ดูพร้อมใช้งานตั้งแต่หน้าบ้านถึงหน้าตั้งค่า
             </h1>
@@ -68,13 +68,13 @@ export default async function HomePage() {
             <div className="mt-[22px] flex flex-wrap justify-start gap-[10px] max-[720px]:[&>*]:w-full">
               <Link
                 href={primaryHref}
-                className="inline-flex min-h-[42px] items-center justify-center gap-[10px] rounded-[10px] border border-transparent bg-[linear-gradient(135deg,var(--brand)_0%,#8070f0_100%)] px-[18px] font-bold text-white shadow-[rgba(108,92,231,0.18)_0_6px_14px] transition hover:-translate-y-px"
+                className="inline-flex min-h-[42px] items-center justify-center gap-[10px] rounded-[10px] border border-transparent [background:var(--brand-gradient)] px-[18px] font-bold text-[var(--foreground-inverse)] shadow-[var(--brand-shadow)_0_6px_14px] transition hover:-translate-y-px"
               >
                 {primaryLabel}
               </Link>
               <a
                 href="#overview"
-                className="inline-flex min-h-[42px] items-center justify-center gap-[10px] rounded-[10px] border border-[var(--border)] bg-[rgba(22,27,38,0.8)] px-[18px] font-bold text-[var(--foreground)] transition hover:-translate-y-px hover:border-[var(--border-strong)] hover:shadow-[rgba(0,0,0,0.15)_0_5px_10px]"
+                className="inline-flex min-h-[42px] items-center justify-center gap-[10px] rounded-[10px] border border-[var(--border)] bg-[var(--surface-muted)] px-[18px] font-bold text-[var(--foreground)] transition hover:-translate-y-px hover:border-[var(--border-strong)] hover:shadow-[var(--shadow-hover)]"
               >
                 ดูภาพรวม
               </a>
@@ -90,7 +90,7 @@ export default async function HomePage() {
               {statCards.map((item) => (
                 <div
                   key={item.label}
-                  className="rounded-2xl border border-[var(--border)] bg-[linear-gradient(180deg,rgba(22,27,38,0.94)_0%,rgba(18,22,34,0.94)_100%)] p-[18px]"
+                  className="rounded-2xl border border-[var(--border)] [background:var(--panel-elevated)] p-[18px]"
                 >
                   <h3 className="m-0 text-[1.08rem] font-bold tracking-[-0.03em]">{item.label}</h3>
                   <strong className="mt-[10px] block text-[clamp(1.55rem,4vw,2rem)] leading-none tracking-[-0.05em]">{item.value}</strong>
@@ -104,7 +104,7 @@ export default async function HomePage() {
         <section id="overview" className="mt-[18px] grid grid-cols-3 gap-[18px] max-[1180px]:grid-cols-2 max-[820px]:gap-4 max-[720px]:grid-cols-1">
           {featureCards.map((item) => (
             <article key={item.title} className="rounded-[18px] border border-[var(--border)] bg-[var(--surface)] p-[18px] shadow-[var(--shadow-card)] backdrop-blur-[14px]">
-              <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[#6b7a94]">Feature</p>
+              <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[var(--eyebrow)]">Feature</p>
               <h3 className="my-[10px] text-[1.36rem] tracking-[-0.04em]">{item.title}</h3>
               <p className="mt-1 text-[0.92rem] text-[var(--foreground-soft)]">{item.copy}</p>
             </article>
@@ -121,7 +121,7 @@ export default async function HomePage() {
               ].map((item) => (
                 <div
                   key={item}
-                  className="rounded-2xl border border-[var(--border)] bg-[linear-gradient(180deg,rgba(22,27,38,0.94)_0%,rgba(18,22,34,0.94)_100%)] p-[18px]"
+                  className="rounded-2xl border border-[var(--border)] [background:var(--panel-elevated)] p-[18px]"
                 >
                   <p className="m-0 text-[0.92rem] text-[var(--foreground-soft)]">{item}</p>
                 </div>
@@ -138,7 +138,7 @@ export default async function HomePage() {
               ].map(([title, copy]) => (
                 <div
                   key={title}
-                  className="flex justify-between gap-[14px] rounded-[14px] border border-[var(--border)] bg-[linear-gradient(180deg,rgba(22,27,38,0.96)_0%,rgba(18,22,34,0.96)_100%)] p-[18px] max-[720px]:flex-col"
+                  className="flex justify-between gap-[14px] rounded-[14px] border border-[var(--border)] [background:var(--panel-elevated)] p-[18px] max-[720px]:flex-col"
                 >
                   <div>
                     <h3 className="m-0 text-[1.08rem] font-bold tracking-[-0.03em]">{title}</h3>
@@ -154,3 +154,4 @@ export default async function HomePage() {
     </main>
   );
 }
+

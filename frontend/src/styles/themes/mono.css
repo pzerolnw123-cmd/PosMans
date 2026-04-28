@@ -1,0 +1,140 @@
+/*
+ * mono.css - Ink Mono theme.
+ *
+ * A strict black-and-white workspace inspired by printed receipts,
+ * admin wireframes, and old-school POS screens.
+ */
+
+html[data-store-theme="mono"] {
+  --background: #ffffff;
+  --background-start: #ffffff;
+  --background-mid: #ffffff;
+  --background-end: #ffffff;
+  --background-glow-left: transparent;
+  --background-glow-right: transparent;
+  --app-background: #ffffff;
+
+  --foreground: #000000;
+  --foreground-soft: #333333;
+  --foreground-muted: #666666;
+  --foreground-inverse: #ffffff;
+  --text-on-dark-muted: #333333;
+  --text-on-dark-soft: #555555;
+  --text-highlight: #000000;
+
+  --surface: #ffffff;
+  --surface-strong: #ffffff;
+  --surface-muted: #ffffff;
+  --surface-glass: #ffffff;
+  --surface-raised: #ffffff;
+  --panel-elevated: #ffffff;
+  --panel-subtle: #ffffff;
+  --panel-strong: #ffffff;
+
+  --field-bg: #ffffff;
+  --field-placeholder: #555555;
+
+  --border-hairline: #000000;
+  --border-subtle: #000000;
+  --border-muted: #000000;
+  --border: #000000;
+  --border-soft: #000000;
+  --border-field: #000000;
+  --border-strong: #000000;
+
+  --brand: #000000;
+  --brand-strong: #000000;
+  --brand-soft: #ffffff;
+  --brand-shadow: transparent;
+  --brand-gradient: #ffffff;
+  --brand-text-start: #000000;
+  --brand-text-mid: #000000;
+  --brand-text-gradient: linear-gradient(#000000, #000000);
+  --accent-border: #000000;
+  --accent-surface: #ffffff;
+  --accent-text: #000000;
+  --active-surface: #ffffff;
+  --button-bg: #ffffff;
+  --button-text: #000000;
+
+  --success: #000000;
+  --success-bright: #000000;
+  --success-soft: #ffffff;
+  --success-wash: #ffffff;
+  --success-border: #000000;
+  --status-text-start: #000000;
+  --status-text-mid1: #000000;
+  --status-text-mid2: #000000;
+  --status-text-end: #000000;
+  --status-text-gradient: linear-gradient(#000000, #000000);
+  --status-text-shadow: none;
+  --danger: #000000;
+  --danger-bright: #000000;
+  --danger-soft: #ffffff;
+  --danger-border: #000000;
+  --warning: #000000;
+
+  --alert-success-bg: #ffffff;
+  --alert-success-border: #000000;
+  --alert-success-text: #000000;
+  --alert-success-eyebrow: #000000;
+  --alert-danger-bg: #ffffff;
+  --alert-danger-border: #000000;
+  --alert-danger-text: #000000;
+  --alert-danger-eyebrow: #000000;
+
+  --cart-glow-border: #000000;
+  --cart-glow-border-soft: #000000;
+  --cart-glow-bg: #ffffff;
+  --cart-panel-border: #000000;
+  --cart-panel-bg: #ffffff;
+  --cart-row-bg: #ffffff;
+  --cart-row-border: #000000;
+  --cart-shadow-strong: transparent;
+  --cart-shadow-mid: transparent;
+  --cart-shadow-soft: transparent;
+  --cart-badge-bg: #ffffff;
+  --cart-badge-text: #000000;
+  --cart-badge-border: #000000;
+
+  --shadow-card: none;
+  --shadow-soft: none;
+  --shadow-hover: none;
+  --shadow-hover-subtle: none;
+  --shadow-pop: none;
+  --shadow-dropdown: none;
+  --shadow-calendar: none;
+  --shadow-swatch: none;
+  --shadow-inset-preview: inset 0 0 0 1px #000000;
+
+  --ring: #000000;
+  --modal-backdrop: rgba(255, 255, 255, 0.78);
+  --modal-surface: #ffffff;
+  --modal-shadow: none;
+  --modal-brand-glow: transparent;
+  --modal-danger-glow: transparent;
+
+  --eyebrow: #000000;
+  --toggle-track: #ffffff;
+  --toggle-track-checked: #e0e0e0;
+  --toggle-thumb-bg: #000000;
+  --toggle-thumb-shadow: 0 0 0 1px #000000;
+  --toggle-mark: #000000;
+  --toggle-mark-checked: #ffffff;
+  --scroll-track: #ffffff;
+  --scroll-thumb: #888888;
+  --scroll-thumb-hover: #000000;
+  --overlay-white-02: #ffffff;
+  --overlay-white-03: #ffffff;
+  --overlay-white-04: #ffffff;
+  --overlay-white-06: #ffffff;
+  --overlay-white-08: #ffffff;
+  --overlay-white-10: #000000;
+  --image-placeholder: #ffffff;
+  --qr-foreground: #000000;
+  --qr-background: #ffffff;
+}
+
+html[data-store-theme="mono"] .border-transparent {
+  border-color: var(--border) !important;
+}

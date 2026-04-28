@@ -117,7 +117,7 @@ export function ReceiptDeskClient() {
           </div>
         </div>
 
-        <div className="grid gap-3 rounded-none border border-[rgba(100,120,160,0.16)] bg-[var(--panel-subtle)] p-3">
+        <div className="grid gap-3 rounded-none border border-[var(--border-muted)] bg-[var(--panel-subtle)] p-3">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <span className="text-[0.72rem] font-bold uppercase tracking-[0.22em] text-[var(--eyebrow)]">Receipt Date</span>
             <span className="rounded-none border border-[var(--accent-border)] bg-[var(--accent-surface)] px-3 py-1 text-[0.78rem] font-bold text-[var(--accent-text)]">
@@ -140,7 +140,7 @@ export function ReceiptDeskClient() {
                   className={
                     active
                       ? "min-h-[42px] rounded-none border border-[var(--accent-border)] bg-[var(--accent-surface)] px-3 text-[0.9rem] font-bold text-[var(--foreground)] shadow-[var(--brand-shadow)_0_10px_22px]"
-                      : "min-h-[42px] rounded-none border border-[rgba(100,120,160,0.16)] bg-[var(--field-bg)] px-3 text-[0.9rem] font-bold text-[var(--foreground-soft)] transition hover:border-[var(--accent-border)] hover:text-[var(--foreground)]"
+                      : "min-h-[42px] rounded-none border border-[var(--border-muted)] bg-[var(--field-bg)] px-3 text-[0.9rem] font-bold text-[var(--foreground-soft)] transition hover:border-[var(--accent-border)] hover:text-[var(--foreground)]"
                   }
                   onClick={() => {
                     setPage(1);
@@ -160,7 +160,7 @@ export function ReceiptDeskClient() {
               <Loader size={54} label="กำลังโหลดใบเสร็จ" />
             </div>
           ) : error ? (
-            <div className="rounded-none border border-[rgba(232,93,117,0.3)] bg-[rgba(232,93,117,0.08)] px-4 py-3 text-[#ff8fa2]">{error}</div>
+            <div className="rounded-none border border-[var(--danger-border)] bg-[var(--danger-soft)] px-4 py-3 text-[var(--danger-bright)]">{error}</div>
           ) : receipts.length > 0 ? (
             receipts.map((receipt) => {
               const active = selectedReceipt?.id === receipt.id;
@@ -172,7 +172,7 @@ export function ReceiptDeskClient() {
                   className={
                     active
                       ? "grid gap-2 rounded-none border border-[var(--accent-border)] bg-[var(--accent-surface)] px-4 py-3 text-left shadow-[var(--brand-shadow)_0_10px_24px]"
-                      : "grid gap-2 rounded-none border border-[rgba(100,120,160,0.16)] bg-[var(--panel-subtle)] px-4 py-3 text-left transition hover:border-[var(--accent-border)] hover:bg-[var(--surface-muted)]"
+                      : "grid gap-2 rounded-none border border-[var(--border-muted)] bg-[var(--panel-subtle)] px-4 py-3 text-left transition hover:border-[var(--accent-border)] hover:bg-[var(--surface-muted)]"
                   }
                   onClick={() => void selectReceipt(receipt)}
                 >
@@ -195,7 +195,7 @@ export function ReceiptDeskClient() {
           )}
         </div>
 
-        <div className="flex items-center justify-between gap-4 border-t border-t-[rgba(100,120,160,0.12)] pt-3 max-[720px]:flex-col max-[720px]:items-stretch">
+        <div className="flex items-center justify-between gap-4 border-t border-t-[var(--border-hairline)] pt-3 max-[720px]:flex-col max-[720px]:items-stretch">
           <button type="button" className={secondaryButtonClass} disabled={loading || pagination.page <= 1} onClick={() => setPage((current) => Math.max(1, current - 1))}>
             ย้อนกลับ
           </button>

@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 
-// ── Types ────────────────────────────────────────────────────────────────────
+// Types
 
 export type SubmitState = {
   status: "idle" | "saving" | "success" | "error";
@@ -8,7 +8,7 @@ export type SubmitState = {
 };
 
 export type PromptPayRecipientType = "MOBILE" | "NATIONAL_ID" | "TAX_ID" | "STATIC_QR" | "BANK_ACCOUNT";
-export type OwnerThemeId = "violet" | "light" | "dark";
+export type OwnerThemeId = "violet" | "light" | "dark" | "mono";
 
 export type OwnerPaymentSettingsValue = {
   promptPayEnabled: boolean;
@@ -45,7 +45,7 @@ export type OwnerLogoContextValue = {
 
 export type PromptPayDrafts = Record<"MOBILE" | "NATIONAL_ID" | "TAX_ID", string>;
 
-// ── Constants ────────────────────────────────────────────────────────────────
+// Constants
 
 export const logoFileTypes = new Set(["image/png", "image/jpeg", "image/webp"]);
 export const maxLogoFileSize = 2 * 1024 * 1024;
@@ -63,19 +63,25 @@ export const ownerThemeOptions: Array<{
       id: "violet",
       label: "Midnight Violet",
       description: "โทนหลักดั้งเดิมของระบบ ให้ฟีลเข้ม คม และเน้น accent แบบม่วง",
-      preview: "linear-gradient(135deg, #6c5ce7 0%, #8070f0 100%)",
+      preview: "var(--theme-preview-violet)",
     },
     {
       id: "light",
       label: "Snow Blue",
       description: "พื้นหลังสีขาว ปุ่มโทนฟ้า และการ์ดสีขาว สำหรับหน้าร้านที่ดูสะอาดและสว่าง",
-      preview: "linear-gradient(135deg, #ffffff 0%, #dcedff 40%, #2b8cff 100%)",
+      preview: "var(--theme-preview-light)",
     },
     {
       id: "dark",
       label: "Midnight Gold",
       description: "พื้นหลังสีดำ ปุ่มโทนเหลือง และการ์ดสีดำ ให้ภาพรวมคมเข้มและเด่นชัด",
-      preview: "linear-gradient(135deg, #0f0f0f 0%, #1c1c1c 42%, #f4c430 100%)",
+      preview: "var(--theme-preview-dark)",
+    },
+    {
+      id: "mono",
+      label: "Ink Mono",
+      description: "โทนขาวดำ เส้นกรอบคม เงาน้อย เหมาะกับหน้าร้านที่ต้องการฟีลเรียบจริงจัง",
+      preview: "var(--theme-preview-mono)",
     },
   ];
 
@@ -106,36 +112,36 @@ export const thaiBankOptions = [
 // ── Style Classes ────────────────────────────────────────────────────────────
 
 export const inputClass =
-  "h-[46px] w-full rounded-[10px] border border-[rgba(100,120,160,0.22)] bg-[var(--field-bg)] px-[14px] text-[var(--foreground)] outline-none transition placeholder:text-[var(--field-placeholder)] focus:border-[var(--brand-strong)] focus:shadow-[0_0_0_4px_var(--ring)] disabled:cursor-not-allowed disabled:opacity-[0.62]";
+  "h-[46px] w-full rounded-[10px] border border-[var(--border-field)] bg-[var(--field-bg)] px-[14px] text-[var(--foreground)] outline-none transition placeholder:text-[var(--field-placeholder)] focus:border-[var(--brand-strong)] focus:shadow-[0_0_0_4px_var(--ring)] disabled:cursor-not-allowed disabled:opacity-[0.62]";
 
 export const primaryButtonClass =
-  "inline-flex min-h-[42px] items-center justify-center gap-[10px] rounded-[10px] border border-transparent bg-[linear-gradient(135deg,var(--brand)_0%,var(--brand-strong)_100%)] px-[18px] font-bold text-[var(--button-text)] shadow-[var(--brand-shadow)_0_6px_14px] transition hover:-translate-y-px disabled:cursor-not-allowed disabled:opacity-[0.62]";
+  "inline-flex min-h-[42px] items-center justify-center gap-[10px] rounded-[10px] border border-transparent [background:var(--brand-gradient)] px-[18px] font-bold text-[var(--button-text)] shadow-[var(--brand-shadow)_0_6px_14px] transition hover:-translate-y-px disabled:cursor-not-allowed disabled:opacity-[0.62]";
 
 export const activeGhostButtonClass =
-  "inline-flex min-h-[42px] items-center justify-center gap-[10px] rounded-[10px] border border-[var(--border)] bg-[var(--surface-muted)] px-[18px] font-bold text-[var(--foreground)] transition hover:-translate-y-px hover:border-[var(--border-strong)] hover:shadow-[rgba(0,0,0,0.15)_0_5px_10px] disabled:cursor-not-allowed disabled:text-[var(--foreground-soft)] disabled:opacity-[0.62]";
+  "inline-flex min-h-[42px] items-center justify-center gap-[10px] rounded-[10px] border border-[var(--border)] bg-[var(--surface-muted)] px-[18px] font-bold text-[var(--foreground)] transition hover:-translate-y-px hover:border-[var(--border-strong)] hover:shadow-[var(--shadow-hover)] disabled:cursor-not-allowed disabled:text-[var(--foreground-soft)] disabled:opacity-[0.62]";
 
 export const dangerGhostButtonClass =
-  "inline-flex min-h-[42px] items-center justify-center gap-[10px] rounded-[10px] border border-[rgba(232,93,117,0.3)] bg-[rgba(232,93,117,0.08)] px-[18px] font-bold text-[#ff8fa2] transition hover:-translate-y-px hover:border-[rgba(232,93,117,0.5)] hover:bg-[rgba(232,93,117,0.14)] disabled:cursor-not-allowed disabled:opacity-[0.62]";
+  "inline-flex min-h-[42px] items-center justify-center gap-[10px] rounded-[10px] border border-[var(--danger-border)] bg-[var(--danger-soft)] px-[18px] font-bold text-[var(--danger-bright)] transition hover:-translate-y-px hover:border-[var(--danger-border)] hover:bg-[var(--danger-soft)] disabled:cursor-not-allowed disabled:opacity-[0.62]";
 
 export const fieldLabelClass = "text-[0.9rem] font-semibold text-[var(--foreground-soft)]";
 
 export const compactBankInputClass =
-  "h-[40px] w-full rounded-[10px] border border-[rgba(100,120,160,0.22)] bg-[var(--field-bg)] px-3 text-[0.95rem] text-[var(--foreground)] outline-none transition placeholder:text-[var(--field-placeholder)] focus:border-[var(--brand-strong)] focus:shadow-[0_0_0_4px_var(--ring)] disabled:cursor-not-allowed disabled:opacity-[0.62]";
+  "h-[40px] w-full rounded-[10px] border border-[var(--border-field)] bg-[var(--field-bg)] px-3 text-[0.95rem] text-[var(--foreground)] outline-none transition placeholder:text-[var(--field-placeholder)] focus:border-[var(--brand-strong)] focus:shadow-[0_0_0_4px_var(--ring)] disabled:cursor-not-allowed disabled:opacity-[0.62]";
 
 export const compactFooterGhostButtonClass =
-  "inline-flex min-h-[36px] items-center justify-center gap-[8px] rounded-[10px] border border-[var(--border)] bg-[var(--surface-muted)] px-[14px] text-[0.92rem] font-bold text-[var(--foreground)] transition hover:-translate-y-px hover:border-[var(--border-strong)] hover:shadow-[rgba(0,0,0,0.15)_0_5px_10px] disabled:cursor-not-allowed disabled:text-[var(--foreground-soft)] disabled:opacity-[0.62]";
+  "inline-flex min-h-[36px] items-center justify-center gap-[8px] rounded-[10px] border border-[var(--border)] bg-[var(--surface-muted)] px-[14px] text-[0.92rem] font-bold text-[var(--foreground)] transition hover:-translate-y-px hover:border-[var(--border-strong)] hover:shadow-[var(--shadow-hover)] disabled:cursor-not-allowed disabled:text-[var(--foreground-soft)] disabled:opacity-[0.62]";
 
 export const compactFooterPrimaryButtonClass =
-  "inline-flex min-h-[36px] items-center justify-center gap-[8px] rounded-[10px] border border-transparent bg-[linear-gradient(135deg,var(--brand)_0%,var(--brand-strong)_100%)] px-[16px] text-[0.9rem] font-bold text-[var(--button-text)] shadow-[var(--brand-shadow)_0_6px_14px] transition hover:-translate-y-px disabled:cursor-not-allowed disabled:opacity-[0.62]";
+  "inline-flex min-h-[36px] items-center justify-center gap-[8px] rounded-[10px] border border-transparent [background:var(--brand-gradient)] px-[16px] text-[0.9rem] font-bold text-[var(--button-text)] shadow-[var(--brand-shadow)_0_6px_14px] transition hover:-translate-y-px disabled:cursor-not-allowed disabled:opacity-[0.62]";
 
 export const passwordInputWrapClass =
-  "grid h-[46px] grid-cols-[minmax(0,1fr)_42px] items-center rounded-[10px] border border-[rgba(100,120,160,0.22)] bg-[var(--field-bg)] transition focus-within:border-[var(--brand-strong)] focus-within:shadow-[0_0_0_4px_var(--ring)]";
+  "grid h-[46px] grid-cols-[minmax(0,1fr)_42px] items-center rounded-[10px] border border-[var(--border-field)] bg-[var(--field-bg)] transition focus-within:border-[var(--brand-strong)] focus-within:shadow-[0_0_0_4px_var(--ring)]";
 
 export const passwordInputClass =
-  "h-full min-w-0 rounded-l-[10px] border-0 bg-transparent px-[14px] text-[var(--foreground)] outline-none placeholder:text-[#556070] disabled:cursor-not-allowed disabled:opacity-[0.62]";
+  "h-full min-w-0 rounded-l-[10px] border-0 bg-transparent px-[14px] text-[var(--foreground)] outline-none placeholder:text-[var(--field-placeholder)] disabled:cursor-not-allowed disabled:opacity-[0.62]";
 
 export const passwordToggleClass =
-  "inline-flex h-full w-[42px] items-center justify-center rounded-r-[10px] text-[var(--foreground-soft)] transition hover:bg-[rgba(255,255,255,0.04)] hover:text-[var(--foreground)] disabled:cursor-not-allowed disabled:opacity-[0.62]";
+  "inline-flex h-full w-[42px] items-center justify-center rounded-r-[10px] text-[var(--foreground-soft)] transition hover:bg-[var(--overlay-white-04)] hover:text-[var(--foreground)] disabled:cursor-not-allowed disabled:opacity-[0.62]";
 
 // ── Utility Functions ────────────────────────────────────────────────────────
 
@@ -160,3 +166,4 @@ export async function readApiMessage(response: Response, fallback: string) {
 export function normalizeDigitInput(value: string) {
   return value.replace(/[\s-]/g, "");
 }
+

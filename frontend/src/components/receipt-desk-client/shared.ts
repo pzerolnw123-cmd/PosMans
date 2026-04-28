@@ -134,17 +134,17 @@ export function receiptPrintHtml(receipt: Receipt) {
         <meta charset="utf-8" />
         <title>${escaped(receipt.code)}</title>
         <style>
-          body { font-family: Arial, sans-serif; margin: 0; color: #111827; }
+          body { font-family: Arial, sans-serif; margin: 0; color: CanvasText; }
           main { width: 320px; margin: 0 auto; padding: 20px 16px; }
           h1, p { margin: 0; }
           h1 { font-size: 20px; text-align: center; }
-          .muted { color: #64748b; font-size: 12px; }
+          .muted { color: GrayText; font-size: 12px; }
           .center { text-align: center; }
-          .divider { border-top: 1px dashed #94a3b8; margin: 14px 0; }
+          .divider { border-top: 1px dashed GrayText; margin: 14px 0; }
           table { width: 100%; border-collapse: collapse; font-size: 12px; }
           td { padding: 6px 0; vertical-align: top; }
           td:nth-child(2), td:nth-child(3), td:nth-child(4) { text-align: right; white-space: nowrap; }
-          td span { display: block; color: #64748b; font-size: 11px; margin-top: 2px; }
+          td span { display: block; color: GrayText; font-size: 11px; margin-top: 2px; }
           .line { display: flex; justify-content: space-between; gap: 12px; font-size: 13px; margin: 6px 0; }
           .total { font-size: 16px; font-weight: 800; }
           @media print { main { width: 72mm; } }

@@ -1,5 +1,5 @@
 /*
- * light.css — Snow Blue theme.
+ * light.css - Snow Blue theme.
  *
  * Overrides the base (Midnight Violet) tokens with a bright, white-
  * background palette paired with blue accents.
@@ -48,7 +48,7 @@ html[data-store-theme="light"] {
   --status-text-end: var(--success);
   --status-text-shadow: none;
 
-  /* ── Shell Alerts ── */
+  /* Shell alerts */
   --alert-success-bg: #ffffff;
   --alert-success-border: #059669;
   --alert-success-text: #000000;
@@ -59,7 +59,7 @@ html[data-store-theme="light"] {
   --alert-danger-text: #be123c;
   --alert-danger-eyebrow: #e11d48;
 
-  /* ── Cart Animations ── */
+  /* Cart animations */
   --cart-glow-border: var(--accent-border);
   --cart-glow-border-soft: var(--accent-border);
   --cart-glow-bg: var(--panel-elevated);
@@ -89,12 +89,18 @@ html[data-store-theme="light"] {
   --background-mid: #eef5ff;
   --background-end: #e9f1fb;
 
-  /* ── Modals ── */
+  /* Modals */
   --modal-backdrop: rgba(210, 222, 238, 0.78);
   --modal-surface: #ffffff;
   --modal-shadow: rgba(42, 74, 118, 0.22) 0 30px 80px;
 
   --eyebrow: #5f7291;
+  --toggle-track: #dce8f7;
+  --toggle-track-checked: #cfe1f8;
+  --toggle-thumb-bg: linear-gradient(45deg, #ffffff, #eef5ff);
+  --toggle-thumb-shadow: 0 5px 7px rgba(68, 99, 142, 0.18);
+  --toggle-mark: #6f8098;
+  --toggle-mark-checked: #ffffff;
   --scroll-track: rgba(202, 217, 237, 0.72);
   --scroll-thumb: linear-gradient(180deg, rgba(110, 181, 255, 0.96), rgba(47, 127, 245, 0.92));
   --scroll-thumb-hover: linear-gradient(180deg, rgba(133, 194, 255, 1), rgba(47, 127, 245, 1));

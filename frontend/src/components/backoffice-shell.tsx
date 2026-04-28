@@ -48,7 +48,7 @@ const BackofficeShellAlertContext = createContext<BackofficeShellAlertContextVal
 
 const eyebrowClass = "m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[var(--eyebrow)]";
 const statusStoreNameClass =
-  "bg-[linear-gradient(135deg,var(--status-text-start,#ffffff)_0%,var(--status-text-mid1,#e8fff4)_30%,var(--status-text-mid2,#8df0bb)_66%,var(--status-text-end,#34d47b)_100%)] bg-clip-text font-black tracking-normal text-transparent drop-shadow-[var(--status-text-shadow,0_8px_20px_rgba(46,212,122,0.18))]";
+  "[background-image:var(--status-text-gradient)] bg-clip-text font-black tracking-normal text-transparent drop-shadow-[var(--status-text-shadow)]";
 const successAlertClass = "border-[var(--alert-success-border)] [background:var(--alert-success-bg)]";
 const successAlertEyebrowClass = "text-[var(--alert-success-eyebrow)]";
 const successAlertMessageClass = "text-[var(--alert-success-text)]";
@@ -60,10 +60,10 @@ const sidebarShellClass =
 const sidebarHeaderClass = "border-b border-b-[var(--border)] px-[10px] pb-[18px] pt-[14px]";
 const sidebarEyebrowClass = eyebrowClass;
 const sidebarBrandNameClass =
-  "bg-[linear-gradient(135deg,var(--brand-text-start,var(--foreground-inverse))_0%,color-mix(in_srgb,var(--brand)_16%,var(--brand-text-mix,white))_30%,color-mix(in_srgb,var(--brand)_48%,var(--brand-text-mix,white))_58%,var(--brand-strong)_100%)] bg-clip-text font-black tracking-normal text-transparent";
+  "[background-image:var(--brand-text-gradient)] bg-clip-text font-black tracking-normal text-transparent";
 const sidebarSubtitleClass = "m-0 text-[0.99rem] leading-[1.7] text-[var(--foreground-soft)]";
 const sidebarActiveLinkClass =
-  "inline-flex min-h-[48px] items-center gap-3 rounded-xl border border-[var(--accent-border)] bg-[linear-gradient(135deg,var(--brand)_0%,var(--brand-strong)_100%)] px-[18px] py-3 font-semibold text-[var(--button-text)] shadow-[var(--brand-shadow)_0_8px_18px] max-[640px]:min-h-[44px] max-[640px]:px-[14px] max-[640px]:py-2.5";
+  "inline-flex min-h-[48px] items-center gap-3 rounded-xl border border-[var(--accent-border)] [background:var(--brand-gradient)] px-[18px] py-3 font-semibold text-[var(--button-text)] shadow-[var(--brand-shadow)_0_8px_18px] max-[640px]:min-h-[44px] max-[640px]:px-[14px] max-[640px]:py-2.5";
 const sidebarInactiveLinkClass =
   "inline-flex min-h-[48px] items-center gap-3 rounded-xl px-[18px] py-3 font-semibold text-[var(--foreground)] transition duration-150 hover:translate-x-[2px] hover:bg-[var(--brand-soft)] max-[640px]:min-h-[44px] max-[640px]:px-[14px] max-[640px]:py-2.5";
 
@@ -85,7 +85,7 @@ function ProfileSummaryCard({
           <h2 className="m-0 text-[1.08rem] font-bold tracking-[-0.03em]">{profileName}</h2>
           <p className="mt-1 text-[0.92rem] text-[var(--foreground-soft)]">{profileSubtitle}</p>
         </div>
-        <span className="inline-flex items-center whitespace-nowrap rounded-[8px] border border-[rgba(46,212,122,0.24)] bg-[var(--success-soft)] px-[8px] py-[4px] text-[0.7rem] font-bold text-[var(--success)]">
+        <span className="inline-flex items-center whitespace-nowrap rounded-[8px] border border-[var(--success-border)] bg-[var(--success-soft)] px-[8px] py-[4px] text-[0.7rem] font-bold text-[var(--success)]">
           {profileStatus}
         </span>
       </div>
@@ -178,9 +178,9 @@ export function BackofficeShell({
                   aria-current={item.active ? "page" : undefined}
                 >
                   {item.icon ? (
-                    <span className={`inline-flex h-5 w-5 shrink-0 items-center justify-center ${item.active ? "text-white opacity-100" : "opacity-90"}`}>{item.icon}</span>
+                    <span className={`inline-flex h-5 w-5 shrink-0 items-center justify-center ${item.active ? "text-[var(--button-text)] opacity-100" : "opacity-90"}`}>{item.icon}</span>
                   ) : null}
-                  <span className={`leading-none ${item.active ? "text-white" : ""}`}>{item.label}</span>
+                  <span className={`leading-none ${item.active ? "text-[var(--button-text)]" : ""}`}>{item.label}</span>
                 </Link>
               ))}
             </nav>
@@ -188,10 +188,10 @@ export function BackofficeShell({
 
           {shellAlert ? (
             <section
-              className={`rounded-none border px-4 py-3 shadow-[rgba(0,0,0,0.16)_0_8px_18px] ${shellAlert.tone === "success"
+              className={`rounded-none border px-4 py-3 shadow-[var(--shadow-pop)] ${shellAlert.tone === "success"
                   ? successAlertClass
                   : shellAlert.tone === "info"
-                    ? "border-[var(--accent-border)] bg-[linear-gradient(180deg,var(--accent-surface),rgba(255,255,255,0.02))]"
+                    ? "border-[var(--accent-border)] [background:var(--active-surface)]"
                     : dangerAlertClass
                 }`}
             >
@@ -294,3 +294,4 @@ export function PanelCard({
     </section>
   );
 }
+

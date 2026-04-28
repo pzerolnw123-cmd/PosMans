@@ -129,9 +129,9 @@ function ThemePickerModal({
       className="fixed inset-0 z-[320] grid place-items-center bg-[var(--modal-backdrop)] p-3 backdrop-blur-[16px] max-[640px]:p-2.5"
       onClick={onClose}
     >
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,var(--brand-soft),transparent_52%)]" />
+      <div className="absolute inset-0 [background:var(--modal-brand-glow)]" />
       <div
-        className="relative z-[1] grid max-h-[min(560px,calc(100vh-24px))] w-[min(540px,calc(100vw-24px))] gap-3 overflow-y-auto overflow-x-hidden rounded-[20px] border border-[var(--border)] bg-[var(--modal-surface)] p-4 shadow-[var(--modal-shadow)] max-[640px]:max-h-[min(520px,calc(100vh-20px))] max-[640px]:gap-2.5 max-[640px]:rounded-[16px] max-[640px]:p-3.5"
+        className="relative z-[1] grid max-h-[min(560px,calc(100vh-24px))] w-[min(540px,calc(100vw-24px))] gap-3 overflow-y-auto overflow-x-hidden rounded-[20px] border border-[var(--border)] [background:var(--modal-surface)] p-4 shadow-[var(--modal-shadow)] max-[640px]:max-h-[min(520px,calc(100vh-20px))] max-[640px]:gap-2.5 max-[640px]:rounded-[16px] max-[640px]:p-3.5"
         onClick={(event) => event.stopPropagation()}
       >
         <div className="flex items-start justify-between gap-3">
@@ -167,13 +167,13 @@ function ThemePickerModal({
                 type="button"
                 className={
                   active
-                    ? "grid min-w-0 gap-2 rounded-[16px] border border-[var(--brand-strong)] bg-[linear-gradient(180deg,var(--brand-soft),rgba(255,255,255,0.02))] p-2.5 text-left text-[var(--foreground)] shadow-[var(--brand-shadow)_0_14px_28px] transition"
+                    ? "grid min-w-0 gap-2 rounded-[16px] border border-[var(--brand-strong)] [background:var(--active-surface)] p-2.5 text-left text-[var(--foreground)] shadow-[var(--brand-shadow)_0_14px_28px] transition"
                     : "grid min-w-0 gap-2 rounded-[16px] border border-[var(--border)] bg-[var(--surface-muted)] p-2.5 text-left text-[var(--foreground-soft)] transition hover:border-[var(--border-strong)] hover:bg-[var(--surface)] hover:text-[var(--foreground)]"
                 }
                 onClick={() => onSelect(option.id)}
               >
                 <span
-                  className="block h-12 rounded-[12px] shadow-sm"
+                  className="block h-12 overflow-hidden rounded-[12px] ring-1 ring-inset ring-[var(--border-hairline)]"
                   style={{ background: option.preview }}
                   aria-hidden="true"
                 />
@@ -220,7 +220,13 @@ export function OwnerThemeStatusPill() {
 export function OwnerThemeClient() {
   const { setShellAlert } = useBackofficeShellAlert();
   const [themePickerOpen, setThemePickerOpen] = useState(false);
-  const [activeTheme, setActiveTheme] = useState<OwnerThemeId>(() => readOwnerTheme());
+  const [activeTheme, setActiveTheme] = useState<OwnerThemeId | null>(null);
+
+  useEffect(() => {
+    const savedTheme = readOwnerTheme();
+    setActiveTheme(savedTheme);
+    applyOwnerTheme(savedTheme);
+  }, []);
 
   useEffect(() => {
     if (!activeTheme) {
@@ -247,7 +253,7 @@ export function OwnerThemeClient() {
             <strong className="mt-1 block break-words text-[0.94rem] leading-tight text-[var(--foreground)] max-[520px]:text-[0.86rem]">{activeThemeOption.label}</strong>
           </div>
           <span
-            className="h-9 w-9 shrink-0 rounded-[11px] border border-[var(--border)] shadow-[rgba(0,0,0,0.2)_0_10px_20px] max-[520px]:h-8 max-[520px]:w-8"
+            className="h-9 w-9 shrink-0 overflow-hidden rounded-[11px] ring-1 ring-inset ring-[var(--border-hairline)] max-[520px]:h-8 max-[520px]:w-8"
             style={{ background: activeThemeOption.preview }}
             aria-hidden="true"
           />
@@ -288,39 +294,7 @@ export function OwnerThemeClient() {
         }}
         onClose={() => setThemePickerOpen(false)}
       />
-
-      {false ? (
-        <div className="grid gap-2.5 overflow-hidden rounded-none border border-[rgba(100,120,160,0.16)] bg-[rgba(255,255,255,0.03)] p-3 max-[520px]:p-2.5">
-          <div className="grid gap-2 sm:grid-cols-3">
-            {ownerThemeOptions.map((option) => {
-              const active = option.id === activeTheme;
-
-              return (
-                <button
-                  key={option.id}
-                  type="button"
-                  className={
-                    active
-                      ? "grid min-w-0 gap-2 rounded-[12px] border border-[var(--brand-strong)] bg-[var(--brand-soft)] p-2.5 text-left text-[var(--foreground)] shadow-[rgba(0,0,0,0.16)_0_10px_18px] max-[520px]:rounded-[10px] max-[520px]:p-2"
-                      : "grid min-w-0 gap-2 rounded-[12px] border border-[rgba(100,120,160,0.16)] bg-[var(--field-bg)] p-2.5 text-left text-[var(--foreground-soft)] transition hover:border-[var(--border-strong)] hover:text-[var(--foreground)] max-[520px]:rounded-[10px] max-[520px]:p-2"
-                  }
-                  onClick={() => setActiveTheme(option.id)}
-                >
-                  <span
-                    className="block h-10 rounded-[10px] border border-[var(--border)] max-[520px]:h-8"
-                    style={{ background: option.preview }}
-                    aria-hidden="true"
-                  />
-                  <span className="break-words text-[0.84rem] font-bold leading-[1.35] max-[520px]:text-[0.76rem]">{option.label}</span>
-                </button>
-              );
-            })}
-          </div>
-          <p className="m-0 text-[0.75rem] leading-[1.45] text-[var(--foreground-soft)] max-[520px]:text-[0.7rem]">
-            ธีมจะถูกบันทึกไว้ในเบราว์เซอร์นี้ และมีผลกับสี accent ของ workspace ฝั่งเจ้าของร้าน
-          </p>
-        </div>
-      ) : null}
     </div>
   );
 }
+

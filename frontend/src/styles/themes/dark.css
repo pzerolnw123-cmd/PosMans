@@ -1,5 +1,5 @@
 /*
- * dark.css — Midnight Gold theme.
+ * dark.css - Midnight Gold theme.
  *
  * Deep black background with gold accent colours.  The brand text colour
  * is intentionally switched to dark for contrast on the bright gold
@@ -8,8 +8,8 @@
 
 html[data-store-theme="dark"] {
   --background: #080808;
-  --foreground: #f7f2d8;
-  --foreground-soft: #bdb58d;
+  --foreground: #ffffff;
+  --foreground-soft: #cccccc;
   --foreground-inverse: #0e0e0e;
 
   --surface: rgba(16, 16, 16, 0.94);
@@ -30,6 +30,8 @@ html[data-store-theme="dark"] {
   --brand-strong: #ffd84d;
   --brand-soft: rgba(244, 196, 48, 0.14);
   --brand-shadow: rgba(244, 196, 48, 0.2);
+  --brand-text-start: #ffd84d;
+  --brand-text-mix: #f4c430;
 
   --accent-border: rgba(244, 196, 48, 0.34);
   --accent-surface: rgba(244, 196, 48, 0.1);
@@ -55,7 +57,30 @@ html[data-store-theme="dark"] {
   --modal-surface: linear-gradient(180deg, rgba(19, 19, 19, 0.99), rgba(12, 12, 12, 0.98));
   --modal-shadow: rgba(0, 0, 0, 0.62) 0 40px 100px;
 
-  --eyebrow: #b7aa74;
+  --success: #f4c430;
+  --success-bright: #ffd84d;
+  --success-soft: rgba(244, 196, 48, 0.14);
+  --success-wash: rgba(244, 196, 48, 0.08);
+  --success-border: rgba(244, 196, 48, 0.28);
+  --status-text-start: #f7f2d8;
+  --status-text-mid1: #ffd84d;
+  --status-text-mid2: #f4c430;
+  --status-text-end: #d4a020;
+  --status-text-gradient: linear-gradient(135deg, #f7f2d8 0%, #ffd84d 30%, #f4c430 66%, #d4a020 100%);
+  --status-text-shadow: 0 8px 20px rgba(244, 196, 48, 0.2);
+
+  --alert-success-bg: linear-gradient(180deg, rgba(20, 18, 10, 0.86), rgba(12, 10, 6, 0.96));
+  --alert-success-border: rgba(244, 196, 48, 0.22);
+  --alert-success-text: #ffd84d;
+  --alert-success-eyebrow: rgba(244, 196, 48, 0.72);
+
+  --eyebrow: #cccccc;
+  --toggle-track: #242014;
+  --toggle-track-checked: #3a3115;
+  --toggle-thumb-bg: linear-gradient(45deg, #fff5bf, #ffffff);
+  --toggle-thumb-shadow: 0 5px 7px rgba(0, 0, 0, 0.36);
+  --toggle-mark: #9d9364;
+  --toggle-mark-checked: #161616;
   --scroll-track: rgba(30, 30, 30, 0.78);
   --scroll-thumb: linear-gradient(180deg, rgba(255, 216, 77, 0.96), rgba(244, 196, 48, 0.92));
   --scroll-thumb-hover: linear-gradient(180deg, rgba(255, 216, 77, 1), rgba(244, 196, 48, 1));

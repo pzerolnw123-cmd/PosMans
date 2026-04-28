@@ -1,5 +1,5 @@
 /*
- * violet.css — Midnight Violet theme.
+ * violet.css - Midnight Violet theme.
  *
  * This is the default theme.  All tokens are already set in _base.css, so
  * this file intentionally has no overrides.  It exists for symmetry and to
@@ -7,4 +7,4 @@
  * future without touching the shared foundation.
  */
 
-/* html[data-store-theme="violet"] — no overrides needed; _base.css is Violet. */
+/* html[data-store-theme="violet"] has no overrides; _base.css is Violet. */

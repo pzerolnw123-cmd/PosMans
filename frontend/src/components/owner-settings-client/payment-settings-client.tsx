@@ -1,8 +1,7 @@
 "use client";
 
 import type { ChangeEvent, FormEvent } from "react";
-import { useEffect, useRef, useState, useSyncExternalStore } from "react";
-import { createPortal } from "react-dom";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useBackofficeShellAlert } from "@/components/backoffice-shell";
 import { CropModal } from "@/components/product-management-studio/crop-modal";
@@ -18,395 +17,29 @@ import {
 import type { CropDraft } from "@/components/product-management-studio/types";
 import { ensureCsrfToken } from "@/lib/csrf";
 import type {
-  ConfirmPaymentSettingsModalProps,
   OwnerPaymentSettingsValue,
   PromptPayDrafts,
   PromptPayRecipientType,
   SubmitState,
 } from "./shared";
 import {
-  activeGhostButtonClass,
-  compactBankInputClass,
-  compactFooterGhostButtonClass,
-  compactFooterPrimaryButtonClass,
-  dangerGhostButtonClass,
-  fieldLabelClass,
-  inputClass,
   maxPaymentQrFileSize,
-  normalizeDigitInput,
   paymentQrFileTypes,
-  primaryButtonClass,
-  promptPayRecipientOptions,
   readApiMessage,
-  thaiBankOptions,
 } from "./shared";
-
-function ConfirmPaymentSettingsModal({ busy, enabled, recipientLabel, bankSummary, promptPaySummary, onClose, onConfirm }: ConfirmPaymentSettingsModalProps) {
-  const mounted = useSyncExternalStore(
-    () => () => undefined,
-    () => true,
-    () => false,
-  );
-
-  useEffect(() => {
-    function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape" && !busy) {
-        onClose();
-      }
-    }
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [busy, onClose]);
-
-  if (!mounted) {
-    return null;
-  }
-
-  return createPortal(
-    <div className="fixed inset-0 z-[300] grid place-items-center bg-[var(--modal-backdrop)] p-4 backdrop-blur-[16px]">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,var(--brand-soft),transparent_48%)]" />
-
-      <div className="relative z-[1] grid w-[calc(100vw-32px)] max-w-[380px] gap-5 overflow-hidden rounded-none border border-[var(--border)] bg-[var(--modal-surface)] p-5 shadow-[var(--modal-shadow)] max-[640px]:gap-4 max-[640px]:p-4">
-        <div className="grid gap-3">
-          <p className="m-0 text-left text-[0.7rem] font-bold uppercase tracking-[0.28em] text-[var(--brand-strong)]">ยืนยันการบันทึก</p>
-          <h2 className="m-0 text-[1.25rem] leading-tight tracking-[-0.04em] text-[var(--foreground)]">ต้องการบันทึกการตั้งค่านี้ใช่ไหม</h2>
-          <div className="inline-grid w-full gap-2 rounded-none border border-[var(--border)] bg-[var(--panel-subtle)] p-3">
-            <div className="grid gap-1">
-              <span className="text-[0.78rem] text-[var(--foreground-soft)]">{enabled ? "ประเภทผู้รับเงิน" : "สถานะระบบ"}</span>
-              <strong className="text-[var(--foreground)] text-[0.95rem]">{enabled ? recipientLabel : "ปิดใช้งานและซ่อนจากหน้าร้าน (Offline)"}</strong>
-            </div>
-            {promptPaySummary ? (
-              <div className="grid gap-1 border-t border-[rgba(100,120,160,0.14)] pt-2">
-                <span className="text-[0.78rem] text-[var(--foreground-soft)]">PromptPay {!enabled ? <span className="text-[var(--accent-text)]">(บันทึกแบบรอเปิดใช้)</span> : null}</span>
-                <div className={`text-[0.95rem] ${enabled ? "text-[var(--foreground)]" : "text-[var(--foreground-soft)]"}`}>{promptPaySummary}</div>
-              </div>
-            ) : null}
-            {bankSummary ? (
-              <div className="grid gap-1 border-t border-[rgba(100,120,160,0.14)] pt-2">
-                <span className="text-[0.78rem] text-[var(--foreground-soft)]">บัญชีธนาคาร {!enabled ? <span className="text-[var(--accent-text)]">(บันทึกแบบรอเปิดใช้)</span> : null}</span>
-                <div className={`text-[0.95rem] ${enabled ? "text-[var(--foreground)]" : "text-[var(--foreground-soft)]"}`}>{bankSummary}</div>
-              </div>
-            ) : null}
-          </div>
-          <p className="m-0 text-[0.88rem] leading-[1.6] text-[var(--foreground-soft)]">
-            {enabled ? (
-              <>
-                หลังบันทึกแล้ว หน้า Payment จะใช้ข้อมูลนี้ <br />
-                เป็นค่าแสดงผลล่าสุดของร้าน
-              </>
-            ) : (
-              "ข้อมูลจะถูกบันทึกเตรียมไว้ แต่หน้า Payment จะไม่แสดงข้อมูลรับเงิน จนกว่าคุณจะกดเปิดสวิตช์ใช้งาน"
-            )}
-          </p>
-        </div>
-
-        <div className="grid grid-cols-2 gap-3 pt-1 max-[520px]:grid-cols-1">
-          <button type="button" className={`${activeGhostButtonClass} py-2.5 text-[0.92rem]`} onClick={onClose} disabled={busy}>
-            ยกเลิก
-          </button>
-          <button type="button" className={`${primaryButtonClass} py-2.5 text-[0.92rem]`} onClick={onConfirm} disabled={busy}>
-            {busy ? "กำลังบันทึก..." : "ยืนยันการบันทึก"}
-          </button>
-        </div>
-      </div>
-    </div>,
-    document.body,
-  );
-}
-
-function normalizePaymentSettings(value: OwnerPaymentSettingsValue): OwnerPaymentSettingsValue {
-  const normalized: OwnerPaymentSettingsValue = {
-    promptPayEnabled: value.promptPayEnabled,
-    promptPayRecipientType: value.promptPayRecipientType,
-    promptPayId: normalizeDigitInput(value.promptPayId.trim()),
-    promptPayMobileId: normalizeDigitInput(value.promptPayMobileId.trim()),
-    promptPayNationalId: normalizeDigitInput(value.promptPayNationalId.trim()),
-    promptPayTaxId: normalizeDigitInput(value.promptPayTaxId.trim()),
-    bankName: value.bankName.trim(),
-    bankAccountName: value.bankAccountName.trim(),
-    bankAccountNumber: normalizeDigitInput(value.bankAccountNumber.trim()),
-    paymentQrImageUrl: value.paymentQrImageUrl.trim(),
-    paymentQrUploadedKey: value.paymentQrUploadedKey.trim(),
-  };
-
-  if (normalized.promptPayRecipientType !== "STATIC_QR" && normalized.promptPayRecipientType !== "BANK_ACCOUNT") {
-    normalized.paymentQrImageUrl = "";
-    normalized.paymentQrUploadedKey = "";
-  }
-
-  if (normalized.promptPayRecipientType !== "MOBILE" && normalized.promptPayRecipientType !== "BANK_ACCOUNT") {
-    normalized.promptPayMobileId = "";
-  }
-
-  if (normalized.promptPayRecipientType !== "NATIONAL_ID" && normalized.promptPayRecipientType !== "BANK_ACCOUNT") {
-    normalized.promptPayNationalId = "";
-  }
-
-  if (normalized.promptPayRecipientType !== "TAX_ID" && normalized.promptPayRecipientType !== "BANK_ACCOUNT") {
-    normalized.promptPayTaxId = "";
-  }
-
-  normalized.promptPayId =
-    normalized.promptPayRecipientType === "MOBILE"
-      ? normalized.promptPayMobileId
-      : normalized.promptPayRecipientType === "NATIONAL_ID"
-        ? normalized.promptPayNationalId
-        : normalized.promptPayRecipientType === "TAX_ID"
-          ? normalized.promptPayTaxId
-          : "";
-
-  // Auto-healing cascade: If a previous save aggressively set BANK_ACCOUNT as primary but the bank data was since wiped,
-  // we gracefully fallback to whatever PromptPay data they still have available so the toggle switch works correctly.
-  if (normalized.promptPayRecipientType === "BANK_ACCOUNT" && !normalized.bankName && !normalized.bankAccountName && !normalized.bankAccountNumber) {
-    if (normalized.promptPayMobileId) {
-      normalized.promptPayRecipientType = "MOBILE";
-    } else if (normalized.promptPayNationalId) {
-      normalized.promptPayRecipientType = "NATIONAL_ID";
-    } else if (normalized.promptPayTaxId) {
-      normalized.promptPayRecipientType = "TAX_ID";
-    } else if (normalized.paymentQrImageUrl) {
-      normalized.promptPayRecipientType = "STATIC_QR";
-    }
-  }
-
-  return normalized;
-}
-
-function paymentSettingsEqual(left: OwnerPaymentSettingsValue, right: OwnerPaymentSettingsValue) {
-  const normalizedLeft = normalizePaymentSettings(left);
-  const normalizedRight = normalizePaymentSettings(right);
-
-  // The user explicitly desires the ability to draft PromptPay data while the switch is OFF.
-  // Therefore, we must evaluate the entire configuration for equality to detect their offline edits.
-  return JSON.stringify(normalizedLeft) === JSON.stringify(normalizedRight);
-}
-
-function validatePaymentSettings(value: OwnerPaymentSettingsValue, editorType: PromptPayRecipientType) {
-  const normalized = normalizePaymentSettings(value);
-
-  if (normalized.promptPayMobileId && !/^\d+$/.test(normalized.promptPayMobileId)) {
-    return "เบอร์พร้อมเพย์ต้องเป็นตัวเลขเท่านั้น";
-  }
-
-  if (normalized.promptPayNationalId && !/^\d+$/.test(normalized.promptPayNationalId)) {
-    return "เลขบัตรประชาชนต้องเป็นตัวเลขเท่านั้น";
-  }
-
-  if (normalized.promptPayTaxId && !/^\d+$/.test(normalized.promptPayTaxId)) {
-    return "เลขผู้เสียภาษีต้องเป็นตัวเลขเท่านั้น";
-  }
-
-  if (normalized.bankAccountNumber && !/^\d+$/.test(normalized.bankAccountNumber)) {
-    return "เลขบัญชีธนาคารต้องเป็นตัวเลขเท่านั้น";
-  }
-
-  if (normalized.promptPayMobileId && !/^0\d{9}$/.test(normalized.promptPayMobileId)) {
-    return "เบอร์พร้อมเพย์ต้องเป็นเบอร์มือถือไทย 10 หลัก";
-  }
-
-  if (normalized.promptPayNationalId && !/^\d{13}$/.test(normalized.promptPayNationalId)) {
-    return "เลขบัตรประชาชนต้องมี 13 หลัก";
-  }
-
-  if (normalized.promptPayTaxId && !/^\d{13}$/.test(normalized.promptPayTaxId)) {
-    return "เลขผู้เสียภาษีต้องมี 13 หลัก";
-  }
-
-  if (normalized.bankAccountNumber && !/^\d{6,20}$/.test(normalized.bankAccountNumber)) {
-    return "เลขบัญชีธนาคารต้องมี 6-20 หลัก";
-  }
-
-  if (editorType === "BANK_ACCOUNT") {
-    const hasAnyBankField = Boolean(normalized.bankName || normalized.bankAccountName || normalized.bankAccountNumber);
-    const hasAllBankFields = Boolean(normalized.bankName && normalized.bankAccountName && normalized.bankAccountNumber);
-
-    if (hasAnyBankField && !hasAllBankFields) {
-      return "กรอกข้อมูลบัญชีธนาคารให้ครบก่อนบันทึก";
-    }
-  }
-
-  if (!normalized.promptPayEnabled) {
-    return null;
-  }
-
-  let promptPayError = null;
-
-  if (normalized.promptPayRecipientType === "MOBILE" && !normalized.promptPayMobileId) {
-    promptPayError = "กรอกเบอร์พร้อมเพย์ก่อนเปิดใช้";
-  } else if (normalized.promptPayRecipientType === "NATIONAL_ID" && !normalized.promptPayNationalId) {
-    promptPayError = "กรอกเลขบัตรประชาชนก่อนเปิดใช้";
-  } else if (normalized.promptPayRecipientType === "TAX_ID" && !normalized.promptPayTaxId) {
-    promptPayError = "กรอกเลขผู้เสียภาษีก่อนเปิดใช้";
-  } else if (normalized.promptPayRecipientType === "STATIC_QR" && (!normalized.paymentQrImageUrl || !normalized.paymentQrUploadedKey)) {
-    promptPayError = "อัปโหลดรูป Static QR ก่อนเปิดใช้";
-  } else if (normalized.promptPayRecipientType === "BANK_ACCOUNT" && (!normalized.bankName || !normalized.bankAccountName || !normalized.bankAccountNumber)) {
-    promptPayError = "กรอกข้อมูลบัญชีธนาคารให้ครบก่อนเปิดใช้งาน";
-  }
-
-  // If there's a validation error from an invisible PromptPay tab, BUT the user is looking at the Bank Account...
-  // It's extremely confusing to tell them to fill out a tab they aren't looking at.
-  // Instead, instruct them to simply fill out the Bank Account they are currently viewing!
-  if (promptPayError && editorType === "BANK_ACCOUNT") {
-    return "กรอกข้อมูลบัญชีธนาคารให้ครบก่อนเปิดใช้งาน";
-  }
-
-  return promptPayError;
-}
-
-function isEditorTypeCleared(settings: OwnerPaymentSettingsValue, editorType: PromptPayRecipientType) {
-  if (editorType === "MOBILE") {
-    return !settings.promptPayMobileId;
-  }
-
-  if (editorType === "NATIONAL_ID") {
-    return !settings.promptPayNationalId;
-  }
-
-  if (editorType === "TAX_ID") {
-    return !settings.promptPayTaxId;
-  }
-
-  if (editorType === "STATIC_QR") {
-    return !settings.paymentQrImageUrl && !settings.paymentQrUploadedKey;
-  }
-
-  if (editorType === "BANK_ACCOUNT") {
-    return !settings.bankName && !settings.bankAccountName && !settings.bankAccountNumber;
-  }
-
-  return false;
-}
-
-function preparePaymentSettingsForSubmit(
-  value: OwnerPaymentSettingsValue,
-  editorType: PromptPayRecipientType,
-  savedPromptPayEnabled: boolean
-): OwnerPaymentSettingsValue {
-  const normalized = normalizePaymentSettings(value);
-
-  // If the promptPay feature is enabled, but the active editor is cleared...
-  if (normalized.promptPayEnabled && isEditorTypeCleared(normalized, normalized.promptPayRecipientType)) {
-    const rawHasMobile = Boolean(value.promptPayMobileId);
-    const rawHasNationalId = Boolean(value.promptPayNationalId);
-    const rawHasTaxId = Boolean(value.promptPayTaxId);
-    const rawHasStaticQr = Boolean(value.paymentQrImageUrl);
-
-    const hasAllBankFields = Boolean(value.bankName && value.bankAccountName && value.bankAccountNumber);
-    const hasAnyRawPromptPay = rawHasMobile || rawHasNationalId || rawHasTaxId || rawHasStaticQr;
-
-    // If the user's entire core PromptPay configuration is genuinely empty, BUT they have a complete Bank Account...
-    // Smartly shift the primary recipient type to BANK_ACCOUNT so it can be legitimately saved and used as primary.
-    // This allows users who hit "Reset" on their last PromptPay method to seamlessly save their Bank Account instead.
-    if (!hasAnyRawPromptPay && hasAllBankFields) {
-      return { ...normalized, promptPayRecipientType: "BANK_ACCOUNT" };
-    }
-
-    // If they genuinely wiped EVERYTHING out of the entire form (no QR, no bank account).
-    // We only auto-disable if the feature was ALREADY enabled in their saved settings.
-    // If it wasn't, it means they just toggled it ON right now, so we must force them to fill it out via validation!
-    if (!hasAnyRawPromptPay && !Boolean(value.bankName || value.bankAccountName || value.bankAccountNumber)) {
-      if (savedPromptPayEnabled) {
-        return { ...normalized, promptPayEnabled: false };
-      }
-      return normalized;
-    }
-
-    // Otherwise, they just switched to an empty tab, or they are missing bank fields.
-    // We simply return the normalized config, which allows `validatePaymentSettings` to output exactly what is missing on the active tab!
-  }
-
-  return normalized;
-}
-
-function promptPayIdFieldCopy(type: PromptPayRecipientType) {
-  if (type === "MOBILE") {
-    return { label: "เบอร์พร้อมเพย์", placeholder: "เช่น 0812345678", maxLength: 10 };
-  }
-
-  if (type === "NATIONAL_ID") {
-    return { label: "เลขบัตรประชาชน", placeholder: "เลข 13 หลัก", maxLength: 13 };
-  }
-
-  if (type === "TAX_ID") {
-    return { label: "เลขผู้เสียภาษี/นิติบุคคล", placeholder: "เลข 13 หลัก", maxLength: 13 };
-  }
-
-  return { label: "PromptPay ID", placeholder: "เลขพร้อมเพย์", maxLength: 13 };
-}
-
-function createPromptPayDrafts(settings: OwnerPaymentSettingsValue): PromptPayDrafts {
-  return {
-    MOBILE: settings.promptPayMobileId || (settings.promptPayRecipientType === "MOBILE" ? settings.promptPayId : ""),
-    NATIONAL_ID: settings.promptPayNationalId || (settings.promptPayRecipientType === "NATIONAL_ID" ? settings.promptPayId : ""),
-    TAX_ID: settings.promptPayTaxId || (settings.promptPayRecipientType === "TAX_ID" ? settings.promptPayId : ""),
-  };
-}
-
-function clearPaymentSettingsForType(settings: OwnerPaymentSettingsValue, type: PromptPayRecipientType): OwnerPaymentSettingsValue {
-  if (type === "MOBILE") {
-    return {
-      ...settings,
-      promptPayId: "",
-      promptPayMobileId: "",
-    };
-  }
-
-  if (type === "NATIONAL_ID") {
-    return {
-      ...settings,
-      promptPayId: "",
-      promptPayNationalId: "",
-    };
-  }
-
-  if (type === "TAX_ID") {
-    return {
-      ...settings,
-      promptPayId: "",
-      promptPayTaxId: "",
-    };
-  }
-
-  if (type === "STATIC_QR") {
-    return {
-      ...settings,
-      paymentQrImageUrl: "",
-      paymentQrUploadedKey: "",
-    };
-  }
-
-  if (type === "BANK_ACCOUNT") {
-    return {
-      ...settings,
-      bankName: "",
-      bankAccountName: "",
-      bankAccountNumber: "",
-    };
-  }
-
-  return settings;
-}
-
-function resolveEditorType(settings: OwnerPaymentSettingsValue): PromptPayRecipientType {
-  const hasAnyData = Boolean(
-    settings.promptPayMobileId ||
-    settings.promptPayNationalId ||
-    settings.promptPayTaxId ||
-    settings.paymentQrImageUrl ||
-    settings.paymentQrUploadedKey ||
-    settings.bankName ||
-    settings.bankAccountNumber
-  );
-
-  // If there is absolutely no data left in the configuration, default back to the primary Mobile PromptPay tab.
-  if (!hasAnyData) {
-    return "MOBILE";
-  }
-
-  return settings.promptPayRecipientType || "MOBILE";
-}
-
+import { PaymentSettingsConfirmSaveModal } from "./payment-settings-confirm-save-modal";
+import { PaymentSettingsFormFields } from "./payment-settings-form-fields";
+import {
+  clearPaymentSettingsForType,
+  createPromptPayDrafts,
+  isEditorTypeCleared,
+  normalizePaymentSettings,
+  paymentSettingsEqual,
+  preparePaymentSettingsForSubmit,
+  promptPayIdFieldCopy,
+  resolveEditorType,
+  validatePaymentSettings,
+} from "./payment-settings-helpers";
 export function OwnerPaymentSettingsClient({ initialSettings }: { initialSettings: OwnerPaymentSettingsValue }) {
   const { setShellAlert } = useBackofficeShellAlert();
   const router = useRouter();
@@ -735,366 +368,57 @@ export function OwnerPaymentSettingsClient({ initialSettings }: { initialSetting
     />
   ) : null;
 
-  const confirmSaveModal = confirmSaveOpen ? (
-    <ConfirmPaymentSettingsModal
+  const confirmSaveModal = (
+    <PaymentSettingsConfirmSaveModal
       busy={submitState.status === "saving"}
-      enabled={submitPreviewSettings.promptPayEnabled}
-      autoEnabled={submitAutoEnabled}
-      recipientLabel={`${promptPayRecipientOptions.find((option) => option.value === submitPreviewSettings.promptPayRecipientType)?.label || "-"}${submitPreviewSettings.bankName && submitPreviewSettings.bankAccountNumber && submitPreviewSettings.promptPayRecipientType !== "BANK_ACCOUNT" ? " และ โอนเงินธนาคาร" : ""
-        }`}
-      promptPaySummary={
-        submitPreviewSettings.promptPayMobileId
-          ? (
-            <strong className="text-[1.02rem] font-bold tracking-[0.01em] text-[var(--foreground)]">
-              เบอร์พร้อมเพย์ <span className="text-[1.08rem] font-extrabold text-[#f3edff]">{submitPreviewSettings.promptPayMobileId}</span>
-            </strong>
-          )
-          : submitPreviewSettings.promptPayNationalId
-            ? (
-              <strong className="text-[1.02rem] font-bold tracking-[0.01em] text-[var(--foreground)]">
-                เลขบัตรประชาชน <span className="text-[1.08rem] font-extrabold text-[#f3edff]">{submitPreviewSettings.promptPayNationalId}</span>
-              </strong>
-            )
-            : submitPreviewSettings.promptPayTaxId
-              ? (
-                <strong className="text-[1.02rem] font-bold tracking-[0.01em] text-[var(--foreground)]">
-                  เลขผู้เสียภาษี <span className="text-[1.08rem] font-extrabold text-[#f3edff]">{submitPreviewSettings.promptPayTaxId}</span>
-                </strong>
-              )
-              : null
-      }
-      bankSummary={
-        submitPreviewSettings.bankName && submitPreviewSettings.bankAccountNumber ? (
-          <strong className="text-[1.02rem] font-bold tracking-[0.01em] text-[var(--foreground)]">
-            {submitPreviewSettings.bankName} • <span className="text-[1.08rem] font-extrabold text-[#f3edff]">{submitPreviewSettings.bankAccountNumber}</span>
-          </strong>
-        ) : null
-      }
+      open={confirmSaveOpen}
+      submitAutoEnabled={submitAutoEnabled}
+      submitPreviewSettings={submitPreviewSettings}
       onClose={() => setConfirmSaveOpen(false)}
-      onConfirm={() => {
-        if (submitAutoEnabled) {
+      onConfirm={(forceEnable) => {
+        if (forceEnable) {
           performSubmit({ ...form, promptPayEnabled: true }, true);
         } else {
           performSubmit();
         }
       }}
     />
-  ) : null;
+  );
 
   return (
     <form className="mt-2" onSubmit={handleSubmit}>
-      <div className="grid gap-2.5">
-        <div className="flex items-center justify-between gap-3 rounded-[10px] border border-[var(--border)] bg-[var(--field-bg)] px-3 py-2 max-[640px]:flex-col max-[640px]:items-start">
-          <span className="grid min-w-0 gap-1">
-            <span className="truncate text-[0.95rem] font-bold leading-[1.45] text-[var(--foreground)]">เปิดใช้ QR / ข้อมูลโอน</span>
-            <span className="text-[0.8rem] leading-[1.45] text-[var(--foreground-soft)] max-[640px]:text-[0.78rem]">แสดงใน Payment และเช็กสลิป</span>
-          </span>
-          <span className="stock-toggle-uiverse shrink-0">
-            <span className="check" aria-hidden="true">
-              <input
-                id="owner-payment-settings-toggle"
-                type="checkbox"
-                checked={form.promptPayEnabled}
-                onChange={async (event) => {
-                  const isChecked = event.target.checked;
-
-                  // Only block if they actually have unsaved DATA typed into the inputs.
-                  // We ignore `promptPayRecipientType` changes because simply clicking tabs mutates it, which creates false positives.
-                  const hasAnyUnsavedChanges =
-                    form.promptPayMobileId !== savedSettings.promptPayMobileId ||
-                    form.promptPayNationalId !== savedSettings.promptPayNationalId ||
-                    form.promptPayTaxId !== savedSettings.promptPayTaxId ||
-                    form.paymentQrImageUrl !== savedSettings.paymentQrImageUrl ||
-                    form.paymentQrUploadedKey !== savedSettings.paymentQrUploadedKey ||
-                    form.bankName !== savedSettings.bankName ||
-                    form.bankAccountName !== savedSettings.bankAccountName ||
-                    form.bankAccountNumber !== savedSettings.bankAccountNumber;
-
-                  const isDirty = hasAnyUnsavedChanges;
-                  if (isDirty) {
-                    setShellAlert({ message: "กรุณากดบันทึกข้อมูลก่อนเปิด/ปิดใช้งาน", tone: "danger" });
-                    return; // Immediately snap the controlled switch back!
-                  }
-
-                  if (isChecked) {
-                    // They want to turn ON the CURRENT tab. Validate the CURRENT form so they get the correct error message.
-                    const testFormAsEnabled = { ...form, promptPayEnabled: true };
-                    const testPrepared = preparePaymentSettingsForSubmit(testFormAsEnabled, editorType, savedSettings.promptPayEnabled);
-                    const testBankIncomplete = editorType === "BANK_ACCOUNT" && Boolean(testFormAsEnabled.bankName || testFormAsEnabled.bankAccountName || testFormAsEnabled.bankAccountNumber) && !(testFormAsEnabled.bankName && testFormAsEnabled.bankAccountName && testFormAsEnabled.bankAccountNumber);
-                    const validationError = testBankIncomplete ? "กรอกข้อมูลบัญชีธนาคารให้ครบก่อนเปิดใช้งาน" : validatePaymentSettings(testPrepared, editorType);
-
-                    if (validationError) {
-                      setShellAlert({ message: validationError, tone: "danger" });
-                      return; // Immediately snap the controlled switch back to OFF! 
-                    }
-
-                    const nextForm = { ...form, promptPayEnabled: true };
-                    setForm(nextForm);
-                    await performSubmit(nextForm);
-                  } else {
-                    // They want to turn OFF. Since there are no unsaved changes, they just want to disable the feature.
-                    // Use savedSettings to prevent wiping their data if they happened to click an empty tab before toggling.
-                    const nextForm = { ...savedSettings, promptPayEnabled: false };
-
-                    setEditorType(savedSettings.promptPayRecipientType);
-                    setForm(nextForm);
-                    setPromptPayDrafts(createPromptPayDrafts(nextForm));
-                    await performSubmit(nextForm);
-                  }
-                }}
-                disabled={pending}
-                aria-label={form.promptPayEnabled ? "ปิดใช้ QR และข้อมูลโอนในหน้า Payment" : "เปิดใช้ QR และข้อมูลโอนในหน้า Payment"}
-              />
-              <label htmlFor="owner-payment-settings-toggle" />
-            </span>
-          </span>
-        </div>
-
-        <div className="grid gap-2">
-          <span className={fieldLabelClass}>ประเภทผู้รับเงิน</span>
-          <span className="text-[0.78rem] leading-[1.2] text-[var(--foreground-soft)]">คุณสามารถกรอกเบอร์พร้อมเพย์, เลขบัตรประชาชน, เลขผู้เสียภาษี, หรือรูป QR พร้อมกับข้อมูลบัญชีธนาคารได้</span>
-          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-            {promptPayRecipientOptions.map((option) => (
-              <button
-                key={option.value}
-                type="button"
-                className={
-                  editorType === option.value
-                    ? `grid min-h-[46px] content-center gap-0.5 rounded-[10px] border px-3 py-1 text-left text-[var(--foreground)] transition-colors ${option.value === "BANK_ACCOUNT"
-                      ? "border-[rgba(232,93,117,0.52)] bg-[rgba(232,93,117,0.14)] text-[#ffb0bd]"
-                      : "border-[var(--accent-border)] bg-[var(--accent-surface)]"
-                    } ${option.value === "BANK_ACCOUNT" ? "col-span-1 sm:col-span-2 mx-auto w-full sm:max-w-[calc(50%_-_2px)] justify-items-center text-center" : ""}`
-                    : option.value === "BANK_ACCOUNT"
-                      ? "col-span-1 sm:col-span-2 mx-auto grid min-h-[46px] w-full sm:max-w-[calc(50%_-_2px)] content-center justify-items-center gap-0.5 rounded-[10px] border border-[rgba(232,93,117,0.34)] bg-[rgba(232,93,117,0.08)] px-3 py-1 text-center text-[#ff9daf] transition hover:border-[rgba(232,93,117,0.5)] hover:bg-[rgba(232,93,117,0.12)]"
-                      : "grid min-h-[46px] content-center gap-0.5 rounded-[10px] border border-[var(--border)] bg-[var(--surface-muted)] px-3 py-1 text-left text-[var(--foreground)] transition hover:border-[var(--border-strong)]"
-                }
-                onClick={() => {
-                  if (option.value === editorType) {
-                    return;
-                  }
-
-                  setSubmitState({ status: "idle", message: "" });
-                  setEditorType(option.value);
-
-                  setForm((current) => {
-                    const nextPromptPayId =
-                      option.value === "MOBILE" || option.value === "NATIONAL_ID" || option.value === "TAX_ID"
-                        ? promptPayDrafts[option.value]
-                        : "";
-
-                    if (option.value === "BANK_ACCOUNT") {
-                      return current;
-                    }
-
-                    return {
-                      ...current,
-                      promptPayRecipientType: option.value,
-                      promptPayId: nextPromptPayId,
-                      promptPayMobileId: option.value === "MOBILE" ? nextPromptPayId : current.promptPayMobileId,
-                      promptPayNationalId: option.value === "NATIONAL_ID" ? nextPromptPayId : current.promptPayNationalId,
-                      promptPayTaxId: option.value === "TAX_ID" ? nextPromptPayId : current.promptPayTaxId,
-                    };
-                  });
-                }}
-                disabled={effectivelyDisabled}
-              >
-                <strong className="text-[0.86rem] leading-[1.2] [overflow-wrap:anywhere]">{option.label}</strong>
-                <span className="text-[0.68rem] leading-[1.25] text-[var(--foreground-soft)] [overflow-wrap:anywhere]">{option.helper}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {usesPromptPayId ? (
-          <label className="grid gap-2">
-            <span className={fieldLabelClass}>{promptPayField.label}</span>
-            <input
-              className={inputClass}
-              value={activePromptPayValue}
-              inputMode="numeric"
-              placeholder={promptPayField.placeholder}
-              onChange={(event) => {
-                const nextValue = normalizeDigitInput(event.target.value).slice(0, promptPayField.maxLength);
-                if (editorType === "MOBILE" || editorType === "NATIONAL_ID" || editorType === "TAX_ID") {
-                  setPromptPayDrafts((current) => ({ ...current, [editorType]: nextValue }));
-                }
-                setForm((current) => ({
-                  ...current,
-                  promptPayId: nextValue,
-                  promptPayMobileId: editorType === "MOBILE" ? nextValue : current.promptPayMobileId,
-                  promptPayNationalId: editorType === "NATIONAL_ID" ? nextValue : current.promptPayNationalId,
-                  promptPayTaxId: editorType === "TAX_ID" ? nextValue : current.promptPayTaxId,
-                }));
-              }}
-              disabled={effectivelyDisabled}
-              maxLength={promptPayField.maxLength}
-            />
-          </label>
-        ) : null}
-
-        {usesBankAccount ? (
-          <div className="grid gap-2.5">
-            <label className="grid gap-1">
-              <span className={fieldLabelClass}>ชื่อบัญชี</span>
-              <input
-                className={compactBankInputClass}
-                value={form.bankAccountName}
-                placeholder="ชื่อบัญชีรับเงิน"
-                onChange={(event) => setForm((current) => ({ ...current, bankAccountName: event.target.value }))}
-                disabled={effectivelyDisabled}
-                maxLength={120}
-              />
-            </label>
-            <label className="grid gap-1">
-              <span className={fieldLabelClass}>ธนาคาร</span>
-              <div className="relative" ref={bankDropdownRef}>
-                <button
-                  type="button"
-                  className={`${compactBankInputClass} flex items-center justify-between gap-3 text-left ${bankDropdownOpen ? "border-[var(--brand-strong)] shadow-[0_0_0_4px_var(--ring)]" : ""}`}
-                  onClick={() => setBankDropdownOpen((current) => !current)}
-                  disabled={effectivelyDisabled}
-                  aria-expanded={bankDropdownOpen}
-                >
-                  <span className={form.bankName ? "truncate text-[var(--foreground)]" : "truncate text-[#7d8799]"}>{form.bankName || "เลือกธนาคาร"}</span>
-                  <span className={`shrink-0 text-[var(--foreground-soft)] transition ${bankDropdownOpen ? "rotate-180" : ""}`}>
-                    <svg aria-hidden="true" viewBox="0 0 20 20" className="h-4 w-4 fill-current">
-                      <path d="M5.47 7.97a.75.75 0 0 1 1.06 0L10 11.44l3.47-3.47a.75.75 0 1 1 1.06 1.06l-4 4a.75.75 0 0 1-1.06 0l-4-4a.75.75 0 0 1 0-1.06Z" />
-                    </svg>
-                  </span>
-                </button>
-                {bankDropdownOpen ? (
-                  <div className="absolute bottom-[calc(100%+10px)] left-0 right-0 z-20 overflow-hidden border border-[var(--border-strong)] bg-[var(--panel-elevated)] shadow-[var(--shadow-card)] max-[640px]:bottom-auto max-[640px]:top-[calc(100%+10px)]">
-                    <div className="max-h-[240px] overflow-y-auto py-2 [&::-webkit-scrollbar]:w-[6px] [&::-webkit-scrollbar-track]:bg-[var(--scroll-track)] [&::-webkit-scrollbar-thumb]:[background:var(--scroll-thumb)] hover:[&::-webkit-scrollbar-thumb]:[background:var(--scroll-thumb-hover)]">
-                      {thaiBankOptions.map((bankName) => {
-                        const active = form.bankName === bankName;
-
-                        return (
-                          <button
-                            key={bankName}
-                            type="button"
-                            className={`flex w-full items-center px-4 py-3 text-left text-[0.95rem] leading-[1.25] transition ${active ? "bg-[var(--accent-surface)] text-[var(--accent-text)]" : "text-[var(--foreground)] hover:bg-[var(--panel-subtle)]"}`}
-                            onClick={() => {
-                              setForm((current) => ({ ...current, bankName }));
-                              setBankDropdownOpen(false);
-                            }}
-                          >
-                            {bankName}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                ) : null}
-              </div>
-            </label>
-            <label className="grid gap-1">
-              <span className={fieldLabelClass}>เลขบัญชี</span>
-              <input
-                className={compactBankInputClass}
-                value={form.bankAccountNumber}
-                inputMode="numeric"
-                placeholder="ตัวเลข 6-20 หลัก"
-                onChange={(event) => setForm((current) => ({ ...current, bankAccountNumber: event.target.value }))}
-                disabled={effectivelyDisabled}
-                maxLength={32}
-              />
-            </label>
-          </div>
-        ) : null}
-
-        {usesStaticQr ? (
-          <div className="grid gap-2.5 rounded-[10px] border border-[var(--border)] bg-[var(--field-bg)] p-3">
-            <div className="flex items-center justify-between gap-3 max-[640px]:flex-col max-[640px]:items-stretch">
-              <div className="min-w-0">
-                <strong className="block text-[0.95rem] leading-[1.3] text-[var(--foreground)]">Static QR</strong>
-                <span className="block truncate text-[0.76rem] text-[var(--foreground-soft)]">ตรวจยอดจากสลิปเอง</span>
-              </div>
-              <label className={`${activeGhostButtonClass} min-h-[36px] shrink-0 cursor-pointer px-3 text-[0.86rem] max-[640px]:w-full`}>
-                {uploadingQr ? "กำลังอัปโหลด..." : "อัปโหลด QR"}
-                <input className="sr-only" type="file" accept="image/png,image/jpeg,image/webp" onChange={handleQrUpload} disabled={effectivelyDisabled} />
-              </label>
-            </div>
-            {form.paymentQrImageUrl ? (
-              <div className="flex items-center gap-2 rounded-[10px] border border-[rgba(100,120,160,0.12)] bg-[rgba(255,255,255,0.03)] p-2 max-[520px]:grid max-[520px]:grid-cols-[44px_minmax(0,1fr)]">
-                <span className="h-11 w-11 shrink-0 rounded-[8px] border border-[rgba(100,120,160,0.18)] bg-cover bg-center" style={{ backgroundImage: `url(${form.paymentQrImageUrl})` }} />
-                <span className="min-w-0 flex-1 truncate text-[0.82rem] text-[var(--foreground-soft)]">มีรูป QR แล้ว</span>
-                <button
-                  type="button"
-                  className={`${dangerGhostButtonClass} min-h-[34px] shrink-0 px-3 text-[0.82rem]`}
-                  onClick={() => setForm((current) => ({ ...current, paymentQrImageUrl: "", paymentQrUploadedKey: "" }))}
-                  disabled={effectivelyDisabled}
-                >
-                  ลบ
-                </button>
-              </div>
-            ) : null}
-          </div>
-        ) : null}
-
-        <p className="m-0 text-[0.8rem] leading-[1.45] text-[var(--foreground-soft)] [overflow-wrap:anywhere]">
-          {submitState.status === "success" || submitState.status === "saving" ? submitState.message : paymentHintMessage}
-        </p>
-      </div>
-
-      <div className="mt-3 flex flex-wrap justify-start gap-3 max-[900px]:[&>*]:w-full">
-        <button
-          type="button"
-          className={compactFooterGhostButtonClass}
-          onClick={() => {
-            const nextForm = clearPaymentSettingsForType(form, editorType);
-            setForm(nextForm);
-            setPromptPayDrafts(createPromptPayDrafts(nextForm));
-            setSubmitState({ status: "idle", message: "" });
-            setConfirmSaveOpen(false);
-            setBankDropdownOpen(false);
-          }}
-          disabled={resetDisabled}
-        >
-          รีเซ็ต
-        </button>
-        <button
-          type="button"
-          className={compactFooterGhostButtonClass}
-          onClick={() => {
-            const nextForm = (() => {
-              const current = form;
-              const revertForm = { ...current };
-              if (editorType === "MOBILE") {
-                revertForm.promptPayMobileId = savedSettings.promptPayMobileId;
-                revertForm.promptPayId = savedSettings.promptPayMobileId;
-              } else if (editorType === "NATIONAL_ID") {
-                revertForm.promptPayNationalId = savedSettings.promptPayNationalId;
-                revertForm.promptPayId = savedSettings.promptPayNationalId;
-              } else if (editorType === "TAX_ID") {
-                revertForm.promptPayTaxId = savedSettings.promptPayTaxId;
-                revertForm.promptPayId = savedSettings.promptPayTaxId;
-              } else if (editorType === "STATIC_QR") {
-                revertForm.paymentQrImageUrl = savedSettings.paymentQrImageUrl;
-                revertForm.paymentQrUploadedKey = savedSettings.paymentQrUploadedKey;
-              } else if (editorType === "BANK_ACCOUNT") {
-                revertForm.bankName = savedSettings.bankName;
-                revertForm.bankAccountName = savedSettings.bankAccountName;
-                revertForm.bankAccountNumber = savedSettings.bankAccountNumber;
-              }
-              return revertForm;
-            })();
-            setForm(nextForm);
-            setPromptPayDrafts(createPromptPayDrafts(nextForm));
-            setSubmitState({ status: "idle", message: "" });
-            setConfirmSaveOpen(false);
-            setBankDropdownOpen(false);
-          }}
-          disabled={pending || !isActiveTabDirty}
-        >
-          ย้อนกลับ
-        </button>
-        <button type="submit" className={compactFooterPrimaryButtonClass} disabled={!canSavePaymentSettings}>
-          {submitState.status === "saving" ? "กำลังบันทึก..." : "บันทึก"}
-        </button>
-      </div>
+      <PaymentSettingsFormFields
+        form={form}
+        setForm={setForm}
+        savedSettings={savedSettings}
+        setEditorType={setEditorType}
+        setPromptPayDrafts={setPromptPayDrafts}
+        setSubmitState={setSubmitState}
+        setConfirmSaveOpen={setConfirmSaveOpen}
+        setBankDropdownOpen={setBankDropdownOpen}
+        editorType={editorType}
+        effectivelyDisabled={effectivelyDisabled}
+        pending={pending}
+        promptPayDrafts={promptPayDrafts}
+        promptPayField={promptPayField}
+        activePromptPayValue={activePromptPayValue}
+        usesPromptPayId={usesPromptPayId}
+        usesBankAccount={usesBankAccount}
+        usesStaticQr={usesStaticQr}
+        bankDropdownRef={bankDropdownRef}
+        bankDropdownOpen={bankDropdownOpen}
+        uploadingQr={uploadingQr}
+        handleQrUpload={handleQrUpload}
+        submitState={submitState}
+        paymentHintMessage={paymentHintMessage}
+        resetDisabled={resetDisabled}
+        isActiveTabDirty={isActiveTabDirty}
+        canSavePaymentSettings={canSavePaymentSettings}
+        setShellAlert={setShellAlert}
+        performSubmit={performSubmit}
+      />
       {qrCropModal}
       {confirmSaveModal}
     </form>
   );
 }
-

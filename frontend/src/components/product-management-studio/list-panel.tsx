@@ -1,4 +1,4 @@
-import { ghostButtonClass, Loader, secondaryButtonClass, StatusPill } from "@/components/ui-primitives";
+﻿import { ghostButtonClass, Loader, secondaryButtonClass, StatusPill } from "@/components/ui-primitives";
 import { ProductImage } from "@/components/product-management-studio/shared";
 import { categoryOptions, formatPrice, type ProductCategory, type ProductItem } from "@/components/product-management-studio/types";
 
@@ -64,7 +64,7 @@ export function ProductListPanel({
                 className={
                   active
                     ? "min-h-10 rounded-[10px] border border-[var(--brand)] bg-[var(--brand-soft)] px-[18px] font-bold text-[var(--brand-strong)] shadow-[var(--brand-shadow)] transition hover:-translate-y-px"
-                    : "min-h-10 rounded-[10px] border border-[var(--border)] bg-[var(--surface-muted)] px-[18px] font-bold text-[var(--foreground)] transition hover:-translate-y-px hover:shadow-[0_6px_12px_rgba(0,0,0,0.08)]"
+                    : "min-h-10 rounded-[10px] border border-[var(--border)] bg-[var(--surface-muted)] px-[18px] font-bold text-[var(--foreground)] transition hover:-translate-y-px hover:shadow-[var(--shadow-hover-subtle)]"
                 }
                 onClick={() => onCategoryChange(category)}
               >
@@ -155,7 +155,7 @@ export function ProductListPanel({
                       ? "mx-auto grid min-h-[124px] w-full grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 rounded-[18px] border border-[var(--brand)] bg-[var(--brand-soft)] px-3 py-3 text-left shadow-[var(--brand-shadow)] transition hover:-translate-y-px max-[520px]:grid-cols-[62px_minmax(0,1fr)]"
                       : selectionTransitionLocked
                         ? "mx-auto grid min-h-[124px] w-full grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 rounded-[18px] border border-[var(--border)] bg-[var(--surface)] px-3 py-3 text-left max-[520px]:grid-cols-[62px_minmax(0,1fr)]"
-                        : "mx-auto grid min-h-[124px] w-full grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 rounded-[18px] border border-[var(--border)] bg-[var(--surface)] px-3 py-3 text-left transition hover:-translate-y-px hover:shadow-[0_6px_12px_rgba(0,0,0,0.08)] max-[520px]:grid-cols-[62px_minmax(0,1fr)]"
+                        : "mx-auto grid min-h-[124px] w-full grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 rounded-[18px] border border-[var(--border)] bg-[var(--surface)] px-3 py-3 text-left transition hover:-translate-y-px hover:shadow-[var(--shadow-hover-subtle)] max-[520px]:grid-cols-[62px_minmax(0,1fr)]"
                   }
                   onClick={() => onSelectProduct(item.id)}
                 >
@@ -225,3 +225,4 @@ export function ProductListPanel({
     </div>
   );
 }
+

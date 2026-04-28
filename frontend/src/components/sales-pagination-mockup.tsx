@@ -4,7 +4,6 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState, type PointerEven
 import { useRouter } from "next/navigation";
 import { requestProductList } from "@/components/product-management-studio/lib";
 import { categoryOptions, type ProductCategory, type ProductItem } from "@/components/product-management-studio/types";
-import { StatusPill } from "@/components/ui-primitives";
 
 type CartItem = {
   product: ProductItem;
@@ -20,112 +19,8 @@ type StoredSalesCart = {
   savedAt?: string;
 };
 
-const salesCartStorageKey = "pos-mans-sales-cart";
-
-function CategoryIcon({ category }: { category: ProductCategory }) {
-  if (category === "อาหาร") {
-    return (
-      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 20 20" aria-hidden="true">
-        <path fill="currentColor" d="M4.67 2c-.624 0-1.175.438-1.29 1.068C3.232 3.886 3 5.342 3 6.5c0 1.231.636 2.313 1.595 2.936c.271.177.405.405.405.6v.41q0 .027-.003.054c-.027.26-.151 1.429-.268 2.631C4.614 14.316 4.5 15.581 4.5 16a2 2 0 1 0 4 0c0-.42-.114-1.684-.229-2.869a302 302 0 0 0-.268-2.63L8 10.446v-.41c0-.196.134-.424.405-.6A3.5 3.5 0 0 0 10 6.5c0-1.158-.232-2.614-.38-3.432A1.305 1.305 0 0 0 8.33 2c-.34 0-.65.127-.884.336A1.5 1.5 0 0 0 6.5 2c-.359 0-.688.126-.946.336A1.32 1.32 0 0 0 4.671 2M6 3.5a.5.5 0 0 1 1 0v3a.5.5 0 0 0 1 0V3.33A.33.33 0 0 1 8.33 3c.157 0 .28.108.306.247C8.783 4.06 9 5.439 9 6.5a2.5 2.5 0 0 1-1.14 2.098c-.439.285-.86.786-.86 1.438v.41q0 .08.008.16c.028.258.151 1.424.268 2.622c.118 1.215.224 2.415.224 2.772a1 1 0 1 1-2 0c0-.357.106-1.557.224-2.772c.117-1.198.24-2.364.268-2.622q.008-.08.008-.16v-.41c0-.652-.421-1.153-.86-1.438A2.5 2.5 0 0 1 4 6.5c0-1.06.217-2.44.364-3.253A.305.305 0 0 1 4.671 3A.33.33 0 0 1 5 3.33V6.5a.5.5 0 0 0 1 0zm5 3A4.5 4.5 0 0 1 15.5 2a.5.5 0 0 1 .5.5v6.978l.02.224a626 626 0 0 1 .228 2.696c.124 1.507.252 3.161.252 3.602a2 2 0 1 1-4 0c0-.44.128-2.095.252-3.602c.062-.761.125-1.497.172-2.042l.03-.356H12.5A1.5 1.5 0 0 1 11 8.5zm2.998 3.044l-.021.245l-.057.653c-.047.544-.11 1.278-.172 2.038c-.126 1.537-.248 3.132-.248 3.52a1 1 0 1 0 2 0c0-.388-.122-1.983-.248-3.52a565 565 0 0 0-.229-2.691l-.021-.244v-.001L15 9.5V3.035A3.5 3.5 0 0 0 12 6.5v2a.5.5 0 0 0 .5.5h1a.5.5 0 0 1 .498.544" />
-      </svg>
-    );
-  }
-
-  if (category === "เครื่องดื่ม") {
-    return (
-      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
-        <path fill="currentColor" d="M7 22a2 2 0 0 1-2-1.84L4 7h13l-1 13.16A2 2 0 0 1 14 22zm-.08-2h7.16L14.92 9H6.08zM18 7h1.5a2.5 2.5 0 0 1 0 5H18v-2h1.5a.5.5 0 0 0 0-1H18zM3 4h15v2H3zm5-3h2v2H8zm4 0h2v2h-2z" />
-      </svg>
-    );
-  }
-
-  if (category === "ของหวาน/ขนม") {
-    return (
-      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
-        <path fill="currentColor" d="M7 22a2 2 0 0 1-1.98-1.72L3.43 9.2A1 1 0 0 1 4.42 8H5a7 7 0 0 1 14 0h.58a1 1 0 0 1 .99 1.2l-1.59 11.08A2 2 0 0 1 17 22zm0-2h10l1.43-10H5.57zm.02-12h9.96A5 5 0 0 0 7.02 8M8 12h2v2H8zm6 0h2v2h-2zm-3 3h2v2h-2z" />
-      </svg>
-    );
-  }
-
-  if (category === "รองเท้า") {
-    return (
-      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
-        <g fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.6">
-          <path d="M3 14.5c3.3 1.6 7 1.9 10.3.8c1.1-.4 1.7-.3 2.7.2c1.5.7 3.2 1.1 5 .8" />
-          <path d="M4.2 8.2c.5 1.7 3.2 2.1 5.6 1.4c-.5-1.8.6-2.7 1.4-3.1c2.4 3.4 7 4.8 8.9 8c.9 1.5-.8 3-2.4 3H7.6c-2.7 0-4.1-.7-4.7-2.1c-.7-1.6.2-5 1.3-7.2" />
-          <path d="m13.5 9.5l1.3-1.2m1 2.5l1.4-1.2" />
-        </g>
-      </svg>
-    );
-  }
-
-  if (category === "อะไหล่ / อุปกรณ์เสริม") {
-    return (
-      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
-        <path fill="currentColor" d="m20.7 17.3l-4.4-4.4a6.4 6.4 0 0 1-2.2 2.2l4.4 4.4a1.56 1.56 0 0 0 2.2 0a1.56 1.56 0 0 0 0-2.2M11.2 14a4.9 4.9 0 0 0 3.9-5.9l-2.8 2.8l-2.1-2.1L13 6a4.9 4.9 0 0 0-6 6l-4.4 4.4a1.56 1.56 0 0 0 2.2 2.2L9.2 14a5 5 0 0 0 2 .1" />
-      </svg>
-    );
-  }
-
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
-      <path fill="currentColor" d="M4 5a1 1 0 0 1 1-1h5v7H4zm10-1h5a1 1 0 0 1 1 1v5h-6zM4 14h6v6H5a1 1 0 0 1-1-1zm10 0h6v5a1 1 0 0 1-1 1h-5z" />
-    </svg>
-  );
-}
-
-function BasketIcon({ size = 17 }: { size?: number }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" aria-hidden="true">
-      <g fill="none" stroke="currentColor" strokeWidth="2">
-        <path strokeLinejoin="round" d="M2.31 11.243A1 1 0 0 1 3.28 10h17.44a1 1 0 0 1 .97 1.242l-1.811 7.243A2 2 0 0 1 17.939 20H6.061a2 2 0 0 1-1.94-1.515z" />
-        <path strokeLinecap="round" d="M9 14v2m6-2v2m-9-6l4-6m8 6l-4-6" />
-      </g>
-    </svg>
-  );
-}
-
-function formatBaht(value: number) {
-  return `฿${value.toLocaleString("th-TH")}`;
-}
-
-function normalizeStockValue(value: number | undefined) {
-  return Number.isFinite(value) ? Math.max(0, Math.floor(value || 0)) : 0;
-}
-
-function stockLimit(product: ProductItem) {
-  return product.trackStock ? normalizeStockValue(product.stockQuantity) : Number.POSITIVE_INFINITY;
-}
-
-function isProductSellable(product: ProductItem) {
-  return product.status === "พร้อมขาย" && (!product.trackStock || normalizeStockValue(product.stockQuantity) > 0);
-}
-
-function displaySaleStatus(product: ProductItem) {
-  if (product.status === "พร้อมขาย" && product.trackStock && normalizeStockValue(product.stockQuantity) <= 0) {
-    return "ปิดขาย";
-  }
-
-  return product.status;
-}
-
-function stockLabel(product: ProductItem, inCart = 0) {
-  if (!product.trackStock) {
-    return null;
-  }
-
-  const remaining = Math.max(0, normalizeStockValue(product.stockQuantity) - inCart);
-  if (remaining <= 0) {
-    return "สต๊อกหมด";
-  }
-
-  if (product.lowStockThreshold > 0 && remaining <= product.lowStockThreshold) {
-    return `ใกล้หมด ${remaining}`;
-  }
-
-  return `คงเหลือ ${remaining}`;
-}
-
+import { BasketIcon, CategoryIcon, displaySaleStatus, formatBaht, isProductSellable, normalizeStockValue, salesCartStorageKey, stockLabel, stockLimit } from "@/components/sales-pagination-mockup/helpers";
+import { SalesCartPanel } from "@/components/sales-pagination-mockup/cart-panel";
 export function SalesPaginationMockup() {
   const router = useRouter();
   const [products, setProducts] = useState<ProductItem[]>([]);
@@ -431,9 +326,9 @@ export function SalesPaginationMockup() {
             Array.from({ length: 6 }).map((_, index) => (
               <article
                 key={`loading-${index}`}
-                className="grid h-[226px] animate-pulse content-start gap-3 rounded-none border border-[var(--border)] bg-[var(--panel-elevated)] p-[14px]"
+                className="grid h-[226px] animate-pulse content-start gap-3 rounded-none border border-[var(--border)] [background:var(--panel-elevated)] p-[14px]"
               >
-                <div className="h-[96px] w-[118px] rounded-xl border border-[rgba(100,120,160,0.14)] bg-[var(--panel-subtle)]" />
+                <div className="h-[96px] w-[118px] rounded-xl border border-[var(--border-subtle)] bg-[var(--panel-subtle)]" />
                 <div className="h-4 w-3/4 rounded bg-[var(--panel-subtle)]" />
                 <div className="h-3 w-1/2 rounded bg-[var(--surface-muted)]" />
               </article>
@@ -452,8 +347,8 @@ export function SalesPaginationMockup() {
                   key={product.id}
                   className={
                     activePulse
-                      ? "relative grid h-[226px] animate-[cart-card-pop_520ms_cubic-bezier(.2,.8,.2,1)] content-start gap-3 overflow-hidden rounded-none border border-[var(--cart-glow-border)] bg-[var(--panel-elevated)] p-[14px] pb-[68px] shadow-[var(--cart-shadow-mid)_0_8px_20px] max-[640px]:h-auto max-[640px]:min-h-[226px]"
-                      : "relative grid h-[226px] content-start gap-3 overflow-hidden rounded-none border border-[var(--border)] bg-[var(--panel-elevated)] p-[14px] pb-[68px] transition-all duration-500 hover:-translate-y-0.5 hover:border-[var(--cart-glow-border-soft)] max-[640px]:h-auto max-[640px]:min-h-[226px]"
+                      ? "relative grid h-[226px] animate-[cart-card-pop_520ms_cubic-bezier(.2,.8,.2,1)] content-start gap-3 overflow-hidden rounded-none border border-[var(--cart-glow-border)] [background:var(--panel-elevated)] p-[14px] pb-[68px] shadow-[var(--cart-shadow-mid)_0_8px_20px] max-[640px]:h-auto max-[640px]:min-h-[226px]"
+                      : "relative grid h-[226px] content-start gap-3 overflow-hidden rounded-none border border-[var(--border)] [background:var(--panel-elevated)] p-[14px] pb-[68px] transition-all duration-500 hover:-translate-y-0.5 hover:border-[var(--cart-glow-border-soft)] max-[640px]:h-auto max-[640px]:min-h-[226px]"
                   }
                 >
                   {added ? (
@@ -467,13 +362,13 @@ export function SalesPaginationMockup() {
                   <div className="flex items-start justify-between gap-3">
                     {product.imageUrl ? (
                       <span
-                        className="shrink-0 h-[96px] w-[118px] rounded-xl border border-[rgba(100,120,160,0.14)] bg-cover bg-center"
+                        className="shrink-0 h-[96px] w-[118px] rounded-xl border border-[var(--border-subtle)] bg-cover bg-center"
                         style={{ backgroundImage: `url(${product.imageUrl})` }}
                         role="img"
                         aria-label={product.name}
                       />
                     ) : (
-                      <div className="shrink-0 h-[96px] w-[118px] rounded-xl border border-[rgba(100,120,160,0.14)] bg-[var(--panel-subtle)]" />
+                      <div className="shrink-0 h-[96px] w-[118px] rounded-xl border border-[var(--border-subtle)] bg-[var(--panel-subtle)]" />
                     )}
                     <div className="grid min-w-0 justify-items-end gap-1 text-right">
                       <b className="text-base leading-[1.2] text-[var(--foreground)]">{formatBaht(product.price)}</b>
@@ -496,7 +391,7 @@ export function SalesPaginationMockup() {
                     type="button"
                     className={
                       ready
-                        ? "absolute bottom-[14px] left-[14px] inline-flex h-[42px] min-w-[126px] items-center justify-center gap-2 rounded-[10px] border border-transparent bg-[linear-gradient(135deg,var(--brand)_0%,var(--brand-strong)_100%)] px-4 text-[0.92rem] font-bold text-[var(--button-text)] shadow-[var(--brand-shadow)_0_8px_18px] transition duration-200 hover:-translate-y-0.5 hover:shadow-[var(--brand-shadow)_0_12px_24px] active:scale-95"
+                        ? "absolute bottom-[14px] left-[14px] inline-flex h-[42px] min-w-[126px] items-center justify-center gap-2 rounded-[10px] border border-transparent [background:var(--brand-gradient)] px-4 text-[0.92rem] font-bold text-[var(--button-text)] shadow-[var(--brand-shadow)_0_8px_18px] transition duration-200 hover:-translate-y-0.5 hover:shadow-[var(--brand-shadow)_0_12px_24px] active:scale-95"
                         : "absolute bottom-[14px] left-[14px] inline-flex h-[42px] min-w-[126px] cursor-not-allowed items-center justify-center gap-2 rounded-[10px] border border-[var(--border)] bg-[var(--surface-muted)] px-4 text-[0.92rem] font-bold text-[var(--foreground-soft)] opacity-60"
                     }
                     disabled={!ready}
@@ -509,16 +404,16 @@ export function SalesPaginationMockup() {
               );
             })
           ) : (
-            <div className="col-span-full grid min-h-[172px] place-items-center rounded-none border border-dashed border-[rgba(100,120,160,0.22)] bg-[var(--panel-subtle)] p-6 text-center text-[var(--foreground-soft)]">
+            <div className="col-span-full grid min-h-[172px] place-items-center rounded-none border border-dashed border-[var(--border-field)] bg-[var(--panel-subtle)] p-6 text-center text-[var(--foreground-soft)]">
               {error || "ยังไม่มีสินค้าในร้าน"}
             </div>
           )}
         </div>
 
-        <div className="flex items-center justify-between gap-4 border-t border-t-[rgba(100,120,160,0.12)] pt-3 max-[720px]:flex-col max-[720px]:items-stretch">
+        <div className="flex items-center justify-between gap-4 border-t border-t-[var(--border-hairline)] pt-3 max-[720px]:flex-col max-[720px]:items-stretch">
           <button
             type="button"
-            className="inline-flex h-[52px] w-[152px] items-center justify-center rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] px-4 font-bold text-[var(--foreground)] transition hover:-translate-y-px hover:border-[var(--border-strong)] hover:shadow-[rgba(0,0,0,0.15)_0_5px_10px] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:shadow-none max-[720px]:w-full"
+            className="inline-flex h-[52px] w-[152px] items-center justify-center rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] px-4 font-bold text-[var(--foreground)] transition hover:-translate-y-px hover:border-[var(--border-strong)] hover:shadow-[var(--shadow-hover)] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:shadow-none max-[720px]:w-full"
             disabled={pageIndex === 0 || loading}
             onClick={() => setPageIndex((current) => Math.max(0, current - 1))}
           >
@@ -533,7 +428,7 @@ export function SalesPaginationMockup() {
 
           <button
             type="button"
-            className="inline-flex h-[52px] w-[152px] items-center justify-center rounded-2xl border border-transparent bg-[linear-gradient(135deg,var(--brand)_0%,var(--brand-strong)_100%)] px-4 font-bold text-[var(--button-text)] shadow-[var(--brand-shadow)_0_6px_14px] transition hover:-translate-y-px disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0 max-[720px]:w-full"
+            className="inline-flex h-[52px] w-[152px] items-center justify-center rounded-2xl border border-transparent [background:var(--brand-gradient)] px-4 font-bold text-[var(--button-text)] shadow-[var(--brand-shadow)_0_6px_14px] transition hover:-translate-y-px disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0 max-[720px]:w-full"
             disabled={pageIndex >= totalPages - 1 || loading}
             onClick={() => setPageIndex((current) => Math.min(totalPages - 1, current + 1))}
           >
@@ -542,153 +437,8 @@ export function SalesPaginationMockup() {
         </div>
       </section>
 
-      <aside
-        className={
-          cartPulse
-            ? "grid min-h-0 animate-[cart-panel-pulse_560ms_ease-out] grid-rows-[auto_minmax(0,1fr)_auto_auto] gap-[18px] rounded-none border border-[var(--cart-panel-border)] bg-[var(--panel-strong)] p-[18px] shadow-[var(--cart-shadow-strong)_0_8px_24px] max-[720px]:p-4"
-            : "grid min-h-0 grid-rows-[auto_minmax(0,1fr)_auto_auto] gap-[18px] rounded-none border border-[var(--border)] bg-[var(--panel-strong)] p-[18px] shadow-[var(--shadow-soft)] transition-all duration-500 max-[720px]:p-4"
-        }
-        aria-label="cart layout"
-      >
-        <div className="flex items-center justify-between gap-3 max-[720px]:flex-col max-[720px]:items-stretch">
-          <div>
-            <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[var(--eyebrow)]">Current Bill</p>
-            <strong className="my-[10px] block text-[1.4rem] leading-none tracking-[-0.04em] text-[var(--foreground)]">{itemCount > 0 ? "ตะกร้าปัจจุบัน" : "ยังไม่มีบิล"}</strong>
-          </div>
-          <StatusPill>{itemCount} รายการ</StatusPill>
-        </div>
-
-        {cartItems.length > 0 ? (
-          <div className="relative min-h-0">
-            <div
-              ref={cartScrollRef}
-              className={
-                cartScrollMetric.visible
-                   ? "sales-cart-scroll grid h-full min-h-0 touch-none cursor-grab select-none content-start gap-3 overflow-y-auto overflow-x-hidden pb-2 pl-0 pr-4 pt-[1px] active:cursor-grabbing"
-                   : "grid h-full min-h-0 touch-none select-none content-start gap-3 overflow-hidden pb-2 pl-0 pr-0 pt-[1px]"
-              }
-              onScroll={updateCartScrollbar}
-              onPointerDown={handleCartPointerDown}
-              onPointerMove={handleCartPointerMove}
-              onPointerUp={stopCartDrag}
-              onPointerCancel={stopCartDrag}
-              onPointerLeave={stopCartDrag}
-            >
-              {cartItems.map((item) => {
-                const highlighted = pulseProductId === item.product.id;
-
-                return (
-                  <div
-                    key={item.product.id}
-                    className={
-                      highlighted
-                        ? "grid animate-[cart-row-enter_340ms_cubic-bezier(.2,.8,.2,1)] grid-cols-[75px_minmax(0,1fr)] items-start gap-3 rounded-none border border-[var(--cart-row-border)] bg-[var(--surface)] p-[10px] shadow-[var(--cart-shadow-mid)_0_4px_10px]"
-                        : "grid grid-cols-[75px_minmax(0,1fr)] items-start gap-3 rounded-none border border-[var(--border)] bg-[var(--surface)] p-[10px] transition-all duration-500"
-                    }
-                  >
-                    {item.product.imageUrl ? (
-                      <span
-                        className="h-[83px] w-[75px] rounded-[10px] border border-[rgba(100,120,160,0.14)] bg-cover bg-center"
-                        style={{ backgroundImage: `url(${item.product.imageUrl})` }}
-                        role="img"
-                        aria-label={item.product.name}
-                      />
-                    ) : (
-                      <span className="grid h-[52px] w-[52px] place-items-center rounded-[10px] border border-[rgba(100,120,160,0.14)] bg-[var(--surface-muted)] text-[var(--foreground-soft)]">
-                        <BasketIcon size={18} />
-                      </span>
-                    )}
-                    <div className="grid min-w-0 gap-2 pt-0.5">
-                      <div className="grid min-w-0 gap-1">
-                        <strong className="truncate text-[0.95rem] leading-[1.25] text-[var(--foreground)]">{item.product.name}</strong>
-                        <span className="text-[0.78rem] text-[var(--foreground-soft)]">
-                          {formatBaht(item.product.price)} x {item.quantity}
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between gap-2">
-                        <div className="inline-flex h-8 items-center rounded-[10px] border border-[var(--border)] bg-[var(--surface-muted)]">
-                          <button
-                            type="button"
-                            className="grid h-8 w-8 place-items-center text-[1rem] font-bold text-[var(--foreground)] transition hover:bg-[rgba(255,255,255,0.06)] disabled:cursor-not-allowed disabled:text-[var(--foreground-soft)] disabled:opacity-45 disabled:hover:bg-transparent"
-                            disabled={item.quantity <= 1}
-                            onClick={() => changeQuantity(item.product.id, -1)}
-                            aria-label={`ลดจำนวน ${item.product.name}`}
-                          >
-                            -
-                          </button>
-                          <span className="grid h-8 min-w-8 place-items-center text-[0.85rem] font-bold text-[var(--foreground)]">{item.quantity}</span>
-                          <button
-                            type="button"
-                            className="grid h-8 w-8 place-items-center text-[1rem] font-bold text-[var(--foreground)] transition hover:bg-[rgba(255,255,255,0.06)] disabled:cursor-not-allowed disabled:text-[var(--foreground-soft)] disabled:opacity-45 disabled:hover:bg-transparent"
-                            disabled={item.quantity >= stockLimit(item.product)}
-                            onClick={() => changeQuantity(item.product.id, 1)}
-                            aria-label={`เพิ่มจำนวน ${item.product.name}`}
-                          >
-                            +
-                          </button>
-                        </div>
-                        <button
-                          type="button"
-                          className="h-8 rounded-[10px] border border-[var(--danger-soft)] px-2.5 text-[0.78rem] font-bold text-[var(--danger)] transition hover:bg-[var(--danger-soft)]"
-                          onClick={() => removeItem(item.product.id)}
-                        >
-                          ลบ
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-            {cartScrollMetric.visible ? (
-              <span className="pointer-events-none absolute bottom-0 right-0 top-0 w-[7px] rounded-full bg-[var(--scroll-track)]">
-                <span
-                  className="absolute left-0 w-full rounded-full [background:var(--scroll-thumb)] shadow-[var(--brand-shadow)_0_0_14px]"
-                  style={{ top: `${cartScrollMetric.top}%`, height: `${cartScrollMetric.height}%` }}
-                />
-              </span>
-            ) : null}
-          </div>
-        ) : (
-          <div className="grid min-h-0 place-items-center rounded-none border border-dashed border-[rgba(100,120,160,0.2)] bg-[var(--panel-subtle)] p-5 text-center">
-            <div className="grid max-w-[220px] gap-2">
-              <strong className="text-base leading-[1.35] text-[var(--foreground)]">เริ่มเพิ่มสินค้าเข้าตะกร้า</strong>
-              <span className="text-[0.92rem] leading-[1.55] text-[var(--foreground-soft)]">กดปุ่มเพิ่มตะกร้าบนสินค้า รายการจะเด้งเข้ามาตรงนี้ทันที</span>
-            </div>
-          </div>
-        )}
-
-        <div className="grid gap-3 border-t border-t-[var(--border)] pt-2">
-          {[
-            ["ยอดรวม", formatBaht(subtotal)],
-            ["สุทธิ", formatBaht(subtotal)],
-          ].map(([label, value]) => (
-            <div key={label} className="flex items-center justify-between gap-3 max-[720px]:flex-col max-[720px]:items-stretch">
-              <span className="m-0 text-[0.95rem] text-[var(--foreground-soft)]">{label}</span>
-              <strong className="text-base leading-[1.2] text-[var(--foreground)]">{value}</strong>
-            </div>
-          ))}
-        </div>
-
-        <div className="grid grid-cols-2 gap-3 max-[720px]:grid-cols-1">
-          <button
-            type="button"
-            className="inline-flex h-[52px] items-center justify-center rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] px-[18px] font-bold text-[var(--foreground)] transition hover:-translate-y-px hover:border-[var(--border-strong)] hover:shadow-[rgba(0,0,0,0.15)_0_5px_10px] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:shadow-none"
-            disabled={cartItems.length === 0}
-            onClick={() => setCartItems([])}
-          >
-            ล้างบิล
-          </button>
-          <button
-            type="button"
-            className="inline-flex h-[52px] items-center justify-center rounded-2xl border border-transparent bg-[linear-gradient(135deg,var(--brand)_0%,var(--brand-strong)_100%)] px-[18px] font-bold text-[var(--button-text)] shadow-[var(--brand-shadow)_0_6px_14px] transition hover:-translate-y-px disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
-            disabled={cartItems.length === 0}
-            onClick={handleGoToPayment}
-          >
-            ไปชำระเงิน
-          </button>
-        </div>
-      </aside>
+      <SalesCartPanel cartPulse={cartPulse} itemCount={itemCount} cartItems={cartItems} cartScrollMetric={cartScrollMetric} cartScrollRef={cartScrollRef} updateCartScrollbar={updateCartScrollbar} handleCartPointerDown={handleCartPointerDown} handleCartPointerMove={handleCartPointerMove} stopCartDrag={stopCartDrag} highlightedCartProductId={pulseProductId || ""} removeItem={removeItem} changeQuantity={changeQuantity} handleAddToCart={handleAddToCart} subtotal={subtotal} clearCart={() => setCartItems([])} handleGoToPayment={handleGoToPayment} />
     </div>
   );
 }
+

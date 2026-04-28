@@ -89,14 +89,14 @@ export function CropModal({
   }
 
   return createPortal(
-    <div className="fixed inset-0 z-[200] grid place-items-center bg-[rgba(7,10,16,0.5)] p-4 backdrop-blur-[14px]">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(108,92,231,0.12),transparent_40%)]" />
+    <div className="fixed inset-0 z-[200] grid place-items-center bg-[var(--modal-backdrop)] p-4 backdrop-blur-[14px]">
+      <div className="absolute inset-0 [background:var(--modal-brand-glow)]" />
 
-      <div className="relative z-[1] grid w-[min(92vw,740px)] max-h-[calc(100vh-32px)] gap-6 overflow-y-auto rounded-[24px] border border-[var(--border)] bg-[linear-gradient(180deg,rgba(22,27,38,0.98),rgba(15,19,28,0.96))] p-6 shadow-[rgba(0,0,0,0.46)_0_30px_80px] max-[720px]:w-[min(94vw,560px)]">
+      <div className="relative z-[1] grid w-[min(92vw,740px)] max-h-[calc(100vh-32px)] gap-6 overflow-y-auto rounded-[24px] border border-[var(--border)] [background:var(--modal-surface)] p-6 shadow-[var(--modal-shadow)] max-[720px]:w-[min(94vw,560px)]">
         <div className="flex items-start justify-between gap-4 max-[720px]:flex-col max-[720px]:items-stretch">
           <div>
-            <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[#6b7a94]">Image Crop</p>
-            <h2 className="mt-2 text-[1.5rem] leading-none tracking-[-0.04em] text-white">{title}</h2>
+            <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[var(--eyebrow)]">Image Crop</p>
+            <h2 className="mt-2 text-[1.5rem] leading-none tracking-[-0.04em] text-[var(--foreground-inverse)]">{title}</h2>
             <p className="mt-3 text-[0.95rem] leading-[1.65] text-[var(--foreground-soft)]">
               {description}
             </p>
@@ -110,7 +110,7 @@ export function CropModal({
           {/* Left Column: Image Preview */}
           <div className="grid gap-4 self-start justify-center w-full">
             <div
-              className="relative aspect-square w-[320px] overflow-hidden rounded-[24px] border border-[rgba(100,120,160,0.18)] bg-[rgba(255,255,255,0.04)] shadow-[rgba(0,0,0,0.25)_0_10px_24px_inset] cursor-grab active:cursor-grabbing"
+              className="relative aspect-square w-[320px] overflow-hidden rounded-[24px] border border-[var(--border)] bg-[var(--overlay-white-04)] shadow-[var(--shadow-inset-preview)] cursor-grab active:cursor-grabbing"
               onPointerDown={handlePointerDown}
               onPointerMove={handlePointerMove}
               onPointerUp={handlePointerUp}
@@ -129,31 +129,31 @@ export function CropModal({
                   transform: `translate(calc(-50% + ${offsetX}px), calc(-50% + ${offsetY}px))`,
                 }}
               />
-              <div className="pointer-events-none absolute inset-0 rounded-[24px] ring-1 ring-inset ring-[rgba(255,255,255,0.08)]" />
+              <div className="pointer-events-none absolute inset-0 rounded-[24px] ring-1 ring-inset ring-[var(--overlay-white-08)]" />
             </div>
           </div>
 
           {/* Right Column: Controls */}
           <div className="grid gap-4 self-start w-full">
-            <div className="grid gap-3 rounded-[18px] border border-[var(--border)] bg-[rgba(255,255,255,0.03)] p-5">
+            <div className="grid gap-3 rounded-[18px] border border-[var(--border)] bg-[var(--overlay-white-03)] p-5">
               <div className="mb-1 pb-4 border-b border-[var(--border)] text-center">
-                <span className="text-[0.78rem] font-bold uppercase tracking-widest text-[#6b7a94]">ไฟล์ที่เลือก</span>
-                <p className="mt-1 break-words text-[0.92rem] text-white opacity-90">{draft.fileName}</p>
+                <span className="text-[0.78rem] font-bold uppercase tracking-widest text-[var(--eyebrow)]">ไฟล์ที่เลือก</span>
+                <p className="mt-1 break-words text-[0.92rem] text-[var(--foreground-inverse)] opacity-90">{draft.fileName}</p>
               </div>
 
               <label className="grid gap-2">
                 <div className="flex items-center justify-between">
                   <span className="text-[0.92rem] text-[var(--foreground-soft)]">ซูม</span>
-                  <span className="text-[0.88rem] font-medium text-white">{zoom.toFixed(2)}x</span>
+                  <span className="text-[0.88rem] font-medium text-[var(--foreground-inverse)]">{zoom.toFixed(2)}x</span>
                 </div>
                 <input type="range" min="1" max="3" step="0.01" value={zoom} onChange={(event) => onZoomChange(Number(event.target.value))} />
               </label>
 
               <div className="grid grid-cols-2 gap-3 text-[0.88rem] text-[var(--foreground-soft)]">
-                <div className="rounded-xl border border-[rgba(100,120,160,0.12)] bg-[rgba(22,27,38,0.56)] px-3 py-2">
+                <div className="rounded-xl border border-[var(--border-hairline)] bg-[var(--surface-muted)] px-3 py-2">
                   X: {Math.round(offsetX)} px
                 </div>
-                <div className="rounded-xl border border-[rgba(100,120,160,0.12)] bg-[rgba(22,27,38,0.56)] px-3 py-2">
+                <div className="rounded-xl border border-[var(--border-hairline)] bg-[var(--surface-muted)] px-3 py-2">
                   Y: {Math.round(offsetY)} px
                 </div>
               </div>
@@ -174,3 +174,4 @@ export function CropModal({
     document.body,
   );
 }
+

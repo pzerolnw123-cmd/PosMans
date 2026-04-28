@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { FormEvent, useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
@@ -18,7 +18,7 @@ type ChallengeUser = {
 type ChallengeMode = "verify" | "setup";
 
 function PillLabel({ children }: { children: string }) {
-  return <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[#6b7a94]">{children}</p>;
+  return <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[var(--eyebrow)]">{children}</p>;
 }
 
 function ErrorBox({ children, light = false }: { children: string; light?: boolean }) {
@@ -26,8 +26,8 @@ function ErrorBox({ children, light = false }: { children: string; light?: boole
     <p
       className={
         light
-          ? "mt-[18px] rounded-xl border border-[rgba(255,158,180,0.18)] bg-[rgba(208,87,111,0.12)] px-[14px] py-3 text-[0.94rem] text-[#ffc6d0]"
-          : "mt-4 rounded-xl border border-[rgba(232,93,117,0.22)] bg-[var(--danger-soft)] px-[14px] py-3 text-[0.94rem] text-[var(--danger)]"
+          ? "mt-[18px] rounded-xl border border-[var(--danger-border)] bg-[var(--danger-soft)] px-[14px] py-3 text-[0.94rem] text-[var(--danger-bright)]"
+          : "mt-4 rounded-xl border border-[var(--danger-border)] bg-[var(--danger-soft)] px-[14px] py-3 text-[0.94rem] text-[var(--danger)]"
       }
     >
       {children}
@@ -43,8 +43,8 @@ function PinDots({ filled }: { filled: number }) {
           key={index}
           className={
             index < filled
-              ? "h-[13px] w-[13px] rounded-full border border-white bg-[#e4e8f0]"
-              : "h-[13px] w-[13px] rounded-full border border-[rgba(255,255,255,0.6)]"
+              ? "h-[13px] w-[13px] rounded-full border border-[var(--foreground-inverse)] bg-[var(--foreground)]"
+              : "h-[13px] w-[13px] rounded-full border border-[var(--text-on-dark-soft)]"
           }
         />
       ))}
@@ -238,29 +238,29 @@ export function LoginForm() {
         : `กรอก PIN ปัจจุบันของ ${challengeUser.username} เพื่อเข้าสู่หลังบ้าน`;
 
     return (
-      <div className="w-[min(100%,520px)] rounded-[24px] bg-[rgba(12,16,24,0.96)] p-[18px] text-white shadow-[rgba(11,16,24,0.24)_0_0_0_1px,rgba(11,16,24,0.34)_0_24px_70px] max-[640px]:p-3">
-        <div className="rounded-[20px] border border-[rgba(255,255,255,0.08)] p-[18px] max-[640px]:p-4">
+      <div className="w-[min(100%,520px)] rounded-[24px] bg-[color-mix(in_srgb,var(--background)_96%,transparent)] p-[18px] text-[var(--foreground-inverse)] shadow-[var(--login-panel-shadow)] max-[640px]:p-3">
+        <div className="rounded-[20px] border border-[var(--overlay-white-08)] p-[18px] max-[640px]:p-4">
           <div className="flex items-start justify-between gap-4 max-[720px]:flex-col max-[720px]:items-stretch">
             <div>
-              <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[rgba(255,255,255,0.58)]">
+              <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[var(--text-on-dark-soft)]">
                 {challengeMode === "setup" ? "PIN Setup" : "PIN Access"}
               </p>
-              <h1 className="my-[10px] text-[clamp(1.8rem,5vw,2.2rem)] leading-none tracking-[-0.065em] text-white">{title}</h1>
-              <p className="m-0 text-[rgba(255,255,255,0.68)]">{description}</p>
+              <h1 className="my-[10px] text-[clamp(1.8rem,5vw,2.2rem)] leading-none tracking-[-0.065em] text-[var(--foreground-inverse)]">{title}</h1>
+              <p className="m-0 text-[var(--text-on-dark-muted)]">{description}</p>
             </div>
             <button
               type="button"
               onClick={resetChallenge}
-              className="inline-flex min-h-[42px] items-center justify-center gap-[10px] rounded-[10px] border border-[rgba(255,255,255,0.1)] bg-[rgba(255,255,255,0.08)] px-[18px] font-bold text-white transition hover:-translate-y-px"
+              className="inline-flex min-h-[42px] items-center justify-center gap-[10px] rounded-[10px] border border-[var(--overlay-white-10)] bg-[var(--overlay-white-08)] px-[18px] font-bold text-[var(--foreground-inverse)] transition hover:-translate-y-px"
             >
               เปลี่ยนบัญชี
             </button>
           </div>
 
-          <p className="mt-[18px] text-[rgba(255,255,255,0.74)]">Signed in as {challengeUser.displayName}</p>
+          <p className="mt-[18px] text-[var(--text-on-dark-muted)]">Signed in as {challengeUser.displayName}</p>
 
           <div className="mt-[18px]">
-            <p className="mb-3 text-center text-[0.92rem] font-semibold text-[rgba(255,255,255,0.58)]">
+            <p className="mb-3 text-center text-[0.92rem] font-semibold text-[var(--text-on-dark-soft)]">
               {challengeMode === "setup" ? "PIN ใหม่" : "PIN"}
             </p>
             <PinDots filled={pin.length} />
@@ -268,7 +268,7 @@ export function LoginForm() {
 
           {challengeMode === "setup" ? (
             <div className="mt-[18px]">
-              <p className="mb-3 text-center text-[0.92rem] font-semibold text-[rgba(255,255,255,0.58)]">ยืนยัน PIN</p>
+              <p className="mb-3 text-center text-[0.92rem] font-semibold text-[var(--text-on-dark-soft)]">ยืนยัน PIN</p>
               <PinDots filled={confirmPin.length} />
             </div>
           ) : null}
@@ -287,7 +287,7 @@ export function LoginForm() {
                     key={key}
                     type="button"
                     onClick={removeDigit}
-                    className="h-16 rounded-full bg-transparent text-[2rem] text-white transition hover:-translate-y-px hover:bg-[rgba(255,255,255,0.08)] disabled:cursor-not-allowed disabled:opacity-40 max-[420px]:h-14 max-[420px]:text-[1.7rem]"
+                    className="h-16 rounded-full bg-transparent text-[2rem] text-[var(--foreground-inverse)] transition hover:-translate-y-px hover:bg-[var(--overlay-white-08)] disabled:cursor-not-allowed disabled:opacity-40 max-[420px]:h-14 max-[420px]:text-[1.7rem]"
                     disabled={pending || (!pin.length && !confirmPin.length)}
                     aria-label="Delete last digit"
                   >
@@ -304,7 +304,7 @@ export function LoginForm() {
                   key={key}
                   type="button"
                   onClick={() => appendDigit(key)}
-                  className="h-16 rounded-full bg-transparent text-[2rem] text-white transition hover:-translate-y-px hover:bg-[rgba(255,255,255,0.08)] disabled:cursor-not-allowed disabled:opacity-40 max-[420px]:h-14 max-[420px]:text-[1.7rem]"
+                  className="h-16 rounded-full bg-transparent text-[2rem] text-[var(--foreground-inverse)] transition hover:-translate-y-px hover:bg-[var(--overlay-white-08)] disabled:cursor-not-allowed disabled:opacity-40 max-[420px]:h-14 max-[420px]:text-[1.7rem]"
                   disabled={pending || maxReached}
                 >
                   {key}
@@ -321,7 +321,7 @@ export function LoginForm() {
                 setConfirmPin("");
                 setError(null);
               }}
-              className="inline-flex min-h-[42px] items-center justify-center gap-[10px] rounded-[10px] border border-[rgba(255,255,255,0.1)] bg-[rgba(255,255,255,0.06)] px-[18px] font-bold text-white transition hover:-translate-y-px"
+              className="inline-flex min-h-[42px] items-center justify-center gap-[10px] rounded-[10px] border border-[var(--overlay-white-10)] bg-[var(--overlay-white-06)] px-[18px] font-bold text-[var(--foreground-inverse)] transition hover:-translate-y-px"
             >
               ล้างค่า
             </button>
@@ -350,7 +350,7 @@ export function LoginForm() {
 
       <div className="mt-[18px] grid gap-[14px]">
         <label className="grid gap-2">
-          <span className="text-[0.92rem] font-semibold text-[#6b7a94]">Username</span>
+          <span className="text-[0.92rem] font-semibold text-[var(--eyebrow)]">Username</span>
           <input
             required
             value={username}
@@ -362,7 +362,7 @@ export function LoginForm() {
         </label>
 
         <label className="grid gap-2">
-          <span className="text-[0.92rem] font-semibold text-[#6b7a94]">Password</span>
+          <span className="text-[0.92rem] font-semibold text-[var(--eyebrow)]">Password</span>
           <input
             required
             value={password}
@@ -386,3 +386,4 @@ export function LoginForm() {
     </form>
   );
 }
+

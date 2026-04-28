@@ -1,0 +1,402 @@
+const crypto = require("node:crypto");
+const rateLimit = require("express-rate-limit");
+const { z } = require("zod");
+const { prisma } = require("../lib/db");
+const { normalizeUsername } = require("../utils/password");
+const { AppError } = require("../utils/app-error");
+const { assertSafePlainText, safeUrlSchema } = require("../utils/xss");
+const { env } = require("../config/env");
+
+const LOGIN_CHALLENGE_COOKIE_NAME = `${env.SESSION_COOKIE_NAME}_login_challenge`;
+const LOGIN_CHALLENGE_TTL_MS = 5 * 60 * 1000;
+
+const passwordLoginSchema = z.object({
+  username: z.string().min(3).max(32),
+  password: z.string().min(8).max(128),
+});
+
+const pinVerifySchema = z.object({
+  pin: z.string().regex(/^\d{6}$/),
+});
+
+const pinSetupSchema = z.object({
+  pin: z.string().regex(/^\d{6}$/),
+  confirmPin: z.string().regex(/^\d{6}$/),
+});
+
+const passwordChangeSchema = z
+  .object({
+    currentPassword: z.string().min(8).max(128),
+    newPassword: z.string().min(8).max(128),
+    confirmPassword: z.string().min(8).max(128),
+  })
+  .strict();
+
+const ownerProfileSchema = z
+  .object({
+    storeName: z
+      .string()
+      .trim()
+      .min(1)
+      .max(80)
+      .transform((value) => assertSafePlainText(value, "storeName")),
+    ownerName: z
+      .string()
+      .trim()
+      .min(1)
+      .max(80)
+      .transform((value) => assertSafePlainText(value, "ownerName")),
+  })
+  .strict();
+
+const ownerThemeSchema = z
+  .object({
+    theme: z.enum(["violet", "light", "dark", "mono"]),
+  })
+  .strict();
+
+const promptPayRecipientTypes = ["MOBILE", "NATIONAL_ID", "TAX_ID", "STATIC_QR", "BANK_ACCOUNT"];
+const nullablePlainText = (fieldName, max = 120) =>
+  z
+    .string()
+    .trim()
+    .max(max)
+    .transform((value) => (value ? assertSafePlainText(value, fieldName) : null))
+    .nullable()
+    .optional()
+    .transform((value) => value || null);
+const nullableDigitText = (max = 32) =>
+  z
+    .string()
+    .trim()
+    .max(max)
+    .transform((value) => value.replace(/[\s-]/g, ""))
+    .nullable()
+    .optional()
+    .transform((value) => value || null);
+
+const ownerPaymentSettingsSchema = z
+  .object({
+    promptPayEnabled: z.boolean(),
+    promptPayRecipientType: z.enum(promptPayRecipientTypes).default("MOBILE"),
+    promptPayId: nullableDigitText(24),
+    promptPayMobileId: nullableDigitText(24),
+    promptPayNationalId: nullableDigitText(24),
+    promptPayTaxId: nullableDigitText(24),
+    bankName: nullablePlainText("bankName", 80),
+    bankAccountName: nullablePlainText("bankAccountName", 120),
+    bankAccountNumber: nullableDigitText(32),
+    paymentQrImageUrl: z.preprocess((value) => (value === "" ? null : value), safeUrlSchema("paymentQrImageUrl").nullable().optional()).transform((value) => value || null),
+    paymentQrUploadedKey: z.string().trim().max(255).nullable().optional().transform((value) => value || null),
+  })
+  .strict()
+  .transform((value) => {
+    const normalized = { ...value };
+
+    if (normalized.promptPayRecipientType !== "STATIC_QR") {
+      normalized.paymentQrImageUrl = null;
+      normalized.paymentQrUploadedKey = null;
+    }
+
+    return normalized;
+  })
+  .superRefine((value, context) => {
+    if (value.promptPayMobileId && !/^\d+$/.test(value.promptPayMobileId)) {
+      context.addIssue({ code: z.ZodIssueCode.custom, path: ["promptPayMobileId"], message: "Mobile PromptPay ID must contain digits only" });
+    }
+
+    if (value.promptPayNationalId && !/^\d+$/.test(value.promptPayNationalId)) {
+      context.addIssue({ code: z.ZodIssueCode.custom, path: ["promptPayNationalId"], message: "National ID PromptPay must contain digits only" });
+    }
+
+    if (value.promptPayTaxId && !/^\d+$/.test(value.promptPayTaxId)) {
+      context.addIssue({ code: z.ZodIssueCode.custom, path: ["promptPayTaxId"], message: "Tax ID PromptPay must contain digits only" });
+    }
+
+    if (value.bankAccountNumber && !/^\d+$/.test(value.bankAccountNumber)) {
+      context.addIssue({ code: z.ZodIssueCode.custom, path: ["bankAccountNumber"], message: "Bank account number must contain digits only" });
+    }
+
+    if (value.promptPayMobileId && !/^0\d{9}$/.test(value.promptPayMobileId)) {
+      context.addIssue({ code: z.ZodIssueCode.custom, path: ["promptPayMobileId"], message: "Mobile PromptPay ID must be a 10-digit Thai mobile number" });
+    }
+
+    if (value.promptPayNationalId && !/^\d{13}$/.test(value.promptPayNationalId)) {
+      context.addIssue({ code: z.ZodIssueCode.custom, path: ["promptPayNationalId"], message: "National ID PromptPay must be 13 digits" });
+    }
+
+    if (value.promptPayTaxId && !/^\d{13}$/.test(value.promptPayTaxId)) {
+      context.addIssue({ code: z.ZodIssueCode.custom, path: ["promptPayTaxId"], message: "Tax ID PromptPay must be 13 digits" });
+    }
+
+    if (value.bankAccountNumber && !/^\d{6,20}$/.test(value.bankAccountNumber)) {
+      context.addIssue({ code: z.ZodIssueCode.custom, path: ["bankAccountNumber"], message: "Bank account number must be 6-20 digits" });
+    }
+
+    if (!value.promptPayEnabled) {
+      return;
+    }
+
+    if (value.promptPayRecipientType === "MOBILE" && !value.promptPayMobileId) {
+      context.addIssue({ code: z.ZodIssueCode.custom, path: ["promptPayMobileId"], message: "Mobile PromptPay ID is required when QR PromptPay is enabled" });
+    }
+
+    if (value.promptPayRecipientType === "NATIONAL_ID" && !value.promptPayNationalId) {
+      context.addIssue({ code: z.ZodIssueCode.custom, path: ["promptPayNationalId"], message: "National ID PromptPay is required when QR PromptPay is enabled" });
+    }
+
+    if (value.promptPayRecipientType === "TAX_ID" && !value.promptPayTaxId) {
+      context.addIssue({ code: z.ZodIssueCode.custom, path: ["promptPayTaxId"], message: "Tax ID PromptPay is required when QR PromptPay is enabled" });
+    }
+
+    if (value.promptPayRecipientType === "STATIC_QR" && (!value.paymentQrImageUrl || !value.paymentQrUploadedKey)) {
+      context.addIssue({ code: z.ZodIssueCode.custom, path: ["paymentQrImageUrl"], message: "Static QR image is required when this recipient type is selected" });
+    }
+
+    if (value.promptPayRecipientType === "BANK_ACCOUNT" && (!value.bankName || !value.bankAccountName || !value.bankAccountNumber)) {
+      context.addIssue({ code: z.ZodIssueCode.custom, path: ["bankAccountNumber"], message: "Bank transfer details are required when this recipient type is selected" });
+    }
+  });
+
+const ownerLogoSchema = z
+  .object({
+    logoUrl: safeUrlSchema("logoUrl"),
+    uploadedKey: z.string().min(1).max(255),
+  })
+  .strict();
+
+const storePaymentSelect = {
+  id: true,
+  name: true,
+  slug: true,
+  logoUrl: true,
+  logoUploadedKey: true,
+  promptPayEnabled: true,
+  promptPayRecipientType: true,
+  promptPayId: true,
+  promptPayMobileId: true,
+  promptPayNationalId: true,
+  promptPayTaxId: true,
+  bankName: true,
+  bankAccountName: true,
+  bankAccountNumber: true,
+  paymentQrImageUrl: true,
+  paymentQrUploadedKey: true,
+};
+
+function ownerUploadPrefix(storeId) {
+  return `stores/${storeId}/uploads/`;
+}
+
+function assertOwnedUploadedKey(storeId, uploadedKey) {
+  if (!uploadedKey.startsWith(ownerUploadPrefix(storeId))) {
+    throw new AppError("Uploaded file does not belong to this store", 403, { code: "UPLOAD_SCOPE_MISMATCH" });
+  }
+}
+
+function assertUrlMatchesUploadedKey(uploadedKey, publicUrl) {
+  if (!env.R2_PUBLIC_BASE_URL) {
+    return;
+  }
+
+  const expectedUrl = `${env.R2_PUBLIC_BASE_URL.replace(/\/$/, "")}/${uploadedKey}`;
+  if (publicUrl !== expectedUrl) {
+    throw new AppError("Logo URL does not match uploaded file", 400, { code: "UPLOAD_URL_MISMATCH" });
+  }
+}
+
+function loginChallengeCookieOptions(expiresAt) {
+  return {
+    httpOnly: true,
+    secure: env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/",
+    expires: expiresAt,
+  };
+}
+
+function hashChallengeToken(value) {
+  return crypto.createHmac("sha256", env.SESSION_HASH_SECRET).update(value).digest("hex");
+}
+
+async function cleanupExpiredLoginChallenges() {
+  await prisma.loginChallenge.deleteMany({ where: { expiresAt: { lte: new Date() } } });
+}
+
+async function createLoginChallenge(userId) {
+  await cleanupExpiredLoginChallenges();
+  await prisma.loginChallenge.deleteMany({ where: { userId } });
+
+  const token = crypto.randomBytes(32).toString("hex");
+  const expiresAt = new Date(Date.now() + LOGIN_CHALLENGE_TTL_MS);
+
+  await prisma.loginChallenge.create({
+    data: {
+      userId,
+      tokenHash: hashChallengeToken(token),
+      expiresAt,
+    },
+  });
+
+  return { token, expiresAt };
+}
+
+async function getLoginChallenge(token) {
+  if (!token) return null;
+  await cleanupExpiredLoginChallenges();
+
+  const challenge = await prisma.loginChallenge.findUnique({
+    where: { tokenHash: hashChallengeToken(token) },
+    include: {
+      user: {
+        include: {
+          store: {
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+              logoUrl: true,
+              logoUploadedKey: true,
+              promptPayEnabled: true,
+              promptPayRecipientType: true,
+              promptPayId: true,
+              promptPayMobileId: true,
+              promptPayNationalId: true,
+              promptPayTaxId: true,
+              bankName: true,
+              bankAccountName: true,
+              bankAccountNumber: true,
+              paymentQrImageUrl: true,
+              paymentQrUploadedKey: true,
+              isActive: true,
+            },
+          },
+        },
+      },
+    },
+  });
+
+  if (!challenge || challenge.expiresAt <= new Date()) {
+    await deleteLoginChallenge(token).catch(() => undefined);
+    return null;
+  }
+
+  return challenge;
+}
+
+async function deleteLoginChallenge(token) {
+  if (!token) return;
+  await prisma.loginChallenge.deleteMany({ where: { tokenHash: hashChallengeToken(token) } });
+}
+
+function setLoginChallengeCookie(res, token, expiresAt) {
+  res.cookie(LOGIN_CHALLENGE_COOKIE_NAME, token, loginChallengeCookieOptions(expiresAt));
+}
+
+function clearLoginChallengeCookie(res) {
+  res.clearCookie(LOGIN_CHALLENGE_COOKIE_NAME, loginChallengeCookieOptions(new Date(0)));
+}
+
+function buildPublicUser(user) {
+  return {
+    id: user.id,
+    username: user.username,
+    displayName: user.displayName,
+    platformRole: user.platformRole,
+    storeRole: user.storeRole,
+    storeId: user.storeId,
+    store: user.store
+      ? {
+          id: user.store.id,
+          name: user.store.name,
+          slug: user.store.slug,
+          logoUrl: user.store.logoUrl,
+          logoUploadedKey: user.store.logoUploadedKey,
+          promptPayEnabled: user.store.promptPayEnabled,
+          promptPayRecipientType: user.store.promptPayRecipientType,
+          promptPayId: user.store.promptPayId,
+          promptPayMobileId: user.store.promptPayMobileId,
+          promptPayNationalId: user.store.promptPayNationalId,
+          promptPayTaxId: user.store.promptPayTaxId,
+          bankName: user.store.bankName,
+          bankAccountName: user.store.bankAccountName,
+          bankAccountNumber: user.store.bankAccountNumber,
+          paymentQrImageUrl: user.store.paymentQrImageUrl,
+          paymentQrUploadedKey: user.store.paymentQrUploadedKey,
+        }
+      : null,
+  };
+}
+
+function buildSessionUserResponse(user) {
+  if (!user?.store) {
+    return user;
+  }
+
+  const {
+    promptPayId,
+    promptPayMobileId,
+    promptPayNationalId,
+    promptPayTaxId,
+    bankAccountName,
+    bankAccountNumber,
+    paymentQrImageUrl,
+    ...store
+  } = user.store;
+
+  return {
+    ...user,
+    store,
+  };
+}
+
+const ipLoginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Too many login attempts from this IP" },
+});
+
+const accountLoginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  skipSuccessfulRequests: true,
+  keyGenerator: (req) => normalizeUsername(req.body?.username || "unknown"),
+  message: { error: "Too many login attempts for this account" },
+});
+
+const pinLimiter = rateLimit({
+  windowMs: 10 * 60 * 1000,
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Too many PIN attempts. Please sign in again." },
+});
+
+module.exports = {
+  LOGIN_CHALLENGE_COOKIE_NAME,
+  passwordLoginSchema,
+  pinVerifySchema,
+  pinSetupSchema,
+  passwordChangeSchema,
+  ownerProfileSchema,
+  ownerThemeSchema,
+  ownerPaymentSettingsSchema,
+  ownerLogoSchema,
+  storePaymentSelect,
+  assertOwnedUploadedKey,
+  assertUrlMatchesUploadedKey,
+  createLoginChallenge,
+  getLoginChallenge,
+  deleteLoginChallenge,
+  setLoginChallengeCookie,
+  clearLoginChallengeCookie,
+  buildPublicUser,
+  buildSessionUserResponse,
+  ipLoginLimiter,
+  accountLoginLimiter,
+  pinLimiter,
+};

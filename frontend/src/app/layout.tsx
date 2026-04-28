@@ -3,16 +3,17 @@ import "./globals.css";
 import { getCurrentSession } from "@/lib/session";
 
 const themeInitScript = `(() => {
+  const validThemes = new Set(["violet", "light", "dark", "mono"]);
   try {
     const hasServerTheme = document.documentElement.dataset.userThemeSource === "server";
     if (hasServerTheme) {
       const serverTheme = document.documentElement.dataset.storeTheme;
-      if (serverTheme === "violet" || serverTheme === "light" || serverTheme === "dark") {
+      if (validThemes.has(serverTheme)) {
         window.localStorage.setItem("pos-mans-owner-theme", serverTheme);
       }
     } else {
       const savedTheme = window.localStorage.getItem("pos-mans-owner-theme");
-      if (savedTheme === "violet" || savedTheme === "light" || savedTheme === "dark") {
+      if (validThemes.has(savedTheme)) {
         document.documentElement.dataset.storeTheme = savedTheme;
       }
     }
