@@ -1,7 +1,7 @@
 import { useLayoutEffect, useMemo, useRef, useState, type PointerEvent } from "react";
 import { Loader, primaryButtonClass, secondaryButtonClass } from "@/components/ui-primitives";
 import type { Receipt } from "./shared";
-import { formatBaht, formatDateTime, paymentMethodLabels, receiptPrintHtml } from "./shared";
+import { createReceiptPdfBlob, formatBaht, formatDateTime, paymentMethodLabels } from "./shared";
 
 export type ReceiptViewerProps = {
   receipt: Receipt | null;
@@ -89,18 +89,33 @@ export function ReceiptViewer({ receipt, detailLoading, actionMessage, setAction
     }
   }
 
-  function handlePrint() {
+  async function handlePrint() {
     if (!receipt) return;
 
-    const printWindow = window.open("", "_blank", "width=420,height=720");
-    if (!printWindow) {
-      setActionMessage("เบราว์เซอร์บล็อกหน้าต่างพิมพ์ กรุณาอนุญาต pop-up สำหรับหน้านี้");
+    const popupWidth = Math.max(960, window.screen.availWidth || window.innerWidth);
+    const popupHeight = Math.max(720, window.screen.availHeight || window.innerHeight);
+    const pdfWindow = window.open("", "_blank", `left=0,top=0,width=${popupWidth},height=${popupHeight}`);
+    if (!pdfWindow) {
+      setActionMessage("เบราว์เซอร์บล็อกหน้าต่าง PDF กรุณาอนุญาต pop-up สำหรับหน้านี้");
       return;
     }
 
-    printWindow.document.open();
-    printWindow.document.write(receiptPrintHtml(receipt));
-    printWindow.document.close();
+    pdfWindow.moveTo(0, 0);
+    pdfWindow.resizeTo(popupWidth, popupHeight);
+    pdfWindow.document.open();
+    pdfWindow.document.write("<!doctype html><title>กำลังสร้าง PDF</title><body style=\"font-family:Arial,sans-serif;margin:24px\">กำลังสร้าง PDF ใบเสร็จ...</body>");
+    pdfWindow.document.close();
+
+    try {
+      const pdfBlob = await createReceiptPdfBlob(receipt);
+      const pdfUrl = URL.createObjectURL(pdfBlob);
+      pdfWindow.location.href = `${pdfUrl}#zoom=page-width`;
+      setActionMessage("");
+      pdfWindow.addEventListener("pagehide", () => URL.revokeObjectURL(pdfUrl), { once: true });
+    } catch (printError) {
+      pdfWindow.close();
+      setActionMessage(printError instanceof Error ? printError.message : "สร้าง PDF ไม่สำเร็จ กรุณาลองอีกครั้ง");
+    }
   }
 
   async function handleCopy() {
@@ -187,7 +202,7 @@ export function ReceiptViewer({ receipt, detailLoading, actionMessage, setAction
 
           <div className="grid grid-cols-2 gap-3 max-[720px]:grid-cols-1">
             <button type="button" className={primaryButtonClass} onClick={handlePrint} disabled={detailLoading}>
-              พิมพ์ซ้ำ
+              พิมพ์ PDF
             </button>
             <button type="button" className={secondaryButtonClass} onClick={handleCopy} disabled={detailLoading}>
               คัดลอก
