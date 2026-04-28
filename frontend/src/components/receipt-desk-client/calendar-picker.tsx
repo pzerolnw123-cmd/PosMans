@@ -79,7 +79,7 @@ export function CalendarPicker({ selectedDate, onSelectDate }: CalendarPickerPro
                       active
                         ? "h-8 rounded-none border border-[var(--accent-border)] bg-[var(--accent-surface)] text-[0.78rem] font-black text-[var(--foreground)] shadow-[var(--brand-shadow)_0_8px_18px]"
                         : isToday
-                          ? "h-8 rounded-none border border-[var(--success-border)] bg-[var(--success-wash)] text-[0.78rem] font-black text-[var(--success-bright)]"
+                          ? "h-8 rounded-none border border-[var(--success-border)] bg-[var(--success-wash)] text-[0.78rem] font-black text-[var(--success)]"
                           : day.inMonth
                             ? "h-8 rounded-none border border-transparent text-[0.78rem] font-black text-[var(--foreground)] transition hover:border-[var(--accent-border)] hover:bg-[var(--accent-surface)]"
                             : "h-8 rounded-none border border-transparent text-[0.78rem] font-black text-[var(--foreground-muted)] transition hover:text-[var(--foreground-soft)]"

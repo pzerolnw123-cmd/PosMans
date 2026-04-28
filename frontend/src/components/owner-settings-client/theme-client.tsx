@@ -8,6 +8,7 @@ import { ensureCsrfToken } from "@/lib/csrf";
 import type { OwnerThemeId } from "./shared";
 import {
   activeGhostButtonClass,
+  defaultOwnerTheme,
   isOwnerTheme,
   ownerThemeOptions,
   ownerThemeStorageKey,
@@ -15,9 +16,11 @@ import {
 
 // ── Theme Helpers ────────────────────────────────────────────────────────────
 
+const ownerThemeChangeEvent = "pos-mans-owner-theme-change";
+
 function readOwnerTheme(): OwnerThemeId {
   if (typeof window === "undefined") {
-    return "violet";
+    return defaultOwnerTheme;
   }
 
   const currentTheme = document.documentElement.dataset.storeTheme;
@@ -34,7 +37,7 @@ function readOwnerTheme(): OwnerThemeId {
     // Ignore localStorage access issues and fall back to the default theme.
   }
 
-  return "violet";
+  return defaultOwnerTheme;
 }
 
 function applyOwnerTheme(theme: OwnerThemeId) {
@@ -49,6 +52,30 @@ function applyOwnerTheme(theme: OwnerThemeId) {
   } catch {
     // Persisting the theme is optional; the visual update should still work.
   }
+
+  window.dispatchEvent(new CustomEvent(ownerThemeChangeEvent));
+}
+
+function subscribeOwnerTheme(callback: () => void) {
+  if (typeof window === "undefined") {
+    return () => undefined;
+  }
+
+  window.addEventListener("storage", callback);
+  window.addEventListener(ownerThemeChangeEvent, callback);
+
+  return () => {
+    window.removeEventListener("storage", callback);
+    window.removeEventListener(ownerThemeChangeEvent, callback);
+  };
+}
+
+function getOwnerThemeSnapshot(): OwnerThemeId {
+  return readOwnerTheme();
+}
+
+function getServerOwnerThemeSnapshot(): OwnerThemeId | null {
+  return null;
 }
 
 async function persistOwnerTheme(theme: OwnerThemeId) {
@@ -220,21 +247,9 @@ export function OwnerThemeStatusPill() {
 export function OwnerThemeClient() {
   const { setShellAlert } = useBackofficeShellAlert();
   const [themePickerOpen, setThemePickerOpen] = useState(false);
-  const [activeTheme, setActiveTheme] = useState<OwnerThemeId | null>(null);
-
-  useEffect(() => {
-    const savedTheme = readOwnerTheme();
-    setActiveTheme(savedTheme);
-    applyOwnerTheme(savedTheme);
-  }, []);
-
-  useEffect(() => {
-    if (!activeTheme) {
-      return;
-    }
-
-    applyOwnerTheme(activeTheme);
-  }, [activeTheme]);
+  const storedTheme = useSyncExternalStore(subscribeOwnerTheme, getOwnerThemeSnapshot, getServerOwnerThemeSnapshot);
+  const [optimisticTheme, setOptimisticTheme] = useState<OwnerThemeId | null>(null);
+  const activeTheme = optimisticTheme || storedTheme;
 
   const activeThemeOption = ownerThemeOptions.find((option) => option.id === activeTheme) || ownerThemeOptions[0];
 
@@ -261,30 +276,22 @@ export function OwnerThemeClient() {
         <p className="m-0 text-[0.78rem] leading-[1.45] text-[var(--foreground-soft)] max-[520px]:text-[0.72rem]">{activeThemeOption.description}</p>
       </button>
 
-      <button
-        type="button"
-        className="hidden"
-        onClick={() => setThemePickerOpen((open) => !open)}
-        aria-expanded={themePickerOpen}
-      >
-        <ThemeSparkleIcon className="h-[18px] w-[18px] shrink-0 opacity-90 max-[520px]:h-4 max-[520px]:w-4" />
-        เลือกธีมร้านของคุณใหม่
-      </button>
-
       <ThemePickerModal
         open={themePickerOpen}
         activeTheme={activeThemeOption.id}
         onSelect={(theme) => {
-          const previousTheme = activeTheme || "violet";
-          setActiveTheme(theme);
+          const previousTheme = activeTheme || defaultOwnerTheme;
+          setOptimisticTheme(theme);
+          applyOwnerTheme(theme);
           setThemePickerOpen(false);
 
           void persistOwnerTheme(theme)
             .then(() => {
+              setOptimisticTheme(null);
               setShellAlert({ message: "บันทึกธีมของผู้ใช้เรียบร้อยแล้ว", tone: "success" });
             })
             .catch((error) => {
-              setActiveTheme(previousTheme);
+              setOptimisticTheme(null);
               applyOwnerTheme(previousTheme);
               setShellAlert({
                 message: error instanceof Error ? error.message : "ไม่สามารถบันทึกธีมของผู้ใช้ได้",
@@ -297,4 +304,3 @@ export function OwnerThemeClient() {
     </div>
   );
 }
-

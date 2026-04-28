@@ -130,7 +130,7 @@ model User {
   pinHash         String?
   platformRole    PlatformRole     @default(NONE)
   storeRole       StoreRole?
-  ownerTheme      OwnerTheme       @default(violet)
+  ownerTheme      OwnerTheme       @default(light)
   storeId         String?
   isActive        Boolean          @default(true)
   lastLoginAt     DateTime?

@@ -4,10 +4,10 @@ import { join } from "node:path";
 const themeDir = join(process.cwd(), "src", "styles", "themes");
 
 const files = {
-  violet: ["_base.css", "violet.css"],
-  light: ["_base.css", "light.css"],
-  dark: ["_base.css", "dark.css"],
-  mono: ["_base.css"],
+  light: ["light.css"],
+  violet: ["light.css", "violet.css"],
+  dark: ["light.css", "dark.css"],
+  mono: ["light.css", "mono.css"],
 };
 
 const pairs = [

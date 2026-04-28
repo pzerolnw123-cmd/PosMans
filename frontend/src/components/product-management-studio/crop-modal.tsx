@@ -1,6 +1,6 @@
 "use client";
 
-import type { PointerEvent as ReactPointerEvent, WheelEvent as ReactWheelEvent } from "react";
+import type { CSSProperties, PointerEvent as ReactPointerEvent, WheelEvent as ReactWheelEvent } from "react";
 import { useEffect, useMemo, useRef, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 import { ghostButtonClass, primaryButtonClass } from "@/components/ui-primitives";
@@ -96,7 +96,7 @@ export function CropModal({
         <div className="flex items-start justify-between gap-4 max-[720px]:flex-col max-[720px]:items-stretch">
           <div>
             <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[var(--eyebrow)]">Image Crop</p>
-            <h2 className="mt-2 text-[1.5rem] leading-none tracking-[-0.04em] text-[var(--foreground-inverse)]">{title}</h2>
+            <h2 className="mt-2 text-[1.5rem] font-black leading-none tracking-[-0.04em] text-[var(--foreground)]">{title}</h2>
             <p className="mt-3 text-[0.95rem] leading-[1.65] text-[var(--foreground-soft)]">
               {description}
             </p>
@@ -138,15 +138,24 @@ export function CropModal({
             <div className="grid gap-3 rounded-[18px] border border-[var(--border)] bg-[var(--overlay-white-03)] p-5">
               <div className="mb-1 pb-4 border-b border-[var(--border)] text-center">
                 <span className="text-[0.78rem] font-bold uppercase tracking-widest text-[var(--eyebrow)]">ไฟล์ที่เลือก</span>
-                <p className="mt-1 break-words text-[0.92rem] text-[var(--foreground-inverse)] opacity-90">{draft.fileName}</p>
+                <p className="mt-1 break-words text-[0.92rem] font-semibold text-[var(--foreground)]">{draft.fileName}</p>
               </div>
 
               <label className="grid gap-2">
                 <div className="flex items-center justify-between">
                   <span className="text-[0.92rem] text-[var(--foreground-soft)]">ซูม</span>
-                  <span className="text-[0.88rem] font-medium text-[var(--foreground-inverse)]">{zoom.toFixed(2)}x</span>
+                  <span className="text-[0.88rem] font-bold text-[var(--foreground)]">{zoom.toFixed(2)}x</span>
                 </div>
-                <input type="range" min="1" max="3" step="0.01" value={zoom} onChange={(event) => onZoomChange(Number(event.target.value))} />
+                <input
+                  type="range"
+                  min="1"
+                  max="3"
+                  step="0.01"
+                  value={zoom}
+                  onChange={(event) => onZoomChange(Number(event.target.value))}
+                  className="zoom-range"
+                  style={{ "--zoom-percent": `${((zoom - 1) / 2) * 100}%` } as CSSProperties}
+                />
               </label>
 
               <div className="grid grid-cols-2 gap-3 text-[0.88rem] text-[var(--foreground-soft)]">

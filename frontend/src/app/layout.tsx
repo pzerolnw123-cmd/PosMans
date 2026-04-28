@@ -4,6 +4,7 @@ import { getCurrentSession } from "@/lib/session";
 
 const themeInitScript = `(() => {
   const validThemes = new Set(["violet", "light", "dark", "mono"]);
+  const defaultTheme = "light";
   try {
     const hasServerTheme = document.documentElement.dataset.userThemeSource === "server";
     if (hasServerTheme) {
@@ -15,6 +16,8 @@ const themeInitScript = `(() => {
       const savedTheme = window.localStorage.getItem("pos-mans-owner-theme");
       if (validThemes.has(savedTheme)) {
         document.documentElement.dataset.storeTheme = savedTheme;
+      } else {
+        document.documentElement.dataset.storeTheme = defaultTheme;
       }
     }
   } catch {}
@@ -31,7 +34,7 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const session = await getCurrentSession();
-  const ownerTheme = session?.user.storeRole === "OWNER" && session.user.ownerTheme ? session.user.ownerTheme : "violet";
+  const ownerTheme = session?.user.storeRole === "OWNER" && session.user.ownerTheme ? session.user.ownerTheme : "light";
   const userThemeSource = session?.user.storeRole === "OWNER" && session.user.ownerTheme ? "server" : "local";
 
   return (

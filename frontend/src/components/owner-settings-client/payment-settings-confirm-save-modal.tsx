@@ -34,22 +34,22 @@ export function PaymentSettingsConfirmSaveModal({
       promptPaySummary={
         submitPreviewSettings.promptPayMobileId ? (
           <strong className="text-[1.02rem] font-bold tracking-[0.01em] text-[var(--foreground)]">
-            เบอร์พร้อมเพย์ <span className="text-[1.08rem] font-extrabold text-[var(--text-highlight)]">{submitPreviewSettings.promptPayMobileId}</span>
+            เบอร์พร้อมเพย์ <span className="text-[1.08rem] font-extrabold text-[var(--foreground)]">{submitPreviewSettings.promptPayMobileId}</span>
           </strong>
         ) : submitPreviewSettings.promptPayNationalId ? (
           <strong className="text-[1.02rem] font-bold tracking-[0.01em] text-[var(--foreground)]">
-            เลขบัตรประชาชน <span className="text-[1.08rem] font-extrabold text-[var(--text-highlight)]">{submitPreviewSettings.promptPayNationalId}</span>
+            เลขบัตรประชาชน <span className="text-[1.08rem] font-extrabold text-[var(--foreground)]">{submitPreviewSettings.promptPayNationalId}</span>
           </strong>
         ) : submitPreviewSettings.promptPayTaxId ? (
           <strong className="text-[1.02rem] font-bold tracking-[0.01em] text-[var(--foreground)]">
-            เลขผู้เสียภาษี <span className="text-[1.08rem] font-extrabold text-[var(--text-highlight)]">{submitPreviewSettings.promptPayTaxId}</span>
+            เลขผู้เสียภาษี <span className="text-[1.08rem] font-extrabold text-[var(--foreground)]">{submitPreviewSettings.promptPayTaxId}</span>
           </strong>
         ) : null
       }
       bankSummary={
         submitPreviewSettings.bankName && submitPreviewSettings.bankAccountNumber ? (
           <strong className="text-[1.02rem] font-bold tracking-[0.01em] text-[var(--foreground)]">
-            {submitPreviewSettings.bankName} • <span className="text-[1.08rem] font-extrabold text-[var(--text-highlight)]">{submitPreviewSettings.bankAccountNumber}</span>
+            {submitPreviewSettings.bankName} • <span className="text-[1.08rem] font-extrabold text-[var(--foreground)]">{submitPreviewSettings.bankAccountNumber}</span>
           </strong>
         ) : null
       }

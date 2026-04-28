@@ -43,13 +43,13 @@ export function ConfirmPaymentSettingsModal({ busy, enabled, recipientLabel, ban
             {promptPaySummary ? (
               <div className="grid gap-1 border-t border-[var(--border-subtle)] pt-2">
                 <span className="text-[0.78rem] text-[var(--foreground-soft)]">PromptPay {!enabled ? <span className="text-[var(--accent-text)]">(บันทึกแบบรอเปิดใช้)</span> : null}</span>
-                <div className={`text-[0.95rem] ${enabled ? "text-[var(--foreground)]" : "text-[var(--foreground-soft)]"}`}>{promptPaySummary}</div>
+                <div className="text-[0.95rem] text-[var(--foreground)]">{promptPaySummary}</div>
               </div>
             ) : null}
             {bankSummary ? (
               <div className="grid gap-1 border-t border-[var(--border-subtle)] pt-2">
                 <span className="text-[0.78rem] text-[var(--foreground-soft)]">บัญชีธนาคาร {!enabled ? <span className="text-[var(--accent-text)]">(บันทึกแบบรอเปิดใช้)</span> : null}</span>
-                <div className={`text-[0.95rem] ${enabled ? "text-[var(--foreground)]" : "text-[var(--foreground-soft)]"}`}>{bankSummary}</div>
+                <div className="text-[0.95rem] text-[var(--foreground)]">{bankSummary}</div>
               </div>
             ) : null}
           </div>

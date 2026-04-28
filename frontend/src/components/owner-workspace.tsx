@@ -15,7 +15,7 @@ type OwnerWorkspaceProps = {
 };
 
 const storeNamePrompt = "กรอกชื่อร้าน";
-const ownerNamePrompt = "กรอกชื่อของคุณ (เจ้าของ)";
+const ownerNamePrompt = "กรอกชื่อของคุณ";
 const unsetStoreNames = new Set(["", "Main Store", "FastManFoods"]);
 const unsetOwnerNames = new Set(["", "Store Owner"]);
 

@@ -19,7 +19,7 @@ import { PageHeader, StatusPill, inputClass } from "@/components/ui-primitives";
 import type { OwnerSectionKey } from "@/components/owner-workspace";
 
 const storeNamePrompt = "กรอกชื่อร้าน";
-const ownerNamePrompt = "กรอกชื่อของคุณ (เจ้าของ)";
+const ownerNamePrompt = "กรอกชื่อของคุณ";
 
 export function renderOwnerScreen(
   activeSection: OwnerSectionKey,

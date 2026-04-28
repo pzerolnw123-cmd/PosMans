@@ -3,6 +3,7 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type PointerEvent } from "react";
 import { useRouter } from "next/navigation";
 import QRCode from "qrcode";
+import { useBackofficeShellAlert } from "@/components/backoffice-shell";
 import { invalidateProductListCache, requestJson } from "@/components/product-management-studio/lib";
 import { Loader } from "@/components/ui-primitives";
 import type { OwnerPaymentSettingsValue } from "@/components/owner-settings-client";
@@ -19,6 +20,7 @@ import { PaymentCheckoutPanels } from "./payment-checkout-panels";
 
 export function PaymentCheckoutClient({ paymentSettings }: { paymentSettings: OwnerPaymentSettingsValue }) {
   const router = useRouter();
+  const { setShellAlert } = useBackofficeShellAlert();
   const [items, setItems] = useState<StoredCartItem[]>([]);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("CASH");
   const [discountPercent, setDiscountPercent] = useState(0);
@@ -269,6 +271,10 @@ export function PaymentCheckoutClient({ paymentSettings }: { paymentSettings: Ow
       setReceivedDraft(null);
       setDiscountDraft(null);
       setTaxDraft(null);
+      setShellAlert({
+        tone: "success",
+        message: `ยืนยันการชำระเงินสำเร็จ บันทึกบิล ${completedSaleWithImages.code} เรียบร้อยแล้ว`,
+      });
     } catch (checkoutError) {
       setError(checkoutError instanceof Error ? checkoutError.message : "ยืนยันการชำระไม่สำเร็จ");
     } finally {

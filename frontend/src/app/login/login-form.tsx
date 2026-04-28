@@ -43,8 +43,8 @@ function PinDots({ filled }: { filled: number }) {
           key={index}
           className={
             index < filled
-              ? "h-[13px] w-[13px] rounded-full border border-[var(--foreground-inverse)] bg-[var(--foreground)]"
-              : "h-[13px] w-[13px] rounded-full border border-[var(--text-on-dark-soft)]"
+              ? "h-[13px] w-[13px] rounded-full border border-[var(--brand)] bg-[var(--brand)]"
+              : "h-[13px] w-[13px] rounded-full border border-[var(--border-strong)]"
           }
         />
       ))}
@@ -230,37 +230,45 @@ export function LoginForm() {
     void submitPasswordStep();
   }
 
-  if (challengeUser) {
+  function renderPinChallengeModal() {
+    if (!challengeUser) {
+      return null;
+    }
+
     const title = challengeMode === "setup" ? "ตั้งค่า PIN ใหม่" : "ยืนยัน PIN";
     const description =
       challengeMode === "setup"
-        ? `สร้าง PIN 6 หลักสำหรับ ${challengeUser.username} แล้วกรอกยืนยันอีกครั้ง`
-        : `กรอก PIN ปัจจุบันของ ${challengeUser.username} เพื่อเข้าสู่หลังบ้าน`;
+        ? "สร้าง PIN 6 หลัก แล้วกรอกยืนยันอีกครั้งเพื่อเปิดใช้งานบัญชีนี้"
+        : "กรอก PIN 6 หลักเพื่อปลดล็อกและเข้าสู่หลังบ้าน";
 
     return (
-      <div className="w-[min(100%,520px)] rounded-[24px] bg-[color-mix(in_srgb,var(--background)_96%,transparent)] p-[18px] text-[var(--foreground-inverse)] shadow-[var(--login-panel-shadow)] max-[640px]:p-3">
-        <div className="rounded-[20px] border border-[var(--overlay-white-08)] p-[18px] max-[640px]:p-4">
+      <div className="fixed inset-0 z-[360] grid place-items-center bg-[var(--modal-backdrop)] p-4 backdrop-blur-[16px] max-[640px]:p-3">
+        <div className="absolute inset-0 [background:var(--modal-brand-glow)]" />
+        <div
+          className="relative z-[1] w-[min(100%,460px)] rounded-[24px] border border-[var(--border)] bg-[var(--surface)] p-7 text-[var(--foreground)] shadow-[var(--modal-shadow)] max-[640px]:p-5"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="pin-challenge-title"
+        >
           <div className="flex items-start justify-between gap-4 max-[720px]:flex-col max-[720px]:items-stretch">
             <div>
-              <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[var(--text-on-dark-soft)]">
+              <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[var(--eyebrow)]">
                 {challengeMode === "setup" ? "PIN Setup" : "PIN Access"}
               </p>
-              <h1 className="my-[10px] text-[clamp(1.8rem,5vw,2.2rem)] leading-none tracking-[-0.065em] text-[var(--foreground-inverse)]">{title}</h1>
-              <p className="m-0 text-[var(--text-on-dark-muted)]">{description}</p>
+              <h1 id="pin-challenge-title" className="my-[10px] text-[clamp(1.8rem,5vw,2.2rem)] leading-none tracking-[-0.065em] text-[var(--foreground)]">{title}</h1>
+              <p className="m-0 text-[var(--foreground-soft)]">{description}</p>
             </div>
             <button
               type="button"
               onClick={resetChallenge}
-              className="inline-flex min-h-[42px] items-center justify-center gap-[10px] rounded-[10px] border border-[var(--overlay-white-10)] bg-[var(--overlay-white-08)] px-[18px] font-bold text-[var(--foreground-inverse)] transition hover:-translate-y-px"
+              className="inline-flex min-h-[42px] shrink-0 items-center justify-center gap-[10px] whitespace-nowrap rounded-[10px] border border-[var(--border)] bg-[var(--surface-muted)] px-[18px] font-bold text-[var(--foreground)] transition hover:-translate-y-px max-[720px]:self-start"
             >
               เปลี่ยนบัญชี
             </button>
           </div>
 
-          <p className="mt-[18px] text-[var(--text-on-dark-muted)]">Signed in as {challengeUser.displayName}</p>
-
           <div className="mt-[18px]">
-            <p className="mb-3 text-center text-[0.92rem] font-semibold text-[var(--text-on-dark-soft)]">
+            <p className="mb-3 text-center text-[0.92rem] font-semibold text-[var(--foreground-soft)]">
               {challengeMode === "setup" ? "PIN ใหม่" : "PIN"}
             </p>
             <PinDots filled={pin.length} />
@@ -268,14 +276,14 @@ export function LoginForm() {
 
           {challengeMode === "setup" ? (
             <div className="mt-[18px]">
-              <p className="mb-3 text-center text-[0.92rem] font-semibold text-[var(--text-on-dark-soft)]">ยืนยัน PIN</p>
+              <p className="mb-3 text-center text-[0.92rem] font-semibold text-[var(--foreground-soft)]">ยืนยัน PIN</p>
               <PinDots filled={confirmPin.length} />
             </div>
           ) : null}
 
-          {error ? <ErrorBox light>{error}</ErrorBox> : null}
+          {error ? <ErrorBox>{error}</ErrorBox> : null}
 
-          <div className="mt-[18px] grid grid-cols-3 gap-[14px] max-[420px]:gap-[10px]">
+          <div className="mx-auto mt-[18px] grid w-full max-w-[360px] grid-cols-3 gap-x-[10px] gap-y-[14px] max-[420px]:gap-[10px]">
             {keypad.map((key) => {
               if (key === "") {
                 return <div key="empty" />;
@@ -287,7 +295,7 @@ export function LoginForm() {
                     key={key}
                     type="button"
                     onClick={removeDigit}
-                    className="h-16 rounded-full bg-transparent text-[2rem] text-[var(--foreground-inverse)] transition hover:-translate-y-px hover:bg-[var(--overlay-white-08)] disabled:cursor-not-allowed disabled:opacity-40 max-[420px]:h-14 max-[420px]:text-[1.7rem]"
+                    className="h-16 rounded-full bg-transparent text-[2rem] text-[var(--foreground)] transition hover:-translate-y-px hover:bg-[var(--surface-muted)] disabled:cursor-not-allowed disabled:opacity-40 max-[420px]:h-14 max-[420px]:text-[1.7rem]"
                     disabled={pending || (!pin.length && !confirmPin.length)}
                     aria-label="Delete last digit"
                   >
@@ -304,7 +312,7 @@ export function LoginForm() {
                   key={key}
                   type="button"
                   onClick={() => appendDigit(key)}
-                  className="h-16 rounded-full bg-transparent text-[2rem] text-[var(--foreground-inverse)] transition hover:-translate-y-px hover:bg-[var(--overlay-white-08)] disabled:cursor-not-allowed disabled:opacity-40 max-[420px]:h-14 max-[420px]:text-[1.7rem]"
+                  className="h-16 rounded-full bg-transparent text-[2rem] text-[var(--foreground)] transition hover:-translate-y-px hover:bg-[var(--surface-muted)] disabled:cursor-not-allowed disabled:opacity-40 max-[420px]:h-14 max-[420px]:text-[1.7rem]"
                   disabled={pending || maxReached}
                 >
                   {key}
@@ -321,7 +329,7 @@ export function LoginForm() {
                 setConfirmPin("");
                 setError(null);
               }}
-              className="inline-flex min-h-[42px] items-center justify-center gap-[10px] rounded-[10px] border border-[var(--overlay-white-10)] bg-[var(--overlay-white-06)] px-[18px] font-bold text-[var(--foreground-inverse)] transition hover:-translate-y-px"
+              className="inline-flex min-h-[42px] items-center justify-center gap-[10px] rounded-[10px] border border-[var(--border)] bg-[var(--surface-muted)] px-[18px] font-bold text-[var(--foreground)] transition hover:-translate-y-px"
             >
               ล้างค่า
             </button>
@@ -340,6 +348,7 @@ export function LoginForm() {
   }
 
   return (
+    <>
     <form
       onSubmit={handlePasswordSubmit}
       className="w-[min(100%,520px)] rounded-[22px] border border-[var(--border)] bg-[var(--surface)] p-7 shadow-[var(--shadow-card)] backdrop-blur-[14px] max-[820px]:p-5 max-[640px]:p-4"
@@ -384,6 +393,8 @@ export function LoginForm() {
         </button>
       </div>
     </form>
+    {renderPinChallengeModal()}
+    </>
   );
 }
 

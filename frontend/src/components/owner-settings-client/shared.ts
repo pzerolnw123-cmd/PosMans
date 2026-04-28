@@ -52,6 +52,7 @@ export const maxLogoFileSize = 2 * 1024 * 1024;
 export const paymentQrFileTypes = new Set(["image/png", "image/jpeg", "image/webp"]);
 export const maxPaymentQrFileSize = 2 * 1024 * 1024;
 export const ownerThemeStorageKey = "pos-mans-owner-theme";
+export const defaultOwnerTheme: OwnerThemeId = "light";
 
 export const ownerThemeOptions: Array<{
   id: OwnerThemeId;
@@ -60,16 +61,16 @@ export const ownerThemeOptions: Array<{
   preview: string;
 }> = [
     {
-      id: "violet",
-      label: "Midnight Violet",
-      description: "โทนหลักดั้งเดิมของระบบ ให้ฟีลเข้ม คม และเน้น accent แบบม่วง",
-      preview: "var(--theme-preview-violet)",
-    },
-    {
       id: "light",
       label: "Snow Blue",
       description: "พื้นหลังสีขาว ปุ่มโทนฟ้า และการ์ดสีขาว สำหรับหน้าร้านที่ดูสะอาดและสว่าง",
       preview: "var(--theme-preview-light)",
+    },
+    {
+      id: "violet",
+      label: "Midnight Violet",
+      description: "โทนเข้ม คม และเน้น accent แบบม่วง สำหรับทีมที่ชอบหน้าจอ contrast สูง",
+      preview: "var(--theme-preview-violet)",
     },
     {
       id: "dark",

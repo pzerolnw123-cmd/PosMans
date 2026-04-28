@@ -139,7 +139,7 @@ export function ReceiptDeskClient() {
                   type="button"
                   className={
                     active
-                      ? "min-h-[42px] rounded-none border border-[var(--accent-border)] bg-[var(--accent-surface)] px-3 text-[0.9rem] font-bold text-[var(--foreground)] shadow-[var(--brand-shadow)_0_10px_22px]"
+                      ? "min-h-[42px] rounded-none border border-[var(--accent-border)] bg-[var(--accent-surface)] px-3 text-[0.9rem] font-bold text-[var(--foreground)] shadow-[inset_0_0_0_1px_var(--brand-soft)]"
                       : "min-h-[42px] rounded-none border border-[var(--border-muted)] bg-[var(--field-bg)] px-3 text-[0.9rem] font-bold text-[var(--foreground-soft)] transition hover:border-[var(--accent-border)] hover:text-[var(--foreground)]"
                   }
                   onClick={() => {
@@ -171,7 +171,7 @@ export function ReceiptDeskClient() {
                   type="button"
                   className={
                     active
-                      ? "grid gap-2 rounded-none border border-[var(--accent-border)] bg-[var(--accent-surface)] px-4 py-3 text-left shadow-[var(--brand-shadow)_0_10px_24px]"
+                      ? "grid gap-2 rounded-none border border-l-[6px] border-[var(--accent-border)] border-l-[var(--brand)] bg-[var(--surface)] px-4 py-3 text-left shadow-[0_0_0_2px_var(--brand-soft),var(--brand-shadow)_0_10px_24px]"
                       : "grid gap-2 rounded-none border border-[var(--border-muted)] bg-[var(--panel-subtle)] px-4 py-3 text-left transition hover:border-[var(--accent-border)] hover:bg-[var(--surface-muted)]"
                   }
                   onClick={() => void selectReceipt(receipt)}
