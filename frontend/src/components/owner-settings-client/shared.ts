@@ -44,6 +44,7 @@ export type ConfirmPaymentSettingsModalProps = {
 export type OwnerLogoContextValue = {
   previewUrl: string;
   setPreviewUrl: (url: string) => void;
+  savedLogoUrl: string;
   saved: boolean;
   setSaved: (saved: boolean) => void;
   setSavedLogo: (url: string) => void;

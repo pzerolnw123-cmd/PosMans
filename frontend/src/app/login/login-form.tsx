@@ -2,7 +2,8 @@
 
 import { FormEvent, useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { csrfCookieName, ensureCsrfToken, readCookie } from "@/lib/csrf";
+import { ensureCsrfToken, fetchWithCsrfRetry } from "@/lib/csrf";
+import { isOwnerTheme, storeOwnerTheme } from "@/lib/owner-theme";
 import { getWorkspaceHref } from "@/lib/workspace";
 import { ghostPillClass, inputClass, primaryButtonClass } from "@/components/ui-primitives";
 
@@ -67,24 +68,12 @@ export function LoginForm() {
     void ensureCsrfToken().catch(() => undefined);
   }, []);
 
-  async function getCsrfToken() {
-    return (await ensureCsrfToken()) || readCookie(csrfCookieName);
-  }
-
   async function completeAuth(url: "/api/auth/verify-pin" | "/api/auth/setup-pin", body: Record<string, string>, fallbackError: string) {
-    const csrfToken = await getCsrfToken();
-    if (!csrfToken) {
-      setError("ไม่สามารถเตรียมเซสชันของหน้านี้ได้ กรุณารีเฟรชแล้วลองใหม่");
-      return;
-    }
-
-    const response = await fetch(url, {
+    const response = await fetchWithCsrfRetry(url, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "x-csrf-token": csrfToken,
       },
-      credentials: "same-origin",
       body: JSON.stringify(body),
     });
 
@@ -97,8 +86,12 @@ export function LoginForm() {
     }
 
     const data = (await response.json().catch(() => null)) as
-      | { user?: { platformRole: string; storeRole: string | null } }
+      | { user?: { ownerTheme?: string; platformRole: string; storeRole: string | null } }
       | null;
+
+    if (data?.user?.storeRole === "OWNER" && isOwnerTheme(data.user.ownerTheme)) {
+      storeOwnerTheme(data.user.ownerTheme);
+    }
 
     startTransition(() => {
       router.push(data?.user ? getWorkspaceHref(data.user) : "/owner");
@@ -115,19 +108,11 @@ export function LoginForm() {
       return;
     }
 
-    const csrfToken = await getCsrfToken();
-    if (!csrfToken) {
-      setError("ไม่สามารถเตรียมเซสชันของหน้านี้ได้ กรุณารีเฟรชแล้วลองใหม่");
-      return;
-    }
-
-    const response = await fetch("/api/auth/login", {
+    const response = await fetchWithCsrfRetry("/api/auth/login", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "x-csrf-token": csrfToken,
       },
-      credentials: "same-origin",
       body: JSON.stringify({
         username: normalizedUsername,
         password,

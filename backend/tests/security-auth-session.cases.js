@@ -39,7 +39,7 @@ describe("backend security hardening - auth and sessions", () => {
 
     expect(response.status).toBe(403);
     expect(response.body.error).toBe("เซสชันของหน้านี้หมดอายุ กรุณารีเฟรชหน้าแล้วลองใหม่");
-    expect(response.body.code).toBeUndefined();
+    expect(response.body.code).toBe("CSRF_MISMATCH");
   });
 
   test("rejects password step when csrf token is missing", async () => {
@@ -52,7 +52,7 @@ describe("backend security hardening - auth and sessions", () => {
 
     expect(response.status).toBe(403);
     expect(response.body.error).toBe("เซสชันของหน้านี้หมดอายุ กรุณารีเฟรชหน้าแล้วลองใหม่");
-    expect(response.body.code).toBeUndefined();
+    expect(response.body.code).toBe("CSRF_MISMATCH");
   });
 
   test("creates a PIN challenge after valid username and password", async () => {

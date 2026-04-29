@@ -302,6 +302,7 @@ function buildPublicUser(user) {
     id: user.id,
     username: user.username,
     displayName: user.displayName,
+    ownerTheme: user.ownerTheme,
     platformRole: user.platformRole,
     storeRole: user.storeRole,
     storeId: user.storeId,

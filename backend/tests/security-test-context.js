@@ -114,6 +114,7 @@ function buildProduct(overrides = {}) {
     name: "ข้าวกะเพรา",
     category: "อาหาร",
     price: 65,
+    costPerUnit: 0,
     status: "พร้อมขาย",
     trackStock: false,
     stockQuantity: 0,

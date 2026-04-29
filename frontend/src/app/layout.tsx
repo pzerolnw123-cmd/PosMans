@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import { ThemeSync } from "@/components/theme-sync";
 import { getCurrentSession } from "@/lib/session";
 import { defaultOwnerTheme, ownerThemeIds, ownerThemeStorageKey } from "@/lib/owner-theme";
 
@@ -90,6 +91,7 @@ export default async function RootLayout({
     >
       <body suppressHydrationWarning>
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+        <ThemeSync serverTheme={ownerTheme} source={userThemeSource} />
         {children}
       </body>
     </html>

@@ -8,9 +8,11 @@ import { LoadingState, inputClass, primaryButtonClass, secondaryButtonClass } fr
 type ReportRange = "today" | "yesterday" | "7d" | "month";
 
 type ProductSummary = {
+  productId?: string | null;
   name: string;
   quantity: number;
   sales: number;
+  costPerUnit?: number;
 };
 
 type SalesReportResponse = {
@@ -37,6 +39,18 @@ function formatBaht(value: number) {
 function parseMoney(value: string) {
   const numberValue = Number(value.replace(/,/g, ""));
   return Number.isFinite(numberValue) && numberValue > 0 ? numberValue : 0;
+}
+
+function productCostKey(product: ProductSummary) {
+  return product.productId || product.name;
+}
+
+function buildDefaultUnitCosts(products: ProductSummary[] = []) {
+  return products.reduce<Record<string, string>>((defaults, product) => {
+    const unitCost = Number.isFinite(product.costPerUnit) && (product.costPerUnit || 0) > 0 ? product.costPerUnit || 0 : 0;
+    defaults[productCostKey(product)] = String(unitCost);
+    return defaults;
+  }, {});
 }
 
 function escapeHtml(value: string | number) {
@@ -104,6 +118,7 @@ export function ProfitCalculatorClient() {
         const response = await requestJson<SalesReportResponse>(`/api/reports/sales?${params.toString()}`);
         if (!cancelled) {
           setReport(response);
+          setUnitCosts(buildDefaultUnitCosts(response.productSummary));
         }
       } catch (loadError) {
         if (!cancelled) {
@@ -124,7 +139,7 @@ export function ProfitCalculatorClient() {
 
   const calculation = useMemo(() => {
     const products = report?.productSummary || [];
-    const productCost = products.reduce((sum, product) => sum + parseMoney(unitCosts[product.name] || "") * product.quantity, 0);
+    const productCost = products.reduce((sum, product) => sum + parseMoney(unitCosts[productCostKey(product)] || "") * product.quantity, 0);
     const extraCost = parseMoney(extraCosts.labor) + parseMoney(extraCosts.packaging) + parseMoney(extraCosts.other);
     const totalCost = productCost + extraCost;
     const sales = report?.totals.sales || 0;
@@ -205,7 +220,7 @@ export function ProfitCalculatorClient() {
   }
 
   function resetCosts() {
-    setUnitCosts({});
+    setUnitCosts(buildDefaultUnitCosts(report?.productSummary || []));
     setExtraCosts({ labor: "", packaging: "", other: "" });
     setExportMessage("");
   }
@@ -226,7 +241,7 @@ export function ProfitCalculatorClient() {
 
   function buildExportRows() {
     return calculation.products.map((product) => {
-      const unitCost = parseMoney(unitCosts[product.name] || "");
+      const unitCost = parseMoney(unitCosts[productCostKey(product)] || "");
       const totalCost = unitCost * product.quantity;
       return {
         name: product.name,
@@ -511,7 +526,8 @@ export function ProfitCalculatorClient() {
                 onPointerLeave={stopProductDrag}
               >
               {calculation.products.map((product) => {
-                const unitCost = parseMoney(unitCosts[product.name] || "");
+                const costKey = productCostKey(product);
+                const unitCost = parseMoney(unitCosts[costKey] || "");
                 const totalCost = unitCost * product.quantity;
                 const profit = product.sales - totalCost;
                 return (
@@ -525,8 +541,8 @@ export function ProfitCalculatorClient() {
                       <input
                         className={`${inputClass} h-[40px]`}
                         inputMode="decimal"
-                        value={unitCosts[product.name] || ""}
-                        onChange={(event) => setUnitCosts((current) => ({ ...current, [product.name]: event.target.value }))}
+                        value={unitCosts[costKey] ?? "0"}
+                        onChange={(event) => setUnitCosts((current) => ({ ...current, [costKey]: event.target.value }))}
                         placeholder="0"
                       />
                     </label>

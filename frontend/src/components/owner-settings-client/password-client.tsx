@@ -3,7 +3,7 @@
 import type { FormEvent } from "react";
 import { useState } from "react";
 import { useBackofficeShellAlert } from "@/components/backoffice-shell";
-import { ensureCsrfToken } from "@/lib/csrf";
+import { fetchWithCsrfRetry } from "@/lib/csrf";
 import type { SubmitState } from "./shared";
 import {
   fieldLabelClass,
@@ -148,13 +148,10 @@ export function OwnerPasswordClient() {
     setSubmitState({ status: "saving", message: "กำลังอัปเดตรหัสผ่าน..." });
 
     try {
-      const csrfToken = await ensureCsrfToken({ forceRefresh: true });
-      const response = await fetch("/api/auth/password", {
+      const response = await fetchWithCsrfRetry("/api/auth/password", {
         method: "PATCH",
-        credentials: "same-origin",
         headers: {
           "content-type": "application/json",
-          "x-csrf-token": csrfToken || "",
         },
         body: JSON.stringify(form),
       });

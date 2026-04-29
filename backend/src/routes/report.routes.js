@@ -127,9 +127,15 @@ router.get("/sales", requireStoreRole(["OWNER"]), async (req, res, next) => {
         total: true,
         items: {
           select: {
+            productId: true,
             productName: true,
             quantity: true,
             lineTotal: true,
+            product: {
+              select: {
+                costPerUnit: true,
+              },
+            },
           },
         },
       },
@@ -150,10 +156,17 @@ router.get("/sales", requireStoreRole(["OWNER"]), async (req, res, next) => {
       }
 
       for (const item of order.items) {
-        const current = productTotals.get(item.productName) || { name: item.productName, quantity: 0, sales: 0 };
+        const productKey = item.productId || item.productName;
+        const current = productTotals.get(productKey) || {
+          productId: item.productId,
+          name: item.productName,
+          quantity: 0,
+          sales: 0,
+          costPerUnit: item.product?.costPerUnit || 0,
+        };
         current.quantity += item.quantity;
         current.sales += item.lineTotal;
-        productTotals.set(item.productName, current);
+        productTotals.set(productKey, current);
       }
     }
 

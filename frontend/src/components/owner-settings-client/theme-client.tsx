@@ -4,7 +4,7 @@ import { useEffect, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 import { useBackofficeShellAlert } from "@/components/backoffice-shell";
 import { StatusPill } from "@/components/ui-primitives";
-import { ensureCsrfToken } from "@/lib/csrf";
+import { fetchWithCsrfRetry } from "@/lib/csrf";
 import { applyOwnerTheme, readActiveOwnerTheme, subscribeOwnerTheme, type OwnerThemeId } from "@/lib/owner-theme";
 import {
   activeGhostButtonClass,
@@ -23,12 +23,10 @@ function getServerOwnerThemeSnapshot(): OwnerThemeId | null {
 }
 
 async function persistOwnerTheme(theme: OwnerThemeId) {
-  const csrfToken = await ensureCsrfToken();
-  const response = await fetch("/api/auth/owner-theme", {
+  const response = await fetchWithCsrfRetry("/api/auth/owner-theme", {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",
-      "X-CSRF-Token": csrfToken || "",
     },
     body: JSON.stringify({ theme }),
   });

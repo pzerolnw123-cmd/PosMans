@@ -46,7 +46,7 @@ export function ConfirmDeleteModal({
       <div className="relative z-[1] grid w-[min(94vw,400px)] gap-6 overflow-hidden rounded-none border border-[var(--danger-border)] [background:var(--modal-surface)] p-6 shadow-[var(--modal-shadow)]">
         <div className="grid gap-2">
           <p className="m-0 text-left text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[var(--danger)]">ยืนยันการลบ</p>
-          <h2 className="mt-2 text-center text-[1.4rem] leading-tight tracking-[-0.04em] text-[var(--foreground-inverse)]">ต้องการลบสินค้าชิ้นนี้ใช่หรือไม่?</h2>
+          <h2 className="mt-2 text-center text-[1.4rem] leading-tight tracking-[-0.04em] text-[var(--foreground)]">ต้องการลบสินค้าชิ้นนี้ใช่หรือไม่?</h2>
           <div className="mx-auto mt-4 flex w-fit items-center gap-3 rounded-xl border border-[var(--border)] bg-[var(--overlay-white-02)] p-3 pr-8 text-left">
              {product.imageUrl ? (
                // eslint-disable-next-line @next/next/no-img-element
@@ -55,7 +55,7 @@ export function ConfirmDeleteModal({
                <div className="h-12 w-12 rounded-lg bg-[var(--overlay-white-06)]" />
              )}
              <div className="min-w-0">
-               <strong className="block truncate text-[var(--foreground-inverse)]">{product.name}</strong>
+               <strong className="block truncate text-[var(--foreground)]">{product.name}</strong>
                <small className="block text-[var(--foreground-soft)]">{product.code}</small>
              </div>
           </div>

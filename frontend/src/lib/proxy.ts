@@ -17,11 +17,18 @@ export async function proxyToBackend(path: string, init?: RequestInit) {
     headers.set("cookie", cookieHeader);
   }
 
-  return fetch(`${backendUrl}${path}`, {
-    ...init,
-    headers,
-    cache: "no-store",
-  });
+  try {
+    return await fetch(`${backendUrl}${path}`, {
+      ...init,
+      headers,
+      cache: "no-store",
+    });
+  } catch {
+    return NextResponse.json(
+      { error: "Backend connection was interrupted. Please try again.", code: "BACKEND_UNAVAILABLE" },
+      { status: 503, headers: { "cache-control": "no-store" } },
+    );
+  }
 }
 
 export function buildBackendHeaders(

@@ -78,6 +78,7 @@ export function ProductManagementStudio() {
         selectedProduct.name !== original.name ||
         selectedProduct.category !== original.category ||
         selectedProduct.price !== original.price ||
+        selectedProduct.costPerUnit !== original.costPerUnit ||
         selectedProduct.status !== original.status ||
         selectedProduct.trackStock !== original.trackStock ||
         selectedProduct.stockQuantity !== original.stockQuantity ||
@@ -143,6 +144,11 @@ export function ProductManagementStudio() {
       return;
     }
 
+    if (!Number.isFinite(selectedProduct.costPerUnit) || selectedProduct.costPerUnit < 0) {
+      setUploadError("กรุณากรอกต้นทุน/ชิ้นให้ถูกต้อง");
+      return;
+    }
+
     if (
       selectedProduct.trackStock &&
       (!Number.isFinite(selectedProduct.stockQuantity) ||
@@ -176,6 +182,7 @@ export function ProductManagementStudio() {
         name: trimmedName,
         category: selectedProduct.category,
         price: selectedProduct.price,
+        costPerUnit: selectedProduct.costPerUnit,
         status: selectedProduct.status,
         trackStock: selectedProduct.trackStock,
         stockQuantity: selectedProduct.trackStock ? selectedProduct.stockQuantity : 0,

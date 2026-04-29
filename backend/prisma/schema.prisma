@@ -113,6 +113,7 @@ model Product {
   name              String
   category          String
   price             Int
+  costPerUnit       Int      @default(0)
   status            String
   trackStock        Boolean  @default(false)
   stockQuantity     Int      @default(0)

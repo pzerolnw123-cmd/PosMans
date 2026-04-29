@@ -92,7 +92,7 @@ export function CropModal({
     <div className="fixed inset-0 z-[200] grid place-items-center bg-[var(--modal-backdrop)] p-4 backdrop-blur-[14px]">
       <div className="absolute inset-0 [background:var(--modal-brand-glow)]" />
 
-      <div className="relative z-[1] grid w-[min(92vw,740px)] max-h-[calc(100vh-32px)] gap-6 overflow-y-auto rounded-[24px] border border-[var(--border)] [background:var(--modal-surface)] p-6 shadow-[var(--modal-shadow)] max-[720px]:w-[min(94vw,560px)]">
+      <div className="relative z-[1] grid w-[min(92vw,740px)] max-h-[calc(100vh-32px)] min-w-0 gap-6 overflow-y-auto overflow-x-hidden rounded-[24px] border border-[var(--border)] [background:var(--modal-surface)] p-6 shadow-[var(--modal-shadow)] max-[720px]:w-[min(94vw,560px)] max-[520px]:p-4">
         <div className="flex items-start justify-between gap-4 max-[720px]:flex-col max-[720px]:items-stretch">
           <div>
             <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[var(--eyebrow)]">Image Crop</p>
@@ -106,11 +106,11 @@ export function CropModal({
           </button>
         </div>
 
-        <div className="grid items-start gap-6 lg:grid-cols-[320px_minmax(0,1fr)] max-[800px]:grid-cols-1">
+        <div className="grid min-w-0 items-start gap-6 lg:grid-cols-[minmax(0,320px)_minmax(0,1fr)] max-[800px]:grid-cols-1">
           {/* Left Column: Image Preview */}
-          <div className="grid gap-4 self-start justify-center w-full">
+          <div className="grid min-w-0 w-full justify-center gap-4 self-start [--crop-preview-size:min(320px,calc(92vw-80px))] max-[520px]:[--crop-preview-size:min(320px,calc(94vw-64px))]">
             <div
-              className="relative aspect-square w-[320px] overflow-hidden rounded-[24px] border border-[var(--border)] bg-[var(--overlay-white-04)] shadow-[var(--shadow-inset-preview)] cursor-grab active:cursor-grabbing"
+              className="relative h-[var(--crop-preview-size)] w-[var(--crop-preview-size)] overflow-hidden rounded-[24px] border border-[var(--border)] bg-[var(--overlay-white-04)] shadow-[var(--shadow-inset-preview)] cursor-grab active:cursor-grabbing"
               onPointerDown={handlePointerDown}
               onPointerMove={handlePointerMove}
               onPointerUp={handlePointerUp}
@@ -134,11 +134,11 @@ export function CropModal({
           </div>
 
           {/* Right Column: Controls */}
-          <div className="grid gap-4 self-start w-full">
-            <div className="grid gap-3 rounded-[18px] border border-[var(--border)] bg-[var(--overlay-white-03)] p-5">
-              <div className="mb-1 pb-4 border-b border-[var(--border)] text-center">
+          <div className="grid min-w-0 w-full gap-4 self-start">
+            <div className="grid min-w-0 gap-3 rounded-[18px] border border-[var(--border)] bg-[var(--overlay-white-03)] p-5 max-[520px]:p-4">
+              <div className="mb-1 min-w-0 border-b border-[var(--border)] pb-4 text-center">
                 <span className="text-[0.78rem] font-bold uppercase tracking-widest text-[var(--eyebrow)]">ไฟล์ที่เลือก</span>
-                <p className="mt-1 break-words text-[0.92rem] font-semibold text-[var(--foreground)]">{draft.fileName}</p>
+                <p className="mt-1 min-w-0 break-all text-[0.92rem] font-semibold text-[var(--foreground)]">{draft.fileName}</p>
               </div>
 
               <label className="grid gap-2">
@@ -158,7 +158,7 @@ export function CropModal({
                 />
               </label>
 
-              <div className="grid grid-cols-2 gap-3 text-[0.88rem] text-[var(--foreground-soft)]">
+              <div className="grid min-w-0 grid-cols-2 gap-3 text-[0.88rem] text-[var(--foreground-soft)] max-[520px]:grid-cols-1">
                 <div className="rounded-xl border border-[var(--border-hairline)] bg-[var(--surface-muted)] px-3 py-2">
                   X: {Math.round(offsetX)} px
                 </div>
@@ -167,11 +167,11 @@ export function CropModal({
                 </div>
               </div>
 
-              <div className="mt-2 grid grid-cols-2 gap-3 border-t border-[var(--border)] pt-4">
-                <button type="button" className={ghostButtonClass} onClick={onClose} disabled={busy}>
+              <div className="mt-2 grid min-w-0 grid-cols-2 gap-3 border-t border-[var(--border)] pt-4 max-[560px]:grid-cols-1">
+                <button type="button" className={`${ghostButtonClass} min-w-0 px-3`} onClick={onClose} disabled={busy}>
                   ยกเลิก
                 </button>
-                <button type="button" className={primaryButtonClass} onClick={onConfirm} disabled={busy}>
+                <button type="button" className={`${primaryButtonClass} min-w-0 px-3 text-center leading-tight whitespace-normal`} onClick={onConfirm} disabled={busy}>
                   {busy ? busyLabel : confirmLabel}
                 </button>
               </div>

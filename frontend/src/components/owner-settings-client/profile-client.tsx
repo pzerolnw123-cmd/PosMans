@@ -4,7 +4,7 @@ import type { FormEvent } from "react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useBackofficeShellAlert } from "@/components/backoffice-shell";
-import { ensureCsrfToken } from "@/lib/csrf";
+import { fetchWithCsrfRetry } from "@/lib/csrf";
 import type { SubmitState } from "./shared";
 import {
   activeGhostButtonClass,
@@ -72,13 +72,10 @@ export function OwnerProfileClient({
     setSubmitState({ status: "saving", message: "กำลังบันทึกข้อมูลร้าน..." });
 
     try {
-      const csrfToken = await ensureCsrfToken({ forceRefresh: true });
-      const response = await fetch("/api/auth/owner-profile", {
+      const response = await fetchWithCsrfRetry("/api/auth/owner-profile", {
         method: "PATCH",
-        credentials: "same-origin",
         headers: {
           "content-type": "application/json",
-          "x-csrf-token": csrfToken || "",
         },
         body: JSON.stringify(nextForm),
       });

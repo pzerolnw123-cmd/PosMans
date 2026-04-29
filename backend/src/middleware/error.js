@@ -31,9 +31,15 @@ function errorHandler(err, _req, res, _next) {
 
   if (err instanceof AppError) {
     logHandledError(err, err.statusCode);
-    return res.status(err.statusCode).json({
+    const payload = {
       error: err.expose ? err.message : "ไม่สามารถดำเนินการตามคำขอได้",
-    });
+    };
+
+    if (err.code === "CSRF_MISMATCH") {
+      payload.code = err.code;
+    }
+
+    return res.status(err.statusCode).json(payload);
   }
 
   const statusCode = err.statusCode || 500;

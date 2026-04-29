@@ -15,7 +15,7 @@ import {
   uploadBlobToR2,
 } from "@/components/product-management-studio/lib";
 import type { CropDraft } from "@/components/product-management-studio/types";
-import { ensureCsrfToken } from "@/lib/csrf";
+import { fetchWithCsrfRetry } from "@/lib/csrf";
 import type {
   OwnerPaymentSettingsValue,
   PromptPayDrafts,
@@ -265,13 +265,10 @@ export function OwnerPaymentSettingsClient({ initialSettings }: { initialSetting
     setSubmitState({ status: "saving", message: "กำลังบันทึกการรับชำระเงิน..." });
 
     try {
-      const csrfToken = await ensureCsrfToken({ forceRefresh: true });
-      const response = await fetch("/api/auth/owner-payment-settings", {
+      const response = await fetchWithCsrfRetry("/api/auth/owner-payment-settings", {
         method: "PATCH",
-        credentials: "same-origin",
         headers: {
           "content-type": "application/json",
-          "x-csrf-token": csrfToken || "",
         },
         body: JSON.stringify(nextSettings),
       });

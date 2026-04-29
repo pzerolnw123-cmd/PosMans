@@ -1,4 +1,4 @@
-import { csrfCookieName, ensureCsrfToken, readCookie } from "@/lib/csrf";
+import { fetchWithCsrfRetry } from "@/lib/csrf";
 import type { CropDraft, ProductListResponse, SignedUploadPayload } from "@/components/product-management-studio/types";
 
 export const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
@@ -26,18 +26,11 @@ export async function requestJson<T>(path: string, init?: RequestInit) {
   const headers = new Headers(init?.headers);
 
   if (init?.method && init.method !== "GET") {
-    const csrfToken = (await ensureCsrfToken({ forceRefresh: true })) || readCookie(csrfCookieName);
-    if (!csrfToken) {
-      throw new Error("ไม่สามารถเตรียมเซสชันของหน้านี้ได้ กรุณารีเฟรชแล้วลองใหม่");
-    }
-
-    headers.set("x-csrf-token", csrfToken);
     headers.set("content-type", headers.get("content-type") || "application/json");
   }
 
-  const response = await fetch(path, {
+  const response = await fetchWithCsrfRetry(path, {
     ...init,
-    credentials: "same-origin",
     headers,
   });
 
@@ -169,17 +162,10 @@ export async function createCroppedBlob(draft: CropDraft, zoom: number, offsetX:
 }
 
 export async function requestSignedUpload(fileName: string, contentType: string, contentLength: number, purpose: "STORE_LOGO" | "PAYMENT_QR" | "PRODUCT_IMAGE") {
-  const csrfToken = (await ensureCsrfToken({ forceRefresh: true })) || readCookie(csrfCookieName);
-  if (!csrfToken) {
-    throw new Error("ไม่สามารถเตรียมเซสชันของหน้านี้ได้ กรุณารีเฟรชแล้วลองใหม่");
-  }
-
-  const response = await fetch("/api/uploads/sign", {
+  const response = await fetchWithCsrfRetry("/api/uploads/sign", {
     method: "POST",
-    credentials: "same-origin",
     headers: {
       "content-type": "application/json",
-      "x-csrf-token": csrfToken,
     },
     body: JSON.stringify({ fileName, contentType, contentLength, purpose }),
   });

@@ -35,20 +35,74 @@ export function readActiveOwnerTheme(): OwnerThemeId {
   return readStoredOwnerTheme() || defaultOwnerTheme;
 }
 
-export function applyOwnerTheme(theme: OwnerThemeId) {
-  if (typeof document === "undefined") {
+export function storeOwnerTheme(theme: OwnerThemeId) {
+  if (typeof window === "undefined") {
     return;
   }
-
-  document.documentElement.dataset.storeTheme = theme;
 
   try {
     window.localStorage.setItem(ownerThemeStorageKey, theme);
   } catch {
     // Persisting the theme is optional; the visual update should still work.
   }
+}
 
-  window.dispatchEvent(new CustomEvent(ownerThemeChangeEvent));
+export function clearStoredOwnerTheme() {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  try {
+    window.localStorage.removeItem(ownerThemeStorageKey);
+  } catch {
+    // Persisting the theme is optional; the visual update should still work.
+  }
+}
+
+function announceOwnerThemeChange(previousTheme: string | undefined) {
+  if (previousTheme !== document.documentElement.dataset.storeTheme) {
+    window.dispatchEvent(new CustomEvent(ownerThemeChangeEvent));
+  }
+}
+
+export function applyOwnerTheme(theme: OwnerThemeId, source: "server" | "local" = "local") {
+  if (typeof document === "undefined") {
+    return;
+  }
+
+  const previousTheme = document.documentElement.dataset.storeTheme;
+  document.documentElement.dataset.storeTheme = theme;
+  document.documentElement.dataset.userThemeSource = source;
+
+  storeOwnerTheme(theme);
+
+  announceOwnerThemeChange(previousTheme);
+}
+
+export function applySystemOwnerTheme() {
+  if (typeof document === "undefined") {
+    return;
+  }
+
+  const previousTheme = document.documentElement.dataset.storeTheme;
+  document.documentElement.dataset.storeTheme = defaultOwnerTheme;
+  document.documentElement.dataset.userThemeSource = "system";
+
+  announceOwnerThemeChange(previousTheme);
+}
+
+export function resetOwnerTheme() {
+  if (typeof document === "undefined") {
+    return;
+  }
+
+  const previousTheme = document.documentElement.dataset.storeTheme;
+  document.documentElement.dataset.storeTheme = defaultOwnerTheme;
+  document.documentElement.dataset.userThemeSource = "system";
+
+  clearStoredOwnerTheme();
+
+  announceOwnerThemeChange(previousTheme);
 }
 
 export function subscribeOwnerTheme(callback: () => void) {

@@ -8,6 +8,7 @@ import { openCustomerDisplayWindow, readStoredCustomerDisplay, storeCustomerDisp
 import { invalidateProductListCache, requestJson } from "@/components/product-management-studio/lib";
 import { LoadingState, primaryButtonClass, secondaryButtonClass } from "@/components/ui-primitives";
 import type { OwnerPaymentSettingsValue } from "@/components/owner-settings-client";
+import { readActiveOwnerTheme, subscribeOwnerTheme } from "@/lib/owner-theme";
 
 import type { CompletedSale, PaymentMethod, SaleResponse, StoredCartItem } from "./shared";
 import {
@@ -35,6 +36,7 @@ export function PaymentCheckoutClient({ paymentSettings }: { paymentSettings: Ow
   const [customerDisplay, setCustomerDisplay] = useState<CustomerDisplayLink | null>(null);
   const [customerDisplayBusy, setCustomerDisplayBusy] = useState(false);
   const [promptPayQrDataUrl, setPromptPayQrDataUrl] = useState("");
+  const [activeTheme, setActiveTheme] = useState(() => readActiveOwnerTheme());
   const [billScrollMetric, setBillScrollMetric] = useState({ top: 0, height: 100, visible: false });
   const billScrollRef = useRef<HTMLDivElement | null>(null);
   const dragScrollRef = useRef({
@@ -141,6 +143,15 @@ export function PaymentCheckoutClient({ paymentSettings }: { paymentSettings: Ow
   }, [billItems.length]);
 
   useEffect(() => {
+    function syncActiveTheme() {
+      setActiveTheme(readActiveOwnerTheme());
+    }
+
+    syncActiveTheme();
+    return subscribeOwnerTheme(syncActiveTheme);
+  }, []);
+
+  useEffect(() => {
     let cancelled = false;
 
     async function generatePromptPayQr() {
@@ -184,7 +195,7 @@ export function PaymentCheckoutClient({ paymentSettings }: { paymentSettings: Ow
     return () => {
       cancelled = true;
     };
-  }, [billTotal, completedSale, dynamicPromptPayReady, paymentSettings, qrPaymentSelected]);
+  }, [activeTheme, billTotal, completedSale, dynamicPromptPayReady, paymentSettings, qrPaymentSelected]);
 
   function updateBillScrollbar() {
     const node = billScrollRef.current;

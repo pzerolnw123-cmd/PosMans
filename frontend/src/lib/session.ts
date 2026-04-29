@@ -43,6 +43,30 @@ export type OwnerPaymentSettingsPayload = {
 
 const sessionCookieName = process.env.NEXT_PUBLIC_SESSION_COOKIE_NAME || "pos_mans_session";
 
+async function fetchBackendJson<T>(url: string, init: RequestInit) {
+  try {
+    const response = await fetch(url, init);
+    if (!response.ok) {
+      return null;
+    }
+
+    return response.json() as Promise<T>;
+  } catch {
+    await new Promise((resolve) => setTimeout(resolve, 250));
+  }
+
+  try {
+    const response = await fetch(url, init);
+    if (!response.ok) {
+      return null;
+    }
+
+    return response.json() as Promise<T>;
+  } catch {
+    return null;
+  }
+}
+
 export const getCurrentSession = cache(async () => {
   const cookieStore = await cookies();
   const sessionCookie = cookieStore.get(sessionCookieName);
@@ -57,18 +81,12 @@ export const getCurrentSession = cache(async () => {
     .map((cookie) => `${cookie.name}=${cookie.value}`)
     .join("; ");
 
-  const response = await fetch(`${backendUrl}/api/auth/me`, {
+  return fetchBackendJson<SessionPayload>(`${backendUrl}/api/auth/me`, {
     headers: {
       cookie: cookieHeader,
     },
     cache: "no-store",
   });
-
-  if (!response.ok) {
-    return null;
-  }
-
-  return response.json() as Promise<SessionPayload>;
 });
 
 export const getOwnerPaymentSettings = cache(async () => {
@@ -84,18 +102,12 @@ export const getOwnerPaymentSettings = cache(async () => {
     .map((cookie) => `${cookie.name}=${cookie.value}`)
     .join("; ");
 
-  const response = await fetch(`${backendUrl}/api/auth/owner-payment-settings`, {
+  return fetchBackendJson<OwnerPaymentSettingsPayload>(`${backendUrl}/api/auth/owner-payment-settings`, {
     headers: {
       cookie: cookieHeader,
     },
     cache: "no-store",
   });
-
-  if (!response.ok) {
-    return null;
-  }
-
-  return response.json() as Promise<OwnerPaymentSettingsPayload>;
 });
 
 export async function requireSession() {

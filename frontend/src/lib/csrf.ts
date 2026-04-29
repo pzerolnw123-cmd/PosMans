@@ -34,3 +34,41 @@ export async function ensureCsrfToken(options: EnsureCsrfTokenOptions = {}) {
   const data = (await response.json()) as { csrfToken?: string };
   return data.csrfToken || readCookie(csrfCookieName) || null;
 }
+
+export async function fetchWithCsrfRetry(input: RequestInfo | URL, init: RequestInit = {}) {
+  const method = init.method?.toUpperCase() || "GET";
+  const shouldAttachCsrf = !["GET", "HEAD", "OPTIONS"].includes(method);
+  const token = shouldAttachCsrf ? await ensureCsrfToken() : null;
+  const headers = new Headers(init.headers);
+
+  if (token) {
+    headers.set("x-csrf-token", token);
+  }
+
+  const response = await fetch(input, {
+    ...init,
+    headers,
+    credentials: init.credentials || "same-origin",
+  });
+
+  if (!shouldAttachCsrf || response.status !== 403) {
+    return response;
+  }
+
+  const payload = (await response.clone().json().catch(() => null)) as { code?: string } | null;
+  if (payload?.code !== "CSRF_MISMATCH") {
+    return response;
+  }
+
+  const refreshedToken = await ensureCsrfToken({ forceRefresh: true });
+  const retryHeaders = new Headers(init.headers);
+  if (refreshedToken) {
+    retryHeaders.set("x-csrf-token", refreshedToken);
+  }
+
+  return fetch(input, {
+    ...init,
+    headers: retryHeaders,
+    credentials: init.credentials || "same-origin",
+  });
+}

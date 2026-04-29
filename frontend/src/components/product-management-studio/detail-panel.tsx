@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import { dangerButtonClass, inputClass, Loader, LoadingState, primaryButtonClass, secondaryButtonClass, selectClass, StatusPill, successButtonClass, whiteButtonClass } from "@/components/ui-primitives";
+import { dangerButtonClass, inputClass, Loader, LoadingState, primaryButtonClass, secondaryButtonClass, selectClass, successButtonClass, whiteButtonClass } from "@/components/ui-primitives";
 import { canUseNextImage, Field } from "@/components/product-management-studio/shared";
 import type { ProductItem } from "@/components/product-management-studio/types";
 
@@ -40,6 +40,7 @@ export function ProductDetailPanel({
   onDeleteConfirmed,
 }: ProductDetailPanelProps) {
   const [priceDraft, setPriceDraft] = useState<{ productId: string; value: string } | null>(null);
+  const [costPerUnitDraft, setCostPerUnitDraft] = useState<{ productId: string; value: string } | null>(null);
   const [stockQuantityDraft, setStockQuantityDraft] = useState<{ productId: string; value: string } | null>(null);
   const [lowStockThresholdDraft, setLowStockThresholdDraft] = useState<{ productId: string; value: string } | null>(null);
   const [isCategoryOpen, setIsCategoryOpen] = useState(false);
@@ -57,6 +58,8 @@ export function ProductDetailPanel({
 
   const priceInput =
     selectedProduct && priceDraft?.productId === selectedProduct.id ? priceDraft.value : selectedProduct ? String(selectedProduct.price) : "";
+  const costPerUnitInput =
+    selectedProduct && costPerUnitDraft?.productId === selectedProduct.id ? costPerUnitDraft.value : selectedProduct ? String(selectedProduct.costPerUnit) : "";
   const stockQuantityInput =
     selectedProduct && stockQuantityDraft?.productId === selectedProduct.id ? stockQuantityDraft.value : selectedProduct ? String(selectedProduct.stockQuantity) : "";
   const lowStockThresholdInput =
@@ -74,24 +77,45 @@ export function ProductDetailPanel({
     !selectedProduct.name.trim() &&
     (selectedProduct.price === 0 || isNaN(selectedProduct.price)) &&
     selectedProduct.category === "อาหาร";
-  const isSaveDisabled = saveBusy || deleteBusy || !isDirty || !selectedProduct?.name?.trim() || (selectedProduct?.price ?? 0) <= 0 || stockInvalid;
+  const costInvalid = !Number.isFinite(selectedProduct?.costPerUnit) || (selectedProduct?.costPerUnit ?? 0) < 0;
+  const isSaveDisabled = saveBusy || deleteBusy || !isDirty || !selectedProduct?.name?.trim() || (selectedProduct?.price ?? 0) <= 0 || costInvalid || stockInvalid;
 
   return (
     <section className="grid w-[calc(100%+22px)] min-h-full grid-rows-[auto_minmax(0,1fr)] overflow-hidden rounded-none border border-[var(--border)] bg-[var(--panel-strong)] px-5 py-5 shadow-[var(--shadow-soft)] backdrop-blur-[14px] max-[1366px]:w-full max-[1180px]:px-4 max-[1180px]:py-4 max-[640px]:px-3.5 max-[640px]:py-3.5">
-      <div className="flex items-start justify-between gap-3 max-[720px]:flex-col max-[720px]:items-stretch">
-        <div>
+      <div className="grid gap-[10px]">
+        <div className="flex items-start justify-between gap-3 max-[720px]:flex-col max-[720px]:items-stretch">
+          <div>
           <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[var(--eyebrow)]">รายละเอียดสินค้า</p>
           <h2 className="my-[8px] text-[clamp(1.45rem,2.2vw,2rem)] leading-[0.98] tracking-[-0.06em]">
             {selectedProduct && selectedProduct.code === "DRAFT-NEW" ? "เพิ่มสินค้าใหม่" : "แก้ไขสินค้า"}
           </h2>
+          </div>
+          {selectedProduct ? (
+            <div className="grid w-[180px] translate-y-5 justify-items-center gap-3 max-[720px]:w-full">
+              <span className={selectedProduct.trackStock ? "inline-flex min-h-[40px] w-full whitespace-nowrap items-center justify-center gap-2 rounded-none border border-[var(--accent-border)] bg-[var(--accent-surface)] px-3 py-2 text-[0.78rem] font-bold text-[var(--accent-text)]" : "inline-flex min-h-[40px] w-full whitespace-nowrap items-center justify-center gap-2 rounded-none border border-[var(--border-strong)] bg-[var(--surface-muted)] px-3 py-2 text-[0.78rem] font-bold text-[var(--foreground-soft)]"}>
+                {selectedProduct.trackStock ? "ทำการเปิดสต๊อก" : "ทำการปิดสต๊อก"}
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+                  <path fill="none" stroke="currentColor" strokeLinejoin="round" d="M1.583 4.5L8 1.583L14.417 4.5m-12.834 0L8 7.417M1.583 4.5v6.417L8 14.417m0-7L14.417 4.5M8 7.417v7M14.417 4.5v6.417L8 14.417M10.5 13V9.5m2 2.5V8.5" />
+                </svg>
+              </span>
+              <span className="stock-toggle-uiverse">
+                <span className="check" aria-hidden="true">
+                  <input
+                    id={`stock-toggle-${selectedProduct.id}`}
+                    type="checkbox"
+                    checked={selectedProduct.trackStock}
+                    onChange={onToggleStock}
+                    aria-label={selectedProduct.trackStock ? "ปิดสต๊อก" : "เปิดสต๊อก"}
+                  />
+                  <label htmlFor={`stock-toggle-${selectedProduct.id}`} />
+                </span>
+              </span>
+            </div>
+          ) : null}
         </div>
-        <StatusPill>โหมดแก้ไข</StatusPill>
-      </div>
-
-      {selectedProduct ? (
-        <div className="min-h-0 overflow-auto pr-1">
-          <div className="mt-[10px] grid grid-cols-[minmax(0,65%)_minmax(132px,1fr)] items-stretch gap-3 max-[960px]:grid-cols-1">
-            <div className="grid max-w-[312px] gap-[10px] max-[720px]:max-w-none">
+        {selectedProduct ? (
+          <div className="grid grid-cols-[minmax(0,312px)_180px] items-stretch gap-4 max-[720px]:grid-cols-1">
+            <div className="min-w-0 max-[720px]:w-full">
               <div className="h-[186px] w-full overflow-hidden rounded-[14px] border border-[var(--border)] bg-[var(--panel-subtle)] max-[1180px]:h-[148px] max-[720px]:h-[186px]">
                 {selectedProduct.imageUrl && canUseNextImage(selectedProduct.imageUrl) ? (
                   <Image
@@ -109,47 +133,54 @@ export function ProductDetailPanel({
                   <div className="h-full w-full bg-[var(--panel-subtle)]" />
                 )}
               </div>
-
             </div>
 
-            <div className="relative h-[186px] max-[1180px]:h-[148px] max-[960px]:h-auto max-[960px]:grid max-[960px]:gap-3">
-              <button
-                type="button"
-                className={`${primaryButtonClass} absolute left-0 top-[12px] min-h-[46px] w-full rounded-[12px] px-4 disabled:cursor-not-allowed disabled:opacity-50 max-[960px]:static`}
-                onClick={onCreateNewProduct}
-                disabled={saveBusy || deleteBusy || (selectedProduct && selectedProduct.code === "DRAFT-NEW")}
-              >
-                เพิ่มสินค้าใหม่
-              </button>
-
-              <div
-                className={
-                  selectedProduct.trackStock
-                    ? "absolute left-1/2 top-[92px] inline-grid w-fit -translate-x-1/2 justify-items-center gap-3 text-[0.78rem] font-bold text-[var(--success-bright)] max-[1180px]:top-[56px] max-[960px]:static max-[960px]:left-auto max-[960px]:top-auto max-[960px]:w-full max-[960px]:translate-x-0"
-                    : "absolute left-1/2 top-[92px] inline-grid w-fit -translate-x-1/2 justify-items-center gap-3 text-[0.78rem] font-bold text-[var(--foreground-soft)] max-[1180px]:top-[56px] max-[960px]:static max-[960px]:left-auto max-[960px]:top-auto max-[960px]:w-full max-[960px]:translate-x-0"
-                }
-              >
-                <span className="stock-toggle-uiverse">
-                  <span className="check" aria-hidden="true">
-                    <input
-                      id={`stock-toggle-${selectedProduct.id}`}
-                      type="checkbox"
-                      checked={selectedProduct.trackStock}
-                      onChange={onToggleStock}
-                      aria-label={selectedProduct.trackStock ? "ปิดสต๊อก" : "เปิดสต๊อก"}
-                    />
-                    <label htmlFor={`stock-toggle-${selectedProduct.id}`} />
-                  </span>
-                </span>
-                <span className={selectedProduct.trackStock ? "inline-flex whitespace-nowrap items-center gap-2 rounded-none border border-[var(--accent-border)] bg-[var(--accent-surface)] px-3 py-2 text-[var(--accent-text)]" : "inline-flex whitespace-nowrap items-center gap-2 rounded-none border border-[var(--border-strong)] bg-[var(--surface-muted)] px-3 py-2 text-[var(--foreground-soft)]"}>
-                  {selectedProduct.trackStock ? "ทำการเปิดสต๊อก" : "ทำการปิดสต๊อก"}
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
-                    <path fill="none" stroke="currentColor" strokeLinejoin="round" d="M1.583 4.5L8 1.583L14.417 4.5m-12.834 0L8 7.417M1.583 4.5v6.417L8 14.417m0-7L14.417 4.5M8 7.417v7M14.417 4.5v6.417L8 14.417M10.5 13V9.5m2 2.5V8.5" />
-                  </svg>
-                </span>
+            <div className="flex h-[186px] w-[180px] flex-col justify-between justify-self-end pt-6 max-[1180px]:h-[148px] max-[720px]:h-auto max-[720px]:w-full max-[720px]:gap-4">
+              <div className="grid w-full justify-items-center pt-5">
+                <div
+                  className={
+                    selectedProduct.trackStock
+                      ? "grid w-full justify-items-center gap-3 text-[0.78rem] font-bold text-[var(--success-bright)]"
+                      : "grid w-full justify-items-center gap-3 text-[0.78rem] font-bold text-[var(--foreground-soft)]"
+                  }
+                >
+                  <button
+                    type="button"
+                    className={`${primaryButtonClass} min-h-[40px] w-full rounded-none px-4 text-[0.95rem] disabled:cursor-not-allowed disabled:opacity-50`}
+                    onClick={onCreateNewProduct}
+                    disabled={saveBusy || deleteBusy || selectedProduct?.code === "DRAFT-NEW"}
+                  >
+                    เพิ่มสินค้าใหม่
+                  </button>
+                </div>
               </div>
+
+              <Field label="ต้นทุน/ชิ้น">
+                <input
+                  type="number"
+                  value={costPerUnitInput}
+                  min="0"
+                  onChange={(event) => {
+                    const value = event.target.value;
+                    setCostPerUnitDraft({ productId: selectedProduct.id, value });
+                    const parsed = Number(value);
+                    if (!Number.isNaN(parsed)) {
+                      onUpdateProduct({ costPerUnit: Math.max(0, parsed) });
+                    }
+                  }}
+                  onBlur={() => {
+                    setCostPerUnitDraft(null);
+                  }}
+                  className={`${inputClass} [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
+                />
+              </Field>
             </div>
           </div>
+        ) : null}
+      </div>
+
+      {selectedProduct ? (
+        <div className="min-h-0 overflow-auto pr-1">
 
           <div className="mt-3 grid gap-[10px]">
             <div className={selectedProduct.trackStock ? "grid grid-cols-[minmax(0,1fr)_minmax(120px,180px)] items-end gap-3 max-[720px]:grid-cols-1" : "grid items-end gap-3"}>
@@ -419,4 +450,3 @@ export function ProductDetailPanel({
     </section>
   );
 }
-

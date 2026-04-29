@@ -45,6 +45,15 @@ function drawBox(ctx: CanvasRenderingContext2D, x: number, y: number, width: num
   ctx.strokeRect(x, y, width, height);
 }
 
+function drawCell(ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, fill?: string) {
+  if (fill) {
+    ctx.fillStyle = fill;
+    ctx.fillRect(x, y, width, height);
+  }
+
+  drawBox(ctx, x, y, width, height);
+}
+
 function reportCanvasHeight(payload: ProfitReportPdfPayload, scale: number) {
   void payload;
   return 297 * scale;
@@ -110,16 +119,19 @@ export async function createProfitReportPdfBlob(payload: ProfitReportPdfPayload)
     { label: "ต้นทุนรวม", width: 0.14, align: "right" as CanvasTextAlign },
     { label: "กำไร", width: 0.14, align: "right" as CanvasTextAlign },
   ];
-  const columnXs: number[] = [left];
-  for (let index = 0; index < columns.length - 1; index += 1) {
-    columnXs.push(columnXs[index] + contentWidth * columns[index].width);
-  }
+  const columnWidths = columns.map((column) => contentWidth * column.width);
+  const columnXs = columns.reduce<number[]>((starts, _column, index) => {
+    if (index === 0) {
+      return [left];
+    }
+
+    starts.push(starts[index - 1] + columnWidths[index - 1]);
+    return starts;
+  }, []);
   const headerHeight = 54;
-  drawBox(ctx, left, y, contentWidth, headerHeight);
-  ctx.fillStyle = "#f3f4f6";
-  ctx.fillRect(left + 1, y + 1, contentWidth - 2, headerHeight - 2);
   columns.forEach((column, index) => {
-    const columnWidth = contentWidth * column.width;
+    const columnWidth = columnWidths[index];
+    drawCell(ctx, columnXs[index], y, columnWidth, headerHeight, "#f3f4f6");
     const x = column.align === "right" ? columnXs[index] + columnWidth - 16 : columnXs[index] + 16;
     drawText(ctx, column.label, x, y + 16, { align: column.align, size: 19, bold: true });
   });
@@ -133,8 +145,10 @@ export async function createProfitReportPdfBlob(payload: ProfitReportPdfPayload)
   const visibleRows = rows.slice(0, Math.max(1, Math.floor((tableBottom - y) / rowHeight)));
   for (const row of visibleRows) {
     const rowTop = y;
-    drawBox(ctx, left, rowTop, contentWidth, rowHeight);
-    const nameLines = wrapCanvasText(ctx, row.name, contentWidth * columns[0].width - 28).slice(0, 2);
+    columns.forEach((_column, index) => {
+      drawCell(ctx, columnXs[index], rowTop, columnWidths[index], rowHeight);
+    });
+    const nameLines = wrapCanvasText(ctx, row.name, columnWidths[0] - 28).slice(0, 2);
     const nameLineHeight = nameLines.length > 1 ? 24 : 25;
     const nameBlockHeight = nameLines.length > 1 ? 45 : 25;
     const nameStartY = rowTop + Math.max(10, Math.floor((rowHeight - nameBlockHeight) / 2));
@@ -151,9 +165,8 @@ export async function createProfitReportPdfBlob(payload: ProfitReportPdfPayload)
       formatBaht(row.profit),
     ];
     values.forEach((value, index) => {
-      const column = columns[index + 1];
-      const columnWidth = contentWidth * column.width;
-      drawText(ctx, value, columnXs[index + 1] + columnWidth - 16, rowTop + Math.max(10, Math.floor((rowHeight - 23) / 2)), { align: "right", size: 20, bold: index >= 3 });
+      const columnIndex = index + 1;
+      drawText(ctx, value, columnXs[columnIndex] + columnWidths[columnIndex] - 16, rowTop + Math.max(10, Math.floor((rowHeight - 23) / 2)), { align: "right", size: 20, bold: index >= 3 });
     });
     y += rowHeight;
   }

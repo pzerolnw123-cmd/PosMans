@@ -61,6 +61,7 @@ export function SalesWorkspaceClient() {
           name: item.product.name,
           category: item.product.category,
           price: item.product.price,
+          costPerUnit: item.product.costPerUnit,
           status: item.product.status,
           trackStock: item.product.trackStock,
           stockQuantity: item.product.stockQuantity,
@@ -135,6 +136,7 @@ export function SalesWorkspaceClient() {
               product: {
                 ...item.product!,
                 status: item.product!.status || "พร้อมขาย",
+                costPerUnit: normalizeStockValue(item.product!.costPerUnit),
                 trackStock: item.product!.trackStock ?? false,
                 stockQuantity: normalizeStockValue(item.product!.stockQuantity),
                 lowStockThreshold: normalizeStockValue(item.product!.lowStockThreshold),

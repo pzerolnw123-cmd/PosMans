@@ -14,6 +14,7 @@ export type ProductItem = {
   name: string;
   category: Exclude<ProductCategory, "ทั้งหมด">;
   price: number;
+  costPerUnit: number;
   status: ProductStatus;
   trackStock: boolean;
   stockQuantity: number;
@@ -66,6 +67,7 @@ export function makeNewProduct(): ProductItem {
     name: "",
     category: "อาหาร",
     price: 0,
+    costPerUnit: 0,
     status: "พร้อมขาย",
     trackStock: false,
     stockQuantity: 0,

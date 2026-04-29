@@ -92,20 +92,20 @@ export function SalesCartPanel({ cartPulse, itemCount, cartItems, cartScrollMetr
                         </span>
                       </div>
                       <div className="flex items-center justify-between gap-2">
-                        <div className="inline-flex h-8 items-center rounded-[10px] border border-[var(--border)] bg-[var(--surface-muted)]">
+                        <div className="inline-flex h-8 select-none items-center overflow-hidden rounded-[10px] border border-[var(--border)] bg-[var(--surface-muted)]">
                           <button
                             type="button"
-                            className="grid h-8 w-8 place-items-center text-[1rem] font-bold text-[var(--foreground)] transition hover:bg-[var(--overlay-white-06)] disabled:cursor-not-allowed disabled:text-[var(--foreground-soft)] disabled:opacity-45 disabled:hover:bg-transparent"
+                            className="grid h-8 w-8 cursor-pointer place-items-center text-[1rem] font-bold leading-none text-[var(--foreground)] transition hover:bg-[var(--overlay-white-06)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-soft)] disabled:cursor-not-allowed disabled:text-[var(--foreground-soft)] disabled:opacity-45 disabled:hover:bg-transparent"
                             disabled={item.quantity <= 1}
                             onClick={() => changeQuantity(item.product.id, -1)}
                             aria-label={`ลดจำนวน ${item.product.name}`}
                           >
                             -
                           </button>
-                          <span className="grid h-8 min-w-8 place-items-center text-[0.85rem] font-bold text-[var(--foreground)]">{item.quantity}</span>
+                          <span className="grid h-8 min-w-8 cursor-default place-items-center px-1 text-[0.85rem] font-bold leading-none text-[var(--foreground)]">{item.quantity}</span>
                           <button
                             type="button"
-                            className="grid h-8 w-8 place-items-center text-[1rem] font-bold text-[var(--foreground)] transition hover:bg-[var(--overlay-white-06)] disabled:cursor-not-allowed disabled:text-[var(--foreground-soft)] disabled:opacity-45 disabled:hover:bg-transparent"
+                            className="grid h-8 w-8 cursor-pointer place-items-center text-[1rem] font-bold leading-none text-[var(--foreground)] transition hover:bg-[var(--overlay-white-06)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-soft)] disabled:cursor-not-allowed disabled:text-[var(--foreground-soft)] disabled:opacity-45 disabled:hover:bg-transparent"
                             disabled={item.quantity >= stockLimit(item.product)}
                             onClick={() => handleAddToCart(item.product)}
                             aria-label={`เพิ่มจำนวน ${item.product.name}`}

@@ -15,9 +15,10 @@ import {
   uploadBlobToR2,
 } from "@/components/product-management-studio/lib";
 import type { CropDraft } from "@/components/product-management-studio/types";
-import { ensureCsrfToken } from "@/lib/csrf";
+import { fetchWithCsrfRetry } from "@/lib/csrf";
 import type { OwnerLogoContextValue } from "./shared";
 import {
+  activeGhostButtonClass,
   logoFileTypes,
   maxLogoFileSize,
   primaryButtonClass,
@@ -44,10 +45,12 @@ function useOwnerLogo() {
 export function OwnerLogoProvider({ children, initialLogoUrl = "" }: { children: ReactNode; initialLogoUrl?: string | null }) {
   const normalizedInitialLogoUrl = initialLogoUrl || "";
   const [previewUrl, setPreviewUrl] = useState(normalizedInitialLogoUrl);
+  const [savedLogoUrl, setSavedLogoUrl] = useState(normalizedInitialLogoUrl);
   const [saved, setSaved] = useState(Boolean(normalizedInitialLogoUrl));
 
   useEffect(() => {
     setPreviewUrl(normalizedInitialLogoUrl);
+    setSavedLogoUrl(normalizedInitialLogoUrl);
     setSaved(Boolean(normalizedInitialLogoUrl));
   }, [normalizedInitialLogoUrl]);
 
@@ -61,11 +64,12 @@ export function OwnerLogoProvider({ children, initialLogoUrl = "" }: { children:
 
   function setSavedLogo(url: string) {
     setPreviewUrl(url);
+    setSavedLogoUrl(url);
     setSaved(true);
   }
 
   return (
-    <OwnerLogoContext.Provider value={{ previewUrl, setPreviewUrl, saved, setSaved, setSavedLogo }}>
+    <OwnerLogoContext.Provider value={{ previewUrl, setPreviewUrl, savedLogoUrl, saved, setSaved, setSavedLogo }}>
       {children}
     </OwnerLogoContext.Provider>
   );
@@ -126,7 +130,7 @@ export function OwnerLogoStatusPreview() {
 export function OwnerLogoClient({ compact = false }: { compact?: boolean }) {
   const { setShellAlert } = useBackofficeShellAlert();
   const router = useRouter();
-  const { previewUrl, setPreviewUrl, saved, setSaved, setSavedLogo } = useOwnerLogo();
+  const { previewUrl, setPreviewUrl, savedLogoUrl, saved, setSaved, setSavedLogo } = useOwnerLogo();
   const [fileName, setFileName] = useState("");
   const [cropDraft, setCropDraft] = useState<CropDraft | null>(null);
   const [cropZoom, setCropZoom] = useState(1);
@@ -228,6 +232,13 @@ export function OwnerLogoClient({ compact = false }: { compact?: boolean }) {
     setCropDraft(null);
   }
 
+  function handleLogoCancel() {
+    setPreviewUrl(savedLogoUrl);
+    setSaved(Boolean(savedLogoUrl));
+    setPendingLogoBlob(null);
+    setFileName("");
+  }
+
   async function handleLogoSave() {
     try {
       if (!previewUrl || !pendingLogoBlob) {
@@ -242,13 +253,10 @@ export function OwnerLogoClient({ compact = false }: { compact?: boolean }) {
         throw new Error("ยังไม่สามารถเตรียมรูปโลโก้ได้ กรุณาลองอีกครั้ง");
       }
 
-      const csrfToken = await ensureCsrfToken({ forceRefresh: true });
-      const response = await fetch("/api/auth/owner-logo", {
+      const response = await fetchWithCsrfRetry("/api/auth/owner-logo", {
         method: "PATCH",
-        credentials: "same-origin",
         headers: {
           "content-type": "application/json",
-          "x-csrf-token": csrfToken || "",
         },
         body: JSON.stringify({
           logoUrl: signedUpload.publicUrl,
@@ -309,10 +317,15 @@ export function OwnerLogoClient({ compact = false }: { compact?: boolean }) {
           )}
           <input className="sr-only" type="file" accept="image/png,image/jpeg,image/webp" onChange={handleLogoChange} />
         </label>
-        {previewUrl ? (
-          <button type="button" className={`${primaryButtonClass} min-h-[38px] text-[0.86rem]`} onClick={handleLogoSave}>
-            บันทึกรูปภาพโลโก้ร้าน
-          </button>
+        {previewUrl && !saved ? (
+          <div className="flex flex-wrap gap-3 max-[900px]:[&>*]:w-full">
+            <button type="button" className={`${primaryButtonClass} min-h-[38px] text-[0.86rem]`} onClick={handleLogoSave}>
+              บันทึกรูปภาพโลโก้ร้าน
+            </button>
+            <button type="button" className={`${activeGhostButtonClass} min-h-[38px] text-[0.86rem]`} onClick={handleLogoCancel}>
+              ยกเลิก
+            </button>
+          </div>
         ) : null}
         {cropModal}
       </div>
@@ -339,9 +352,14 @@ export function OwnerLogoClient({ compact = false }: { compact?: boolean }) {
       </div>
 
       {previewUrl && !saved ? (
-        <button type="button" className={`${primaryButtonClass} w-fit max-[900px]:w-full`} onClick={handleLogoSave}>
-          บันทึกรูปภาพโลโก้ร้าน
-        </button>
+        <div className="flex flex-wrap gap-3 max-[900px]:[&>*]:w-full">
+          <button type="button" className={`${primaryButtonClass} w-fit max-[900px]:w-full`} onClick={handleLogoSave}>
+            บันทึกรูปภาพโลโก้ร้าน
+          </button>
+          <button type="button" className={`${activeGhostButtonClass} w-fit max-[900px]:w-full`} onClick={handleLogoCancel}>
+            ยกเลิก
+          </button>
+        </div>
       ) : null}
       {cropModal}
     </div>

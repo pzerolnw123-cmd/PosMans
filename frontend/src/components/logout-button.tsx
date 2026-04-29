@@ -2,7 +2,8 @@
 
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { csrfCookieName, readCookie } from "@/lib/csrf";
+import { fetchWithCsrfRetry } from "@/lib/csrf";
+import { clearStoredOwnerTheme } from "@/lib/owner-theme";
 
 export function LogoutButton() {
   const router = useRouter();
@@ -13,12 +14,11 @@ export function LogoutButton() {
       type="button"
       disabled={pending}
       onClick={async () => {
-        const csrfToken = readCookie(csrfCookieName);
-        await fetch("/api/auth/logout", {
+        await fetchWithCsrfRetry("/api/auth/logout", {
           method: "POST",
-          credentials: "same-origin",
-          headers: csrfToken ? { "x-csrf-token": csrfToken } : undefined,
         });
+
+        clearStoredOwnerTheme();
 
         startTransition(() => {
           router.push("/login");

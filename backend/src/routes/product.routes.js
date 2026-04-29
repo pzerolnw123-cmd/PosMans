@@ -137,6 +137,7 @@ router.patch("/:productId", requireTrustedOrigin, requireCsrf, requireStoreRole(
           ...(parsed.name !== undefined ? { name: parsed.name } : {}),
           ...(parsed.category !== undefined ? { category: parsed.category } : {}),
           ...(parsed.price !== undefined ? { price: parsed.price } : {}),
+          ...(parsed.costPerUnit !== undefined ? { costPerUnit: parsed.costPerUnit } : {}),
           ...(parsed.status !== undefined ? { status: parsed.status } : {}),
           ...(parsed.trackStock !== undefined ? { trackStock: parsed.trackStock } : {}),
           ...(parsed.stockQuantity !== undefined || parsed.trackStock !== undefined ? { stockQuantity: nextStockQuantity } : {}),
