@@ -81,7 +81,7 @@ export function ProductDetailPanel({
   const isSaveDisabled = saveBusy || deleteBusy || !isDirty || !selectedProduct?.name?.trim() || (selectedProduct?.price ?? 0) <= 0 || costInvalid || stockInvalid;
 
   return (
-    <section className="grid w-[calc(100%+22px)] min-h-full grid-rows-[auto_minmax(0,1fr)] overflow-hidden rounded-none border border-[var(--border)] bg-[var(--panel-strong)] px-5 py-5 shadow-[var(--shadow-soft)] backdrop-blur-[14px] max-[1366px]:w-full max-[1180px]:px-4 max-[1180px]:py-4 max-[640px]:px-3.5 max-[640px]:py-3.5">
+    <section className="grid w-[calc(100%+22px)] content-start gap-[10px] overflow-visible rounded-none border border-[var(--border)] bg-[var(--panel-strong)] px-5 py-5 shadow-[var(--shadow-soft)] backdrop-blur-[14px] max-[1366px]:w-full max-[1180px]:px-4 max-[1180px]:py-4 max-[640px]:px-3.5 max-[640px]:py-3.5">
       <div className="grid gap-[10px]">
         <div className="flex items-start justify-between gap-3 max-[720px]:flex-col max-[720px]:items-stretch">
           <div>
@@ -91,30 +91,28 @@ export function ProductDetailPanel({
           </h2>
           </div>
           {selectedProduct ? (
-            <div className="grid w-[180px] translate-y-5 justify-items-center gap-3 max-[720px]:w-full">
+            <div className="relative z-20 grid w-[180px] translate-y-5 justify-items-center gap-3 max-[720px]:w-full">
               <span className={selectedProduct.trackStock ? "inline-flex min-h-[40px] w-full whitespace-nowrap items-center justify-center gap-2 rounded-none border border-[var(--accent-border)] bg-[var(--accent-surface)] px-3 py-2 text-[0.78rem] font-bold text-[var(--accent-text)]" : "inline-flex min-h-[40px] w-full whitespace-nowrap items-center justify-center gap-2 rounded-none border border-[var(--border-strong)] bg-[var(--surface-muted)] px-3 py-2 text-[0.78rem] font-bold text-[var(--foreground-soft)]"}>
                 {selectedProduct.trackStock ? "ทำการเปิดสต๊อก" : "ทำการปิดสต๊อก"}
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
                   <path fill="none" stroke="currentColor" strokeLinejoin="round" d="M1.583 4.5L8 1.583L14.417 4.5m-12.834 0L8 7.417M1.583 4.5v6.417L8 14.417m0-7L14.417 4.5M8 7.417v7M14.417 4.5v6.417L8 14.417M10.5 13V9.5m2 2.5V8.5" />
                 </svg>
               </span>
-              <span className="stock-toggle-uiverse">
-                <span className="check" aria-hidden="true">
-                  <input
-                    id={`stock-toggle-${selectedProduct.id}`}
-                    type="checkbox"
-                    checked={selectedProduct.trackStock}
-                    onChange={onToggleStock}
-                    aria-label={selectedProduct.trackStock ? "ปิดสต๊อก" : "เปิดสต๊อก"}
-                  />
-                  <label htmlFor={`stock-toggle-${selectedProduct.id}`} />
-                </span>
-              </span>
+              <button
+                type="button"
+                className="stock-toggle-button"
+                role="switch"
+                aria-checked={selectedProduct.trackStock}
+                aria-label={selectedProduct.trackStock ? "ปิดสต๊อก" : "เปิดสต๊อก"}
+                onClick={onToggleStock}
+              >
+                <span aria-hidden="true" />
+              </button>
             </div>
           ) : null}
         </div>
         {selectedProduct ? (
-          <div className="grid grid-cols-[minmax(0,312px)_180px] items-stretch gap-4 max-[720px]:grid-cols-1">
+          <div className="relative z-0 -mt-3 grid grid-cols-[minmax(0,312px)_180px] items-stretch gap-4 max-[720px]:grid-cols-1">
             <div className="min-w-0 max-[720px]:w-full">
               <div className="h-[186px] w-full overflow-hidden rounded-[14px] border border-[var(--border)] bg-[var(--panel-subtle)] max-[1180px]:h-[148px] max-[720px]:h-[186px]">
                 {selectedProduct.imageUrl && canUseNextImage(selectedProduct.imageUrl) ? (
@@ -180,7 +178,7 @@ export function ProductDetailPanel({
       </div>
 
       {selectedProduct ? (
-        <div className="min-h-0 overflow-auto pr-1">
+        <div className="-mt-3 pr-1">
 
           <div className="mt-3 grid gap-[10px]">
             <div className={selectedProduct.trackStock ? "grid grid-cols-[minmax(0,1fr)_minmax(120px,180px)] items-end gap-3 max-[720px]:grid-cols-1" : "grid items-end gap-3"}>
