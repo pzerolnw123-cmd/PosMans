@@ -5,6 +5,10 @@
     "frontend",
     "backend"
   ],
+  "overrides": {
+    "@hono/node-server": "1.19.13",
+    "postcss": "8.5.10"
+  },
   "scripts": {
     "dev:frontend": "npm --prefix frontend run dev",
     "dev:backend": "npm --prefix backend run dev",
