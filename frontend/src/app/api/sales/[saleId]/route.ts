@@ -6,5 +6,5 @@ type RouteContext = {
 
 export async function GET(request: Request, context: RouteContext) {
   const { saleId } = await context.params;
-  return proxyBackendRoute(request, `/api/sales/${saleId}`, { refererPath: "/owner/receipts" });
+  return proxyBackendRoute(request, `/api/sales/${encodeURIComponent(saleId)}`, { refererPath: "/owner/receipts" });
 }

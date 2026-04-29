@@ -18,6 +18,7 @@ if (fs.existsSync(envPath)) {
 const baseURL = process.env.PLAYWRIGHT_BASE_URL || "http://localhost:3000";
 const backendURL = process.env.PLAYWRIGHT_BACKEND_URL || "http://127.0.0.1:4000";
 const skipWebServer = process.env.PLAYWRIGHT_SKIP_WEB_SERVER === "1";
+const smokeOnly = process.env.PLAYWRIGHT_SMOKE_ONLY === "1";
 const hasOwnerCredentials =
   Boolean(process.env.E2E_OWNER_USERNAME) && Boolean(process.env.E2E_OWNER_PASSWORD) && Boolean(process.env.E2E_OWNER_PIN);
 const frontendUrl = new URL(baseURL);
@@ -29,6 +30,31 @@ const frontendCommand =
   process.env.PLAYWRIGHT_FRONTEND_MODE === "start"
     ? `npm run start -- --hostname ${frontendHost} --port ${frontendPort}`
     : `npm run dev -- --hostname ${frontendHost} --port ${frontendPort}`;
+const backendServer = {
+  command: "npm --prefix ../backend run start",
+  url: `${backendURL}/health`,
+  env: {
+    ...process.env,
+    NODE_ENV: process.env.NODE_ENV || "test",
+    PORT: backendPort,
+    FRONTEND_URL: baseURL,
+    DATABASE_URL: process.env.DATABASE_URL || "postgresql://e2e:e2e@localhost:5432/posmans_e2e",
+    DIRECT_DATABASE_URL: process.env.DIRECT_DATABASE_URL || "postgresql://e2e:e2e@localhost:5432/posmans_e2e",
+    SESSION_SECRET: process.env.SESSION_SECRET || "e2e-smoke-session-secret-at-least-32-chars",
+  },
+  reuseExistingServer: !process.env.CI,
+  timeout: 60_000,
+};
+const frontendServer = {
+  command: frontendCommand,
+  url: baseURL,
+  env: {
+    ...process.env,
+    BACKEND_URL: backendURL,
+  },
+  reuseExistingServer: !process.env.CI,
+  timeout: 120_000,
+};
 
 export default defineConfig({
   testDir: "./e2e",
@@ -50,29 +76,7 @@ export default defineConfig({
       use: { ...devices["Desktop Chrome"] },
     },
   ],
-  webServer: skipWebServer || !hasOwnerCredentials
+  webServer: skipWebServer || (!hasOwnerCredentials && !smokeOnly)
     ? undefined
-    : [
-        {
-          command: "npm --prefix ../backend run start",
-          url: `${backendURL}/health`,
-          env: {
-            ...process.env,
-            PORT: backendPort,
-            FRONTEND_URL: baseURL,
-          },
-          reuseExistingServer: !process.env.CI,
-          timeout: 60_000,
-        },
-        {
-          command: frontendCommand,
-          url: baseURL,
-          env: {
-            ...process.env,
-            BACKEND_URL: backendURL,
-          },
-          reuseExistingServer: !process.env.CI,
-          timeout: 120_000,
-        },
-      ],
+    : [backendServer, frontendServer],
 });

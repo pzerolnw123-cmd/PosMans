@@ -6,7 +6,8 @@ type RouteContext = {
 
 export async function PATCH(request: Request, context: RouteContext) {
   const { productId } = await context.params;
-  return proxyBackendRoute(request, `/api/products/${productId}`, {
+  const encodedProductId = encodeURIComponent(productId);
+  return proxyBackendRoute(request, `/api/products/${encodedProductId}`, {
     method: "PATCH",
     csrf: true,
     contentType: true,
@@ -17,7 +18,8 @@ export async function PATCH(request: Request, context: RouteContext) {
 
 export async function DELETE(request: Request, context: RouteContext) {
   const { productId } = await context.params;
-  return proxyBackendRoute(request, `/api/products/${productId}`, {
+  const encodedProductId = encodeURIComponent(productId);
+  return proxyBackendRoute(request, `/api/products/${encodedProductId}`, {
     method: "DELETE",
     csrf: true,
     refererPath: "/owner/menu",

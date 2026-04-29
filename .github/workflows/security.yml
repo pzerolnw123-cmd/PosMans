@@ -10,8 +10,10 @@ jobs:
   security:
     runs-on: ubuntu-latest
     env:
+      BACKEND_URL: http://localhost:4000
       DATABASE_URL: postgresql://ci:ci@localhost:5432/posmans_ci
       DIRECT_DATABASE_URL: postgresql://ci:ci@localhost:5432/posmans_ci
+      SESSION_SECRET: ci-smoke-session-secret-at-least-32-chars
 
     steps:
       - name: Checkout
@@ -40,3 +42,18 @@ jobs:
 
       - name: Frontend build
         run: npm run build:frontend
+
+      - name: Production readiness smoke
+        run: npm run security:production
+
+      - name: Frontend build smoke
+        run: npm --prefix frontend run build:smoke
+
+      - name: Install Playwright browser
+        run: npm --prefix frontend run e2e:install
+
+      - name: Frontend e2e smoke
+        env:
+          PLAYWRIGHT_SMOKE_ONLY: "1"
+          PLAYWRIGHT_FRONTEND_MODE: start
+        run: npm --prefix frontend run e2e:smoke
