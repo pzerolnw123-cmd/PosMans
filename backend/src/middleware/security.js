@@ -17,11 +17,11 @@ function requireTrustedOrigin(req, _res, next) {
         return next();
       }
     } catch {
-      throw new AppError("Invalid request origin", 403, { code: "BAD_ORIGIN" });
+      throw new AppError("ไม่สามารถดำเนินการตามคำขอได้ กรุณารีเฟรชหน้าแล้วลองใหม่", 403, { code: "BAD_ORIGIN" });
     }
   }
 
-  return next(new AppError("Invalid request origin", 403, { code: "BAD_ORIGIN" }));
+  return next(new AppError("ไม่สามารถดำเนินการตามคำขอได้ กรุณารีเฟรชหน้าแล้วลองใหม่", 403, { code: "BAD_ORIGIN" }));
 }
 
 function requireCsrf(req, _res, next) {
@@ -29,7 +29,7 @@ function requireCsrf(req, _res, next) {
 
   const allowUnsignedTestToken = env.NODE_ENV === "test" && !String(cookieToken).includes(".");
   if (!cookieToken || !headerToken || cookieToken !== headerToken || (!allowUnsignedTestToken && !isValidCsrfToken(cookieToken))) {
-    return next(new AppError("CSRF token mismatch", 403, { code: "CSRF_MISMATCH" }));
+    return next(new AppError("เซสชันของหน้านี้หมดอายุ กรุณารีเฟรชหน้าแล้วลองใหม่", 403, { code: "CSRF_MISMATCH" }));
   }
 
   return next();

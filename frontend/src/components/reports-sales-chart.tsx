@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { requestJson } from "@/components/product-management-studio/lib";
 import { CalendarPicker } from "@/components/receipt-desk-client/calendar-picker";
-import { Loader } from "@/components/ui-primitives";
+import { LoadingState } from "@/components/ui-primitives";
 
 type ReportRange = "today" | "yesterday" | "7d" | "month";
 
@@ -204,7 +204,11 @@ export function ReportsSalesChart() {
         <div className="relative min-h-[380px] overflow-hidden rounded-none border border-[var(--border)] bg-[var(--panel-subtle)] p-4">
           {loading ? (
             <div className="grid min-h-[348px] place-items-center">
-              <Loader size={58} label="กำลังโหลดกราฟรายงาน" />
+              <LoadingState
+                size={58}
+                label="กำลังโหลดกราฟรายงาน..."
+                description="ระบบกำลังดึงยอดขายตามช่วงเวลาที่เลือก"
+              />
             </div>
           ) : error ? (
             <div className="grid min-h-[348px] place-items-center text-center">
@@ -277,7 +281,7 @@ export function ReportsSalesChart() {
 
           {loading ? (
             <div className="grid min-h-[220px] place-items-center rounded-none border border-[var(--border)] bg-[var(--panel-subtle)]">
-              <Loader size={42} label="กำลังโหลดอันดับสินค้า" />
+              <LoadingState size={42} label="กำลังโหลดอันดับสินค้า..." />
             </div>
           ) : error ? (
             <div className="rounded-none border border-[var(--danger-border)] bg-[var(--danger-soft)] px-4 py-3 text-[0.88rem] font-bold text-[var(--danger-bright)]">โหลดอันดับสินค้าไม่สำเร็จ</div>
@@ -315,7 +319,7 @@ export function ReportsSalesChart() {
 
           {loading ? (
             <div className="grid min-h-[140px] place-items-center rounded-none border border-[var(--border)] bg-[var(--panel-subtle)]">
-              <Loader size={38} label="กำลังโหลดวิธีชำระเงิน" />
+              <LoadingState size={38} label="กำลังโหลดวิธีชำระเงิน..." />
             </div>
           ) : error ? (
             <div className="rounded-none border border-[var(--danger-border)] bg-[var(--danger-soft)] px-4 py-3 text-[0.88rem] font-bold text-[var(--danger-bright)]">โหลดสรุปวิธีชำระเงินไม่สำเร็จ</div>

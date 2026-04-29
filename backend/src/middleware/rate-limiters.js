@@ -6,7 +6,7 @@ const saleCheckoutLimiter = rateLimit({
   max: env.SALE_RATE_LIMIT_MAX,
   standardHeaders: true,
   legacyHeaders: false,
-  message: { error: "Too many checkout attempts. Please wait a moment." },
+  message: { error: "ทำรายการถี่เกินไป กรุณารอสักครู่แล้วลองใหม่" },
 });
 
 const uploadSigningLimiter = rateLimit({
@@ -14,7 +14,7 @@ const uploadSigningLimiter = rateLimit({
   max: env.UPLOAD_RATE_LIMIT_MAX,
   standardHeaders: true,
   legacyHeaders: false,
-  message: { error: "Too many upload requests. Please wait a moment." },
+  message: { error: "อัปโหลดถี่เกินไป กรุณารอสักครู่แล้วลองใหม่" },
 });
 
 module.exports = {

@@ -1,4 +1,4 @@
-﻿import { ghostButtonClass, Loader, secondaryButtonClass, StatusPill } from "@/components/ui-primitives";
+﻿import { ghostButtonClass, LoadingState, secondaryButtonClass, StatusPill } from "@/components/ui-primitives";
 import { ProductImage } from "@/components/product-management-studio/shared";
 import { categoryOptions, formatPrice, type ProductCategory, type ProductItem } from "@/components/product-management-studio/types";
 
@@ -187,10 +187,10 @@ export function ProductListPanel({
 
             {productsLoading && visibleProducts.length === 0 ? (
               <div className="grid place-items-center rounded-[16px] border border-dashed border-[var(--border)] bg-[var(--surface-muted)] px-4 py-6 text-center">
-                <div className="grid gap-3">
-                  <Loader className="mx-auto" label="กำลังโหลดสินค้า" />
-                  <strong className="text-[1rem] tracking-[-0.03em] text-[var(--foreground)]">กำลังโหลดรายการสินค้า...</strong>
-                </div>
+                <LoadingState
+                  label="กำลังโหลดรายการสินค้า..."
+                  description="ระบบกำลังดึงข้อมูลสินค้า"
+                />
               </div>
             ) : null}
 

@@ -28,7 +28,7 @@ async function requireOwnerStoreId(req, res) {
   const storeId = session?.user?.storeId;
 
   if (!storeId) {
-    throw new AppError("Store context is required", 403, { code: "STORE_REQUIRED" });
+    throw new AppError("ไม่สามารถดำเนินการได้ด้วยสิทธิ์ปัจจุบัน", 403, { code: "STORE_REQUIRED" });
   }
 
   return storeId;
@@ -102,7 +102,7 @@ router.get("/:saleId", requireStoreRole(["OWNER"]), async (req, res, next) => {
     });
 
     if (!receipt) {
-      throw new AppError("Receipt not found", 404, { code: "RECEIPT_NOT_FOUND" });
+      throw new AppError("ไม่พบใบเสร็จที่ต้องการ", 404, { code: "RECEIPT_NOT_FOUND" });
     }
 
     res.set("Cache-Control", "no-store");
@@ -177,7 +177,7 @@ router.post("/", saleCheckoutLimiter, requireTrustedOrigin, requireCsrf, require
           );
 
           if (stockUpdates.some((updated) => updated.count !== 1)) {
-            throw new AppError("Some products do not have enough stock", 409, { code: "SALE_INSUFFICIENT_STOCK" });
+            throw new AppError("มีสินค้าบางรายการคงเหลือไม่พอ กรุณาตรวจสอบตะกร้า", 409, { code: "SALE_INSUFFICIENT_STOCK" });
           }
 
           if (stockTrackedItems.length > 0) {
@@ -205,7 +205,7 @@ router.post("/", saleCheckoutLimiter, requireTrustedOrigin, requireCsrf, require
         }
       }
 
-      throw new AppError("Could not allocate sale code", 409, { code: "SALE_CODE_CONFLICT" });
+      throw new AppError("ยังไม่สามารถสร้างบิลได้ กรุณาลองอีกครั้ง", 409, { code: "SALE_CODE_CONFLICT" });
     });
 
     await writeAuditLog({

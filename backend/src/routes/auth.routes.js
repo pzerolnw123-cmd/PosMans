@@ -91,7 +91,7 @@ router.post("/login", requireTrustedOrigin, requireCsrf, ipLoginLimiter, account
         userAgent: req.get("user-agent") || null,
         metadata: { reason: "missing_or_inactive_user", username: normalizedUsername, stage: "password" },
       });
-      return res.status(401).json({ error: "Invalid username or password" });
+      return res.status(401).json({ error: "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง" });
     }
 
     const validPassword = await verifyPassword(parsed.password, user.passwordHash);
@@ -104,7 +104,7 @@ router.post("/login", requireTrustedOrigin, requireCsrf, ipLoginLimiter, account
         userAgent: req.get("user-agent") || null,
         metadata: { reason: "bad_password", username: normalizedUsername, stage: "password" },
       });
-      return res.status(401).json({ error: "Invalid username or password" });
+      return res.status(401).json({ error: "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง" });
     }
 
     const challenge = await createLoginChallenge(user.id);
@@ -131,7 +131,7 @@ router.post("/setup-pin", requireTrustedOrigin, requireCsrf, pinLimiter, async (
   try {
     const parsed = pinSetupSchema.parse(req.body);
     if (parsed.pin !== parsed.confirmPin) {
-      return res.status(400).json({ error: "PIN confirmation does not match." });
+      return res.status(400).json({ error: "PIN ทั้งสองชุดไม่ตรงกัน" });
     }
 
     const challengeToken = req.cookies?.[LOGIN_CHALLENGE_COOKIE_NAME];
@@ -139,18 +139,18 @@ router.post("/setup-pin", requireTrustedOrigin, requireCsrf, pinLimiter, async (
 
     if (!challenge) {
       clearLoginChallengeCookie(res);
-      return res.status(401).json({ error: "Login challenge expired. Please sign in again." });
+      return res.status(401).json({ error: "เซสชันเข้าสู่ระบบหมดอายุ กรุณาเข้าสู่ระบบใหม่" });
     }
 
     const user = challenge.user;
     if (!user || !user.isActive || (user.storeRole && (!user.store || !user.store.isActive))) {
       await deleteLoginChallenge(challengeToken);
       clearLoginChallengeCookie(res);
-      return res.status(401).json({ error: "Account is not available." });
+      return res.status(401).json({ error: "ไม่สามารถใช้งานบัญชีนี้ได้" });
     }
 
     if (user.pinHash) {
-      return res.status(409).json({ error: "PIN already exists for this account." });
+      return res.status(409).json({ error: "บัญชีนี้ตั้งค่า PIN แล้ว" });
     }
 
     const newPinHash = await hashPin(parsed.pin);
@@ -202,18 +202,18 @@ router.post("/verify-pin", requireTrustedOrigin, requireCsrf, pinLimiter, async 
 
     if (!challenge) {
       clearLoginChallengeCookie(res);
-      return res.status(401).json({ error: "Login challenge expired. Please sign in again." });
+      return res.status(401).json({ error: "เซสชันเข้าสู่ระบบหมดอายุ กรุณาเข้าสู่ระบบใหม่" });
     }
 
     const user = challenge.user;
     if (!user || !user.isActive || (user.storeRole && (!user.store || !user.store.isActive))) {
       await deleteLoginChallenge(challengeToken);
       clearLoginChallengeCookie(res);
-      return res.status(401).json({ error: "Account is not available." });
+      return res.status(401).json({ error: "ไม่สามารถใช้งานบัญชีนี้ได้" });
     }
 
     if (!user.pinHash) {
-      return res.status(409).json({ error: "PIN setup is required for this account." });
+      return res.status(409).json({ error: "ต้องตั้งค่า PIN ก่อนเข้าใช้งาน" });
     }
 
     const validPin = await verifyPin(parsed.pin, user.pinHash);
@@ -226,7 +226,7 @@ router.post("/verify-pin", requireTrustedOrigin, requireCsrf, pinLimiter, async 
         userAgent: req.get("user-agent") || null,
         metadata: { reason: "bad_pin", username: user.username, stage: "pin" },
       });
-      return res.status(401).json({ error: "Invalid PIN" });
+      return res.status(401).json({ error: "PIN ไม่ถูกต้อง" });
     }
 
     await deleteLoginChallenge(challengeToken);
@@ -315,11 +315,11 @@ router.patch("/password", requireTrustedOrigin, requireCsrf, requireAuth, async 
   try {
     const parsed = passwordChangeSchema.parse(req.body);
     if (parsed.newPassword !== parsed.confirmPassword) {
-      return res.status(400).json({ error: "Password confirmation does not match." });
+      return res.status(400).json({ error: "รหัสผ่านใหม่ทั้งสองช่องไม่ตรงกัน" });
     }
 
     if (parsed.currentPassword === parsed.newPassword) {
-      return res.status(400).json({ error: "New password must be different from the current password." });
+      return res.status(400).json({ error: "รหัสผ่านใหม่ต้องไม่ซ้ำกับรหัสผ่านเดิม" });
     }
 
     const user = await prisma.user.findUnique({
@@ -328,7 +328,7 @@ router.patch("/password", requireTrustedOrigin, requireCsrf, requireAuth, async 
     });
 
     if (!user || !user.isActive) {
-      return res.status(401).json({ error: "Unauthorized" });
+      return res.status(401).json({ error: "กรุณาเข้าสู่ระบบอีกครั้ง" });
     }
 
     const validPassword = await verifyPassword(parsed.currentPassword, user.passwordHash);

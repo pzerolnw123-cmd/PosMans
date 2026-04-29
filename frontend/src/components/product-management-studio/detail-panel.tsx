@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import { dangerButtonClass, inputClass, Loader, primaryButtonClass, secondaryButtonClass, selectClass, StatusPill, successButtonClass, whiteButtonClass } from "@/components/ui-primitives";
+import { dangerButtonClass, inputClass, Loader, LoadingState, primaryButtonClass, secondaryButtonClass, selectClass, StatusPill, successButtonClass, whiteButtonClass } from "@/components/ui-primitives";
 import { canUseNextImage, Field } from "@/components/product-management-studio/shared";
 import type { ProductItem } from "@/components/product-management-studio/types";
 
@@ -390,11 +390,19 @@ export function ProductDetailPanel({
       ) : (
         <div className="mt-4 grid place-items-center rounded-[16px] border border-dashed border-[var(--border)] bg-[var(--surface-muted)] p-6 text-center">
           <div className="grid gap-3">
-            {productsLoading ? <Loader className="mx-auto" label="กำลังโหลดสินค้า" /> : null}
-            <strong className="text-[1.08rem] tracking-[-0.03em] text-[var(--foreground)]">{productsLoading ? "กำลังโหลดสินค้า..." : "ยังไม่มีสินค้าในรายการ"}</strong>
-            <p className="m-0 text-[0.92rem] leading-[1.6] text-[var(--foreground-soft)]">
-              {productsLoading ? "ระบบกำลังดึงข้อมูลสินค้าจาก backend" : "เริ่มต้นด้วยการเพิ่มสินค้าใหม่ แล้วระบบจะเปิดฟอร์มแก้ไขให้อัตโนมัติ"}
-            </p>
+            {productsLoading ? (
+              <LoadingState
+                label="กำลังโหลดสินค้า..."
+                description="ระบบกำลังดึงข้อมูลสินค้า"
+              />
+            ) : (
+              <>
+                <strong className="text-[1.08rem] tracking-[-0.03em] text-[var(--foreground)]">ยังไม่มีสินค้าในรายการ</strong>
+                <p className="m-0 text-[0.92rem] leading-[1.6] text-[var(--foreground-soft)]">
+                  เริ่มต้นด้วยการเพิ่มสินค้าใหม่ แล้วระบบจะเปิดฟอร์มแก้ไขให้อัตโนมัติ
+                </p>
+              </>
+            )}
             {!productsLoading ? (
               <button
                 type="button"

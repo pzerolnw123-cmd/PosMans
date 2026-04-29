@@ -39,6 +39,9 @@ enum AuditAction {
   STORE_PAYMENT_SETTINGS_UPDATED
   SALE_CREATED
   SALE_CANCELLED
+  CUSTOMER_DISPLAY_CREATED
+  CUSTOMER_DISPLAY_UPDATED
+  CUSTOMER_DISPLAY_REVOKED
 }
 
 enum InventoryMovementType {
@@ -61,6 +64,12 @@ enum PaymentMethod {
   CARD
   TRANSFER
   OTHER
+}
+
+enum CustomerDisplayStatus {
+  IDLE
+  PAYMENT
+  SUCCESS
 }
 
 enum StorePromptPayRecipientType {
@@ -95,6 +104,7 @@ model Store {
   products        Product[]
   saleOrders      SaleOrder[]
   inventoryMovements InventoryMovement[]
+  customerDisplaySessions CustomerDisplaySession[]
 }
 
 model Product {
@@ -208,6 +218,28 @@ model InventoryMovement {
   @@index([storeId, createdAt])
   @@index([productId, createdAt])
   @@index([referenceType, referenceId])
+}
+
+model CustomerDisplaySession {
+  id              String                @id @default(cuid())
+  name            String
+  publicTokenHash String                @unique
+  status          CustomerDisplayStatus @default(IDLE)
+  amount          Int                   @default(0)
+  paymentMethod   PaymentMethod?
+  qrDataUrl       String?
+  message         String?
+  saleCode        String?
+  lastSeenAt      DateTime?
+  expiresAt       DateTime?
+  revokedAt       DateTime?
+  createdAt       DateTime              @default(now())
+  updatedAt       DateTime              @updatedAt
+  storeId         String
+  store           Store                 @relation(fields: [storeId], references: [id], onDelete: Cascade)
+
+  @@index([storeId, updatedAt])
+  @@index([revokedAt, expiresAt])
 }
 
 model Session {

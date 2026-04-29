@@ -216,14 +216,14 @@ function bangkokDateRange(dateText) {
 
 function buildOrderItems(mergedItems, products) {
   if (products.length !== mergedItems.length) {
-    throw new AppError("Some products were not found in this store", 404, { code: "SALE_PRODUCT_NOT_FOUND" });
+    throw new AppError("มีสินค้าบางรายการไม่พร้อมสำหรับการขาย กรุณาตรวจสอบตะกร้า", 404, { code: "SALE_PRODUCT_NOT_FOUND" });
   }
 
   const productsById = new Map(products.map((product) => [product.id, product]));
   const orderItems = mergedItems.map((item) => {
     const product = productsById.get(item.productId);
     if (!product || unavailableProductStatuses.has(product.status)) {
-      throw new AppError("Some products are not available for sale", 409, { code: "SALE_PRODUCT_UNAVAILABLE" });
+      throw new AppError("มีสินค้าบางรายการไม่พร้อมสำหรับการขาย กรุณาตรวจสอบตะกร้า", 409, { code: "SALE_PRODUCT_UNAVAILABLE" });
     }
 
     return {
@@ -241,7 +241,7 @@ function buildOrderItems(mergedItems, products) {
 
   const insufficientStockItem = orderItems.find((item) => item.trackStock && item.stockQuantity < item.quantity);
   if (insufficientStockItem) {
-    throw new AppError("Some products do not have enough stock", 409, { code: "SALE_INSUFFICIENT_STOCK" });
+    throw new AppError("มีสินค้าบางรายการคงเหลือไม่พอ กรุณาตรวจสอบตะกร้า", 409, { code: "SALE_INSUFFICIENT_STOCK" });
   }
 
   return orderItems;
@@ -253,11 +253,11 @@ function assertSaleTotals(parsed, orderItems) {
   const maxTax = Math.floor((subtotal * env.MAX_SALE_TAX_BPS) / 10000);
 
   if (parsed.discount > maxDiscount) {
-    throw new AppError("Discount exceeds the configured sale limit", 400, { code: "SALE_BAD_DISCOUNT" });
+    throw new AppError("ส่วนลดเกินกว่าที่ระบบอนุญาต", 400, { code: "SALE_BAD_DISCOUNT" });
   }
 
   if (parsed.tax > maxTax) {
-    throw new AppError("Tax exceeds the configured sale limit", 400, { code: "SALE_BAD_TAX" });
+    throw new AppError("ภาษีหรือค่าธรรมเนียมเกินกว่าที่ระบบอนุญาต", 400, { code: "SALE_BAD_TAX" });
   }
 
   return {

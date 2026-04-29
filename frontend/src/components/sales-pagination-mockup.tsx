@@ -2,7 +2,8 @@
 
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type PointerEvent } from "react";
 import { useRouter } from "next/navigation";
-import { requestProductList } from "@/components/product-management-studio/lib";
+import { readStoredCustomerDisplay } from "@/components/customer-display-session";
+import { requestJson, requestProductList } from "@/components/product-management-studio/lib";
 import { categoryOptions, type ProductCategory, type ProductItem } from "@/components/product-management-studio/types";
 
 type CartItem = {
@@ -21,6 +22,7 @@ type StoredSalesCart = {
 
 import { BasketIcon, CategoryIcon, displaySaleStatus, formatBaht, isProductSellable, normalizeStockValue, salesCartStorageKey, stockLabel, stockLimit } from "@/components/sales-pagination-mockup/helpers";
 import { SalesCartPanel } from "@/components/sales-pagination-mockup/cart-panel";
+import { LoadingState } from "@/components/ui-primitives";
 export function SalesPaginationMockup() {
   const router = useRouter();
   const [products, setProducts] = useState<ProductItem[]>([]);
@@ -112,6 +114,18 @@ export function SalesPaginationMockup() {
       cancelled = true;
     };
   }, [activeCategory, pageIndex]);
+
+  useEffect(() => {
+    const customerDisplay = readStoredCustomerDisplay();
+    if (!customerDisplay) {
+      return;
+    }
+
+    void requestJson(`/api/customer-displays/${encodeURIComponent(customerDisplay.id)}/state`, {
+      method: "PATCH",
+      body: JSON.stringify({ status: "IDLE" }),
+    }).catch(() => undefined);
+  }, []);
 
   useEffect(() => {
     const raw = sessionStorage.getItem(salesCartStorageKey);
@@ -323,16 +337,13 @@ export function SalesPaginationMockup() {
 
           <div className="grid min-h-0 grid-cols-3 content-start items-start gap-4 overflow-visible p-1 max-[900px]:grid-cols-2 max-[520px]:grid-cols-1" aria-label="products">
           {loading ? (
-            Array.from({ length: 6 }).map((_, index) => (
-              <article
-                key={`loading-${index}`}
-                className="grid h-[226px] animate-pulse content-start gap-3 rounded-none border border-[var(--border)] [background:var(--panel-elevated)] p-[14px]"
-              >
-                <div className="h-[96px] w-[118px] rounded-xl border border-[var(--border-subtle)] bg-[var(--panel-subtle)]" />
-                <div className="h-4 w-3/4 rounded bg-[var(--panel-subtle)]" />
-                <div className="h-3 w-1/2 rounded bg-[var(--surface-muted)]" />
-              </article>
-            ))
+            <div className="col-span-full grid min-h-[226px] place-items-center rounded-none border border-dashed border-[var(--border)] bg-[var(--panel-subtle)] px-4 py-8 text-center">
+              <LoadingState
+                size={54}
+                label="กำลังโหลดสินค้า..."
+                description="ระบบกำลังดึงข้อมูลสินค้าในหมวดที่เลือก"
+              />
+            </div>
           ) : products.length > 0 ? (
             products.map((product) => {
               const currentCartQuantity = cartItems.find((item) => item.product.id === product.id)?.quantity ?? 0;

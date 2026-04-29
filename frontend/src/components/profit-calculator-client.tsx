@@ -3,7 +3,7 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type PointerEvent } from "react";
 import { requestJson } from "@/components/product-management-studio/lib";
 import { CalendarPicker } from "@/components/receipt-desk-client/calendar-picker";
-import { Loader, inputClass, secondaryButtonClass } from "@/components/ui-primitives";
+import { LoadingState, inputClass, primaryButtonClass, secondaryButtonClass } from "@/components/ui-primitives";
 
 type ReportRange = "today" | "yesterday" | "7d" | "month";
 
@@ -39,12 +39,46 @@ function parseMoney(value: string) {
   return Number.isFinite(numberValue) && numberValue > 0 ? numberValue : 0;
 }
 
+function escapeHtml(value: string | number) {
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+function downloadBlob(blob: Blob, fileName: string) {
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = fileName;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  window.setTimeout(() => URL.revokeObjectURL(url), 250);
+}
+
+function blobToBase64(blob: Blob) {
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUrl = String(reader.result || "");
+      const [, base64 = ""] = dataUrl.split(",");
+      resolve(base64);
+    };
+    reader.onerror = () => reject(new Error("อ่านไฟล์ PDF ไม่สำเร็จ"));
+    reader.readAsDataURL(blob);
+  });
+}
+
 export function ProfitCalculatorClient() {
   const [range, setRange] = useState<ReportRange>("today");
   const [selectedDate, setSelectedDate] = useState("");
   const [report, setReport] = useState<SalesReportResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [exportMessage, setExportMessage] = useState("");
   const [unitCosts, setUnitCosts] = useState<Record<string, string>>({});
   const [extraCosts, setExtraCosts] = useState({ labor: "", packaging: "", other: "" });
   const [productScrollMetric, setProductScrollMetric] = useState({ top: 0, height: 100, visible: false });
@@ -173,6 +207,182 @@ export function ProfitCalculatorClient() {
   function resetCosts() {
     setUnitCosts({});
     setExtraCosts({ labor: "", packaging: "", other: "" });
+    setExportMessage("");
+  }
+
+  function reportDateLabel() {
+    if (selectedDate) {
+      return selectedDate;
+    }
+
+    return rangeOptions.find((option) => option.value === range)?.label || "วันนี้";
+  }
+
+  function reportPdfFileName() {
+    const datePart = (selectedDate || new Date().toISOString().slice(0, 10)).replace(/[^0-9-]/g, "");
+    const rangePart = selectedDate ? "custom" : range;
+    return `profit-report-${rangePart}-${datePart}.pdf`;
+  }
+
+  function buildExportRows() {
+    return calculation.products.map((product) => {
+      const unitCost = parseMoney(unitCosts[product.name] || "");
+      const totalCost = unitCost * product.quantity;
+      return {
+        name: product.name,
+        quantity: product.quantity,
+        sales: product.sales,
+        unitCost,
+        totalCost,
+        profit: product.sales - totalCost,
+      };
+    });
+  }
+
+  function buildReportHtml() {
+    const rows = buildExportRows();
+    const dateLabel = reportDateLabel();
+    const generatedAt = new Date().toLocaleString("th-TH", { dateStyle: "medium", timeStyle: "short" });
+
+    const productRows = rows
+      .map(
+        (row) => `
+          <tr>
+            <td>${escapeHtml(row.name)}</td>
+            <td class="number">${escapeHtml(row.quantity.toLocaleString("th-TH"))}</td>
+            <td class="number">${escapeHtml(formatBaht(row.sales))}</td>
+            <td class="number">${escapeHtml(formatBaht(row.unitCost))}</td>
+            <td class="number">${escapeHtml(formatBaht(row.totalCost))}</td>
+            <td class="number">${escapeHtml(formatBaht(row.profit))}</td>
+          </tr>
+        `,
+      )
+      .join("");
+
+    return `<!doctype html>
+      <html>
+        <head>
+          <meta charset="utf-8" />
+          <title>รายงานคำนวณกำไร</title>
+          <style>
+            @page { size: A4; margin: 14mm; }
+            * { box-sizing: border-box; }
+            body { font-family: Arial, Tahoma, sans-serif; color: #111827; margin: 0; }
+            h1 { font-size: 24px; margin: 0 0 6px; }
+            p { margin: 0; }
+            .muted { color: #4b5563; font-size: 12px; }
+            .header { border-bottom: 2px solid #111827; padding-bottom: 14px; margin-bottom: 16px; }
+            .summary { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 16px; }
+            .box { border: 1px solid #111827; padding: 10px; min-height: 58px; }
+            .label { display: block; color: #4b5563; font-size: 11px; margin-bottom: 5px; }
+            strong { font-size: 15px; }
+            table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+            th, td { border: 1px solid #111827; padding: 8px; font-size: 12px; text-align: left; }
+            th { background: #f3f4f6; }
+            .number { text-align: right; white-space: nowrap; }
+            .totals { width: 55%; margin-left: auto; margin-top: 16px; }
+            .totals td:first-child { color: #4b5563; }
+            @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1>รายงานคำนวณกำไร</h1>
+            <p class="muted">ช่วงเวลา: ${escapeHtml(dateLabel)} | สร้างเมื่อ: ${escapeHtml(generatedAt)}</p>
+          </div>
+          <div class="summary">
+            <div class="box"><span class="label">ยอดขาย</span><strong>${escapeHtml(formatBaht(calculation.sales))}</strong></div>
+            <div class="box"><span class="label">ต้นทุนรวม</span><strong>${escapeHtml(formatBaht(calculation.totalCost))}</strong></div>
+            <div class="box"><span class="label">กำไรสุทธิ</span><strong>${escapeHtml(formatBaht(calculation.profit))}</strong></div>
+            <div class="box"><span class="label">Margin</span><strong>${escapeHtml(`${calculation.margin.toFixed(1)}%`)}</strong></div>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>สินค้า</th>
+                <th class="number">จำนวน</th>
+                <th class="number">ยอดขาย</th>
+                <th class="number">ต้นทุน/ชิ้น</th>
+                <th class="number">ต้นทุนรวม</th>
+                <th class="number">กำไร</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${productRows || '<tr><td colspan="6">ยังไม่มีข้อมูลสินค้าในช่วงเวลานี้</td></tr>'}
+            </tbody>
+          </table>
+          <table class="totals">
+            <tbody>
+              <tr><td>ต้นทุนสินค้ารวม</td><td class="number"><strong>${escapeHtml(formatBaht(calculation.productCost))}</strong></td></tr>
+              <tr><td>ค่าใช้จ่ายเพิ่ม</td><td class="number"><strong>${escapeHtml(formatBaht(calculation.extraCost))}</strong></td></tr>
+              <tr><td>ต้นทุนเฉลี่ย/ชิ้น</td><td class="number"><strong>${escapeHtml(formatBaht(calculation.averageCost))}</strong></td></tr>
+            </tbody>
+          </table>
+        </body>
+      </html>`;
+  }
+
+  async function handlePrintPdf() {
+    setExportMessage("");
+    const printWindow = window.open("", "_blank", "left=0,top=0,width=960,height=720");
+    if (!printWindow) {
+      setExportMessage("เบราว์เซอร์บล็อกหน้าต่างพิมพ์ กรุณาอนุญาต pop-up สำหรับหน้านี้");
+      return;
+    }
+
+    printWindow.document.open();
+    printWindow.document.write("<!doctype html><title>กำลังสร้าง PDF</title><body style=\"font-family:Arial,sans-serif;margin:24px\">กำลังสร้าง PDF รายงานกำไร...</body>");
+    printWindow.document.close();
+
+    try {
+      const { createProfitReportPdfBlob } = await import("@/components/profit-report-pdf");
+      const generatedAt = new Date().toLocaleString("th-TH", { dateStyle: "medium", timeStyle: "short" });
+      const pdfBlob = await createProfitReportPdfBlob({
+        dateLabel: reportDateLabel(),
+        generatedAt,
+        sales: calculation.sales,
+        totalCost: calculation.totalCost,
+        profit: calculation.profit,
+        margin: calculation.margin,
+        productCost: calculation.productCost,
+        extraCost: calculation.extraCost,
+        averageCost: calculation.averageCost,
+        rows: buildExportRows(),
+      });
+      const pdfBase64 = await blobToBase64(pdfBlob);
+      const response = await fetch("/api/reports/profit.pdf", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          fileName: reportPdfFileName(),
+          pdfBase64,
+        }),
+      });
+
+      if (!response.ok) {
+        const payload = (await response.json().catch(() => null)) as { error?: string } | null;
+        throw new Error(payload?.error || "เตรียม PDF สำหรับพิมพ์ไม่สำเร็จ");
+      }
+
+      const data = (await response.json()) as { url?: string };
+      if (!data.url) {
+        throw new Error("ไม่พบ URL สำหรับเปิด PDF");
+      }
+
+      printWindow.location.href = `${data.url}#zoom=page-width`;
+    } catch (pdfError) {
+      printWindow.close();
+      setExportMessage(pdfError instanceof Error ? pdfError.message : "สร้าง PDF ไม่สำเร็จ กรุณาลองอีกครั้ง");
+    }
+  }
+
+  function handleExportExcel() {
+    setExportMessage("");
+    const html = buildReportHtml();
+    const blob = new Blob([`\uFEFF${html}`], { type: "application/vnd.ms-excel;charset=utf-8" });
+    const datePart = (selectedDate || new Date().toISOString().slice(0, 10)).replace(/[^0-9-]/g, "");
+    downloadBlob(blob, `profit-calculator-${datePart}.xls`);
   }
 
   return (
@@ -236,7 +446,11 @@ export function ProfitCalculatorClient() {
 
           {loading && !report ? (
             <div className="grid min-h-[240px] place-items-center">
-              <Loader size={54} label="กำลังโหลดข้อมูลยอดขาย" />
+              <LoadingState
+                size={54}
+                label="กำลังโหลดข้อมูลยอดขาย..."
+                description="ระบบกำลังดึงยอดขายจริงสำหรับคำนวณกำไร"
+              />
             </div>
           ) : error ? (
             <div className="rounded-none border border-[var(--danger-border)] bg-[var(--danger-soft)] px-4 py-3 text-[var(--danger-bright)]">{error}</div>
@@ -298,7 +512,7 @@ export function ProfitCalculatorClient() {
               ) : null}
               {loading ? (
                 <div className="absolute inset-0 grid place-items-center bg-[color:color-mix(in_srgb,var(--panel-subtle)_82%,transparent)] backdrop-blur-[1px]">
-                  <Loader size={42} label="กำลังอัปเดตข้อมูล" />
+                  <LoadingState size={42} label="กำลังอัปเดตข้อมูล..." />
                 </div>
               ) : null}
             </div>
@@ -307,7 +521,7 @@ export function ProfitCalculatorClient() {
               ยังไม่มียอดขายในช่วงเวลานี้
               {loading ? (
                 <div className="absolute inset-0 grid place-items-center bg-[color:color-mix(in_srgb,var(--panel-subtle)_82%,transparent)] backdrop-blur-[1px]">
-                  <Loader size={42} label="กำลังอัปเดตข้อมูล" />
+                  <LoadingState size={42} label="กำลังอัปเดตข้อมูล..." />
                 </div>
               ) : null}
             </div>
@@ -315,28 +529,28 @@ export function ProfitCalculatorClient() {
         </div>
       </section>
 
-      <aside className="grid h-full min-h-0 gap-[14px] overflow-y-auto rounded-none border border-[var(--border)] bg-[var(--panel-strong)] px-5 py-5 shadow-[var(--shadow-soft)] max-[1280px]:h-fit max-[1280px]:overflow-visible max-[820px]:px-4 max-[820px]:py-4">
+      <aside className="flex h-full min-h-0 flex-col justify-between gap-[10px] overflow-hidden rounded-none border border-[var(--border)] bg-[var(--panel-strong)] px-4 py-4 shadow-[var(--shadow-soft)] max-[1280px]:h-fit max-[1280px]:justify-start max-[1280px]:overflow-visible max-[820px]:px-4 max-[820px]:py-4">
         <div>
           <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[var(--eyebrow)]">Profit Snapshot</p>
-          <h2 className="my-[7px] text-[clamp(1.35rem,2vw,1.9rem)] leading-none tracking-[-0.045em] text-[var(--foreground)]">สรุปกำไร</h2>
-          <p className="m-0 text-[0.88rem] text-[var(--foreground-soft)]">คำนวณจากยอดขายจริงและต้นทุนที่กรอก</p>
+          <h2 className="my-[5px] text-[clamp(1.2rem,1.65vw,1.55rem)] leading-none tracking-[-0.04em] text-[var(--foreground)]">สรุปกำไร</h2>
+          <p className="m-0 text-[0.8rem] leading-[1.35] text-[var(--foreground-soft)]">คำนวณจากยอดขายจริงและต้นทุนที่กรอก</p>
         </div>
 
-        <div className="grid grid-cols-2 gap-[10px]">
+        <div className="grid grid-cols-2 gap-2">
           {[
             ["ยอดขาย", formatBaht(calculation.sales)],
             ["ต้นทุนรวม", formatBaht(calculation.totalCost)],
             ["กำไรสุทธิ", formatBaht(calculation.profit)],
             ["Margin", `${calculation.margin.toFixed(1)}%`],
           ].map(([label, value]) => (
-            <div key={label} className="rounded-none border border-[var(--border)] bg-[var(--surface-muted)] px-3 py-3">
-              <span className="text-[0.76rem] text-[var(--foreground-soft)]">{label}</span>
-              <strong className="mt-1 block text-[1rem] text-[var(--foreground)]">{value}</strong>
+            <div key={label} className="rounded-none border border-[var(--border)] bg-[var(--surface-muted)] px-3 py-2.5">
+              <span className="text-[0.72rem] text-[var(--foreground-soft)]">{label}</span>
+              <strong className="mt-0.5 block text-[0.94rem] text-[var(--foreground)]">{value}</strong>
             </div>
           ))}
         </div>
 
-        <div className="grid gap-3 rounded-none border border-[var(--border)] bg-[var(--panel-subtle)] p-4">
+        <div className="grid gap-2 rounded-none border border-[var(--border)] bg-[var(--panel-subtle)] px-3.5 py-3">
           <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.22em] text-[var(--eyebrow)]">Additional Costs</p>
           {[
             ["labor", "ค่าแรงรวม"],
@@ -344,9 +558,9 @@ export function ProfitCalculatorClient() {
             ["other", "ค่าใช้จ่ายอื่น ๆ"],
           ].map(([key, label]) => (
             <label key={key} className="grid gap-1">
-              <span className="text-[0.82rem] font-bold text-[var(--foreground-soft)]">{label}</span>
+              <span className="text-[0.76rem] font-bold text-[var(--foreground-soft)]">{label}</span>
               <input
-                className={inputClass}
+                className={`${inputClass} h-[38px] px-3 text-[0.9rem]`}
                 inputMode="decimal"
                 value={extraCosts[key as keyof typeof extraCosts]}
                 onChange={(event) => setExtraCosts((current) => ({ ...current, [key]: event.target.value }))}
@@ -356,10 +570,22 @@ export function ProfitCalculatorClient() {
           ))}
         </div>
 
-        <div className="grid gap-2 rounded-none border border-[var(--border)] bg-[var(--surface-muted)] px-4 py-3">
+        <div className="grid gap-1.5 rounded-none border border-[var(--border)] bg-[var(--surface-muted)] px-3.5 py-2.5 text-[0.9rem]">
           <div className="flex justify-between gap-3"><span className="text-[var(--foreground-soft)]">ต้นทุนสินค้ารวม</span><strong>{formatBaht(calculation.productCost)}</strong></div>
           <div className="flex justify-between gap-3"><span className="text-[var(--foreground-soft)]">ค่าใช้จ่ายเพิ่ม</span><strong>{formatBaht(calculation.extraCost)}</strong></div>
           <div className="flex justify-between gap-3"><span className="text-[var(--foreground-soft)]">ต้นทุนเฉลี่ย/ชิ้น</span><strong>{formatBaht(calculation.averageCost)}</strong></div>
+        </div>
+
+        <div className="grid content-start gap-2">
+          <div className="grid grid-cols-2 gap-3 max-[420px]:grid-cols-1">
+            <button type="button" className={`${primaryButtonClass} min-h-[38px] rounded-none px-3 text-[0.86rem]`} onClick={() => void handlePrintPdf()} disabled={loading}>
+              ปริ้น PDF
+            </button>
+            <button type="button" className={`${secondaryButtonClass} min-h-[38px] rounded-none px-3 text-[0.86rem]`} onClick={handleExportExcel} disabled={loading}>
+              Excel
+            </button>
+          </div>
+          {exportMessage ? <p className="m-0 rounded-none border border-[var(--accent-border)] bg-[var(--accent-surface)] px-3 py-2 text-[0.84rem] text-[var(--accent-text)]">{exportMessage}</p> : null}
         </div>
       </aside>
     </div>

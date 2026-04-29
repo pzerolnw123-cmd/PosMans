@@ -102,35 +102,35 @@ const ownerPaymentSettingsSchema = z
   })
   .superRefine((value, context) => {
     if (value.promptPayMobileId && !/^\d+$/.test(value.promptPayMobileId)) {
-      context.addIssue({ code: z.ZodIssueCode.custom, path: ["promptPayMobileId"], message: "Mobile PromptPay ID must contain digits only" });
+      context.addIssue({ code: z.ZodIssueCode.custom, path: ["promptPayMobileId"], message: "กรอกเบอร์พร้อมเพย์เป็นตัวเลขเท่านั้น" });
     }
 
     if (value.promptPayNationalId && !/^\d+$/.test(value.promptPayNationalId)) {
-      context.addIssue({ code: z.ZodIssueCode.custom, path: ["promptPayNationalId"], message: "National ID PromptPay must contain digits only" });
+      context.addIssue({ code: z.ZodIssueCode.custom, path: ["promptPayNationalId"], message: "กรอกเลขพร้อมเพย์เป็นตัวเลขเท่านั้น" });
     }
 
     if (value.promptPayTaxId && !/^\d+$/.test(value.promptPayTaxId)) {
-      context.addIssue({ code: z.ZodIssueCode.custom, path: ["promptPayTaxId"], message: "Tax ID PromptPay must contain digits only" });
+      context.addIssue({ code: z.ZodIssueCode.custom, path: ["promptPayTaxId"], message: "กรอกเลขพร้อมเพย์เป็นตัวเลขเท่านั้น" });
     }
 
     if (value.bankAccountNumber && !/^\d+$/.test(value.bankAccountNumber)) {
-      context.addIssue({ code: z.ZodIssueCode.custom, path: ["bankAccountNumber"], message: "Bank account number must contain digits only" });
+      context.addIssue({ code: z.ZodIssueCode.custom, path: ["bankAccountNumber"], message: "กรอกเลขบัญชีเป็นตัวเลขเท่านั้น" });
     }
 
     if (value.promptPayMobileId && !/^0\d{9}$/.test(value.promptPayMobileId)) {
-      context.addIssue({ code: z.ZodIssueCode.custom, path: ["promptPayMobileId"], message: "Mobile PromptPay ID must be a 10-digit Thai mobile number" });
+      context.addIssue({ code: z.ZodIssueCode.custom, path: ["promptPayMobileId"], message: "เบอร์พร้อมเพย์ต้องเป็นเบอร์มือถือไทย 10 หลัก" });
     }
 
     if (value.promptPayNationalId && !/^\d{13}$/.test(value.promptPayNationalId)) {
-      context.addIssue({ code: z.ZodIssueCode.custom, path: ["promptPayNationalId"], message: "National ID PromptPay must be 13 digits" });
+      context.addIssue({ code: z.ZodIssueCode.custom, path: ["promptPayNationalId"], message: "เลขพร้อมเพย์ต้องมี 13 หลัก" });
     }
 
     if (value.promptPayTaxId && !/^\d{13}$/.test(value.promptPayTaxId)) {
-      context.addIssue({ code: z.ZodIssueCode.custom, path: ["promptPayTaxId"], message: "Tax ID PromptPay must be 13 digits" });
+      context.addIssue({ code: z.ZodIssueCode.custom, path: ["promptPayTaxId"], message: "เลขพร้อมเพย์ต้องมี 13 หลัก" });
     }
 
     if (value.bankAccountNumber && !/^\d{6,20}$/.test(value.bankAccountNumber)) {
-      context.addIssue({ code: z.ZodIssueCode.custom, path: ["bankAccountNumber"], message: "Bank account number must be 6-20 digits" });
+      context.addIssue({ code: z.ZodIssueCode.custom, path: ["bankAccountNumber"], message: "เลขบัญชีต้องมี 6-20 หลัก" });
     }
 
     if (!value.promptPayEnabled) {
@@ -138,23 +138,23 @@ const ownerPaymentSettingsSchema = z
     }
 
     if (value.promptPayRecipientType === "MOBILE" && !value.promptPayMobileId) {
-      context.addIssue({ code: z.ZodIssueCode.custom, path: ["promptPayMobileId"], message: "Mobile PromptPay ID is required when QR PromptPay is enabled" });
+      context.addIssue({ code: z.ZodIssueCode.custom, path: ["promptPayMobileId"], message: "กรอกเบอร์พร้อมเพย์ก่อนเปิดใช้งาน" });
     }
 
     if (value.promptPayRecipientType === "NATIONAL_ID" && !value.promptPayNationalId) {
-      context.addIssue({ code: z.ZodIssueCode.custom, path: ["promptPayNationalId"], message: "National ID PromptPay is required when QR PromptPay is enabled" });
+      context.addIssue({ code: z.ZodIssueCode.custom, path: ["promptPayNationalId"], message: "กรอกเลขพร้อมเพย์ก่อนเปิดใช้งาน" });
     }
 
     if (value.promptPayRecipientType === "TAX_ID" && !value.promptPayTaxId) {
-      context.addIssue({ code: z.ZodIssueCode.custom, path: ["promptPayTaxId"], message: "Tax ID PromptPay is required when QR PromptPay is enabled" });
+      context.addIssue({ code: z.ZodIssueCode.custom, path: ["promptPayTaxId"], message: "กรอกเลขพร้อมเพย์ก่อนเปิดใช้งาน" });
     }
 
     if (value.promptPayRecipientType === "STATIC_QR" && (!value.paymentQrImageUrl || !value.paymentQrUploadedKey)) {
-      context.addIssue({ code: z.ZodIssueCode.custom, path: ["paymentQrImageUrl"], message: "Static QR image is required when this recipient type is selected" });
+      context.addIssue({ code: z.ZodIssueCode.custom, path: ["paymentQrImageUrl"], message: "อัปโหลดรูป QR ก่อนเปิดใช้งาน" });
     }
 
     if (value.promptPayRecipientType === "BANK_ACCOUNT" && (!value.bankName || !value.bankAccountName || !value.bankAccountNumber)) {
-      context.addIssue({ code: z.ZodIssueCode.custom, path: ["bankAccountNumber"], message: "Bank transfer details are required when this recipient type is selected" });
+      context.addIssue({ code: z.ZodIssueCode.custom, path: ["bankAccountNumber"], message: "กรอกข้อมูลบัญชีธนาคารให้ครบก่อนเปิดใช้งาน" });
     }
   });
 
@@ -190,7 +190,7 @@ function ownerUploadPrefix(storeId) {
 
 function assertOwnedUploadedKey(storeId, uploadedKey) {
   if (!uploadedKey.startsWith(ownerUploadPrefix(storeId))) {
-    throw new AppError("Uploaded file does not belong to this store", 403, { code: "UPLOAD_SCOPE_MISMATCH" });
+    throw new AppError("ไม่สามารถใช้ไฟล์นี้ได้", 403, { code: "UPLOAD_SCOPE_MISMATCH" });
   }
 }
 
@@ -201,7 +201,7 @@ function assertUrlMatchesUploadedKey(uploadedKey, publicUrl) {
 
   const expectedUrl = `${env.R2_PUBLIC_BASE_URL.replace(/\/$/, "")}/${uploadedKey}`;
   if (publicUrl !== expectedUrl) {
-    throw new AppError("Logo URL does not match uploaded file", 400, { code: "UPLOAD_URL_MISMATCH" });
+    throw new AppError("ข้อมูลรูปภาพไม่ถูกต้อง กรุณาอัปโหลดใหม่", 400, { code: "UPLOAD_URL_MISMATCH" });
   }
 }
 
@@ -355,7 +355,7 @@ const ipLoginLimiter = rateLimit({
   max: 10,
   standardHeaders: true,
   legacyHeaders: false,
-  message: { error: "Too many login attempts from this IP" },
+  message: { error: "พยายามเข้าสู่ระบบบ่อยเกินไป กรุณารอสักครู่แล้วลองใหม่" },
 });
 
 const accountLoginLimiter = rateLimit({
@@ -365,7 +365,7 @@ const accountLoginLimiter = rateLimit({
   legacyHeaders: false,
   skipSuccessfulRequests: true,
   keyGenerator: (req) => normalizeUsername(req.body?.username || "unknown"),
-  message: { error: "Too many login attempts for this account" },
+  message: { error: "พยายามเข้าสู่ระบบบ่อยเกินไป กรุณารอสักครู่แล้วลองใหม่" },
 });
 
 const pinLimiter = rateLimit({
@@ -373,7 +373,7 @@ const pinLimiter = rateLimit({
   max: 5,
   standardHeaders: true,
   legacyHeaders: false,
-  message: { error: "Too many PIN attempts. Please sign in again." },
+  message: { error: "พยายามกรอก PIN บ่อยเกินไป กรุณาเข้าสู่ระบบใหม่" },
 });
 
 module.exports = {

@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { requestJson } from "@/components/product-management-studio/lib";
-import { Loader, secondaryButtonClass, StatusPill } from "@/components/ui-primitives";
+import { LoadingState, secondaryButtonClass, StatusPill } from "@/components/ui-primitives";
 import type { Receipt, ReceiptDetailResponse, ReceiptListResponse } from "./shared";
 import { formatBaht, formatDateTime, paymentMethodLabels, toDateInputValue, shiftDateInputValue } from "./shared";
 import { CalendarPicker } from "./calendar-picker";
@@ -182,7 +182,11 @@ export function ReceiptDeskClient() {
         <div className="grid content-start gap-3">
           {loading ? (
             <div className="grid min-h-[180px] place-items-center rounded-none border border-dashed border-[var(--border)]">
-              <Loader size={54} label="กำลังโหลดใบเสร็จ" />
+              <LoadingState
+                size={54}
+                label="กำลังโหลดใบเสร็จ..."
+                description="ระบบกำลังดึงรายการบิลตามวันที่เลือก"
+              />
             </div>
           ) : error ? (
             <div className="rounded-none border border-[var(--danger-border)] bg-[var(--danger-soft)] px-4 py-3 text-[var(--danger-bright)]">{error}</div>

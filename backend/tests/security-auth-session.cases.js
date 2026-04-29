@@ -9,7 +9,8 @@ describe("backend security hardening - auth and sessions", () => {
     const response = await request(app).post("/api/auth/login").send({ username: "demoowner", password: "Password123!" });
 
     expect(response.status).toBe(403);
-    expect(response.body.code).toBe("BAD_ORIGIN");
+    expect(response.body.error).toBe("ไม่สามารถดำเนินการตามคำขอได้ กรุณารีเฟรชหน้าแล้วลองใหม่");
+    expect(response.body.code).toBeUndefined();
   });
 
   test("issues csrf token from csrf endpoint", async () => {
@@ -37,7 +38,8 @@ describe("backend security hardening - auth and sessions", () => {
       .send({ username: "demoowner", password: "Password123!" });
 
     expect(response.status).toBe(403);
-    expect(response.body.code).toBe("CSRF_MISMATCH");
+    expect(response.body.error).toBe("เซสชันของหน้านี้หมดอายุ กรุณารีเฟรชหน้าแล้วลองใหม่");
+    expect(response.body.code).toBeUndefined();
   });
 
   test("rejects password step when csrf token is missing", async () => {
@@ -49,7 +51,8 @@ describe("backend security hardening - auth and sessions", () => {
     });
 
     expect(response.status).toBe(403);
-    expect(response.body.code).toBe("CSRF_MISMATCH");
+    expect(response.body.error).toBe("เซสชันของหน้านี้หมดอายุ กรุณารีเฟรชหน้าแล้วลองใหม่");
+    expect(response.body.code).toBeUndefined();
   });
 
   test("creates a PIN challenge after valid username and password", async () => {
@@ -141,7 +144,7 @@ describe("backend security hardening - auth and sessions", () => {
       .send({ pin: "999999" });
 
     expect(response.status).toBe(401);
-    expect(response.body.error).toBe("Invalid PIN");
+    expect(response.body.error).toBe("PIN ไม่ถูกต้อง");
   });
 
   test("sets a new PIN on first login and creates a real session", async () => {

@@ -43,19 +43,19 @@ function validateUploadRequest({ fileName, contentType, contentLength, purpose }
   const allowedExtensions = allowedMimeTypes.get(normalizedContentType);
 
   if (!uploadPurposes.has(purpose)) {
-    throw new AppError("Unsupported upload purpose", 400, { code: "BAD_UPLOAD_PURPOSE" });
+    throw new AppError("ไม่สามารถอัปโหลดไฟล์นี้ได้", 400, { code: "BAD_UPLOAD_PURPOSE" });
   }
 
   if (!allowedExtensions) {
-    throw new AppError("Unsupported file type", 400, { code: "BAD_FILE_TYPE" });
+    throw new AppError("รองรับเฉพาะไฟล์ JPG, PNG หรือ WEBP", 400, { code: "BAD_FILE_TYPE" });
   }
 
   if (!allowedExtensions.includes(extension)) {
-    throw new AppError("File extension does not match content type", 400, { code: "BAD_FILE_EXTENSION" });
+    throw new AppError("ประเภทไฟล์ไม่ตรงกับไฟล์ที่เลือก กรุณาเลือกไฟล์ใหม่", 400, { code: "BAD_FILE_EXTENSION" });
   }
 
   if (!Number.isInteger(contentLength) || contentLength <= 0 || contentLength > env.MAX_UPLOAD_BYTES) {
-    throw new AppError("Invalid file size", 400, { code: "BAD_FILE_SIZE" });
+    throw new AppError("ขนาดไฟล์ไม่ถูกต้องหรือใหญ่เกินกำหนด", 400, { code: "BAD_FILE_SIZE" });
   }
 
   return {

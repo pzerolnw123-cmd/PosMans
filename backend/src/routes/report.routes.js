@@ -20,7 +20,7 @@ async function requireOwnerStoreId(req, res) {
   const storeId = session?.user?.storeId;
 
   if (!storeId) {
-    throw new AppError("Store context is required", 403, { code: "STORE_REQUIRED" });
+    throw new AppError("ไม่สามารถดำเนินการได้ด้วยสิทธิ์ปัจจุบัน", 403, { code: "STORE_REQUIRED" });
   }
 
   return storeId;

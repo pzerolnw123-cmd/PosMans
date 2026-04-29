@@ -8,7 +8,7 @@ import type { ProductItem } from "@/components/product-management-studio/types";
 import { formatBaht, normalizeStockValue, salesCartStorageKey } from "@/components/sales-pagination-mockup/helpers";
 import type { Receipt, ReceiptListResponse } from "@/components/receipt-desk-client/receipt-format";
 import { formatDateTime } from "@/components/receipt-desk-client/receipt-format";
-import { Loader, secondaryButtonClass, StatusPill } from "@/components/ui-primitives";
+import { LoadingState, secondaryButtonClass, StatusPill } from "@/components/ui-primitives";
 
 type OwnerOverviewClientProps = {
   storeProfileComplete: boolean;
@@ -235,7 +235,11 @@ export function OwnerOverviewClient({
 
             {loading ? (
               <div className="grid min-h-[220px] place-items-center rounded-none border border-dashed border-[var(--border)]">
-                <Loader size={54} label="กำลังโหลดภาพรวมร้าน" />
+                <LoadingState
+                  size={54}
+                  label="กำลังโหลดภาพรวมร้าน..."
+                  description="ระบบกำลังดึงข้อมูลสินค้า บิลล่าสุด และสถานะร้าน"
+                />
               </div>
             ) : (
               <div className="grid gap-3">

@@ -27,7 +27,7 @@ async function requireAuth(req, res, next) {
   const session = await loadSession(req, res);
 
   if (!session) {
-    return res.status(401).json({ error: "Unauthorized" });
+    return res.status(401).json({ error: "กรุณาเข้าสู่ระบบอีกครั้ง" });
   }
 
   next();
@@ -38,7 +38,7 @@ function requirePlatformRole(roles) {
     const session = await loadSession(req, res);
 
     if (!session || !roles.includes(session.user.platformRole)) {
-      return res.status(403).json({ error: "Forbidden" });
+      return res.status(403).json({ error: "ไม่สามารถดำเนินการได้ด้วยสิทธิ์ปัจจุบัน" });
     }
 
     next();
@@ -50,7 +50,7 @@ function requireStoreRole(roles) {
     const session = await loadSession(req, res);
 
     if (!session || !session.user.storeId || !session.user.storeRole || !roles.includes(session.user.storeRole)) {
-      return res.status(403).json({ error: "Forbidden" });
+      return res.status(403).json({ error: "ไม่สามารถดำเนินการได้ด้วยสิทธิ์ปัจจุบัน" });
     }
 
     next();
@@ -62,7 +62,7 @@ function requireAccess({ platformRoles = [], storeRoles = [] }) {
     const session = await loadSession(req, res);
 
     if (!session) {
-      return res.status(401).json({ error: "Unauthorized" });
+      return res.status(401).json({ error: "กรุณาเข้าสู่ระบบอีกครั้ง" });
     }
 
     const allowedByPlatform = platformRoles.includes(session.user.platformRole);
@@ -70,7 +70,7 @@ function requireAccess({ platformRoles = [], storeRoles = [] }) {
       Boolean(session.user.storeId) && Boolean(session.user.storeRole) && storeRoles.includes(session.user.storeRole);
 
     if (!allowedByPlatform && !allowedByStore) {
-      return res.status(403).json({ error: "Forbidden" });
+      return res.status(403).json({ error: "ไม่สามารถดำเนินการได้ด้วยสิทธิ์ปัจจุบัน" });
     }
 
     next();

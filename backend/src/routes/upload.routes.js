@@ -39,12 +39,12 @@ router.post(
       const parsed = uploadSchema.parse(req.body);
 
       if (!isR2Configured()) {
-        return res.status(503).json({ error: "R2 is not configured" });
+        return res.status(503).json({ error: "ยังไม่สามารถอัปโหลดไฟล์ได้ กรุณาลองอีกครั้งภายหลัง" });
       }
 
       const prefix = uploadPrefixForSession(req.session);
       if (!prefix) {
-        return res.status(403).json({ error: "Upload scope is required" });
+        return res.status(403).json({ error: "ไม่สามารถอัปโหลดไฟล์นี้ได้" });
       }
 
       const signedUpload = await createPresignedUpload(parsed, { prefix });

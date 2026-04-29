@@ -7,6 +7,7 @@ const productRoutes = require("./routes/product.routes");
 const saleRoutes = require("./routes/sale.routes");
 const reportRoutes = require("./routes/report.routes");
 const uploadRoutes = require("./routes/upload.routes");
+const customerDisplayRoutes = require("./routes/customer-display.routes");
 const { env } = require("./config/env");
 const { errorHandler } = require("./middleware/error");
 
@@ -36,6 +37,7 @@ function createApp() {
   app.use("/api/sales", saleRoutes);
   app.use("/api/reports", reportRoutes);
   app.use("/api/uploads", uploadRoutes);
+  app.use("/api/customer-displays", customerDisplayRoutes);
 
   app.use(errorHandler);
 

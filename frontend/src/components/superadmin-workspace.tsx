@@ -88,20 +88,20 @@ function renderSuperAdminScreen(activeSection: SuperAdminSectionKey) {
     overview: {
       eyebrow: "Platform Control",
       title: "ภาพรวมระดับระบบ",
-      description: "พื้นที่นี้แยกจาก owner โดยตรง ใช้สำหรับดูสุขภาพของ platform, จำนวนร้าน, เจ้าของร้าน และความพร้อมของระบบ",
+      description: "พื้นที่นี้ใช้ดูภาพรวมร้าน เจ้าของร้าน และความพร้อมของระบบ",
       actions: <StatusPill tone="success">Platform Green</StatusPill>,
       body: (
         <SectionGrid>
           <PanelCard eyebrow="Core Metrics" title="ตัวชี้วัดระบบ" description="สรุปภาพกว้างของ platform" className="px-[18px] py-4">
-            <ThreeUpStats items={[["ร้านทั้งหมด", "รอเชื่อม API"], ["Owner accounts", "รอเชื่อม API"], ["Active sessions", "รอเชื่อม API"]]} />
+            <ThreeUpStats items={[["ร้านทั้งหมด", "รอข้อมูลจริง"], ["บัญชีเจ้าของร้าน", "รอข้อมูลจริง"], ["เซสชันที่ใช้งาน", "รอข้อมูลจริง"]]} />
           </PanelCard>
 
-          <PanelCard eyebrow="Watch List" title="สิ่งที่ควรจับตา" description="รายการที่เกี่ยวกับ platform ไม่ปนกับ workflow หน้าร้าน" className="px-[18px] py-4">
+          <PanelCard eyebrow="Watch List" title="สิ่งที่ควรจับตา" description="รายการติดตามของผู้ดูแลระบบ" className="px-[18px] py-4">
             <NoteStack
               items={[
-                "มี 2 ร้านที่ session churn สูงผิดปกติในชั่วโมงล่าสุด",
-                "upload signing ถูกเรียกเพิ่มขึ้นหลังอัปเดตสินค้ารอบเช้า",
-                "ยังไม่มี incident ระดับ security ที่เปิดค้างอยู่",
+                "มี 2 ร้านที่การเข้าใช้งานเปลี่ยนแปลงสูงในชั่วโมงล่าสุด",
+                "การอัปโหลดถูกใช้งานเพิ่มขึ้นหลังอัปเดตสินค้ารอบเช้า",
+                "ยังไม่มีเหตุการณ์สำคัญที่เปิดค้างอยู่",
               ]}
             />
           </PanelCard>
@@ -111,20 +111,20 @@ function renderSuperAdminScreen(activeSection: SuperAdminSectionKey) {
     stores: {
       eyebrow: "Tenant Directory",
       title: "ร้านค้าในระบบ",
-      description: "ใช้ติดตามสถานะร้าน การเปิดใช้งาน และ tenant profile โดยไม่ยุ่งกับ owner shell",
+      description: "ใช้ติดตามสถานะร้าน การเปิดใช้งาน และข้อมูลร้าน",
       actions: <StatusPill>48 ร้านในระบบ</StatusPill>,
       body: (
         <SectionGrid>
           <PanelCard eyebrow="Store Status" title="สถานะร้านล่าสุด" description="รายการร้านที่ต้องติดตาม" className="px-[18px] py-4">
             <ListStack
               items={[
-                { title: "Store directory", subtitle: "ยังไม่เชื่อม API รายการร้านจริง", value: <StatusPill>Pending API</StatusPill> },
+                { title: "รายชื่อร้าน", subtitle: "รอเชื่อมข้อมูลรายการร้านจริง", value: <StatusPill>รอข้อมูล</StatusPill> },
               ]}
             />
           </PanelCard>
 
-          <PanelCard eyebrow="Provisioning" title="งานระดับ tenant" description="ชุด action ของ superadmin ไม่แชร์กับ owner" className="px-[18px] py-4">
-            <NoteStack items={["สร้างร้านใหม่", "ปิดร้านชั่วคราว", "รีเซ็ต owner access", "ตรวจ store slug"]} />
+          <PanelCard eyebrow="Provisioning" title="งานระดับร้าน" description="ชุดงานสำหรับผู้ดูแลระบบ" className="px-[18px] py-4">
+            <NoteStack items={["สร้างร้านใหม่", "ปิดร้านชั่วคราว", "รีเซ็ตการเข้าถึงของเจ้าของร้าน", "ตรวจรหัสร้าน"]} />
           </PanelCard>
         </SectionGrid>
       ),
@@ -132,24 +132,24 @@ function renderSuperAdminScreen(activeSection: SuperAdminSectionKey) {
     owners: {
       eyebrow: "Identity Control",
       title: "เจ้าของร้าน",
-      description: "ใช้จัดการ owner account, role binding และการเข้าถึงร้านในระดับ platform",
-      actions: <StatusPill>Pending API</StatusPill>,
+      description: "ใช้จัดการบัญชีเจ้าของร้านและการเข้าถึงร้าน",
+      actions: <StatusPill>รอข้อมูล</StatusPill>,
       body: (
         <SectionGrid>
           <PanelCard eyebrow="Owner Accounts" title="บัญชีล่าสุด" description="ตัวอย่างบัญชีที่ผูกกับ tenant ต่าง ๆ" className="px-[18px] py-4">
             <ListStack
               items={[
-                { title: "Owner directory", subtitle: "ยังไม่เชื่อม API บัญชีเจ้าของร้านจริง", value: <StatusPill>Pending API</StatusPill> },
+                { title: "บัญชีเจ้าของร้าน", subtitle: "รอเชื่อมข้อมูลบัญชีจริง", value: <StatusPill>รอข้อมูล</StatusPill> },
               ]}
             />
           </PanelCard>
 
-          <PanelCard eyebrow="Role Binding" title="งานสิทธิ์และการเข้าถึง" description="โฟกัสเรื่อง identity management เท่านั้น" className="px-[18px] py-4">
+          <PanelCard eyebrow="Role Binding" title="งานสิทธิ์และการเข้าถึง" description="โฟกัสการจัดการบัญชีเท่านั้น" className="px-[18px] py-4">
             <NoteStack
               items={[
-                "สร้าง owner account ใหม่และส่งคำเชิญ",
-                "ย้าย owner ไปยังร้านใหม่",
-                "ตรวจ owner ที่ไม่มี store binding",
+                "สร้างบัญชีเจ้าของร้านใหม่และส่งคำเชิญ",
+                "ย้ายเจ้าของร้านไปยังร้านใหม่",
+                "ตรวจบัญชีที่ยังไม่ได้ผูกร้าน",
               ]}
             />
           </PanelCard>
@@ -159,20 +159,20 @@ function renderSuperAdminScreen(activeSection: SuperAdminSectionKey) {
     security: {
       eyebrow: "Security",
       title: "ความปลอดภัย",
-      description: "มุมมองสำหรับดู session, CSRF, PIN flows และ event ที่เกี่ยวข้องกับความปลอดภัยระดับระบบ",
+      description: "มุมมองสำหรับดูสถานะการเข้าใช้งานและเหตุการณ์สำคัญระดับระบบ",
       actions: <StatusPill tone="success">No open incident</StatusPill>,
       body: (
         <SectionGrid>
-          <PanelCard eyebrow="Session Health" title="สถานะ session" description="ตัวเลขฝั่ง auth ที่ต้องตาม" className="px-[18px] py-4">
-            <ThreeUpStats items={[["Rolling refresh", "Healthy"], ["Expired cleanup", "Throttled"], ["PIN flow", "Operational"]]} />
+          <PanelCard eyebrow="Access Health" title="สถานะการเข้าใช้งาน" description="ตัวเลขสำคัญที่ต้องติดตาม" className="px-[18px] py-4">
+            <ThreeUpStats items={[["การใช้งานต่อเนื่อง", "ปกติ"], ["การปิดรอบเก่า", "ปกติ"], ["PIN", "พร้อมใช้งาน"]]} />
           </PanelCard>
 
           <PanelCard eyebrow="Security Notes" title="รายการติดตาม" description="รายการสรุปแทน dashboard ยาว" className="px-[18px] py-4">
             <NoteStack
               items={[
-                "ไม่มี session ที่เกิน absolute timeout เปิดค้างอยู่",
-                "PIN failures ลดลงหลังแยก owner/superadmin paths",
-                "origin และ CSRF checks ยังคงป้องกัน route สำคัญทั้งหมด",
+                "ไม่มีรอบการใช้งานเก่าที่เปิดค้างอยู่",
+                "การกรอก PIN ผิดลดลงจากช่วงก่อนหน้า",
+                "เส้นทางสำคัญยังตรวจสิทธิ์ก่อนใช้งาน",
               ]}
             />
           </PanelCard>
@@ -189,7 +189,7 @@ function renderSuperAdminScreen(activeSection: SuperAdminSectionKey) {
           <PanelCard eyebrow="Latest Events" title="เหตุการณ์ล่าสุด" description="ดู action ที่สำคัญแบบย่อ" className="px-[18px] py-4">
             <ListStack
               items={[
-                { title: "Audit API", subtitle: "ยังไม่เชื่อม endpoint สำหรับอ่าน audit log จริง", value: <StatusPill>Pending API</StatusPill> },
+                { title: "บันทึกเหตุการณ์", subtitle: "รอเชื่อมข้อมูลเหตุการณ์จริง", value: <StatusPill>รอข้อมูล</StatusPill> },
               ]}
             />
           </PanelCard>
@@ -197,9 +197,9 @@ function renderSuperAdminScreen(activeSection: SuperAdminSectionKey) {
           <PanelCard eyebrow="Review Queue" title="รายการควรตรวจ" description="ใช้คัดกรองเหตุการณ์สำคัญ" className="px-[18px] py-4">
             <NoteStack
               items={[
-                "ตรวจ login failures ที่เกิดซ้ำจาก IP เดียวกัน",
+                "ตรวจการเข้าสู่ระบบไม่สำเร็จที่เกิดซ้ำ",
                 "ตาม event การเปลี่ยนแปลงสิทธิ์ของ owner",
-                "รีวิว upload policy ที่ออกโดย platform user",
+                "รีวิวการออกสิทธิ์อัปโหลดของผู้ดูแลระบบ",
               ]}
             />
           </PanelCard>
@@ -209,20 +209,20 @@ function renderSuperAdminScreen(activeSection: SuperAdminSectionKey) {
     system: {
       eyebrow: "System Settings",
       title: "System",
-      description: "พื้นที่สำหรับค่าระดับ platform เช่น integration, upload service, และ operational defaults",
+      description: "พื้นที่สำหรับค่าระบบ การเชื่อมต่อ และค่าเริ่มต้นการปฏิบัติงาน",
       actions: <StatusPill>Ops Mode</StatusPill>,
       body: (
         <SectionGrid>
           <PanelCard eyebrow="Platform Services" title="บริการที่เชื่อมอยู่" description="เช็ก service สำคัญในมุม platform" className="px-[18px] py-4">
-            <ThreeUpStats items={[["Backend API", "Online"], ["Database", "Online"], ["R2 Uploads", "Ready"]]} />
+            <ThreeUpStats items={[["บริการหลัก", "พร้อมใช้งาน"], ["ข้อมูลระบบ", "พร้อมใช้งาน"], ["การอัปโหลด", "พร้อมใช้งาน"]]} />
           </PanelCard>
 
           <PanelCard eyebrow="Ops Notes" title="บันทึกที่ต้องตาม" description="คงไว้เป็นสรุประดับดูแลระบบ" className="px-[18px] py-4">
             <NoteStack
               items={[
-                "rotate signing credentials ตามรอบที่กำหนด",
-                "ตรวจ rate limit metrics หลังเปิดใช้ owner shell ใหม่",
-                "รีวิว env ที่ใช้กับ auth และ upload routes ก่อน deploy รอบถัดไป",
+                "หมุนเวียนข้อมูลรับรองตามรอบที่กำหนด",
+                "ตรวจปริมาณการใช้งานหลังเปิดหน้าหลังบ้านใหม่",
+                "รีวิวค่าตั้งค่าระบบก่อนอัปเดตรอบถัดไป",
               ]}
             />
           </PanelCard>

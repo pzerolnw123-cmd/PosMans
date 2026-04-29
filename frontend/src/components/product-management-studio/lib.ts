@@ -28,7 +28,7 @@ export async function requestJson<T>(path: string, init?: RequestInit) {
   if (init?.method && init.method !== "GET") {
     const csrfToken = (await ensureCsrfToken({ forceRefresh: true })) || readCookie(csrfCookieName);
     if (!csrfToken) {
-      throw new Error("ไม่สามารถเริ่มต้น CSRF token ได้");
+      throw new Error("ไม่สามารถเตรียมเซสชันของหน้านี้ได้ กรุณารีเฟรชแล้วลองใหม่");
     }
 
     headers.set("x-csrf-token", csrfToken);
@@ -171,7 +171,7 @@ export async function createCroppedBlob(draft: CropDraft, zoom: number, offsetX:
 export async function requestSignedUpload(fileName: string, contentType: string, contentLength: number, purpose: "STORE_LOGO" | "PAYMENT_QR" | "PRODUCT_IMAGE") {
   const csrfToken = (await ensureCsrfToken({ forceRefresh: true })) || readCookie(csrfCookieName);
   if (!csrfToken) {
-    throw new Error("ไม่สามารถเริ่มต้น CSRF token ได้");
+    throw new Error("ไม่สามารถเตรียมเซสชันของหน้านี้ได้ กรุณารีเฟรชแล้วลองใหม่");
   }
 
   const response = await fetch("/api/uploads/sign", {
@@ -216,7 +216,7 @@ export async function uploadBlobToR2(payload: SignedUploadPayload, blob: Blob) {
     }
   } catch (error) {
     if (error instanceof TypeError) {
-      throw new Error("อัปโหลดรูปภาพไม่สำเร็จ กรุณาตรวจสอบการตั้งค่าอัปโหลด");
+      throw new Error("อัปโหลดรูปภาพไม่สำเร็จ กรุณาลองอีกครั้ง");
     }
 
     throw error;

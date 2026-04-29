@@ -23,7 +23,7 @@ router.get("/owner-payment-settings", requireStoreRole(["OWNER"]), async (req, r
     });
 
     if (!store) {
-      return res.status(404).json({ error: "Store not found" });
+      return res.status(404).json({ error: "ไม่พบข้อมูลร้าน" });
     }
 
     res.set("Cache-Control", "no-store");
@@ -118,7 +118,7 @@ router.patch("/owner-logo", requireTrustedOrigin, requireCsrf, requireStoreRole(
     });
 
     if (!existingStore) {
-      return res.status(404).json({ error: "Store not found" });
+      return res.status(404).json({ error: "ไม่พบข้อมูลร้าน" });
     }
 
     const store = await prisma.store.update({
@@ -171,7 +171,7 @@ router.patch("/owner-payment-settings", requireTrustedOrigin, requireCsrf, requi
     });
 
     if (!existingStore) {
-      return res.status(404).json({ error: "Store not found" });
+      return res.status(404).json({ error: "ไม่พบข้อมูลร้าน" });
     }
 
     const shouldRemoveQr = existingStore.paymentQrUploadedKey && existingStore.paymentQrUploadedKey !== parsed.paymentQrUploadedKey;

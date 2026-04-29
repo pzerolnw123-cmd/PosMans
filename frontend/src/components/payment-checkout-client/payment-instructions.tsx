@@ -1,5 +1,6 @@
 ﻿import { formatBaht, promptPayRecipientOptionsLabel } from "./shared";
 import type { OwnerPaymentSettingsValue } from "@/components/owner-settings-client";
+import { LoadingState } from "@/components/ui-primitives";
 
 export type PaymentInstructionsProps = {
   compact?: boolean;
@@ -55,7 +56,7 @@ export function QrPaymentInstructions({
             <img src={promptPayQrDataUrl} alt="PromptPay QR" className={compact ? "aspect-square w-full max-w-[240px] rounded-none bg-[var(--qr-background)] p-3 shadow-[var(--brand-shadow)_0_0_24px]" : "h-[148px] w-[148px] rounded-none border border-[var(--accent-border)] bg-[var(--qr-background)] p-2 shadow-[var(--brand-shadow)_0_0_15px]"} />
           ) : (
             <div className={compact ? "grid aspect-square w-full max-w-[240px] place-items-center rounded-none border border-dashed border-[var(--accent-border)] text-center text-[0.86rem] text-[var(--foreground-soft)]" : "grid h-[148px] w-[148px] place-items-center rounded-none border border-dashed border-[var(--accent-border)] text-center text-[0.82rem] text-[var(--foreground-soft)]"}>
-              กำลังสร้าง QR
+              <LoadingState size={compact ? 44 : 32} label="กำลังสร้าง QR..." />
             </div>
           )}
           <div className={compact ? "grid w-full max-w-[240px] gap-3 text-[0.9rem] leading-[1.45] text-[var(--text-on-dark-muted)]" : "grid gap-2 text-[0.9rem] text-[var(--foreground-soft)]"}>

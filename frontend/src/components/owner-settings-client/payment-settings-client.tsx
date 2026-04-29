@@ -227,7 +227,7 @@ export function OwnerPaymentSettingsClient({ initialSettings }: { initialSetting
 
       const publicUrl = signedUpload.publicUrl;
       if (!publicUrl) {
-        throw new Error("ไม่พบ public URL สำหรับ Static QR");
+        throw new Error("ยังไม่สามารถเตรียมรูป QR ได้ กรุณาลองอีกครั้ง");
       }
 
       setForm((current) => ({

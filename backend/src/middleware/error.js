@@ -25,16 +25,14 @@ function errorHandler(err, _req, res, _next) {
   if (err instanceof ZodError) {
     logHandledError(err, 400);
     return res.status(400).json({
-      error: "Invalid request data",
-      details: err.issues.map((issue) => ({ path: issue.path.join("."), message: issue.message })),
+      error: "ข้อมูลที่ส่งมาไม่ถูกต้อง กรุณาตรวจสอบแล้วลองอีกครั้ง",
     });
   }
 
   if (err instanceof AppError) {
     logHandledError(err, err.statusCode);
     return res.status(err.statusCode).json({
-      error: err.expose ? err.message : "Request failed",
-      code: err.code,
+      error: err.expose ? err.message : "ไม่สามารถดำเนินการตามคำขอได้",
     });
   }
 
@@ -42,7 +40,7 @@ function errorHandler(err, _req, res, _next) {
   logHandledError(err, statusCode);
 
   return res.status(statusCode).json({
-    error: statusCode >= 500 ? "Internal server error" : "Request failed",
+    error: statusCode >= 500 ? "ไม่สามารถดำเนินการได้ในขณะนี้ กรุณาลองอีกครั้ง" : "ไม่สามารถดำเนินการตามคำขอได้",
   });
 }
 

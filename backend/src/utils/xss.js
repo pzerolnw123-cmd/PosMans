@@ -8,11 +8,11 @@ const safeUrlProtocolPattern = /^(https?:\/\/)/i;
 
 function assertSafePlainText(value, fieldName = "value") {
   if (typeof value !== "string") {
-    throw new AppError(`${fieldName} must be a string`, 400, { code: "BAD_TEXT_TYPE" });
+    throw new AppError("ข้อมูลข้อความไม่ถูกต้อง", 400, { code: "BAD_TEXT_TYPE" });
   }
 
   if (suspiciousHtmlPattern.test(value)) {
-    throw new AppError(`${fieldName} contains disallowed markup`, 400, { code: "UNSAFE_TEXT" });
+    throw new AppError("ข้อความมีรูปแบบที่ไม่รองรับ กรุณาแก้ไขก่อนบันทึก", 400, { code: "UNSAFE_TEXT" });
   }
 
   return assertNoProfanity(value, fieldName);
@@ -20,22 +20,22 @@ function assertSafePlainText(value, fieldName = "value") {
 
 function assertSafeHttpUrl(value, fieldName = "url") {
   if (typeof value !== "string") {
-    throw new AppError(`${fieldName} must be a string`, 400, { code: "BAD_URL_TYPE" });
+    throw new AppError("ข้อมูลลิงก์ไม่ถูกต้อง", 400, { code: "BAD_URL_TYPE" });
   }
 
   if (!safeUrlProtocolPattern.test(value)) {
-    throw new AppError(`${fieldName} must use http or https`, 400, { code: "UNSAFE_URL" });
+    throw new AppError("รูปแบบลิงก์ไม่ถูกต้อง", 400, { code: "UNSAFE_URL" });
   }
 
   let parsed;
   try {
     parsed = new URL(value);
   } catch {
-    throw new AppError(`${fieldName} is not a valid URL`, 400, { code: "BAD_URL" });
+    throw new AppError("รูปแบบลิงก์ไม่ถูกต้อง", 400, { code: "BAD_URL" });
   }
 
   if (!["http:", "https:"].includes(parsed.protocol)) {
-    throw new AppError(`${fieldName} must use http or https`, 400, { code: "UNSAFE_URL" });
+    throw new AppError("รูปแบบลิงก์ไม่ถูกต้อง", 400, { code: "UNSAFE_URL" });
   }
 
   return parsed.toString();
@@ -43,7 +43,7 @@ function assertSafeHttpUrl(value, fieldName = "url") {
 
 function sanitizeRichText(value) {
   if (typeof value !== "string") {
-    throw new AppError("rich text must be a string", 400, { code: "BAD_RICH_TEXT_TYPE" });
+    throw new AppError("ข้อมูลข้อความไม่ถูกต้อง", 400, { code: "BAD_RICH_TEXT_TYPE" });
   }
 
   return sanitizeHtml(value, {

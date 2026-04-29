@@ -1,6 +1,6 @@
 import { useLayoutEffect, useMemo, useRef, useState, type PointerEvent } from "react";
 import { useBackofficeShellAlert } from "@/components/backoffice-shell";
-import { Loader, primaryButtonClass, secondaryButtonClass } from "@/components/ui-primitives";
+import { LoadingState, primaryButtonClass, secondaryButtonClass } from "@/components/ui-primitives";
 import type { Receipt } from "./receipt-format";
 import { formatBaht, formatDateTime, paymentMethodLabels, receiptPdfFileName } from "./receipt-format";
 
@@ -230,7 +230,7 @@ export function ReceiptViewer({ receipt, detailLoading, actionMessage, setAction
             </div>
             {detailLoading ? (
               <div className="absolute inset-0 z-20 grid place-items-center bg-[color:color-mix(in_srgb,var(--field-bg)_82%,transparent)] backdrop-blur-[1px]">
-                <Loader size={42} label="กำลังโหลดรายละเอียด" />
+                <LoadingState size={42} label="กำลังโหลดรายละเอียด..." />
               </div>
             ) : null}
           </div>

@@ -239,7 +239,7 @@ export function OwnerLogoClient({ compact = false }: { compact?: boolean }) {
       await uploadBlobToR2(signedUpload, pendingLogoBlob);
 
       if (!signedUpload.publicUrl) {
-        throw new Error("ยังไม่มี public URL สำหรับโลโก้ร้าน");
+        throw new Error("ยังไม่สามารถเตรียมรูปโลโก้ได้ กรุณาลองอีกครั้ง");
       }
 
       const csrfToken = await ensureCsrfToken({ forceRefresh: true });

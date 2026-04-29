@@ -28,7 +28,7 @@ export async function ensureCsrfToken(options: EnsureCsrfTokenOptions = {}) {
   });
 
   if (!response.ok) {
-    throw new Error("Unable to initialize CSRF token");
+    throw new Error("ไม่สามารถเตรียมเซสชันของหน้านี้ได้ กรุณารีเฟรชแล้วลองใหม่");
   }
 
   const data = (await response.json()) as { csrfToken?: string };

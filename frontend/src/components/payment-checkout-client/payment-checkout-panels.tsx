@@ -1,6 +1,6 @@
 "use client";
 
-import type { Dispatch, PointerEvent, RefObject, SetStateAction } from "react";
+import type { Dispatch, PointerEvent, ReactNode, RefObject, SetStateAction } from "react";
 import { inputClass, primaryButtonClass, secondaryButtonClass } from "@/components/ui-primitives";
 import type { OwnerPaymentSettingsValue } from "@/components/owner-settings-client";
 import type { CompletedSale, PaymentMethod } from "./shared";
@@ -66,10 +66,11 @@ type PaymentCheckoutPanelsProps = {
   stopBillDrag: (event: PointerEvent<HTMLDivElement>) => void;
   onBackToSales: () => void;
   handleConfirmPayment: () => void;
+  customerDisplayControl?: ReactNode;
 };
 
 export function PaymentCheckoutPanels({
-  billItems, billScrollMetric, billScrollRef, billSubtotal, billDiscount, billTax, billTotal, completedSale, items, itemCount, paymentMethod, setPaymentMethod, displayedPaymentMethod, paymentMethodLabel, receivedAmount, setReceivedAmount, receivedDraft, setReceivedDraft, discountPercent, setDiscountPercent, discountDraft, setDiscountDraft, taxPercent, setTaxPercent, taxDraft, setTaxDraft, note, setNote, error, busy, discount, subtotal, cashPaymentMissingReceivedAmount, qrPaymentConfigured, transferPaymentConfigured, qrPaymentSelected, transferSelected, paymentSettings, dynamicPromptPayReady, staticQrReady, promptPayQrDataUrl, bankInfoFilled, changeAmount, updateBillScrollbar, handleBillPointerDown, handleBillPointerMove, stopBillDrag, onBackToSales, handleConfirmPayment,
+  billItems, billScrollMetric, billScrollRef, billSubtotal, billDiscount, billTax, billTotal, completedSale, items, itemCount, paymentMethod, setPaymentMethod, displayedPaymentMethod, paymentMethodLabel, receivedAmount, setReceivedAmount, receivedDraft, setReceivedDraft, discountPercent, setDiscountPercent, discountDraft, setDiscountDraft, taxPercent, setTaxPercent, taxDraft, setTaxDraft, note, setNote, error, busy, discount, subtotal, cashPaymentMissingReceivedAmount, qrPaymentConfigured, transferPaymentConfigured, qrPaymentSelected, transferSelected, paymentSettings, dynamicPromptPayReady, staticQrReady, promptPayQrDataUrl, bankInfoFilled, changeAmount, updateBillScrollbar, handleBillPointerDown, handleBillPointerMove, stopBillDrag, onBackToSales, handleConfirmPayment, customerDisplayControl,
 }: PaymentCheckoutPanelsProps) {
   return (
     <>
@@ -128,7 +129,7 @@ export function PaymentCheckoutPanels({
               ) : null}
             </>
           ) : (
-            <div className="grid min-h-[220px] place-items-center rounded-none border border-dashed border-[var(--border-soft)] text-center text-[var(--foreground-soft)]">
+            <div className="grid h-full min-h-0 place-items-center rounded-none border border-dashed border-[var(--border-soft)] px-4 text-center text-[var(--foreground-soft)]">
               กลับไปหน้าขายเพื่อเพิ่มสินค้าเข้าตะกร้า
             </div>
           )}
@@ -318,6 +319,7 @@ export function PaymentCheckoutPanels({
             </>
           )}
         </div>
+        {customerDisplayControl ? <div className="border-t border-t-[var(--border-subtle)] pt-3">{customerDisplayControl}</div> : null}
       </section>
     </>
   );

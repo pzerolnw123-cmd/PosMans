@@ -93,3 +93,23 @@ export function Loader({
   );
 }
 
+export function LoadingState({
+  label = "กำลังโหลด...",
+  description,
+  size = 48,
+  className = "",
+}: {
+  label?: string;
+  description?: ReactNode;
+  size?: number;
+  className?: string;
+}) {
+  return (
+    <div className={`grid place-items-center gap-3 text-center ${className}`.trim()} role="status" aria-live="polite">
+      <Loader size={size} label={label} />
+      <strong className="text-[1rem] tracking-[-0.03em] text-[var(--foreground)]">{label}</strong>
+      {description ? <p className="m-0 text-[0.88rem] leading-[1.55] text-[var(--foreground-soft)]">{description}</p> : null}
+    </div>
+  );
+}
+

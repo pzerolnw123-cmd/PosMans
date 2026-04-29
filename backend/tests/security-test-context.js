@@ -44,6 +44,13 @@ jest.mock("../src/lib/db", () => ({
       findFirst: jest.fn(),
       create: jest.fn(),
     },
+    customerDisplaySession: {
+      create: jest.fn(),
+      findMany: jest.fn(),
+      findFirst: jest.fn(),
+      findUnique: jest.fn(),
+      update: jest.fn(),
+    },
     $queryRaw: jest.fn(),
     $transaction: jest.fn(),
   },
@@ -208,6 +215,32 @@ function installSecurityTestLifecycle() {
           lineTotal: 65,
         },
       ],
+    });
+    prisma.customerDisplaySession.create.mockResolvedValue({
+      id: "display-1",
+      name: "จอลูกค้า",
+      publicTokenHash: "hash",
+      status: "IDLE",
+      amount: 0,
+      paymentMethod: null,
+      qrDataUrl: null,
+      message: null,
+      saleCode: null,
+      updatedAt: new Date("2026-04-22T00:00:00.000Z"),
+    });
+    prisma.customerDisplaySession.findMany.mockResolvedValue([]);
+    prisma.customerDisplaySession.findFirst.mockResolvedValue(null);
+    prisma.customerDisplaySession.findUnique.mockResolvedValue(null);
+    prisma.customerDisplaySession.update.mockResolvedValue({
+      id: "display-1",
+      name: "จอลูกค้า",
+      status: "IDLE",
+      amount: 0,
+      paymentMethod: null,
+      qrDataUrl: null,
+      message: null,
+      saleCode: null,
+      updatedAt: new Date("2026-04-22T00:00:00.000Z"),
     });
     prisma.store.findUnique.mockResolvedValue({ id: "store-1", logoUploadedKey: null });
     prisma.store.update.mockResolvedValue({ id: "store-1", name: "Demo Store", slug: "demo-store" });

@@ -74,7 +74,7 @@ export function LoginForm() {
   async function completeAuth(url: "/api/auth/verify-pin" | "/api/auth/setup-pin", body: Record<string, string>, fallbackError: string) {
     const csrfToken = await getCsrfToken();
     if (!csrfToken) {
-      setError("ไม่สามารถเริ่มต้น security token ได้ กรุณารีเฟรชหน้าแล้วลองใหม่");
+      setError("ไม่สามารถเตรียมเซสชันของหน้านี้ได้ กรุณารีเฟรชแล้วลองใหม่");
       return;
     }
 
@@ -117,7 +117,7 @@ export function LoginForm() {
 
     const csrfToken = await getCsrfToken();
     if (!csrfToken) {
-      setError("ไม่สามารถเริ่มต้น security token ได้ กรุณารีเฟรชหน้าแล้วลองใหม่");
+      setError("ไม่สามารถเตรียมเซสชันของหน้านี้ได้ กรุณารีเฟรชแล้วลองใหม่");
       return;
     }
 
@@ -387,7 +387,7 @@ export function LoginForm() {
       {error ? <ErrorBox>{error}</ErrorBox> : null}
 
       <div className="mt-[18px] flex flex-wrap items-center justify-between gap-[10px] max-[720px]:[&>*]:w-full">
-        <span className={ghostPillClass}>หลังบ้านจะตรวจ session และ CSRF ต่อที่ backend</span>
+        <span className={ghostPillClass}>ระบบจะตรวจสอบเซสชันก่อนเข้าใช้งาน</span>
         <button type="submit" className={primaryButtonClass} disabled={pending || !username.trim() || !password}>
           {pending ? "กำลังตรวจบัญชี..." : "ดำเนินการต่อ"}
         </button>

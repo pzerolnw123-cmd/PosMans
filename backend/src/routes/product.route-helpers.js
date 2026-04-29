@@ -99,7 +99,7 @@ function assertOwnedUploadedKey(storeId, uploadedKey) {
   }
 
   if (!uploadedKey.startsWith(ownerUploadPrefix(storeId))) {
-    throw new AppError("Uploaded file does not belong to this store", 403, { code: "UPLOAD_SCOPE_MISMATCH" });
+    throw new AppError("ไม่สามารถใช้ไฟล์นี้ได้", 403, { code: "UPLOAD_SCOPE_MISMATCH" });
   }
 }
 
@@ -110,7 +110,7 @@ function assertImageUrlMatchesUploadedKey(uploadedKey, imageUrl) {
 
   const expectedUrl = `${env.R2_PUBLIC_BASE_URL.replace(/\/$/, "")}/${uploadedKey}`;
   if (imageUrl !== expectedUrl) {
-    throw new AppError("Image URL does not match uploaded file", 400, { code: "UPLOAD_URL_MISMATCH" });
+    throw new AppError("ข้อมูลรูปภาพไม่ถูกต้อง กรุณาอัปโหลดใหม่", 400, { code: "UPLOAD_URL_MISMATCH" });
   }
 }
 
@@ -119,7 +119,7 @@ function assertUploadPairAndScope(storeId, { imageUrl, uploadedKey }, partial = 
   const keyProvided = uploadedKey !== undefined;
 
   if (partial && imageProvided !== keyProvided) {
-    throw new AppError("Image URL and uploaded key must be updated together", 400, { code: "UPLOAD_PAIR_REQUIRED" });
+    throw new AppError("ข้อมูลรูปภาพไม่ครบถ้วน กรุณาอัปโหลดใหม่", 400, { code: "UPLOAD_PAIR_REQUIRED" });
   }
 
   if (!partial || imageProvided || keyProvided) {
@@ -127,7 +127,7 @@ function assertUploadPairAndScope(storeId, { imageUrl, uploadedKey }, partial = 
     const nextUploadedKey = uploadedKey || null;
 
     if (Boolean(nextImageUrl) !== Boolean(nextUploadedKey)) {
-      throw new AppError("Image URL and uploaded key must be saved together", 400, { code: "UPLOAD_PAIR_REQUIRED" });
+      throw new AppError("ข้อมูลรูปภาพไม่ครบถ้วน กรุณาอัปโหลดใหม่", 400, { code: "UPLOAD_PAIR_REQUIRED" });
     }
 
     assertOwnedUploadedKey(storeId, nextUploadedKey);
@@ -194,7 +194,7 @@ async function createProductWithUniqueCode(db, storeId, parsed) {
     }
   }
 
-  throw new AppError("Could not allocate product code after multiple attempts", 409, {
+  throw new AppError("ยังไม่สามารถสร้างรหัสสินค้าได้ กรุณาลองอีกครั้ง", 409, {
     code: "PRODUCT_CODE_CONFLICT",
     cause: lastError,
   });
