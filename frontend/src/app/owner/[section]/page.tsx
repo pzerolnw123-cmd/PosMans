@@ -3,7 +3,7 @@ import { getOwnerPaymentSettings, requireOwnerSession } from "@/lib/session";
 import { OwnerWorkspace, type OwnerSectionKey } from "@/components/owner-workspace";
 
 const validSections: OwnerSectionKey[] = ["sales", "payments", "receipts", "reports", "menu", "overview", "calculator", "settings"];
-const sectionsNeedingPaymentSettings = new Set<OwnerSectionKey>(["payments", "settings"]);
+const sectionsNeedingPaymentSettings = new Set<OwnerSectionKey>(["payments", "overview", "settings"]);
 
 export default async function OwnerSectionPage({
   params,

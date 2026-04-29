@@ -14,8 +14,6 @@ import {
   readApiMessage,
 } from "./shared";
 
-// ── OwnerProfileClient ───────────────────────────────────────────────────────
-
 export function OwnerProfileClient({
   storeName,
   ownerName,
@@ -45,12 +43,11 @@ export function OwnerProfileClient({
     storeName: savedForm.storeName.trim(),
     ownerName: savedForm.ownerName.trim(),
   };
-  const hasFormValues = Boolean(normalizedForm.storeName || normalizedForm.ownerName);
   const profileChanged = normalizedForm.storeName !== normalizedSavedForm.storeName || normalizedForm.ownerName !== normalizedSavedForm.ownerName;
   const canSaveProfile = profileChanged && Boolean(normalizedForm.storeName && normalizedForm.ownerName);
 
-  function handleReset() {
-    setForm({ storeName: "", ownerName: "" });
+  function handleRevert() {
+    setForm(savedForm);
     setSubmitState({
       status: "idle",
       message: "แก้ชื่อร้านและชื่อเจ้าของร้าน แล้วบันทึกเพื่ออัปเดต Status Store",
@@ -133,8 +130,8 @@ export function OwnerProfileClient({
         </label>
       </div>
       <div className="mt-5 flex flex-wrap justify-start gap-3 max-[900px]:[&>*]:w-full">
-        <button type="button" className={activeGhostButtonClass} onClick={handleReset} disabled={pending || !hasFormValues}>
-          รีเซ็ต
+        <button type="button" className={activeGhostButtonClass} onClick={handleRevert} disabled={pending || !profileChanged}>
+          ย้อนกลับ
         </button>
         <button type="submit" className={primaryButtonClass} disabled={pending || !canSaveProfile}>
           {pending ? "กำลังบันทึก..." : "บันทึกข้อมูลร้าน"}

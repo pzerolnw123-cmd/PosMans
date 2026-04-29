@@ -118,7 +118,7 @@ export async function OwnerWorkspace({ session, paymentStore, activeSection }: O
     paymentQrImageUrl: paymentStore?.paymentQrImageUrl || "",
     paymentQrUploadedKey: paymentStore?.paymentQrUploadedKey || "",
   };
-  const screen = await renderOwnerScreen(activeSection, storeName, ownerName, formStoreName, formOwnerName, paymentSettings);
+  const screen = await renderOwnerScreen(activeSection, storeName, ownerName, formStoreName, formOwnerName, paymentSettings, session.user.store?.logoUrl || "");
   const showFooterCards = !screen.standalone;
   const shell = (
     <BackofficeShell

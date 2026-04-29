@@ -24,6 +24,7 @@ export async function renderOwnerScreen(
   formStoreName: string,
   formOwnerName: string,
   paymentSettings: OwnerPaymentSettingsValue,
+  storeLogoUrl = "",
 ) {
   if (activeSection === "sales") {
     const { SalesPaginationMockup } = await import("@/components/sales-pagination-mockup");
@@ -138,25 +139,33 @@ export async function renderOwnerScreen(
   }
 
   if (activeSection === "overview") {
+    const { OwnerOverviewClient } = await import("@/components/owner-overview-client");
+
     return {
       eyebrow: "Overview",
       title: "ภาพรวมร้าน",
       description: "หน้ารวมสำหรับ owner โดยไม่ปะปนเรื่อง platform-level control ของ superadmin",
       actions: <StatusPill>{storeName}</StatusPill>,
       body: (
-        <section className="grid h-full min-h-0 grid-rows-[140px_minmax(0,1fr)] gap-[12px] max-[1180px]:grid-rows-[auto_minmax(0,1fr)] max-[820px]:gap-4">
+        <section className="grid h-full min-h-0 grid-rows-[156px_minmax(0,1fr)] gap-[18px] max-[1180px]:grid-rows-[auto_minmax(0,1fr)] max-[820px]:gap-4">
           <PageHeader
             eyebrow="Overview"
+            description="ตรวจความพร้อมของร้าน สินค้า การรับเงิน และงานค้างที่ควรจัดการก่อนเริ่มขาย"
             title="ภาพรวมร้าน"
             actions={
               <>
-                <StatusPill>{storeName}</StatusPill>
-                <div className="h-5 w-[112px] rounded-full border border-[var(--border)] bg-[var(--overlay-white-06)] max-[720px]:w-full" />
+                <StatusPill tone="success">พร้อมเช็ก</StatusPill>
               </>
             }
           />
 
-          <div className="grid min-h-0 grid-cols-[minmax(0,1.25fr)_minmax(320px,0.75fr)] gap-[18px] max-[1280px]:grid-cols-1">
+          <OwnerOverviewClient
+            storeProfileComplete={Boolean(formStoreName.trim() && formOwnerName.trim())}
+            hasStoreLogo={Boolean(storeLogoUrl)}
+            paymentSettings={paymentSettings}
+          />
+
+          <div className="hidden">
             <PanelCard eyebrow="Store Pulse" title="สถานะวันนี้" description="ตัวเลขหลักของร้านในวันเดียว" className="grid min-h-0 content-start px-[18px] py-4">
               <div className="grid gap-[18px]">
                 <ThreeUpStats items={[["ออเดอร์เปิด", "8"], ["ยอดขายสด", "28.4K"], ["พนักงานเข้าเวร", "6"]]} />

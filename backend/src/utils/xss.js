@@ -1,6 +1,7 @@
 const sanitizeHtml = require("sanitize-html");
 const { z } = require("zod");
 const { AppError } = require("./app-error");
+const { assertNoProfanity } = require("./profanity-filter");
 
 const suspiciousHtmlPattern = /<\s*\/??\s*[a-z!]|javascript:|vbscript:|data:text\/html/i;
 const safeUrlProtocolPattern = /^(https?:\/\/)/i;
@@ -14,7 +15,7 @@ function assertSafePlainText(value, fieldName = "value") {
     throw new AppError(`${fieldName} contains disallowed markup`, 400, { code: "UNSAFE_TEXT" });
   }
 
-  return value;
+  return assertNoProfanity(value, fieldName);
 }
 
 function assertSafeHttpUrl(value, fieldName = "url") {

@@ -90,6 +90,14 @@ main {
   scroll-behavior: auto;
 }
 
+html[data-store-theme="mono"] .payment-method-active {
+  border-color: var(--border);
+  background: color-mix(in srgb, var(--surface-muted) 82%, var(--foreground) 8%);
+  color: var(--foreground);
+  box-shadow: none;
+  opacity: 1;
+}
+
 .app-loader {
   width: var(--loader-size, 48px);
   height: var(--loader-size, 48px);
