@@ -1,4 +1,40 @@
+# Dependencies
 node_modules
+**/node_modules/
+
+# Build output and framework caches
+frontend/.next/
+frontend/out/
+frontend/build/
+backend/dist/
+dist/
+build/
+
+# Test, coverage, and reports
+coverage/
+**/coverage/
+frontend/test-results/
+frontend/playwright-report/
+test-results/
+playwright-report/
+
+# Logs and local runtime files
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+*.pid
+*.seed
+*.local
+
+# OS/editor files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
 
 # Local secrets and machine-specific environment files.
 .env
@@ -13,3 +49,12 @@ frontend/.env.*
 
 # Generated Prisma client; recreate with `npm --prefix backend run db:generate`.
 backend/src/generated/prisma/
+backend/src/generated/
+
+# Local databases and dumps.
+*.sqlite
+*.sqlite3
+*.db
+*.dump
+*.sql
+*.bak

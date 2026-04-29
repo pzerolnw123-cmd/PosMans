@@ -2,17 +2,18 @@ const crypto = require("crypto");
 const express = require("express");
 const { z } = require("zod");
 const { prisma } = require("../lib/db");
-const { requireStoreRole } = require("../middleware/auth");
+const { getRequiredOwnerStoreId, requireStoreRole } = require("../middleware/auth");
 const { requireCsrf, requireTrustedOrigin } = require("../middleware/security");
 const { writeAuditLog } = require("../utils/audit");
 const { AppError } = require("../utils/app-error");
+const { broadcastDisplayEvent, sendSse, subscribeDisplay, subscribeStore } = require("../utils/customer-display-events");
 const { assertSafePlainText, assertSafeHttpUrl } = require("../utils/xss");
 
 const router = express.Router();
-const displayClients = new Map();
 const displayTokenByteLength = 32;
 const displaySessionDays = 30;
 const maxQrDataUrlLength = 350_000;
+const defaultOwnerTheme = "light";
 
 const displayCreateSchema = z.object({
   name: z
@@ -50,15 +51,6 @@ function displayTokenMatches(token, tokenHash) {
   return provided.length === expected.length && crypto.timingSafeEqual(provided, expected);
 }
 
-function requireOwnerStoreId(req) {
-  const storeId = req.session?.user?.storeId;
-  if (!storeId) {
-    throw new AppError("ไม่สามารถดำเนินการได้ในขณะนี้", 403, { code: "STORE_REQUIRED" });
-  }
-
-  return storeId;
-}
-
 function normalizeQrDataUrl(value) {
   if (!value) {
     return null;
@@ -88,36 +80,16 @@ function serializeDisplay(display) {
   };
 }
 
-function subscribeDisplay(displayId, res) {
-  const clients = displayClients.get(displayId) || new Set();
-  clients.add(res);
-  displayClients.set(displayId, clients);
-
-  return () => {
-    clients.delete(res);
-    if (clients.size === 0) {
-      displayClients.delete(displayId);
-    }
-  };
-}
-
-function sendSse(res, event, data) {
-  res.write(`event: ${event}\n`);
-  res.write(`data: ${JSON.stringify(data)}\n\n`);
-}
-
 function broadcastDisplay(display) {
-  const clients = displayClients.get(display.id);
-  if (!clients) {
-    return;
-  }
+  broadcastDisplayEvent(display.id, "display", serializeDisplay(display));
+}
 
-  const payload = serializeDisplay(display);
-  clients.forEach((client) => sendSse(client, "display", payload));
+function resolveDisplayTheme(display) {
+  return display.store?.users?.[0]?.ownerTheme || defaultOwnerTheme;
 }
 
 async function findOwnedDisplay(req, displayId) {
-  const storeId = requireOwnerStoreId(req);
+  const storeId = await getRequiredOwnerStoreId(req);
   const display = await prisma.customerDisplaySession.findFirst({
     where: { id: displayId, storeId, revokedAt: null },
   });
@@ -136,7 +108,22 @@ async function findPublicDisplay(displayId, token) {
 
   const display = await prisma.customerDisplaySession.findUnique({
     where: { id: displayId },
-    include: { store: { select: { id: true, name: true, logoUrl: true, isActive: true } } },
+    include: {
+      store: {
+        select: {
+          id: true,
+          name: true,
+          logoUrl: true,
+          isActive: true,
+          users: {
+            where: { storeRole: "OWNER", isActive: true },
+            select: { ownerTheme: true },
+            orderBy: { updatedAt: "desc" },
+            take: 1,
+          },
+        },
+      },
+    },
   });
 
   if (!display || display.revokedAt || !display.store?.isActive || !displayTokenMatches(token, display.publicTokenHash)) {
@@ -152,7 +139,7 @@ async function findPublicDisplay(displayId, token) {
 
 router.get("/", requireStoreRole(["OWNER"]), async (req, res, next) => {
   try {
-    const storeId = requireOwnerStoreId(req);
+    const storeId = await getRequiredOwnerStoreId(req, res);
     const displays = await prisma.customerDisplaySession.findMany({
       where: { storeId, revokedAt: null },
       orderBy: { updatedAt: "desc" },
@@ -167,7 +154,7 @@ router.get("/", requireStoreRole(["OWNER"]), async (req, res, next) => {
 
 router.post("/", requireTrustedOrigin, requireCsrf, requireStoreRole(["OWNER"]), async (req, res, next) => {
   try {
-    const storeId = requireOwnerStoreId(req);
+    const storeId = await getRequiredOwnerStoreId(req, res);
     const parsed = displayCreateSchema.parse(req.body || {});
     const token = createDisplayToken();
     const display = await prisma.customerDisplaySession.create({
@@ -271,8 +258,25 @@ router.get("/:displayId/state", async (req, res, next) => {
       store: {
         name: display.store.name,
         logoUrl: display.store.logoUrl,
+        ownerTheme: resolveDisplayTheme(display),
       },
       display: serializeDisplay(display),
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.get("/:displayId/store", async (req, res, next) => {
+  try {
+    const display = await findPublicDisplay(req.params.displayId, String(req.query.token || ""));
+    res.set("Cache-Control", "no-store");
+    res.json({
+      store: {
+        name: display.store.name,
+        logoUrl: display.store.logoUrl,
+        ownerTheme: resolveDisplayTheme(display),
+      },
     });
   } catch (error) {
     next(error);
@@ -296,12 +300,19 @@ router.get("/:displayId/events", async (req, res, next) => {
     res.flushHeaders?.();
 
     sendSse(res, "display", serializeDisplay(display));
+    sendSse(res, "store", {
+      name: display.store.name,
+      logoUrl: display.store.logoUrl,
+      ownerTheme: resolveDisplayTheme(display),
+    });
     const unsubscribe = subscribeDisplay(display.id, res);
-    const heartbeat = setInterval(() => sendSse(res, "ping", { at: Date.now() }), 25_000);
+    const unsubscribeStore = subscribeStore(display.store.id, res);
+    const heartbeat = setInterval(() => sendSse(res, "ping", { at: Date.now() }), 15_000);
 
     req.on("close", () => {
       clearInterval(heartbeat);
       unsubscribe();
+      unsubscribeStore();
     });
   } catch (error) {
     next(error);
@@ -309,3 +320,4 @@ router.get("/:displayId/events", async (req, res, next) => {
 });
 
 module.exports = router;
+

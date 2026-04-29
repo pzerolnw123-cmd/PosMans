@@ -1,6 +1,5 @@
-import { backendResponse, proxyToBackend } from "@/lib/proxy";
+import { proxyBackendRoute } from "@/lib/proxy";
 
-export async function GET() {
-  const response = await proxyToBackend("/api/auth/me");
-  return backendResponse(response);
+export async function GET(request: Request) {
+  return proxyBackendRoute(request, "/api/auth/me");
 }

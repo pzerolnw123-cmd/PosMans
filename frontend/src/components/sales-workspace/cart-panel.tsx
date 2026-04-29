@@ -3,7 +3,7 @@
 import type { PointerEvent, RefObject } from "react";
 import type { ProductItem } from "@/components/product-management-studio/types";
 import { StatusPill } from "@/components/ui-primitives";
-import { BasketIcon, formatBaht, stockLimit } from "@/components/sales-pagination-mockup/helpers";
+import { BasketIcon, formatBaht, stockLimit } from "@/components/sales-workspace/helpers";
 
 type CartItem = { product: ProductItem; quantity: number };
 
@@ -45,13 +45,13 @@ export function SalesCartPanel({ cartPulse, itemCount, cartItems, cartScrollMetr
         </div>
 
         {cartItems.length > 0 ? (
-          <div className="relative min-h-0">
+          <div className="relative min-h-0 max-[1366px]:max-h-[56vh] max-[720px]:max-h-[46vh]">
             <div
               ref={cartScrollRef}
               className={
                 cartScrollMetric.visible
-                   ? "sales-cart-scroll grid h-full min-h-0 touch-none cursor-grab select-none content-start gap-3 overflow-y-auto overflow-x-hidden pb-2 pl-0 pr-4 pt-[1px] active:cursor-grabbing"
-                   : "grid h-full min-h-0 touch-none select-none content-start gap-3 overflow-hidden pb-2 pl-0 pr-0 pt-[1px]"
+                   ? "sales-cart-scroll grid h-full min-h-0 touch-auto cursor-grab select-none content-start gap-3 overflow-y-auto overflow-x-hidden pb-2 pl-0 pr-4 pt-[1px] active:cursor-grabbing max-[1366px]:max-h-[56vh] max-[720px]:max-h-[46vh]"
+                   : "sales-cart-scroll grid h-full min-h-0 touch-auto select-auto content-start gap-3 overflow-y-auto overflow-x-hidden pb-2 pl-0 pr-0 pt-[1px] max-[1366px]:max-h-[56vh] max-[720px]:max-h-[46vh]"
               }
               onScroll={updateCartScrollbar}
               onPointerDown={handleCartPointerDown}

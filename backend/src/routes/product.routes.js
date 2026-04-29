@@ -1,6 +1,6 @@
 const express = require("express");
 const { prisma } = require("../lib/db");
-const { requireStoreRole, loadSession } = require("../middleware/auth");
+const { getRequiredOwnerStoreId, requireStoreRole } = require("../middleware/auth");
 const { requireTrustedOrigin, requireCsrf } = require("../middleware/security");
 const { AppError } = require("../utils/app-error");
 const { deleteR2Object } = require("../lib/r2");
@@ -17,20 +17,9 @@ const {
 
 const router = express.Router();
 
-async function requireOwnerStoreId(req, res) {
-  const session = await loadSession(req, res);
-  const storeId = session?.user?.storeId;
-
-  if (!storeId) {
-    throw new AppError("ไม่สามารถดำเนินการได้ด้วยสิทธิ์ปัจจุบัน", 403, { code: "STORE_REQUIRED" });
-  }
-
-  return storeId;
-}
-
 router.get("/", requireStoreRole(["OWNER"]), async (req, res, next) => {
   try {
-    const storeId = await requireOwnerStoreId(req, res);
+    const storeId = await getRequiredOwnerStoreId(req, res);
     const query = productListQuerySchema.parse(req.query);
     const where = {
       storeId,
@@ -77,7 +66,7 @@ router.get("/", requireStoreRole(["OWNER"]), async (req, res, next) => {
 
 router.post("/", requireTrustedOrigin, requireCsrf, requireStoreRole(["OWNER"]), async (req, res, next) => {
   try {
-    const storeId = await requireOwnerStoreId(req, res);
+    const storeId = await getRequiredOwnerStoreId(req, res);
     const parsed = productCreateSchema.parse(req.body);
     assertUploadPairAndScope(storeId, parsed);
 
@@ -123,7 +112,7 @@ router.post("/", requireTrustedOrigin, requireCsrf, requireStoreRole(["OWNER"]),
 
 router.patch("/:productId", requireTrustedOrigin, requireCsrf, requireStoreRole(["OWNER"]), async (req, res, next) => {
   try {
-    const storeId = await requireOwnerStoreId(req, res);
+    const storeId = await getRequiredOwnerStoreId(req, res);
     const parsed = productUpdateSchema.parse(req.body);
     assertUploadPairAndScope(storeId, parsed, true);
 
@@ -201,7 +190,7 @@ router.patch("/:productId", requireTrustedOrigin, requireCsrf, requireStoreRole(
 
 router.delete("/:productId", requireTrustedOrigin, requireCsrf, requireStoreRole(["OWNER"]), async (req, res, next) => {
   try {
-    const storeId = await requireOwnerStoreId(req, res);
+    const storeId = await getRequiredOwnerStoreId(req, res);
     const existingProduct = await prisma.product.findFirst({
       where: { id: req.params.productId, storeId },
       select: { id: true, uploadedKey: true },
@@ -237,3 +226,4 @@ router.delete("/:productId", requireTrustedOrigin, requireCsrf, requireStoreRole
 });
 
 module.exports = router;
+

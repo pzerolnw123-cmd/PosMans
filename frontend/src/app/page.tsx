@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import { getCurrentSession } from "@/lib/session";
 import { getWorkspaceHref } from "@/lib/workspace";
 import { PanelCard } from "@/components/backoffice-shell";
@@ -133,7 +133,7 @@ export default async function HomePage() {
             <div className="mt-4 grid gap-[14px]">
               {[
                 ["Sidebar ก่อน", "ผู้ใช้รู้ทันทีว่าตอนนี้อยู่ส่วนไหนของระบบ"],
-                ["Card เป็นโมดูล", "ทุกพื้นที่ทำงานแยกหน้าที่ชัดเหมือน mockup"],
+                ["Card เป็นโมดูล", "ทุกพื้นที่ทำงานแยกหน้าที่ชัดชัดเจนสำหรับงานขายจริง"],
                 ["Action เด่น", "ปุ่มหลักใช้สีแบรนด์และวางชิดมุมล่างขวาตาม flow บันทึก"],
               ].map(([title, copy]) => (
                 <div
@@ -154,4 +154,5 @@ export default async function HomePage() {
     </main>
   );
 }
+
 

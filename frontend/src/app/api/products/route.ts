@@ -1,22 +1,15 @@
-import { backendResponse, buildBackendHeaders, proxyToBackend } from "@/lib/proxy";
+import { proxyBackendRoute } from "@/lib/proxy";
 
 export async function GET(request: Request) {
-  const url = new URL(request.url);
-  const response = await proxyToBackend(`/api/products${url.search}`, {
-    method: "GET",
-    headers: buildBackendHeaders(request, { refererPath: "/owner/menu" }),
-  });
-
-  return backendResponse(response);
+  return proxyBackendRoute(request, "/api/products", { includeSearch: true, refererPath: "/owner/menu" });
 }
 
 export async function POST(request: Request) {
-  const body = await request.text();
-  const response = await proxyToBackend("/api/products", {
+  return proxyBackendRoute(request, "/api/products", {
     method: "POST",
-    headers: buildBackendHeaders(request, { csrf: true, contentType: true, refererPath: "/owner/menu" }),
-    body,
+    csrf: true,
+    contentType: true,
+    refererPath: "/owner/menu",
+    forwardBody: true,
   });
-
-  return backendResponse(response);
 }

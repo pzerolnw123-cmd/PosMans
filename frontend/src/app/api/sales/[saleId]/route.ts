@@ -1,4 +1,4 @@
-import { backendResponse, buildBackendHeaders, proxyToBackend } from "@/lib/proxy";
+import { proxyBackendRoute } from "@/lib/proxy";
 
 type RouteContext = {
   params: Promise<{ saleId: string }>;
@@ -6,10 +6,5 @@ type RouteContext = {
 
 export async function GET(request: Request, context: RouteContext) {
   const { saleId } = await context.params;
-  const response = await proxyToBackend(`/api/sales/${saleId}`, {
-    method: "GET",
-    headers: buildBackendHeaders(request, { refererPath: "/owner/receipts" }),
-  });
-
-  return backendResponse(response);
+  return proxyBackendRoute(request, `/api/sales/${saleId}`, { refererPath: "/owner/receipts" });
 }

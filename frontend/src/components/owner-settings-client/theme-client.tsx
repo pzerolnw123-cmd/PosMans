@@ -5,73 +5,17 @@ import { createPortal } from "react-dom";
 import { useBackofficeShellAlert } from "@/components/backoffice-shell";
 import { StatusPill } from "@/components/ui-primitives";
 import { ensureCsrfToken } from "@/lib/csrf";
-import type { OwnerThemeId } from "./shared";
+import { applyOwnerTheme, readActiveOwnerTheme, subscribeOwnerTheme, type OwnerThemeId } from "@/lib/owner-theme";
 import {
   activeGhostButtonClass,
   defaultOwnerTheme,
-  isOwnerTheme,
   ownerThemeOptions,
-  ownerThemeStorageKey,
 } from "./shared";
 
 // ── Theme Helpers ────────────────────────────────────────────────────────────
 
-const ownerThemeChangeEvent = "pos-mans-owner-theme-change";
-
-function readOwnerTheme(): OwnerThemeId {
-  if (typeof window === "undefined") {
-    return defaultOwnerTheme;
-  }
-
-  const currentTheme = document.documentElement.dataset.storeTheme;
-  if (isOwnerTheme(currentTheme)) {
-    return currentTheme;
-  }
-
-  try {
-    const savedTheme = window.localStorage.getItem(ownerThemeStorageKey);
-    if (isOwnerTheme(savedTheme)) {
-      return savedTheme;
-    }
-  } catch {
-    // Ignore localStorage access issues and fall back to the default theme.
-  }
-
-  return defaultOwnerTheme;
-}
-
-function applyOwnerTheme(theme: OwnerThemeId) {
-  if (typeof document === "undefined") {
-    return;
-  }
-
-  document.documentElement.dataset.storeTheme = theme;
-
-  try {
-    window.localStorage.setItem(ownerThemeStorageKey, theme);
-  } catch {
-    // Persisting the theme is optional; the visual update should still work.
-  }
-
-  window.dispatchEvent(new CustomEvent(ownerThemeChangeEvent));
-}
-
-function subscribeOwnerTheme(callback: () => void) {
-  if (typeof window === "undefined") {
-    return () => undefined;
-  }
-
-  window.addEventListener("storage", callback);
-  window.addEventListener(ownerThemeChangeEvent, callback);
-
-  return () => {
-    window.removeEventListener("storage", callback);
-    window.removeEventListener(ownerThemeChangeEvent, callback);
-  };
-}
-
 function getOwnerThemeSnapshot(): OwnerThemeId {
-  return readOwnerTheme();
+  return readActiveOwnerTheme();
 }
 
 function getServerOwnerThemeSnapshot(): OwnerThemeId | null {

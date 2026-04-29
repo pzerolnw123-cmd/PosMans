@@ -2,8 +2,8 @@
 
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type PointerEvent } from "react";
 import { useRouter } from "next/navigation";
-import { readStoredCustomerDisplay } from "@/components/customer-display-session";
-import { requestJson, requestProductList } from "@/components/product-management-studio/lib";
+import { setStoredCustomerDisplayIdle } from "@/components/customer-display-session";
+import { requestProductList } from "@/components/product-management-studio/lib";
 import { categoryOptions, type ProductCategory, type ProductItem } from "@/components/product-management-studio/types";
 
 type CartItem = {
@@ -20,10 +20,10 @@ type StoredSalesCart = {
   savedAt?: string;
 };
 
-import { BasketIcon, CategoryIcon, displaySaleStatus, formatBaht, isProductSellable, normalizeStockValue, salesCartStorageKey, stockLabel, stockLimit } from "@/components/sales-pagination-mockup/helpers";
-import { SalesCartPanel } from "@/components/sales-pagination-mockup/cart-panel";
+import { BasketIcon, CategoryIcon, displaySaleStatus, formatBaht, isProductSellable, normalizeStockValue, salesCartStorageKey, stockLabel, stockLimit } from "@/components/sales-workspace/helpers";
+import { SalesCartPanel } from "@/components/sales-workspace/cart-panel";
 import { LoadingState } from "@/components/ui-primitives";
-export function SalesPaginationMockup() {
+export function SalesWorkspaceClient() {
   const router = useRouter();
   const [products, setProducts] = useState<ProductItem[]>([]);
   const [activeCategory, setActiveCategory] = useState<ProductCategory>("ทั้งหมด");
@@ -116,15 +116,7 @@ export function SalesPaginationMockup() {
   }, [activeCategory, pageIndex]);
 
   useEffect(() => {
-    const customerDisplay = readStoredCustomerDisplay();
-    if (!customerDisplay) {
-      return;
-    }
-
-    void requestJson(`/api/customer-displays/${encodeURIComponent(customerDisplay.id)}/state`, {
-      method: "PATCH",
-      body: JSON.stringify({ status: "IDLE" }),
-    }).catch(() => undefined);
+    void setStoredCustomerDisplayIdle().catch(() => undefined);
   }, []);
 
   useEffect(() => {

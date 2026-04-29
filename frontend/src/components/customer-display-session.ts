@@ -1,5 +1,7 @@
 "use client";
 
+import { requestJson } from "@/components/product-management-studio/lib";
+
 export type CustomerDisplayLink = {
   id: string;
   token: string;
@@ -51,4 +53,16 @@ export function storeCustomerDisplay(display: CustomerDisplayLink) {
 export function openCustomerDisplayWindow(url: string) {
   const displayWindow = window.open(url, customerDisplayWindowName);
   displayWindow?.focus();
+}
+
+export async function setStoredCustomerDisplayIdle() {
+  const customerDisplay = readStoredCustomerDisplay();
+  if (!customerDisplay) {
+    return;
+  }
+
+  await requestJson(`/api/customer-displays/${encodeURIComponent(customerDisplay.id)}/state`, {
+    method: "PATCH",
+    body: JSON.stringify({ status: "IDLE" }),
+  });
 }

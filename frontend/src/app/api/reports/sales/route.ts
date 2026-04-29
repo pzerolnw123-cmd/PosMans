@@ -1,11 +1,5 @@
-import { backendResponse, buildBackendHeaders, proxyToBackend } from "@/lib/proxy";
+import { proxyBackendRoute } from "@/lib/proxy";
 
 export async function GET(request: Request) {
-  const url = new URL(request.url);
-  const response = await proxyToBackend(`/api/reports/sales${url.search}`, {
-    method: "GET",
-    headers: buildBackendHeaders(request, { refererPath: "/owner/reports" }),
-  });
-
-  return backendResponse(response);
+  return proxyBackendRoute(request, "/api/reports/sales", { includeSearch: true, refererPath: "/owner/reports" });
 }

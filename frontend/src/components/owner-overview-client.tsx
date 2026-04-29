@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import type { OwnerPaymentSettingsValue } from "@/components/owner-settings-client/shared";
 import { requestJson, requestProductList } from "@/components/product-management-studio/lib";
 import type { ProductItem } from "@/components/product-management-studio/types";
-import { formatBaht, normalizeStockValue, salesCartStorageKey } from "@/components/sales-pagination-mockup/helpers";
+import { formatBaht, normalizeStockValue, salesCartStorageKey } from "@/components/sales-workspace/helpers";
 import type { Receipt, ReceiptListResponse } from "@/components/receipt-desk-client/receipt-format";
 import { formatDateTime } from "@/components/receipt-desk-client/receipt-format";
 import { LoadingState, secondaryButtonClass, StatusPill } from "@/components/ui-primitives";

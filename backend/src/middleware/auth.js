@@ -1,5 +1,6 @@
 const { getSessionFromToken, setSessionCookie, touchSession } = require("../utils/session");
 const { env } = require("../config/env");
+const { AppError } = require("../utils/app-error");
 
 async function loadSession(req, res) {
   if (req.session) {
@@ -77,4 +78,15 @@ function requireAccess({ platformRoles = [], storeRoles = [] }) {
   };
 }
 
-module.exports = { requireAuth, requirePlatformRole, requireStoreRole, requireAccess, loadSession };
+async function getRequiredOwnerStoreId(req, res) {
+  const session = req.session || (await loadSession(req, res));
+  const storeId = session?.user?.storeId;
+
+  if (!storeId) {
+    throw new AppError("ไม่สามารถดำเนินการได้ด้วยสิทธิ์ปัจจุบัน", 403, { code: "STORE_REQUIRED" });
+  }
+
+  return storeId;
+}
+
+module.exports = { requireAuth, requirePlatformRole, requireStoreRole, requireAccess, getRequiredOwnerStoreId, loadSession };

@@ -17,6 +17,7 @@
     "security:audit:backend": "npm --prefix backend audit --audit-level=high",
     "security:audit:frontend": "npm --prefix frontend audit --audit-level=high",
     "security:audit": "npm run security:audit:backend && npm run security:audit:frontend",
+    "release:check": "npm run security:secrets && npm run security:production:strict && npm run security:audit && npm run test:backend && npm run lint:frontend && npm run build:frontend",
     "db:generate": "npm --prefix backend run db:generate",
     "db:push": "npm --prefix backend run db:push",
     "create:admin": "npm --prefix backend run create:admin"

@@ -246,14 +246,14 @@ export function ProfitCalculatorClient() {
 
     const productRows = rows
       .map(
-        (row) => `
-          <tr>
-            <td>${escapeHtml(row.name)}</td>
+        (row, index) => `
+          <tr class="${index % 2 === 0 ? "row-even" : "row-odd"}">
+            <td class="cell-product">${escapeHtml(row.name)}</td>
             <td class="number">${escapeHtml(row.quantity.toLocaleString("th-TH"))}</td>
             <td class="number">${escapeHtml(formatBaht(row.sales))}</td>
-            <td class="number">${escapeHtml(formatBaht(row.unitCost))}</td>
-            <td class="number">${escapeHtml(formatBaht(row.totalCost))}</td>
-            <td class="number">${escapeHtml(formatBaht(row.profit))}</td>
+            <td class="number muted-number">${escapeHtml(formatBaht(row.unitCost))}</td>
+            <td class="number muted-number">${escapeHtml(formatBaht(row.totalCost))}</td>
+            <td class="number ${row.profit < 0 ? "negative" : "positive"}">${escapeHtml(formatBaht(row.profit))}</td>
           </tr>
         `,
       )
@@ -265,38 +265,76 @@ export function ProfitCalculatorClient() {
           <meta charset="utf-8" />
           <title>รายงานคำนวณกำไร</title>
           <style>
-            @page { size: A4; margin: 14mm; }
-            * { box-sizing: border-box; }
-            body { font-family: Arial, Tahoma, sans-serif; color: #111827; margin: 0; }
-            h1 { font-size: 24px; margin: 0 0 6px; }
-            p { margin: 0; }
-            .muted { color: #4b5563; font-size: 12px; }
-            .header { border-bottom: 2px solid #111827; padding-bottom: 14px; margin-bottom: 16px; }
-            .summary { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 16px; }
-            .box { border: 1px solid #111827; padding: 10px; min-height: 58px; }
-            .label { display: block; color: #4b5563; font-size: 11px; margin-bottom: 5px; }
-            strong { font-size: 15px; }
-            table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-            th, td { border: 1px solid #111827; padding: 8px; font-size: 12px; text-align: left; }
-            th { background: #f3f4f6; }
+            @page { size: A4; margin: 12mm; }
+            body { font-family: Tahoma, Arial, sans-serif; color: #111827; margin: 0; background: #ffffff; }
+            table { border-collapse: collapse; }
+            .sheet { width: 980px; }
+            .brand { background: #0f172a; color: #ffffff; }
+            .brand-title { font-size: 28px; font-weight: 700; padding: 18px 18px 4px; border: 1px solid #0f172a; }
+            .brand-meta { font-size: 12px; padding: 0 18px 18px; border: 1px solid #0f172a; border-top: 0; color: #dbeafe; }
+            .spacer { height: 12px; font-size: 1px; }
+            .summary-label { background: #e0f2fe; border: 1px solid #bae6fd; color: #075985; font-size: 12px; font-weight: 700; padding: 8px 10px; }
+            .summary-value { background: #f8fafc; border: 1px solid #cbd5e1; color: #0f172a; font-size: 20px; font-weight: 700; padding: 10px; }
+            .summary-value.profit { color: #047857; }
+            .summary-value.loss { color: #b91c1c; }
+            .section-title { background: #f1f5f9; border: 1px solid #cbd5e1; color: #0f172a; font-size: 15px; font-weight: 700; padding: 9px 10px; }
+            .product-table { width: 100%; }
+            .product-table th { background: #1e40af; color: #ffffff; border: 1px solid #1e3a8a; font-size: 12px; font-weight: 700; padding: 9px 8px; }
+            .product-table td { border: 1px solid #cbd5e1; font-size: 12px; padding: 8px; }
+            .cell-product { color: #0f172a; font-weight: 700; }
+            .row-even td { background: #ffffff; }
+            .row-odd td { background: #f8fafc; }
             .number { text-align: right; white-space: nowrap; }
-            .totals { width: 55%; margin-left: auto; margin-top: 16px; }
-            .totals td:first-child { color: #4b5563; }
+            .muted-number { color: #475569; }
+            .positive { color: #047857; font-weight: 700; }
+            .negative { color: #b91c1c; font-weight: 700; }
+            .totals { width: 420px; margin-left: auto; }
+            .totals td { border: 1px solid #cbd5e1; font-size: 12px; padding: 8px 10px; }
+            .totals .total-label { background: #f8fafc; color: #475569; font-weight: 700; }
+            .totals .total-value { background: #ffffff; font-weight: 700; }
+            .grand-row td { background: #ecfdf5; color: #065f46; font-size: 14px; }
             @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
           </style>
         </head>
         <body>
-          <div class="header">
-            <h1>รายงานคำนวณกำไร</h1>
-            <p class="muted">ช่วงเวลา: ${escapeHtml(dateLabel)} | สร้างเมื่อ: ${escapeHtml(generatedAt)}</p>
-          </div>
-          <div class="summary">
-            <div class="box"><span class="label">ยอดขาย</span><strong>${escapeHtml(formatBaht(calculation.sales))}</strong></div>
-            <div class="box"><span class="label">ต้นทุนรวม</span><strong>${escapeHtml(formatBaht(calculation.totalCost))}</strong></div>
-            <div class="box"><span class="label">กำไรสุทธิ</span><strong>${escapeHtml(formatBaht(calculation.profit))}</strong></div>
-            <div class="box"><span class="label">Margin</span><strong>${escapeHtml(`${calculation.margin.toFixed(1)}%`)}</strong></div>
-          </div>
-          <table>
+          <table class="sheet">
+            <colgroup>
+              <col style="width: 260px" />
+              <col style="width: 92px" />
+              <col style="width: 130px" />
+              <col style="width: 130px" />
+              <col style="width: 130px" />
+              <col style="width: 130px" />
+            </colgroup>
+            <tr><td class="brand brand-title" colspan="6">รายงานคำนวณกำไร</td></tr>
+            <tr><td class="brand brand-meta" colspan="6">ช่วงเวลา: ${escapeHtml(dateLabel)} &nbsp;&nbsp;|&nbsp;&nbsp; สร้างเมื่อ: ${escapeHtml(generatedAt)}</td></tr>
+            <tr><td class="spacer" colspan="6"></td></tr>
+            <tr>
+              <td class="summary-label">ยอดขาย</td>
+              <td class="summary-label">ต้นทุนรวม</td>
+              <td class="summary-label" colspan="2">กำไรสุทธิ</td>
+              <td class="summary-label">Margin</td>
+              <td class="summary-label">สินค้าที่ขาย</td>
+            </tr>
+            <tr>
+              <td class="summary-value">${escapeHtml(formatBaht(calculation.sales))}</td>
+              <td class="summary-value">${escapeHtml(formatBaht(calculation.totalCost))}</td>
+              <td class="summary-value ${calculation.profit < 0 ? "loss" : "profit"}" colspan="2">${escapeHtml(formatBaht(calculation.profit))}</td>
+              <td class="summary-value">${escapeHtml(`${calculation.margin.toFixed(1)}%`)}</td>
+              <td class="summary-value">${escapeHtml(calculation.itemCount.toLocaleString("th-TH"))}</td>
+            </tr>
+            <tr><td class="spacer" colspan="6"></td></tr>
+            <tr><td class="section-title" colspan="6">รายละเอียดสินค้า</td></tr>
+          </table>
+          <table class="product-table sheet">
+            <colgroup>
+              <col style="width: 260px" />
+              <col style="width: 92px" />
+              <col style="width: 130px" />
+              <col style="width: 130px" />
+              <col style="width: 130px" />
+              <col style="width: 130px" />
+            </colgroup>
             <thead>
               <tr>
                 <th>สินค้า</th>
@@ -311,11 +349,13 @@ export function ProfitCalculatorClient() {
               ${productRows || '<tr><td colspan="6">ยังไม่มีข้อมูลสินค้าในช่วงเวลานี้</td></tr>'}
             </tbody>
           </table>
+          <table class="sheet"><tr><td class="spacer"></td></tr></table>
           <table class="totals">
             <tbody>
-              <tr><td>ต้นทุนสินค้ารวม</td><td class="number"><strong>${escapeHtml(formatBaht(calculation.productCost))}</strong></td></tr>
-              <tr><td>ค่าใช้จ่ายเพิ่ม</td><td class="number"><strong>${escapeHtml(formatBaht(calculation.extraCost))}</strong></td></tr>
-              <tr><td>ต้นทุนเฉลี่ย/ชิ้น</td><td class="number"><strong>${escapeHtml(formatBaht(calculation.averageCost))}</strong></td></tr>
+              <tr><td class="total-label">ต้นทุนสินค้ารวม</td><td class="number total-value">${escapeHtml(formatBaht(calculation.productCost))}</td></tr>
+              <tr><td class="total-label">ค่าใช้จ่ายเพิ่ม</td><td class="number total-value">${escapeHtml(formatBaht(calculation.extraCost))}</td></tr>
+              <tr><td class="total-label">ต้นทุนเฉลี่ย/ชิ้น</td><td class="number total-value">${escapeHtml(formatBaht(calculation.averageCost))}</td></tr>
+              <tr class="grand-row"><td class="total-label">กำไรสุทธิ</td><td class="number total-value">${escapeHtml(formatBaht(calculation.profit))}</td></tr>
             </tbody>
           </table>
         </body>

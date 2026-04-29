@@ -1,4 +1,11 @@
 import type { ReactNode } from "react";
+import type { OwnerThemeId } from "@/lib/owner-theme";
+export {
+  defaultOwnerTheme,
+  isOwnerTheme,
+  ownerThemeStorageKey,
+  type OwnerThemeId,
+} from "@/lib/owner-theme";
 
 // Types
 
@@ -8,7 +15,6 @@ export type SubmitState = {
 };
 
 export type PromptPayRecipientType = "MOBILE" | "NATIONAL_ID" | "TAX_ID" | "STATIC_QR" | "BANK_ACCOUNT";
-export type OwnerThemeId = "violet" | "light" | "dark" | "mono";
 
 export type OwnerPaymentSettingsValue = {
   promptPayEnabled: boolean;
@@ -51,8 +57,6 @@ export const logoFileTypes = new Set(["image/png", "image/jpeg", "image/webp"]);
 export const maxLogoFileSize = 2 * 1024 * 1024;
 export const paymentQrFileTypes = new Set(["image/png", "image/jpeg", "image/webp"]);
 export const maxPaymentQrFileSize = 2 * 1024 * 1024;
-export const ownerThemeStorageKey = "pos-mans-owner-theme";
-export const defaultOwnerTheme: OwnerThemeId = "light";
 
 export const ownerThemeOptions: Array<{
   id: OwnerThemeId;
@@ -145,10 +149,6 @@ export const passwordToggleClass =
   "inline-flex h-full w-[42px] items-center justify-center rounded-r-[10px] text-[var(--foreground-soft)] transition hover:bg-[var(--overlay-white-04)] hover:text-[var(--foreground)] disabled:cursor-not-allowed disabled:opacity-[0.62]";
 
 // ── Utility Functions ────────────────────────────────────────────────────────
-
-export function isOwnerTheme(value: string | undefined | null): value is OwnerThemeId {
-  return ownerThemeOptions.some((option) => option.id === value);
-}
 
 export function readBlobAsDataUrl(blob: Blob) {
   return new Promise<string>((resolve, reject) => {

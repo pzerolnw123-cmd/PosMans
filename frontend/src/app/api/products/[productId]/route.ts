@@ -1,4 +1,4 @@
-import { backendResponse, buildBackendHeaders, proxyToBackend } from "@/lib/proxy";
+import { proxyBackendRoute } from "@/lib/proxy";
 
 type RouteContext = {
   params: Promise<{ productId: string }>;
@@ -6,22 +6,21 @@ type RouteContext = {
 
 export async function PATCH(request: Request, context: RouteContext) {
   const { productId } = await context.params;
-  const body = await request.text();
-  const response = await proxyToBackend(`/api/products/${productId}`, {
+  return proxyBackendRoute(request, `/api/products/${productId}`, {
     method: "PATCH",
-    headers: buildBackendHeaders(request, { csrf: true, contentType: true, refererPath: "/owner/menu" }),
-    body,
+    csrf: true,
+    contentType: true,
+    refererPath: "/owner/menu",
+    forwardBody: true,
   });
-
-  return backendResponse(response);
 }
 
 export async function DELETE(request: Request, context: RouteContext) {
   const { productId } = await context.params;
-  const response = await proxyToBackend(`/api/products/${productId}`, {
+  return proxyBackendRoute(request, `/api/products/${productId}`, {
     method: "DELETE",
-    headers: buildBackendHeaders(request, { csrf: true, refererPath: "/owner/menu" }),
+    csrf: true,
+    refererPath: "/owner/menu",
+    empty: true,
   });
-
-  return backendResponse(response, { empty: true });
 }

@@ -1,8 +1,7 @@
 const express = require("express");
 const { z } = require("zod");
 const { prisma } = require("../lib/db");
-const { requireStoreRole, loadSession } = require("../middleware/auth");
-const { AppError } = require("../utils/app-error");
+const { getRequiredOwnerStoreId, requireStoreRole } = require("../middleware/auth");
 const { bangkokDateRange } = require("./sale.route-helpers");
 
 const router = express.Router();
@@ -14,17 +13,6 @@ const reportQuerySchema = z.object({
   range: z.enum(["today", "yesterday", "7d", "month"]).optional().default("today"),
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().default(""),
 });
-
-async function requireOwnerStoreId(req, res) {
-  const session = await loadSession(req, res);
-  const storeId = session?.user?.storeId;
-
-  if (!storeId) {
-    throw new AppError("ไม่สามารถดำเนินการได้ด้วยสิทธิ์ปัจจุบัน", 403, { code: "STORE_REQUIRED" });
-  }
-
-  return storeId;
-}
 
 function bangkokDateText(value = new Date()) {
   return new Date(value.getTime() + BANGKOK_OFFSET_MS).toISOString().slice(0, 10);
@@ -119,7 +107,7 @@ function bucketKeyFor(date, bucket) {
 
 router.get("/sales", requireStoreRole(["OWNER"]), async (req, res, next) => {
   try {
-    const storeId = await requireOwnerStoreId(req, res);
+    const storeId = await getRequiredOwnerStoreId(req, res);
     const query = reportQuerySchema.parse(req.query);
     const rangeInfo = getReportRange(query.range, query.date);
     const buckets = buildBuckets(rangeInfo);
@@ -201,3 +189,4 @@ router.get("/sales", requireStoreRole(["OWNER"]), async (req, res, next) => {
 });
 
 module.exports = router;
+

@@ -27,7 +27,7 @@ export async function renderOwnerScreen(
   storeLogoUrl = "",
 ) {
   if (activeSection === "sales") {
-    const { SalesPaginationMockup } = await import("@/components/sales-pagination-mockup");
+    const { SalesWorkspaceClient } = await import("@/components/sales-workspace-client");
     return {
       eyebrow: "Sales Floor",
       title: "ขายหน้าร้าน",
@@ -46,7 +46,7 @@ export async function renderOwnerScreen(
             className="h-[138px] min-h-[138px] max-h-[138px] px-5 py-5 max-[1180px]:h-auto max-[1180px]:min-h-0 max-[1180px]:max-h-none max-[1024px]:px-4 max-[1024px]:py-4 max-[640px]:px-3.5 max-[640px]:py-3.5 h-[144px] min-h-[144px] max-h-[144px] px-4 py-4 max-[1180px]:h-auto max-[1180px]:min-h-0 max-[1180px]:max-h-none max-[640px]:px-3.5 max-[640px]:py-3.5"
           />
 
-          <SalesPaginationMockup />
+          <SalesWorkspaceClient />
         </section>
       ),
       standalone: true,

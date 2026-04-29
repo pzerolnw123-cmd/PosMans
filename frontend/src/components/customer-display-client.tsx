@@ -1,9 +1,10 @@
 "use client";
 
 /* eslint-disable @next/next/no-img-element -- customer display accepts token-scoped data URLs and store-hosted images that may not be available through next/image loaders. */
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Loader } from "@/components/ui-primitives";
 import { formatBaht, type PaymentMethod } from "@/components/payment-checkout-client/shared";
+import { defaultOwnerTheme, isOwnerTheme, readStoredOwnerTheme, subscribeOwnerTheme, type OwnerThemeId } from "@/lib/owner-theme";
 
 type CustomerDisplayStatus = "IDLE" | "PAYMENT" | "SUCCESS";
 
@@ -19,13 +20,25 @@ type CustomerDisplayState = {
   updatedAt: string;
 };
 
+type CustomerDisplayStateEvent = CustomerDisplayState & {
+  ownerTheme?: OwnerThemeId;
+};
+
 type CustomerDisplayPayload = {
   store: {
     name: string;
     logoUrl?: string | null;
+    ownerTheme?: OwnerThemeId;
   };
   display: CustomerDisplayState;
 };
+
+type CustomerDisplayStoreUpdate = Partial<CustomerDisplayPayload["store"]>;
+type CustomerDisplayStorePayload = {
+  store: CustomerDisplayPayload["store"];
+};
+
+const publicBackendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
 
 const paymentLabels: Record<PaymentMethod, string> = {
   CASH: "เงินสด",
@@ -37,8 +50,25 @@ const paymentLabels: Record<PaymentMethod, string> = {
 
 export function CustomerDisplayClient({ displayId, token }: { displayId: string; token: string }) {
   const [payload, setPayload] = useState<CustomerDisplayPayload | null>(null);
+  const [localTheme, setLocalTheme] = useState<OwnerThemeId | null>(() => readStoredOwnerTheme());
   const [connectionState, setConnectionState] = useState<"connecting" | "live" | "offline" | "blocked">("connecting");
+  const connectionStateRef = useRef(connectionState);
+  const lastStoreSnapshotAtRef = useRef(0);
   const query = useMemo(() => new URLSearchParams({ token }).toString(), [token]);
+  const eventSourceUrl = useMemo(() => {
+    const path = `/api/customer-displays/${encodeURIComponent(displayId)}/events?${query}`;
+    return publicBackendUrl ? `${publicBackendUrl.replace(/\/$/, "")}${path}` : path;
+  }, [displayId, query]);
+  const storeSnapshotUrl = useMemo(() => {
+    const path = `/api/customer-displays/${encodeURIComponent(displayId)}/store?${query}`;
+    return publicBackendUrl ? `${publicBackendUrl.replace(/\/$/, "")}${path}` : path;
+  }, [displayId, query]);
+  const payloadTheme = isOwnerTheme(payload?.store.ownerTheme) ? payload.store.ownerTheme : null;
+  const displayTheme = payloadTheme || localTheme || defaultOwnerTheme;
+
+  useEffect(() => {
+    connectionStateRef.current = connectionState;
+  }, [connectionState]);
 
   useEffect(() => {
     let cancelled = false;
@@ -67,7 +97,7 @@ export function CustomerDisplayClient({ displayId, token }: { displayId: string;
 
     loadSnapshot();
 
-    const events = new EventSource(`/api/customer-displays/${encodeURIComponent(displayId)}/events?${query}`);
+    const events = new EventSource(eventSourceUrl);
     events.addEventListener("open", () => {
       if (!cancelled) {
         setConnectionState("live");
@@ -79,13 +109,43 @@ export function CustomerDisplayClient({ displayId, token }: { displayId: string;
       }
 
       try {
-        const display = JSON.parse((event as MessageEvent).data) as CustomerDisplayState;
+        const display = JSON.parse((event as MessageEvent).data) as CustomerDisplayStateEvent;
+        const { ownerTheme, ...displayState } = display;
         setPayload((current) => {
           if (!current) {
             return current;
           }
 
-          return { ...current, display };
+          return {
+            ...current,
+            store: isOwnerTheme(ownerTheme) ? { ...current.store, ownerTheme } : current.store,
+            display: displayState,
+          };
+        });
+        setConnectionState("live");
+      } catch {
+        setConnectionState("offline");
+      }
+    });
+    events.addEventListener("store", (event) => {
+      if (cancelled) {
+        return;
+      }
+
+      try {
+        const storeUpdate = JSON.parse((event as MessageEvent).data) as CustomerDisplayStoreUpdate;
+        const normalizedStoreUpdate = {
+          ...storeUpdate,
+          ...(storeUpdate.ownerTheme === undefined || isOwnerTheme(storeUpdate.ownerTheme)
+            ? {}
+            : { ownerTheme: undefined }),
+        };
+        setPayload((current) => {
+          if (!current) {
+            return current;
+          }
+
+          return { ...current, store: { ...current.store, ...normalizedStoreUpdate } };
         });
         setConnectionState("live");
       } catch {
@@ -102,7 +162,51 @@ export function CustomerDisplayClient({ displayId, token }: { displayId: string;
       cancelled = true;
       events.close();
     };
-  }, [displayId, query]);
+  }, [displayId, eventSourceUrl, query]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadStoreSnapshot() {
+      try {
+        const response = await fetch(storeSnapshotUrl, { cache: "no-store" });
+        const data = (await response.json().catch(() => null)) as CustomerDisplayStorePayload | null;
+        if (!cancelled && response.ok && data?.store) {
+          setPayload((current) => (current ? { ...current, store: data.store } : current));
+        }
+      } catch {
+        // SSE remains primary; store metadata polling is a quiet fallback.
+      }
+    }
+
+    void loadStoreSnapshot();
+    const snapshotInterval = window.setInterval(() => {
+      const now = Date.now();
+      const minimumDelay = connectionStateRef.current === "live" ? 30000 : 1500;
+      if (now - lastStoreSnapshotAtRef.current >= minimumDelay) {
+        lastStoreSnapshotAtRef.current = now;
+        void loadStoreSnapshot();
+      }
+    }, 1500);
+
+    return () => {
+      cancelled = true;
+      window.clearInterval(snapshotInterval);
+    };
+  }, [storeSnapshotUrl]);
+
+  useEffect(() => {
+    function syncStoredTheme() {
+      setLocalTheme(readStoredOwnerTheme());
+    }
+
+    syncStoredTheme();
+    return subscribeOwnerTheme(syncStoredTheme);
+  }, []);
+
+  useEffect(() => {
+    document.documentElement.dataset.storeTheme = displayTheme;
+  }, [displayTheme]);
 
   if (!token) {
     return <DisplayBlocked />;
@@ -121,16 +225,15 @@ export function CustomerDisplayClient({ displayId, token }: { displayId: string;
   }
 
   const { store, display } = payload;
-
   return (
-    <main className="min-h-screen bg-[#f4f8ff] text-[#111827]">
-      <div className="mx-auto grid min-h-screen w-full max-w-[980px] grid-rows-[auto_1fr_auto] px-8 py-7 max-[720px]:px-5 max-[720px]:py-5">
-        <header className="flex items-center justify-between gap-5 border-b border-[#cfd8e6] pb-5">
+    <main className="h-dvh overflow-hidden bg-[var(--background-start)] text-[var(--foreground)]" data-store-theme={displayTheme}>
+      <div className="mx-auto grid h-full min-h-0 w-full max-w-[980px] grid-rows-[auto_minmax(0,1fr)_auto] px-8 py-5 max-[720px]:px-5 max-[720px]:py-4">
+        <header className="flex items-center justify-between gap-5 border-b border-[var(--border)] pb-3">
           <div className="flex min-w-0 items-center gap-4">
-            {store.logoUrl ? <img className="h-14 w-14 rounded-none border border-[#cfd8e6] object-cover" src={store.logoUrl} alt="" /> : null}
+            {store.logoUrl ? <img className="h-12 w-12 rounded-none border border-[var(--border)] object-cover" src={store.logoUrl} alt="" /> : null}
             <div className="min-w-0">
-              <p className="m-0 text-[0.78rem] font-bold uppercase tracking-[0.34em] text-[#527196]">Customer Display</p>
-              <h1 className="m-0 mt-1 truncate text-[clamp(1.8rem,5vw,3rem)] leading-none tracking-[-0.05em]">{store.name}</h1>
+              <p className="m-0 text-[0.78rem] font-bold uppercase tracking-[0.34em] text-[var(--eyebrow)]">Customer Display</p>
+              <h1 className="m-0 mt-1 truncate text-[clamp(1.7rem,4.8vw,2.6rem)] leading-none tracking-[-0.05em]">{store.name}</h1>
             </div>
           </div>
           <ConnectionPill state={connectionState} />
@@ -138,7 +241,7 @@ export function CustomerDisplayClient({ displayId, token }: { displayId: string;
 
         {display.status === "PAYMENT" ? <PaymentDisplay display={display} /> : display.status === "SUCCESS" ? <SuccessDisplay display={display} /> : <StandbyDisplay />}
 
-        <footer className="border-t border-[#cfd8e6] pt-4 text-center text-[0.9rem] font-medium text-[#5b6f8a]">
+        <footer className="border-t border-[var(--border)] pt-3 text-center text-[0.86rem] font-medium text-[var(--foreground-soft)]">
           กรุณาตรวจสอบยอดก่อนชำระเงินทุกครั้ง
         </footer>
       </div>
@@ -148,11 +251,11 @@ export function CustomerDisplayClient({ displayId, token }: { displayId: string;
 
 function StandbyDisplay() {
   return (
-    <section className="grid place-items-center py-12 text-center">
+    <section className="grid h-full min-h-0 place-items-center py-6 text-center">
       <div className="grid gap-4">
-        <p className="m-0 text-[0.85rem] font-bold uppercase tracking-[0.36em] text-[#527196]">Standby</p>
+        <p className="m-0 text-[0.85rem] font-bold uppercase tracking-[0.36em] text-[var(--eyebrow)]">Standby</p>
         <h2 className="m-0 text-[clamp(2rem,7vw,4.6rem)] leading-none tracking-[-0.07em]">รอรายการชำระเงิน</h2>
-        <p className="m-0 text-[clamp(1rem,2.4vw,1.3rem)] text-[#5b6f8a]">เมื่อถึงขั้นชำระเงิน QR และยอดชำระจะแสดงบนจอนี้</p>
+        <p className="m-0 text-[clamp(1rem,2.4vw,1.3rem)] text-[var(--foreground-soft)]">เมื่อถึงขั้นชำระเงิน QR และยอดชำระจะแสดงบนจอนี้</p>
       </div>
     </section>
   );
@@ -162,23 +265,23 @@ function PaymentDisplay({ display }: { display: CustomerDisplayState }) {
   const method = display.paymentMethod ? paymentLabels[display.paymentMethod] : "ชำระเงิน";
 
   return (
-    <section className="grid place-items-center gap-7 py-8 text-center">
+    <section className="grid h-full min-h-0 place-items-center gap-3 overflow-hidden py-3 text-center">
       <div>
-        <p className="m-0 text-[0.92rem] font-bold uppercase tracking-[0.36em] text-[#2563eb]">{method}</p>
-        <h2 className="m-0 mt-3 text-[clamp(2.4rem,9vw,6.3rem)] leading-none tracking-[-0.08em]">{formatBaht(display.amount)}</h2>
+        <p className="m-0 text-[0.92rem] font-bold uppercase tracking-[0.36em] text-[var(--brand-strong)]">{method}</p>
+        <h2 className="m-0 mt-2 text-[clamp(2.35rem,8dvh,5.1rem)] leading-none tracking-[-0.08em]">{formatBaht(display.amount)}</h2>
       </div>
 
       {display.qrDataUrl ? (
-        <div className="grid aspect-square w-[min(62vh,560px,88vw)] place-items-center border border-[#d8e1ed] bg-white p-[clamp(16px,3vw,30px)] shadow-[0_22px_65px_rgba(39,76,119,0.12)]">
+        <div className="grid aspect-square w-[min(50dvh,520px,84vw)] place-items-center border border-[var(--border)] bg-[var(--foreground-inverse)] p-[clamp(14px,2.5vw,26px)] shadow-[var(--shadow-card)]">
           <img className="h-full w-full object-contain" src={display.qrDataUrl} alt="QR สำหรับชำระเงิน" />
         </div>
       ) : (
-        <div className="grid min-h-[280px] w-[min(560px,88vw)] place-items-center border border-dashed border-[#b6c6da] bg-white/70 text-[#5b6f8a]">
+        <div className="grid min-h-[280px] w-[min(560px,88vw)] place-items-center border border-dashed border-[var(--border-strong)] bg-[var(--surface-muted)] text-[var(--foreground-soft)]">
           รอยอดชำระจากแคชเชียร์
         </div>
       )}
 
-      <p className="m-0 max-w-[620px] text-[clamp(1rem,2.3vw,1.35rem)] font-bold text-[#1d4ed8]">
+      <p className="m-0 max-w-[620px] text-[clamp(0.96rem,2.1vw,1.22rem)] font-bold text-[var(--brand-strong)]">
         {display.message || "สแกนเพื่อชำระเงิน แล้วแจ้งพนักงานหลังโอนสำเร็จ"}
       </p>
     </section>
@@ -187,12 +290,12 @@ function PaymentDisplay({ display }: { display: CustomerDisplayState }) {
 
 function SuccessDisplay({ display }: { display: CustomerDisplayState }) {
   return (
-    <section className="grid place-items-center py-12 text-center">
+    <section className="grid h-full min-h-0 place-items-center py-6 text-center">
       <div className="grid gap-5">
-        <p className="m-0 text-[0.9rem] font-bold uppercase tracking-[0.36em] text-[#15803d]">Payment Complete</p>
+        <p className="m-0 text-[0.9rem] font-bold uppercase tracking-[0.36em] text-[var(--success)]">Payment Complete</p>
         <h2 className="m-0 text-[clamp(2.5rem,9vw,6rem)] leading-none tracking-[-0.08em]">ชำระเงินสำเร็จ</h2>
-        <p className="m-0 text-[clamp(1.2rem,3vw,1.7rem)] font-bold text-[#334155]">{formatBaht(display.amount)}</p>
-        <p className="m-0 text-[clamp(1rem,2.4vw,1.35rem)] text-[#5b6f8a]">ขอบคุณครับ</p>
+        <p className="m-0 text-[clamp(1.2rem,3vw,1.7rem)] font-bold text-[var(--foreground)]">{formatBaht(display.amount)}</p>
+        <p className="m-0 text-[clamp(1rem,2.4vw,1.35rem)] text-[var(--foreground-soft)]">ขอบคุณครับ</p>
       </div>
     </section>
   );
@@ -213,7 +316,7 @@ function DisplayBlocked() {
 function ConnectionPill({ state }: { state: "connecting" | "live" | "offline" | "blocked" }) {
   const label = state === "live" ? "ออนไลน์" : state === "connecting" ? "กำลังเชื่อมต่อ" : "กำลังรอเชื่อมต่อ";
   return (
-    <span className="whitespace-nowrap border border-[#cfd8e6] bg-white px-3 py-1.5 text-[0.82rem] font-bold text-[#334155]">
+    <span className="whitespace-nowrap border border-[var(--border)] bg-[var(--surface)] px-3 py-1.5 text-[0.82rem] font-bold text-[var(--foreground)]">
       {label}
     </span>
   );

@@ -1,14 +1,13 @@
-import { backendResponse, buildBackendHeaders, proxyToBackend } from "@/lib/proxy";
+import { proxyBackendRoute } from "@/lib/proxy";
 
 export async function PATCH(request: Request) {
-  const body = await request.text();
-  const response = await proxyToBackend("/api/auth/owner-profile", {
+  return proxyBackendRoute(request, "/api/auth/owner-profile", {
     method: "PATCH",
-    headers: buildBackendHeaders(request, { csrf: true, contentType: true, refererPath: "/owner/settings" }),
-    body,
+    csrf: true,
+    contentType: true,
+    refererPath: "/owner/settings",
+    forwardBody: true,
   });
-
-  return backendResponse(response);
 }
 
 export async function GET() {

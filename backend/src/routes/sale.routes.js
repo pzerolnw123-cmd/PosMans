@@ -1,6 +1,6 @@
 const express = require("express");
 const { prisma } = require("../lib/db");
-const { requireStoreRole, loadSession } = require("../middleware/auth");
+const { getRequiredOwnerStoreId, requireStoreRole } = require("../middleware/auth");
 const { requireTrustedOrigin, requireCsrf } = require("../middleware/security");
 const { saleCheckoutLimiter } = require("../middleware/rate-limiters");
 const { AppError } = require("../utils/app-error");
@@ -23,20 +23,9 @@ const {
 
 const router = express.Router();
 
-async function requireOwnerStoreId(req, res) {
-  const session = await loadSession(req, res);
-  const storeId = session?.user?.storeId;
-
-  if (!storeId) {
-    throw new AppError("ไม่สามารถดำเนินการได้ด้วยสิทธิ์ปัจจุบัน", 403, { code: "STORE_REQUIRED" });
-  }
-
-  return storeId;
-}
-
 router.get("/", requireStoreRole(["OWNER"]), async (req, res, next) => {
   try {
-    const storeId = await requireOwnerStoreId(req, res);
+    const storeId = await getRequiredOwnerStoreId(req, res);
     const query = saleListQuerySchema.parse(req.query);
     const search = query.q.trim();
     const createdAt = bangkokDateRange(query.date);
@@ -95,7 +84,7 @@ router.get("/", requireStoreRole(["OWNER"]), async (req, res, next) => {
 
 router.get("/:saleId", requireStoreRole(["OWNER"]), async (req, res, next) => {
   try {
-    const storeId = await requireOwnerStoreId(req, res);
+    const storeId = await getRequiredOwnerStoreId(req, res);
     const receipt = await prisma.saleOrder.findFirst({
       where: { id: req.params.saleId, storeId },
       select: saleReceiptDetailSelect,
@@ -114,7 +103,7 @@ router.get("/:saleId", requireStoreRole(["OWNER"]), async (req, res, next) => {
 
 router.post("/", saleCheckoutLimiter, requireTrustedOrigin, requireCsrf, requireStoreRole(["OWNER"]), async (req, res, next) => {
   try {
-    const storeId = await requireOwnerStoreId(req, res);
+    const storeId = await getRequiredOwnerStoreId(req, res);
     const parsed = createSaleSchema.parse(req.body);
     const mergedItems = mergeItems(parsed.items);
     const productIds = mergedItems.map((item) => item.productId);
@@ -231,3 +220,4 @@ router.post("/", saleCheckoutLimiter, requireTrustedOrigin, requireCsrf, require
 });
 
 module.exports = router;
+

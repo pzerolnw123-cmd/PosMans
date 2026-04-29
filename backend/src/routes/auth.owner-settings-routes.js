@@ -3,6 +3,7 @@ const { writeAuditLog } = require("../utils/audit");
 const { requireStoreRole } = require("../middleware/auth");
 const { requireTrustedOrigin, requireCsrf } = require("../middleware/security");
 const { deleteR2Object } = require("../lib/r2");
+const { publishStoreEvent } = require("../utils/customer-display-events");
 const {
   ownerProfileSchema,
   ownerThemeSchema,
@@ -12,6 +13,14 @@ const {
   assertOwnedUploadedKey,
   assertUrlMatchesUploadedKey,
 } = require("./auth.route-helpers");
+
+async function broadcastStoreThemeToCustomerDisplays(storeId, ownerTheme) {
+  if (!storeId) {
+    return;
+  }
+
+  await publishStoreEvent(storeId, "store", { ownerTheme });
+}
 
 function registerOwnerSettingsRoutes(router) {
 router.get("/owner-payment-settings", requireStoreRole(["OWNER"]), async (req, res, next) => {
@@ -97,6 +106,8 @@ router.patch("/owner-theme", requireTrustedOrigin, requireCsrf, requireStoreRole
       targetId: user.id,
       metadata: { ownerTheme: user.ownerTheme, storeId: user.storeId },
     });
+
+    await broadcastStoreThemeToCustomerDisplays(user.storeId, user.ownerTheme);
 
     res.set("Cache-Control", "no-store");
     res.json({ success: true, user });

@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { setStoredCustomerDisplayIdle } from "@/components/customer-display-session";
 import {
   createContext,
   type ReactNode,
@@ -127,6 +129,7 @@ export function BackofficeShell({
   className = "",
   children,
 }: BackofficeShellProps) {
+  const pathname = usePathname();
   const [shellAlert, setShellAlert] = useState<ShellAlert | null>(null);
   const alertTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -156,6 +159,15 @@ export function BackofficeShell({
 
   const contextValue = useMemo(() => ({ setShellAlert: setTimedShellAlert }), [setTimedShellAlert]);
 
+  const handleSidebarNavigation = useCallback(
+    (href: string) => {
+      if (pathname === "/owner/payments" && href !== "/owner/payments") {
+        void setStoredCustomerDisplayIdle().catch(() => undefined);
+      }
+    },
+    [pathname],
+  );
+
   return (
     <BackofficeShellAlertContext.Provider value={contextValue}>
       <div
@@ -176,6 +188,7 @@ export function BackofficeShell({
                   href={item.href}
                   className={item.active ? sidebarActiveLinkClass : sidebarInactiveLinkClass}
                   aria-current={item.active ? "page" : undefined}
+                  onClick={() => handleSidebarNavigation(item.href)}
                 >
                   {item.icon ? (
                     <span className={`inline-flex h-5 w-5 shrink-0 items-center justify-center ${item.active ? "text-[var(--button-text)] opacity-100" : "opacity-90"}`}>{item.icon}</span>

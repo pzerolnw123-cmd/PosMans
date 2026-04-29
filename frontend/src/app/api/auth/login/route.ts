@@ -1,12 +1,11 @@
-import { backendResponse, buildBackendHeaders, proxyToBackend } from "@/lib/proxy";
+import { proxyBackendRoute } from "@/lib/proxy";
 
 export async function POST(request: Request) {
-  const body = await request.text();
-  const response = await proxyToBackend("/api/auth/login", {
+  return proxyBackendRoute(request, "/api/auth/login", {
     method: "POST",
-    headers: buildBackendHeaders(request, { csrf: true, contentType: true, refererPath: "/login" }),
-    body,
+    csrf: true,
+    contentType: true,
+    refererPath: "/login",
+    forwardBody: true,
   });
-
-  return backendResponse(response);
 }

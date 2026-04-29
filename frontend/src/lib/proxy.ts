@@ -86,3 +86,34 @@ export async function backendResponse(response: Response, { empty = false }: { e
     headers,
   });
 }
+
+export async function proxyBackendRoute(
+  request: Request,
+  path: string,
+  {
+    method = "GET",
+    csrf = false,
+    contentType = false,
+    refererPath = "/",
+    includeSearch = false,
+    forwardBody = false,
+    empty = false,
+  }: {
+    method?: string;
+    csrf?: boolean;
+    contentType?: boolean;
+    refererPath?: string;
+    includeSearch?: boolean;
+    forwardBody?: boolean;
+    empty?: boolean;
+  } = {},
+) {
+  const url = new URL(request.url);
+  const response = await proxyToBackend(`${path}${includeSearch ? url.search : ""}`, {
+    method,
+    headers: buildBackendHeaders(request, { csrf, contentType, refererPath }),
+    ...(forwardBody ? { body: await request.text() } : {}),
+  });
+
+  return backendResponse(response, { empty });
+}
