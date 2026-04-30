@@ -244,94 +244,35 @@ export async function renderOwnerScreen(
   } = await import("@/components/owner-settings-client");
 
   return {
-      eyebrow: "Store Settings",
-      title: "ตั้งค่าร้าน",
-      description: "จัดการข้อมูลร้าน เจ้าของร้าน และรหัสผ่านของบัญชีนี้",
-      actions: <StatusPill tone="success">พร้อมตั้งค่าแล้ว</StatusPill>,
-      body: (
-        <section className="grid h-full min-h-0 grid-rows-[156px_minmax(0,1fr)] gap-[18px] max-[1180px]:h-auto max-[1180px]:grid-rows-[auto_auto] [@media(min-width:1025px)_and_(max-width:1240px)]:h-auto [@media(min-width:1025px)_and_(max-width:1240px)]:grid-rows-[auto_auto] [@media(max-height:860px)]:h-auto [@media(max-height:860px)]:grid-rows-[auto_auto]">
-          <PageHeader
-            eyebrow="Store Settings"
-            title="ตั้งค่าร้าน"
-            description="จัดการชื่อร้าน ชื่อเจ้าของร้าน และรหัสผ่านของบัญชีเจ้าของร้าน"
-            actions={<StatusPill tone="success">พร้อมตั้งค่าแล้ว</StatusPill>}
-          />
+    eyebrow: "Store Settings",
+    title: "ตั้งค่าร้าน",
+    description: "จัดการข้อมูลร้าน เจ้าของร้าน และรหัสผ่านของบัญชีนี้",
+    actions: <StatusPill tone="success">พร้อมตั้งค่าแล้ว</StatusPill>,
+    body: (
+      <section className="grid h-full min-h-0 grid-rows-[156px_minmax(0,1fr)] gap-[18px] max-[1180px]:h-auto max-[1180px]:grid-rows-[auto_auto] [@media(min-width:1025px)_and_(max-width:1240px)]:h-auto [@media(min-width:1025px)_and_(max-width:1240px)]:grid-rows-[auto_auto] [@media(max-height:860px)]:h-auto [@media(max-height:860px)]:grid-rows-[auto_auto]">
+        <PageHeader
+          eyebrow="Store Settings"
+          title="ตั้งค่าร้าน"
+          description="จัดการชื่อร้าน ชื่อเจ้าของร้าน และรหัสผ่านของบัญชีเจ้าของร้าน"
+          actions={<StatusPill tone="success">พร้อมตั้งค่าแล้ว</StatusPill>}
+        />
 
-          <div className="grid min-h-0 grid-cols-[minmax(250px,1fr)_minmax(250px,1fr)_minmax(250px,1fr)] items-start gap-[12px] max-[1366px]:grid-cols-[repeat(2,minmax(250px,1fr))] [@media(min-width:1025px)_and_(max-width:1240px)]:hidden max-[980px]:grid-cols-1 max-[820px]:gap-4">
-              <PanelCard
-                eyebrow="ความปลอดภัยของบัญชี"
-                title="เปลี่ยนรหัสผ่าน"
-                titleClassName="my-[7px] text-[clamp(1.42rem,1.82vw,1.94rem)] leading-[1.05] tracking-[-0.04em]"
-                className="grid h-fit min-h-0 content-start px-3.5 py-3.5 max-[820px]:px-3.5 max-[820px]:py-3.5 max-[640px]:px-3 max-[640px]:py-3"
-              >
-                <OwnerPasswordClient />
-              </PanelCard>
+        <div className="grid min-h-0 grid-cols-[minmax(250px,1fr)_minmax(250px,1fr)_minmax(250px,1fr)] items-start gap-[12px] max-[1366px]:grid-cols-[repeat(2,minmax(250px,1fr))] [@media(min-width:1025px)_and_(max-width:1240px)]:hidden max-[980px]:grid-cols-1 max-[820px]:gap-4">
+          <PanelCard
+            eyebrow="ความปลอดภัยของบัญชี"
+            title="เปลี่ยนรหัสผ่าน"
+            titleClassName="my-[7px] text-[clamp(1.42rem,1.82vw,1.94rem)] leading-[1.05] tracking-[-0.04em]"
+            className="grid h-fit min-h-0 content-start px-3.5 py-3.5 max-[820px]:px-3.5 max-[820px]:py-3.5 max-[640px]:px-3 max-[640px]:py-3"
+          >
+            <OwnerPasswordClient />
+          </PanelCard>
 
-            <div className="grid gap-[12px] max-[820px]:gap-4">
-                <PanelCard
-                  eyebrow="โปรไฟล์ร้านค้า"
-                  title="ข้อมูลทั่วไป"
-                  titleClassName="my-[7px] text-[clamp(1.28rem,1.55vw,1.66rem)] leading-[1.05] tracking-[-0.035em] max-[520px]:text-[1.48rem]"
-                  className="grid h-fit min-h-0 min-w-0 content-start overflow-hidden px-3.5 py-3.5 max-[820px]:px-3.5 max-[820px]:py-3.5 max-[640px]:px-3 max-[640px]:py-3"
-                >
-                  <div className="grid gap-[18px]">
-                    <OwnerProfileClient
-                      storeName={formStoreName}
-                      ownerName={formOwnerName}
-                      storeNamePlaceholder={storeNamePrompt}
-                      ownerNamePlaceholder={ownerNamePrompt}
-                    />
-                  </div>
-                </PanelCard>
-
-                <PanelCard
-                  eyebrow="สัญลักษณ์"
-                  title="โลโก้ร้าน"
-                  actions={<OwnerLogoStatusPill />}
-                  titleClassName="my-[7px] text-[clamp(1.42rem,1.76vw,1.8rem)] leading-[1.05] tracking-[-0.04em]"
-                  className="grid h-fit min-h-0 min-w-0 content-start px-3.5 py-3.5 max-[820px]:px-3.5 max-[820px]:py-3.5 max-[640px]:px-3 max-[640px]:py-3"
-                >
-                  <OwnerLogoClient />
-                </PanelCard>
-
-                <PanelCard
-                  eyebrow="ธีม"
-                  title="เปลี่ยนธีม"
-                  actions={<OwnerThemeStatusPill />}
-                  titleClassName="my-[8px] text-[clamp(1.5rem,1.9vw,1.8rem)] leading-[1.05] tracking-[-0.04em] max-[520px]:text-[1.68rem]"
-                  className="grid h-fit min-h-0 min-w-0 content-start overflow-hidden px-4 py-4 max-[820px]:px-4 max-[820px]:py-4 max-[640px]:px-3.5 max-[640px]:py-3.5"
-                >
-                  <OwnerThemeClient />
-                </PanelCard>
-            </div>
-
-            <div className="grid h-fit min-w-0 gap-[14px] max-[820px]:gap-4">
-              <PanelCard
-                eyebrow="การรับเงิน"
-                title="QR / ข้อมูลโอน"
-                titleClassName="my-[8px] text-[clamp(1.26rem,1.46vw,1.38rem)] leading-[1.08] tracking-[-0.03em]"
-                className="grid h-fit min-h-0 min-w-0 content-start px-4 py-4 max-[820px]:px-4 max-[820px]:py-4 max-[640px]:px-3.5 max-[640px]:py-3.5"
-              >
-                <OwnerPaymentSettingsClient initialSettings={paymentSettings} />
-              </PanelCard>
-            </div>
-          </div>
-
-          <div className="hidden min-h-0 content-start items-start gap-[12px] [@media(min-width:1025px)_and_(max-width:1240px)]:grid">
-            <PanelCard
-              eyebrow="ความปลอดภัยของบัญชี"
-              title="เปลี่ยนรหัสผ่าน"
-              titleClassName="my-[7px] text-[clamp(1.42rem,1.82vw,1.94rem)] leading-[1.05] tracking-[-0.04em]"
-              className="grid h-fit min-h-0 content-start px-3.5 py-3.5"
-            >
-              <OwnerPasswordClient />
-            </PanelCard>
-
+          <div className="grid gap-[12px] max-[820px]:gap-4">
             <PanelCard
               eyebrow="โปรไฟล์ร้านค้า"
               title="ข้อมูลทั่วไป"
-              titleClassName="my-[7px] text-[clamp(1.28rem,1.55vw,1.66rem)] leading-[1.05] tracking-[-0.035em]"
-              className="grid h-fit min-h-0 min-w-0 content-start overflow-hidden px-3.5 py-3.5"
+              titleClassName="my-[7px] text-[clamp(1.28rem,1.55vw,1.66rem)] leading-[1.05] tracking-[-0.035em] max-[520px]:text-[1.48rem]"
+              className="grid h-fit min-h-0 min-w-0 content-start overflow-hidden px-3.5 py-3.5 max-[820px]:px-3.5 max-[820px]:py-3.5 max-[640px]:px-3 max-[640px]:py-3"
             >
               <div className="grid gap-[18px]">
                 <OwnerProfileClient
@@ -344,20 +285,11 @@ export async function renderOwnerScreen(
             </PanelCard>
 
             <PanelCard
-              eyebrow="การรับเงิน"
-              title="QR / ข้อมูลโอน"
-              titleClassName="my-[8px] text-[clamp(1.26rem,1.46vw,1.38rem)] leading-[1.08] tracking-[-0.03em]"
-              className="grid h-fit min-h-0 min-w-0 content-start px-4 py-4"
-            >
-              <OwnerPaymentSettingsClient initialSettings={paymentSettings} />
-            </PanelCard>
-
-            <PanelCard
               eyebrow="สัญลักษณ์"
               title="โลโก้ร้าน"
               actions={<OwnerLogoStatusPill />}
               titleClassName="my-[7px] text-[clamp(1.42rem,1.76vw,1.8rem)] leading-[1.05] tracking-[-0.04em]"
-              className="grid h-fit min-h-0 min-w-0 content-start px-3.5 py-3.5"
+              className="grid h-fit min-h-0 min-w-0 content-start px-3.5 py-3.5 max-[820px]:px-3.5 max-[820px]:py-3.5 max-[640px]:px-3 max-[640px]:py-3"
             >
               <OwnerLogoClient />
             </PanelCard>
@@ -366,14 +298,82 @@ export async function renderOwnerScreen(
               eyebrow="ธีม"
               title="เปลี่ยนธีม"
               actions={<OwnerThemeStatusPill />}
-              titleClassName="my-[8px] text-[clamp(1.5rem,1.9vw,1.8rem)] leading-[1.05] tracking-[-0.04em]"
-              className="grid h-fit min-h-0 min-w-0 content-start overflow-hidden px-4 py-4"
+              titleClassName="my-[8px] text-[clamp(1.5rem,1.9vw,1.8rem)] leading-[1.05] tracking-[-0.04em] max-[520px]:text-[1.68rem]"
+              className="grid h-fit min-h-0 min-w-0 content-start overflow-hidden px-4 py-4 max-[820px]:px-4 max-[820px]:py-4 max-[640px]:px-3.5 max-[640px]:py-3.5"
             >
               <OwnerThemeClient />
             </PanelCard>
           </div>
-        </section>
-      ),
-      standalone: true,
-    } satisfies OwnerScreen;
+
+          <div className="grid h-fit min-w-0 gap-[14px] max-[820px]:gap-4">
+            <PanelCard
+              eyebrow="การรับเงิน"
+              title="QR / ข้อมูลโอน"
+              titleClassName="my-[8px] text-[clamp(1.26rem,1.46vw,1.38rem)] leading-[1.08] tracking-[-0.03em]"
+              className="grid h-fit min-h-0 min-w-0 content-start px-4 py-4 max-[820px]:px-4 max-[820px]:py-4 max-[640px]:px-3.5 max-[640px]:py-3.5"
+            >
+              <OwnerPaymentSettingsClient initialSettings={paymentSettings} />
+            </PanelCard>
+          </div>
+        </div>
+
+        <div className="hidden min-h-0 content-start items-start gap-[12px] [@media(min-width:1025px)_and_(max-width:1240px)]:grid">
+          <PanelCard
+            eyebrow="ความปลอดภัยของบัญชี"
+            title="เปลี่ยนรหัสผ่าน"
+            titleClassName="my-[7px] text-[clamp(1.42rem,1.82vw,1.94rem)] leading-[1.05] tracking-[-0.04em]"
+            className="grid h-fit min-h-0 content-start px-3.5 py-3.5"
+          >
+            <OwnerPasswordClient />
+          </PanelCard>
+
+          <PanelCard
+            eyebrow="โปรไฟล์ร้านค้า"
+            title="ข้อมูลทั่วไป"
+            titleClassName="my-[7px] text-[clamp(1.28rem,1.55vw,1.66rem)] leading-[1.05] tracking-[-0.035em]"
+            className="grid h-fit min-h-0 min-w-0 content-start overflow-hidden px-3.5 py-3.5"
+          >
+            <div className="grid gap-[18px]">
+              <OwnerProfileClient
+                storeName={formStoreName}
+                ownerName={formOwnerName}
+                storeNamePlaceholder={storeNamePrompt}
+                ownerNamePlaceholder={ownerNamePrompt}
+              />
+            </div>
+          </PanelCard>
+
+          <PanelCard
+            eyebrow="การรับเงิน"
+            title="QR / ข้อมูลโอน"
+            titleClassName="my-[8px] text-[clamp(1.26rem,1.46vw,1.38rem)] leading-[1.08] tracking-[-0.03em]"
+            className="grid h-fit min-h-0 min-w-0 content-start px-4 py-4"
+          >
+            <OwnerPaymentSettingsClient initialSettings={paymentSettings} />
+          </PanelCard>
+
+          <PanelCard
+            eyebrow="สัญลักษณ์"
+            title="โลโก้ร้าน"
+            actions={<OwnerLogoStatusPill />}
+            titleClassName="my-[7px] text-[clamp(1.42rem,1.76vw,1.8rem)] leading-[1.05] tracking-[-0.04em]"
+            className="grid h-fit min-h-0 min-w-0 content-start px-3.5 py-3.5"
+          >
+            <OwnerLogoClient />
+          </PanelCard>
+
+          <PanelCard
+            eyebrow="ธีม"
+            title="เปลี่ยนธีม"
+            actions={<OwnerThemeStatusPill />}
+            titleClassName="my-[8px] text-[clamp(1.5rem,1.9vw,1.8rem)] leading-[1.05] tracking-[-0.04em]"
+            className="grid h-fit min-h-0 min-w-0 content-start overflow-hidden px-4 py-4"
+          >
+            <OwnerThemeClient />
+          </PanelCard>
+        </div>
+      </section>
+    ),
+    standalone: true,
+  } satisfies OwnerScreen;
 }

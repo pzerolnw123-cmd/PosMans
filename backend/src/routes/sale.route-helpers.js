@@ -157,18 +157,18 @@ function serializeReceipt(order) {
     itemCount: sale.items.reduce((count, item) => count + item.quantity, 0),
     createdBy: order.createdBy
       ? {
-          id: order.createdBy.id,
-          displayName: order.createdBy.displayName,
-          username: order.createdBy.username,
-        }
+        id: order.createdBy.id,
+        displayName: order.createdBy.displayName,
+        username: order.createdBy.username,
+      }
       : null,
     store: order.store
       ? {
-          id: order.store.id,
-          name: order.store.name,
-          slug: order.store.slug,
-          logoUrl: order.store.logoUrl,
-        }
+        id: order.store.id,
+        name: order.store.name,
+        slug: order.store.slug,
+        logoUrl: order.store.logoUrl,
+      }
       : null,
   };
 }

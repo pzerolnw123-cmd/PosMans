@@ -130,8 +130,8 @@ export function ReceiptDeskClient() {
   }
 
   return (
-    <div className="grid min-h-0 grid-cols-[minmax(0,1.25fr)_minmax(320px,0.75fr)] items-stretch gap-[18px] max-[1366px]:grid-cols-1 max-[820px]:gap-4">
-      <section className="relative z-20 grid h-full max-h-[calc(100dvh-220px)] min-h-0 content-start gap-[18px] overflow-visible rounded-none border border-[var(--border)] bg-[var(--panel-strong)] px-5 py-[18px] shadow-[var(--shadow-soft)] max-[1366px]:h-auto max-[1366px]:max-h-none max-[820px]:px-4 max-[820px]:py-4 [@media(max-height:860px)]:h-auto [@media(max-height:860px)]:max-h-none">
+    <div className="grid min-h-0 grid-cols-[minmax(0,1.25fr)_minmax(320px,0.75fr)] items-start gap-[18px] max-[1366px]:grid-cols-1 max-[820px]:gap-4">
+      <section className="relative z-20 grid max-h-[calc(100dvh-220px)] min-h-0 content-start gap-[18px] overflow-visible rounded-none border border-[var(--border)] bg-[var(--panel-strong)] px-5 py-[18px] shadow-[var(--shadow-soft)] max-[1366px]:h-auto max-[1366px]:max-h-none max-[820px]:px-4 max-[820px]:py-4 [@media(max-height:860px)]:h-auto [@media(max-height:860px)]:max-h-none">
         <div className="flex items-start justify-between gap-4 max-[720px]:flex-col max-[720px]:items-stretch">
           <div>
             <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[var(--eyebrow)]">Recent Receipts</p>
@@ -226,7 +226,7 @@ export function ReceiptDeskClient() {
               );
             })
           ) : (
-            <div className="grid min-h-[140px] place-items-center rounded-none border border-dashed border-[var(--border)] px-4 py-8 text-center text-[var(--foreground-soft)]">
+            <div className="grid min-h-[100px] place-items-center rounded-none border border-dashed border-[var(--border)] px-4 py-6 text-center text-[var(--foreground-soft)]">
               ยังไม่พบใบเสร็จในวันที่เลือก
             </div>
           )}

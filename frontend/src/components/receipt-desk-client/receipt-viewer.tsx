@@ -250,7 +250,7 @@ export function ReceiptViewer({ receipt, detailLoading, actionMessage, setAction
           </div>
         </>
       ) : (
-        <div className="grid min-h-[320px] place-items-center rounded-none border border-dashed border-[var(--border)] text-center text-[var(--foreground-soft)]">
+        <div className="grid min-h-0 flex-1 place-items-center rounded-none border border-dashed border-[var(--border)] text-center text-[var(--foreground-soft)]">
           เลือกใบเสร็จเพื่อดูตัวอย่าง
         </div>
       )}
