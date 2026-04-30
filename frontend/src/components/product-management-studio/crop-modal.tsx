@@ -57,6 +57,22 @@ export function CropModal({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [busy, onClose]);
 
+  const previewRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = previewRef.current;
+    if (!el) return;
+
+    function handleNativeWheel(event: WheelEvent) {
+      event.preventDefault();
+      const nextZoom = clamp(zoom + (event.deltaY < 0 ? 0.08 : -0.08), 1, 3);
+      onZoomChange(nextZoom);
+    }
+
+    el.addEventListener("wheel", handleNativeWheel, { passive: false });
+    return () => el.removeEventListener("wheel", handleNativeWheel);
+  }, [zoom, onZoomChange]);
+
   function handlePointerDown(event: ReactPointerEvent<HTMLDivElement>) {
     dragState.current = { startX: event.clientX, startY: event.clientY };
     event.currentTarget.setPointerCapture(event.pointerId);
@@ -76,12 +92,6 @@ export function CropModal({
   function handlePointerUp(event: ReactPointerEvent<HTMLDivElement>) {
     dragState.current = null;
     event.currentTarget.releasePointerCapture(event.pointerId);
-  }
-
-  function handleWheel(event: ReactWheelEvent<HTMLDivElement>) {
-    event.preventDefault();
-    const nextZoom = clamp(zoom + (event.deltaY < 0 ? 0.08 : -0.08), 1, 3);
-    onZoomChange(nextZoom);
   }
 
   if (!mounted) {
@@ -110,12 +120,12 @@ export function CropModal({
           {/* Left Column: Image Preview */}
           <div className="grid min-w-0 w-full justify-center gap-4 self-start [--crop-preview-size:min(320px,calc(92vw-80px))] max-[520px]:[--crop-preview-size:min(320px,calc(94vw-64px))]">
             <div
+              ref={previewRef}
               className="relative h-[var(--crop-preview-size)] w-[var(--crop-preview-size)] overflow-hidden rounded-[24px] border border-[var(--border)] bg-[var(--overlay-white-04)] shadow-[var(--shadow-inset-preview)] cursor-grab active:cursor-grabbing"
               onPointerDown={handlePointerDown}
               onPointerMove={handlePointerMove}
               onPointerUp={handlePointerUp}
               onPointerCancel={handlePointerUp}
-              onWheel={handleWheel}
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img

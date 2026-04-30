@@ -173,7 +173,7 @@ export function ReceiptViewer({ receipt, detailLoading, actionMessage, setAction
   }
 
   return (
-    <section className="grid h-fit max-h-[calc(100dvh-48px)] min-h-0 content-start gap-[14px] overflow-hidden rounded-none border border-[var(--border)] bg-[var(--panel-strong)] px-5 py-[18px] shadow-[var(--shadow-soft)] max-[1366px]:max-h-none max-[1366px]:overflow-visible max-[820px]:px-4 max-[820px]:py-4 [@media(max-height:860px)]:max-h-none [@media(max-height:860px)]:overflow-visible">
+    <section className="flex h-full max-h-[calc(100dvh-48px)] min-h-0 flex-col gap-[14px] overflow-hidden rounded-none border border-[var(--border)] bg-[var(--panel-strong)] px-5 py-[18px] shadow-[var(--shadow-soft)] max-[1366px]:h-auto max-[1366px]:max-h-none max-[1366px]:overflow-visible max-[820px]:px-4 max-[820px]:py-4 [@media(max-height:860px)]:h-auto [@media(max-height:860px)]:max-h-none [@media(max-height:860px)]:overflow-visible">
       <div>
         <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[var(--eyebrow)]">Print & Share</p>
         <strong className="my-[10px] block text-[clamp(1.65rem,2.7vw,2.2rem)] leading-none tracking-[-0.06em] text-[var(--foreground)]">งานหลังปิดบิล</strong>
@@ -182,7 +182,7 @@ export function ReceiptViewer({ receipt, detailLoading, actionMessage, setAction
 
       {receipt ? (
         <>
-          <div className="relative mx-auto grid max-h-[min(420px,calc(100dvh-380px))] min-h-0 w-full max-w-[320px] grid-rows-[auto_minmax(0,1fr)_auto] gap-3 overflow-hidden rounded-none border border-[var(--border-subtle)] bg-[var(--field-bg)] px-5 py-4 max-[1366px]:max-h-none max-[520px]:max-w-none max-[520px]:px-4 [@media(max-height:860px)]:max-h-none">
+          <div className="relative mx-auto flex min-h-0 w-full max-w-[340px] flex-1 flex-col gap-3 overflow-hidden rounded-none border border-[var(--border-subtle)] bg-[var(--field-bg)] px-5 py-5 max-[1366px]:flex-none max-[1366px]:max-h-none max-[520px]:max-w-none max-[520px]:px-4 [@media(max-height:860px)]:flex-none [@media(max-height:860px)]:max-h-none">
             <div className="text-center">
               <p className="m-0 text-[0.6rem] font-bold uppercase tracking-[0.28em] text-[var(--eyebrow)]">Receipt Preview</p>
               <strong className="mt-3 block truncate whitespace-nowrap text-[0.85rem] leading-[1.2] text-[var(--foreground)]">{receipt.code}</strong>
@@ -190,7 +190,7 @@ export function ReceiptViewer({ receipt, detailLoading, actionMessage, setAction
               <p className="mt-1 text-[0.78rem] text-[var(--foreground-soft)]">{formatDateTime(receipt.createdAt)}</p>
             </div>
 
-            <div className="relative max-h-[180px] min-h-[120px] border-y border-y-[var(--border-subtle)] py-3 max-[520px]:max-h-none">
+            <div className="relative flex min-h-0 flex-1 flex-col border-y border-y-[var(--border-subtle)] py-3">
               <div
                 ref={receiptScrollRef}
                 className={

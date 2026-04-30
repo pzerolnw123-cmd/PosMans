@@ -74,7 +74,7 @@ export function PaymentCheckoutPanels({
 }: PaymentCheckoutPanelsProps) {
   return (
     <>
-      <section className="grid min-h-0 grid-rows-[auto_minmax(0,1fr)_auto] gap-[16px] rounded-none border border-[var(--border)] bg-[var(--panel-strong)] px-5 py-[18px] shadow-[var(--shadow-soft)] max-[1180px]:grid-rows-[auto_auto_auto] max-[820px]:px-4 max-[820px]:py-4">
+      <section className="grid min-h-0 min-w-0 grid-rows-[auto_minmax(0,1fr)_auto] gap-[16px] rounded-none border border-[var(--border)] bg-[var(--panel-strong)] px-5 py-[18px] shadow-[var(--shadow-soft)] max-[1180px]:grid-rows-[auto_auto_auto] max-[820px]:px-4 max-[820px]:py-4">
         <div>
           <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[var(--eyebrow)]">Bill Summary</p>
           <strong className="my-[10px] block text-[1.4rem] leading-none tracking-[-0.04em] text-[var(--foreground)]">
@@ -150,7 +150,7 @@ export function PaymentCheckoutPanels({
         </div>
       </section>
 
-      <section className="grid h-fit content-start gap-[16px] rounded-none border border-[var(--border)] bg-[var(--panel-strong)] px-5 py-[18px] shadow-[var(--shadow-soft)] max-[820px]:px-4 max-[820px]:py-4">
+      <section className="grid h-fit min-w-0 content-start gap-[16px] rounded-none border border-[var(--border)] bg-[var(--panel-strong)] px-5 py-[18px] shadow-[var(--shadow-soft)] max-[820px]:px-4 max-[820px]:py-4">
         <div>
           <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[var(--eyebrow)]">Payment Methods</p>
           <strong className="my-[10px] block text-[1.4rem] leading-none tracking-[-0.04em] text-[var(--foreground)]">{completedSale ? "วิธีชำระล่าสุด" : "เลือกวิธีชำระ"}</strong>
@@ -266,10 +266,10 @@ export function PaymentCheckoutPanels({
         </div>
       </section>
 
-      <section className="grid h-fit gap-[16px] rounded-none border border-[var(--border)] bg-[var(--panel-strong)] px-5 py-[18px] shadow-[var(--shadow-soft)] max-[1366px]:col-span-2 max-[1180px]:col-span-1 max-[820px]:px-4 max-[820px]:py-4">
+      <section className="grid h-fit min-w-0 gap-[14px] overflow-hidden rounded-none border border-[var(--border)] bg-[var(--panel-strong)] px-4 py-[18px] shadow-[var(--shadow-soft)] max-[1280px]:col-span-2 max-[1180px]:col-span-1 max-[820px]:px-4 max-[820px]:py-4">
         <div>
           <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[var(--eyebrow)]">Quick Panel</p>
-          <strong className="my-[10px] block text-[1.4rem] leading-none tracking-[-0.04em] text-[var(--foreground)]">สถานะชำระเงิน</strong>
+          <strong className="my-[10px] block text-[1.28rem] leading-tight tracking-[-0.04em] text-[var(--foreground)]">สถานะชำระเงิน</strong>
         </div>
         <div className="grid gap-2">
           {!completedSale && qrPaymentSelected ? (

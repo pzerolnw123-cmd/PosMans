@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import type { ChangeEvent } from "react";
 import { useEffect, useRef, useState } from "react";
@@ -33,19 +33,29 @@ export function ProductManagementStudio() {
     totalPages: 1,
   });
 
+  const [itemsPerPageLimit, setItemsPerPageLimit] = useState(3);
+
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const objectUrlsRef = useRef<string[]>([]);
   const pendingDraftRef = useRef<ProductItem | null>(null);
-  const itemsPerPage = pagination.pageSize;
 
   useEffect(() => {
-    const mediaQuery = window.matchMedia("(min-width: 1181px) and (max-height: 860px)");
-    const syncCompactMode = () => setCompactMode(mediaQuery.matches);
+    const compactMediaQuery = window.matchMedia("(min-width: 1181px) and (max-height: 860px)");
+    const syncCompactMode = () => setCompactMode(compactMediaQuery.matches);
+
+    const ipadMediaQuery = window.matchMedia("(max-width: 1366px) and (any-pointer: coarse)");
+    const syncPageSize = () => setItemsPerPageLimit(ipadMediaQuery.matches ? 4 : 3);
 
     syncCompactMode();
-    mediaQuery.addEventListener("change", syncCompactMode);
+    syncPageSize();
 
-    return () => mediaQuery.removeEventListener("change", syncCompactMode);
+    compactMediaQuery.addEventListener("change", syncCompactMode);
+    ipadMediaQuery.addEventListener("change", syncPageSize);
+
+    return () => {
+      compactMediaQuery.removeEventListener("change", syncCompactMode);
+      ipadMediaQuery.removeEventListener("change", syncPageSize);
+    };
   }, []);
 
   useEffect(() => {
@@ -62,7 +72,7 @@ export function ProductManagementStudio() {
     };
   }, [setShellAlert, uploadError]);
 
-  useProductListLoader({ activeCategory, itemsPerPage, page, pendingDraftRef, setPage, setPagination, setProducts, setProductsLoading, setSelectedId, setServerProducts, setUploadError });
+  useProductListLoader({ activeCategory, itemsPerPage: itemsPerPageLimit, page, pendingDraftRef, setPage, setPagination, setProducts, setProductsLoading, setSelectedId, setServerProducts, setUploadError });
 
   const effectiveSelectedId = pendingDraftRef.current?.id ?? selectedId;
   const selectedProduct = products.find((item) => item.id === effectiveSelectedId) ?? products[0] ?? null;
@@ -190,9 +200,9 @@ export function ProductManagementStudio() {
       };
       const uploadPayload = pendingUploadBlob || isDraftProduct(selectedProduct)
         ? {
-            imageUrl: finalImageUrl?.startsWith("http") ? finalImageUrl : null,
-            uploadedKey: finalUploadedKey || null,
-          }
+          imageUrl: finalImageUrl?.startsWith("http") ? finalImageUrl : null,
+          uploadedKey: finalUploadedKey || null,
+        }
         : {};
       const payload = { ...basePayload, ...uploadPayload };
 
@@ -238,7 +248,7 @@ export function ProductManagementStudio() {
       setProducts((current) => current.map((item) => (item.id === updated.id ? { ...item, ...clientUpdated } : item)));
       setServerProducts((current) => current.map((item) => (item.id === updated.id ? updated : item)));
       setPendingUploadBlob(null);
-      
+
       setShellAlert({ message: "บันทึกการเปลี่ยนแปลงสินค้าเรียบร้อยแล้ว", tone: "success" });
     } catch (error) {
       setUploadError(error instanceof Error ? error.message : "บันทึกสินค้าไม่สำเร็จ");
@@ -364,7 +374,7 @@ export function ProductManagementStudio() {
       setUploadError(null);
 
       const croppedBlob = await createCroppedBlob(cropDraft, cropZoom, cropOffset.x, cropOffset.y);
-      
+
       objectUrlsRef.current = revokeManagedObjectUrl(selectedProduct.imageUrl, objectUrlsRef.current);
       objectUrlsRef.current = revokeManagedObjectUrl(cropDraft.objectUrl, objectUrlsRef.current);
       const localPreviewUrl = URL.createObjectURL(croppedBlob);
@@ -412,7 +422,7 @@ export function ProductManagementStudio() {
       setSelectedId(remaining[0]?.id ?? "");
       setPage(1);
       setIsDeleteModalOpen(false);
-      
+
       setShellAlert({ message: "ยกเลิกรายการสินค้าสำเร็จ", tone: "success" });
       return;
     }
@@ -449,5 +459,5 @@ export function ProductManagementStudio() {
     }
   }
 
-  return <ProductManagementStudioLayout compactMode={compactMode} productsLoading={productsLoading} saveBusy={saveBusy} deleteBusy={deleteBusy} isDirty={isDirty} selectedProduct={selectedProduct} activeCategory={activeCategory} currentPage={currentPage} filteredCount={pagination.totalItems} itemsPerPage={itemsPerPage} selectionTransitionLocked={Boolean(pendingDraftRef.current)} selectedId={effectiveSelectedId} totalPages={totalPages} visibleProducts={visibleProducts} fileInputRef={fileInputRef} cropDraft={cropDraft} cropZoom={cropZoom} cropOffset={cropOffset} uploadBusy={uploadBusy} isDeleteModalOpen={isDeleteModalOpen} onCreateNewProduct={handleCreateNewProduct} onUpdateProduct={updateSelectedProduct} onSaveChanges={handleSaveChanges} onChooseImageClick={handleChooseImageClick} onBackToProducts={handleBackToProducts} onToggleSaleStatus={handleToggleSaleStatus} onToggleStock={handleToggleStock} onResetForm={handleResetForm} onDeleteConfirmed={handleDeleteRequest} onCategoryChange={handleCategoryChange} onPageChange={setPage} onSelectProduct={setSelectedId} onFileSelection={handleFileSelection} onCropClose={handleCropClose} onCropConfirm={handleCropConfirm} onCropZoomChange={handleCropZoomChange} onCropOffsetChange={handleCropOffsetChange} onCloseDeleteModal={() => setIsDeleteModalOpen(false)} onFinalDelete={handleFinalDelete} />;
+  return <ProductManagementStudioLayout compactMode={compactMode} productsLoading={productsLoading} saveBusy={saveBusy} deleteBusy={deleteBusy} isDirty={isDirty} selectedProduct={selectedProduct} activeCategory={activeCategory} currentPage={currentPage} filteredCount={pagination.totalItems} itemsPerPage={itemsPerPageLimit} selectionTransitionLocked={Boolean(pendingDraftRef.current)} selectedId={effectiveSelectedId} totalPages={totalPages} visibleProducts={visibleProducts} fileInputRef={fileInputRef} cropDraft={cropDraft} cropZoom={cropZoom} cropOffset={cropOffset} uploadBusy={uploadBusy} isDeleteModalOpen={isDeleteModalOpen} onCreateNewProduct={handleCreateNewProduct} onUpdateProduct={updateSelectedProduct} onSaveChanges={handleSaveChanges} onChooseImageClick={handleChooseImageClick} onBackToProducts={handleBackToProducts} onToggleSaleStatus={handleToggleSaleStatus} onToggleStock={handleToggleStock} onResetForm={handleResetForm} onDeleteConfirmed={handleDeleteRequest} onCategoryChange={handleCategoryChange} onPageChange={setPage} onSelectProduct={setSelectedId} onFileSelection={handleFileSelection} onCropClose={handleCropClose} onCropConfirm={handleCropConfirm} onCropZoomChange={handleCropZoomChange} onCropOffsetChange={handleCropOffsetChange} onCloseDeleteModal={() => setIsDeleteModalOpen(false)} onFinalDelete={handleFinalDelete} />;
 }

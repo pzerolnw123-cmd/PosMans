@@ -30,14 +30,16 @@ import {
 
 const OwnerLogoContext = createContext<OwnerLogoContextValue | null>(null);
 
-function useOwnerLogo() {
+export function useOwnerLogo() {
   const context = useContext(OwnerLogoContext);
-
-  if (!context) {
-    throw new Error("useOwnerLogo must be used inside OwnerLogoProvider");
-  }
-
-  return context;
+  return context || {
+    previewUrl: "",
+    savedLogoUrl: "",
+    saved: false,
+    setPreviewUrl: () => {},
+    setSaved: () => {},
+    setSavedLogo: () => {}
+  };
 }
 
 // ── OwnerLogoProvider ────────────────────────────────────────────────────────

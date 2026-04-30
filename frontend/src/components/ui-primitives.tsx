@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { ProfileHeaderInjector } from "@/components/owner-workspace/profile-header-injector";
 
 export const eyebrowTextClass = "m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[var(--eyebrow)]";
 
@@ -55,16 +56,20 @@ export function PageHeader({
   className?: string;
 }) {
   return (
-    <div
-      className={`flex h-[156px] min-h-[156px] max-h-[156px] items-start justify-between overflow-hidden rounded-none border border-[var(--border)] bg-[var(--surface)] px-5 py-6 shadow-[var(--shadow-soft)] max-[1180px]:h-auto max-[1180px]:min-h-0 max-[1180px]:max-h-none max-[1024px]:px-4 max-[1024px]:py-5 max-[820px]:px-4 max-[820px]:py-5 max-[720px]:flex-col max-[720px]:items-stretch max-[720px]:gap-4 max-[640px]:px-3.5 max-[640px]:py-4 [@media(max-height:860px)]:h-auto [@media(max-height:860px)]:min-h-0 [@media(max-height:860px)]:max-h-none ${className}`.trim()}
-    >
-      <div>
-        <p className={eyebrowTextClass}>{eyebrow}</p>
-        <strong className="mt-2 block text-[clamp(1.8rem,3vw,2.4rem)] leading-none tracking-[-0.06em] text-[var(--foreground)] max-[1024px]:text-[1.7rem] max-[640px]:text-[1.55rem]">{title}</strong>
-        {description ? <p className="mt-3 m-0 text-[0.95rem] leading-[1.6] text-[var(--foreground-soft)] max-w-[600px] max-[640px]:text-[0.9rem]">{description}</p> : null}
+    <>
+      <div
+        className={`flex h-[156px] min-h-[156px] max-h-[156px] items-start justify-between overflow-hidden rounded-none border border-[var(--border)] bg-[var(--surface)] px-5 py-6 shadow-[var(--shadow-soft)] max-[1180px]:h-auto max-[1180px]:min-h-0 max-[1180px]:max-h-none max-[1024px]:px-4 max-[1024px]:py-5 max-[820px]:px-4 max-[820px]:py-5 max-[720px]:flex-col max-[720px]:items-stretch max-[720px]:gap-4 max-[640px]:px-3.5 max-[640px]:py-4 [@media(max-height:860px)]:h-auto [@media(max-height:860px)]:min-h-0 [@media(max-height:860px)]:max-h-none [@media(max-width:1366px)_and_(any-pointer:coarse)]:hidden ${className}`.trim()}
+      >
+        <div>
+          <p className={eyebrowTextClass}>{eyebrow}</p>
+          <strong className="mt-2 block text-[clamp(1.8rem,3vw,2.4rem)] leading-none tracking-[-0.06em] text-[var(--foreground)] max-[1024px]:text-[1.7rem] max-[640px]:text-[1.55rem]">{title}</strong>
+          {description ? <p className="mt-3 m-0 text-[0.95rem] leading-[1.6] text-[var(--foreground-soft)] max-w-[600px] max-[640px]:text-[0.9rem]">{description}</p> : null}
+        </div>
+        {actions ? <div className="flex flex-none flex-wrap items-center justify-end gap-3 max-[720px]:w-full max-[720px]:justify-stretch">{actions}</div> : null}
       </div>
-      {actions ? <div className="flex flex-none flex-wrap items-center justify-end gap-3 max-[720px]:w-full max-[720px]:justify-stretch">{actions}</div> : null}
-    </div>
+
+      <ProfileHeaderInjector className={`hidden [@media(max-width:1366px)_and_(any-pointer:coarse)]:flex ${className}`.trim()} />
+    </>
   );
 }
 

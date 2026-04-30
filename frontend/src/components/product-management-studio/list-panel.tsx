@@ -1,4 +1,4 @@
-﻿import { ghostButtonClass, LoadingState, secondaryButtonClass, StatusPill } from "@/components/ui-primitives";
+import { ghostButtonClass, LoadingState, secondaryButtonClass, StatusPill } from "@/components/ui-primitives";
 import { ProductImage } from "@/components/product-management-studio/shared";
 import { categoryOptions, formatPrice, type ProductCategory, type ProductItem } from "@/components/product-management-studio/types";
 

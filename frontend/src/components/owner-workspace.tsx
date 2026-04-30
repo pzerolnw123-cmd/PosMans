@@ -143,7 +143,18 @@ export async function OwnerWorkspace({ session, paymentStore, activeSection }: O
       {screen.standalone ? (
         screen.body
       ) : (
-        <PanelCard eyebrow={screen.eyebrow} title={screen.title} description={screen.description} actions={screen.actions}>
+        <PanelCard
+          eyebrow={screen.eyebrow}
+          title={screen.title}
+          description={screen.description}
+          actions={screen.actions}
+          headerClassName="[@media(max-width:1366px)_and_(any-pointer:coarse)]:hidden"
+          mobileHeaderClassName="hidden [@media(max-width:1366px)_and_(any-pointer:coarse)]:flex"
+          mobileEyebrow="STATUS STORE"
+          mobileTitle={<span className="[background-image:var(--status-text-gradient)] bg-clip-text font-black tracking-normal text-transparent drop-shadow-[var(--status-text-shadow)] pb-1">{storeName}</span>}
+          mobileDescription={`${ownerName} • ${roleLabel}`}
+          mobileActions={<LogoutButton />}
+        >
           {screen.body}
         </PanelCard>
       )}
@@ -169,7 +180,7 @@ export async function OwnerWorkspace({ session, paymentStore, activeSection }: O
 
   return (
     <main className="workspace-screen-shell h-dvh overflow-hidden [@media(min-width:1025px)_and_(max-width:1240px)]:h-auto [@media(min-width:1025px)_and_(max-width:1240px)]:overflow-auto max-[1024px]:h-auto max-[1024px]:overflow-auto">
-      <div className="workspace-screen-frame mx-auto h-dvh w-[min(1400px,calc(100%-32px))] px-0 py-3 [@media(min-width:1025px)_and_(max-width:1240px)]:h-auto max-[1024px]:h-auto max-[1024px]:w-[min(100%-24px,100%)] max-[1024px]:py-3 max-[820px]:w-[min(100%-16px,100%)] max-[720px]:pt-2.5">
+      <div className="workspace-screen-frame mx-auto h-dvh w-[min(1700px,calc(100%-32px))] px-0 py-3 [@media(min-width:1025px)_and_(max-width:1240px)]:h-auto max-[1024px]:h-auto max-[1024px]:w-[min(100%-24px,100%)] max-[1024px]:py-3 max-[820px]:w-[min(100%-16px,100%)] max-[720px]:pt-2.5">
         <OwnerLogoProvider initialLogoUrl={session.user.store?.logoUrl}>{shell}</OwnerLogoProvider>
       </div>
     </main>

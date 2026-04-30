@@ -72,7 +72,7 @@ export function ProductDetailPanel({
     Boolean(selectedProduct?.trackStock) &&
     ((!Number.isFinite(selectedProduct?.stockQuantity) || (selectedProduct?.stockQuantity ?? 0) < 0) ||
       (!Number.isFinite(selectedProduct?.lowStockThreshold) || (selectedProduct?.lowStockThreshold ?? 0) < 0));
-  const isDraftEmpty = 
+  const isDraftEmpty =
     selectedProduct?.code === "DRAFT-NEW" &&
     !selectedProduct.name.trim() &&
     (selectedProduct.price === 0 || isNaN(selectedProduct.price)) &&
@@ -85,10 +85,10 @@ export function ProductDetailPanel({
       <div className="grid gap-[10px]">
         <div className="flex items-start justify-between gap-3 max-[720px]:flex-col max-[720px]:items-stretch">
           <div>
-          <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[var(--eyebrow)]">รายละเอียดสินค้า</p>
-          <h2 className="my-[8px] text-[clamp(1.45rem,2.2vw,2rem)] leading-[0.98] tracking-[-0.06em]">
-            {selectedProduct && selectedProduct.code === "DRAFT-NEW" ? "เพิ่มสินค้าใหม่" : "แก้ไขสินค้า"}
-          </h2>
+            <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[var(--eyebrow)]">รายละเอียดสินค้า</p>
+            <h2 className="my-[8px] text-[clamp(1.45rem,2.2vw,2rem)] leading-[0.98] tracking-[-0.06em]">
+              {selectedProduct && selectedProduct.code === "DRAFT-NEW" ? "เพิ่มสินค้าใหม่" : "แก้ไขสินค้า"}
+            </h2>
           </div>
           {selectedProduct ? (
             <div className="relative z-20 grid w-[180px] translate-y-5 justify-items-center gap-3 max-[720px]:w-full max-[720px]:translate-y-0">
@@ -230,9 +230,8 @@ export function ProductDetailPanel({
                           <button
                             key={cat}
                             type="button"
-                            className={`flex items-center px-4 py-[10px] text-[0.95rem] transition-colors hover:bg-[var(--surface-muted)] active:bg-[var(--surface-strong)] ${
-                              selectedProduct.category === cat ? "text-[var(--brand)] font-bold bg-[var(--brand-soft)]" : "text-[var(--foreground)]"
-                            }`}
+                            className={`flex items-center px-4 py-[10px] text-[0.95rem] transition-colors hover:bg-[var(--surface-muted)] active:bg-[var(--surface-strong)] ${selectedProduct.category === cat ? "text-[var(--brand)] font-bold bg-[var(--brand-soft)]" : "text-[var(--foreground)]"
+                              }`}
                             onClick={() => {
                               onUpdateProduct({ category: cat as ProductItem["category"] });
                               setIsCategoryOpen(false);
@@ -294,7 +293,7 @@ export function ProductDetailPanel({
                 <div className="mt-auto">
                   <button
                     type="button"
-                    className={`${primaryButtonClass} mb-3 min-h-[40px] w-full px-3 text-[0.95rem] shadow-none max-[1180px]:text-[0.86rem] disabled:opacity-50 disabled:cursor-not-allowed`}
+                    className={`${primaryButtonClass} whitespace-nowrap mb-3 min-h-[40px] w-full px-3 text-[0.95rem] shadow-none max-[1180px]:text-[0.86rem] disabled:opacity-50 disabled:cursor-not-allowed`}
                     onClick={onSaveChanges}
                     disabled={isSaveDisabled}
                   >
@@ -320,7 +319,7 @@ export function ProductDetailPanel({
                 </p>
 
                 <div className="mt-auto grid">
-                  <button type="button" className={`${successButtonClass} mt-auto`} onClick={onChooseImageClick}>
+                  <button type="button" className={`${successButtonClass} whitespace-nowrap mt-auto`} onClick={onChooseImageClick}>
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" className="opacity-80">
                       <g fill="none" stroke="currentColor" strokeWidth="2">
                         <rect width="14" height="14" x="5" y="5" rx="4" />

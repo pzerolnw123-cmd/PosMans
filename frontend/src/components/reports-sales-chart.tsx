@@ -149,11 +149,11 @@ export function ReportsSalesChart() {
 
   const summaryItems = report
     ? [
-        ["ยอดขาย", formatBaht(report.totals.sales)],
-        ["จำนวนบิล", `${report.totals.orders.toLocaleString("th-TH")} บิล`],
-        ["บิลเฉลี่ย", formatBaht(report.totals.averageOrder)],
-        ["ช่วงพีค", report.totals.peakLabel || "-"],
-      ]
+      ["ยอดขาย", formatBaht(report.totals.sales)],
+      ["จำนวนบิล", `${report.totals.orders.toLocaleString("th-TH")} บิล`],
+      ["บิลเฉลี่ย", formatBaht(report.totals.averageOrder)],
+      ["ช่วงพีค", report.totals.peakLabel || "-"],
+    ]
     : [];
 
   return (

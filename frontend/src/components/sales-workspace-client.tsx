@@ -38,9 +38,17 @@ export function SalesWorkspaceClient() {
   const [animationNonce, setAnimationNonce] = useState(0);
   const [cartPulse, setCartPulse] = useState(false);
   const [cartScrollMetric, setCartScrollMetric] = useState({ top: 0, height: 100, visible: false });
+  const [productScrollMetric, setProductScrollMetric] = useState({ top: 0, height: 100, visible: false });
   const cartScrollRef = useRef<HTMLDivElement | null>(null);
+  const productScrollRef = useRef<HTMLDivElement | null>(null);
   const animationTimersRef = useRef<number[]>([]);
   const dragScrollRef = useRef({
+    active: false,
+    pointerId: 0,
+    startY: 0,
+    scrollTop: 0,
+  });
+  const productDragScrollRef = useRef({
     active: false,
     pointerId: 0,
     startY: 0,
@@ -74,6 +82,16 @@ export function SalesWorkspaceClient() {
     };
   }
 
+  const [pageSize, setPageSize] = useState(6);
+
+  useEffect(() => {
+    const ipadMediaQuery = window.matchMedia("(max-width: 1366px) and (any-pointer: coarse)");
+    const syncPageSize = () => setPageSize(ipadMediaQuery.matches ? 8 : 6);
+    syncPageSize();
+    ipadMediaQuery.addEventListener("change", syncPageSize);
+    return () => ipadMediaQuery.removeEventListener("change", syncPageSize);
+  }, []);
+
   useEffect(() => {
     let cancelled = false;
 
@@ -83,7 +101,7 @@ export function SalesWorkspaceClient() {
         setError("");
         const params = new URLSearchParams({
           page: String(pageIndex + 1),
-          pageSize: "6",
+          pageSize: String(pageSize),
           category: activeCategory,
         });
         const response = await requestProductList(params);
@@ -114,7 +132,7 @@ export function SalesWorkspaceClient() {
     return () => {
       cancelled = true;
     };
-  }, [activeCategory, pageIndex]);
+  }, [activeCategory, pageIndex, pageSize]);
 
   useEffect(() => {
     void setStoredCustomerDisplayIdle().catch(() => undefined);
@@ -169,6 +187,10 @@ export function SalesWorkspaceClient() {
     updateCartScrollbar();
   }, [cartItems.length]);
 
+  useLayoutEffect(() => {
+    updateProductScrollbar();
+  }, [products.length, pageSize]);
+
   useEffect(() => {
     return () => {
       animationTimersRef.current.forEach((timerId) => window.clearTimeout(timerId));
@@ -190,6 +212,23 @@ export function SalesWorkspaceClient() {
     const height = Math.max(14, (node.clientHeight / node.scrollHeight) * 100);
     const top = (node.scrollTop / maxScroll) * (100 - height);
     setCartScrollMetric({ top, height, visible: true });
+  }
+
+  function updateProductScrollbar() {
+    const node = productScrollRef.current;
+    if (!node) {
+      return;
+    }
+
+    const maxScroll = node.scrollHeight - node.clientHeight;
+    if (maxScroll <= 0) {
+      setProductScrollMetric({ top: 0, height: 100, visible: false });
+      return;
+    }
+
+    const height = Math.max(14, (node.clientHeight / node.scrollHeight) * 100);
+    const top = (node.scrollTop / maxScroll) * (100 - height);
+    setProductScrollMetric({ top, height, visible: true });
   }
 
   function handleCategoryChange(category: ProductCategory) {
@@ -302,9 +341,49 @@ export function SalesWorkspaceClient() {
     }
   }
 
+  function handleProductPointerDown(event: PointerEvent<HTMLDivElement>) {
+    if (event.button !== 0 || (event.target instanceof HTMLElement && event.target.closest("button"))) {
+      return;
+    }
+
+    const target = event.currentTarget;
+    productDragScrollRef.current = {
+      active: true,
+      pointerId: event.pointerId,
+      startY: event.clientY,
+      scrollTop: target.scrollTop,
+    };
+    target.setPointerCapture(event.pointerId);
+    target.dataset.dragging = "true";
+  }
+
+  function handleProductPointerMove(event: PointerEvent<HTMLDivElement>) {
+    const drag = productDragScrollRef.current;
+    if (!drag.active || drag.pointerId !== event.pointerId) {
+      return;
+    }
+
+    event.preventDefault();
+    event.currentTarget.scrollTop = drag.scrollTop - (event.clientY - drag.startY);
+    updateProductScrollbar();
+  }
+
+  function stopProductDrag(event: PointerEvent<HTMLDivElement>) {
+    const drag = productDragScrollRef.current;
+    if (!drag.active || drag.pointerId !== event.pointerId) {
+      return;
+    }
+
+    productDragScrollRef.current.active = false;
+    event.currentTarget.dataset.dragging = "false";
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+  }
+
   return (
-    <div className="grid h-full min-h-0 grid-cols-[minmax(0,1fr)_320px] gap-[18px] max-[1366px]:h-auto max-[1366px]:grid-cols-1 max-[820px]:gap-4">
-      <section className="grid min-h-0 grid-rows-[auto_auto_auto] content-start gap-[18px] max-[1366px]:min-h-0" aria-label="sales main area">
+    <div className="grid h-full min-h-0 grid-cols-[minmax(0,1fr)_minmax(280px,320px)] gap-[18px] max-[1280px]:h-auto max-[1280px]:grid-cols-1 max-[820px]:gap-4">
+      <section className="flex min-h-0 flex-col gap-[18px] max-[1280px]:min-h-0" aria-label="sales main area">
         <div className="rounded-none border border-[var(--border)] bg-[var(--surface)] px-[22px] py-5 shadow-[var(--shadow-soft)] max-[820px]:px-4 max-[820px]:py-4 max-[520px]:px-3.5">
           <div className="flex flex-wrap gap-[10px] max-[520px]:grid max-[520px]:grid-cols-1">
             {categoryOptions.map((category) => {
@@ -329,7 +408,22 @@ export function SalesWorkspaceClient() {
           </div>
         </div>
 
-          <div className="grid min-h-0 grid-cols-3 content-start items-start gap-4 overflow-visible p-1 max-[1180px]:grid-cols-2 max-[640px]:grid-cols-1" aria-label="products">
+        <div className="relative min-h-0 flex-1">
+          <div
+            ref={productScrollRef}
+            onScroll={updateProductScrollbar}
+            onPointerDown={handleProductPointerDown}
+            onPointerMove={handleProductPointerMove}
+            onPointerUp={stopProductDrag}
+            onPointerCancel={stopProductDrag}
+            onPointerLeave={stopProductDrag}
+            className={
+              productScrollMetric.visible
+                ? "sales-cart-scroll grid h-full min-h-0 touch-auto cursor-grab select-none content-start gap-4 p-1 pb-6 pr-4 active:cursor-grabbing grid-cols-3 [@media(max-width:1366px)]:grid-cols-2 [@media(any-pointer:coarse)]:grid-cols-2 max-[1024px]:grid-cols-2 max-[820px]:grid-cols-2 max-[640px]:grid-cols-1"
+                : "sales-cart-scroll grid h-full min-h-0 touch-auto select-auto content-start gap-4 p-1 pb-6 pr-0 grid-cols-3 [@media(max-width:1366px)]:grid-cols-2 [@media(any-pointer:coarse)]:grid-cols-2 max-[1024px]:grid-cols-2 max-[820px]:grid-cols-2 max-[640px]:grid-cols-1"
+            }
+            aria-label="products"
+          >
           {loading ? (
             <div className="col-span-full grid min-h-[226px] place-items-center rounded-none border border-dashed border-[var(--border)] bg-[var(--panel-subtle)] px-4 py-8 text-center">
               <LoadingState
@@ -375,29 +469,29 @@ export function SalesWorkspaceClient() {
                     ) : (
                       <div className="h-[96px] w-[118px] shrink-0 rounded-xl border border-[var(--border-subtle)] bg-[var(--panel-subtle)] max-[420px]:w-full" />
                     )}
-                    <div className="grid min-w-0 justify-items-end gap-1 text-right max-[420px]:w-full max-[420px]:justify-items-start max-[420px]:text-left">
-                      <b className="text-base leading-[1.2] text-[var(--foreground)]">{formatBaht(product.price)}</b>
-                      <span className={saleStatusLabel === "พร้อมขาย" ? "text-[0.78rem] font-bold text-[var(--success)]" : "text-[0.78rem] font-bold text-[var(--foreground-soft)]"}>{saleStatusLabel}</span>
-                      <span className="max-w-[86px] text-[0.62rem] leading-[1.2] text-[var(--foreground-soft)]">{product.category}</span>
-                      <span className="max-w-[86px] truncate text-[0.6rem] font-bold uppercase tracking-[0.1em] text-[var(--foreground-soft)]">
-                        {product.code}
-                      </span>
-                      {productStockLabel ? (
-                        <span className={ready ? "max-w-[86px] truncate text-[0.68rem] font-bold text-[var(--success)]" : "max-w-[86px] truncate text-[0.68rem] font-bold text-[var(--danger)]"}>
-                          {productStockLabel}
+                      <div className="grid min-w-0 justify-items-end gap-1 text-right max-[420px]:w-full max-[420px]:justify-items-start max-[420px]:text-left">
+                        <b className="text-base leading-[1.2] text-[var(--foreground)] max-[1366px]:text-[1.25rem]">{formatBaht(product.price)}</b>
+                        <span className={saleStatusLabel === "พร้อมขาย" ? "text-[0.78rem] font-bold text-[var(--success)] max-[1366px]:text-[0.95rem]" : "text-[0.78rem] font-bold text-[var(--foreground-soft)] max-[1366px]:text-[0.95rem]"}>{saleStatusLabel}</span>
+                        <span className="max-w-[86px] text-[0.62rem] leading-[1.2] text-[var(--foreground-soft)] max-[1366px]:max-w-[120px] max-[1366px]:text-[0.85rem]">{product.category}</span>
+                        <span className="max-w-[86px] truncate text-[0.6rem] font-bold uppercase tracking-[0.1em] text-[var(--foreground-soft)] max-[1366px]:max-w-[120px] max-[1366px]:text-[0.75rem]">
+                          {product.code}
                         </span>
-                      ) : null}
-                    </div>
+                        {productStockLabel ? (
+                          <span className={ready ? "max-w-[86px] truncate text-[0.68rem] font-bold text-[var(--success)] max-[1366px]:max-w-[120px] max-[1366px]:text-[0.85rem]" : "max-w-[86px] truncate text-[0.68rem] font-bold text-[var(--danger)] max-[1366px]:max-w-[120px] max-[1366px]:text-[0.85rem]"}>
+                            {productStockLabel}
+                          </span>
+                        ) : null}
+                      </div>
                   </div>
                   <div className="grid gap-1.5">
-                    <strong className="text-base leading-[1.2] text-[var(--foreground)]">{product.name}</strong>
+                    <strong className="text-base leading-[1.2] text-[var(--foreground)] max-[1366px]:text-[1.15rem]">{product.name}</strong>
                   </div>
                   <button
                     type="button"
                     className={
                       ready
-                        ? "absolute bottom-[14px] left-[14px] inline-flex h-[42px] min-w-[126px] items-center justify-center gap-2 rounded-[10px] border border-transparent [background:var(--brand-gradient)] px-4 text-[0.92rem] font-bold text-[var(--button-text)] shadow-[var(--brand-shadow)_0_8px_18px] transition duration-200 hover:-translate-y-0.5 hover:shadow-[var(--brand-shadow)_0_12px_24px] active:scale-95"
-                        : "absolute bottom-[14px] left-[14px] inline-flex h-[42px] min-w-[126px] cursor-not-allowed items-center justify-center gap-2 rounded-[10px] border border-[var(--border)] bg-[var(--surface-muted)] px-4 text-[0.92rem] font-bold text-[var(--foreground-soft)] opacity-60"
+                        ? "absolute bottom-[14px] left-[14px] inline-flex h-[42px] min-w-[126px] items-center justify-center gap-2 rounded-[10px] border border-transparent [background:var(--brand-gradient)] px-4 text-[0.92rem] font-bold text-[var(--button-text)] shadow-[var(--brand-shadow)_0_8px_18px] transition duration-200 hover:-translate-y-0.5 hover:shadow-[var(--brand-shadow)_0_12px_24px] active:scale-95 max-[1366px]:h-[48px] max-[1366px]:text-[1.1rem]"
+                        : "absolute bottom-[14px] left-[14px] inline-flex h-[42px] min-w-[126px] cursor-not-allowed items-center justify-center gap-2 rounded-[10px] border border-[var(--border)] bg-[var(--surface-muted)] px-4 text-[0.92rem] font-bold text-[var(--foreground-soft)] opacity-60 max-[1366px]:h-[48px] max-[1366px]:text-[1.1rem]"
                     }
                     disabled={!ready}
                     onClick={() => handleAddToCart(product)}
@@ -413,9 +507,18 @@ export function SalesWorkspaceClient() {
               {error || "ยังไม่มีสินค้าในร้าน"}
             </div>
           )}
+          </div>
+          {productScrollMetric.visible ? (
+            <span className="pointer-events-none absolute bottom-4 right-0 top-1 w-[7px] rounded-full bg-[var(--scroll-track)]">
+              <span
+                className="absolute left-0 w-full rounded-full [background:var(--scroll-thumb)] shadow-[var(--brand-shadow)_0_0_14px]"
+                style={{ top: `${productScrollMetric.top}%`, height: `${productScrollMetric.height}%` }}
+              />
+            </span>
+          ) : null}
         </div>
 
-        <div className="flex items-center justify-between gap-4 border-t border-t-[var(--border-hairline)] pt-3 max-[720px]:flex-col max-[720px]:items-stretch">
+        <div className="relative flex shrink-0 items-center justify-between gap-4 border-t border-t-[var(--border-hairline)] bg-[var(--background)] pt-4 max-[720px]:flex-col max-[720px]:items-stretch">
           <button
             type="button"
             className="inline-flex h-[52px] w-[152px] items-center justify-center rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] px-4 font-bold text-[var(--foreground)] transition hover:-translate-y-px hover:border-[var(--border-strong)] hover:shadow-[var(--shadow-hover)] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:shadow-none max-[720px]:w-full"

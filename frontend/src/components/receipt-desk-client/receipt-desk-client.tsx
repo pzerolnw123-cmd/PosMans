@@ -8,21 +8,29 @@ import { formatBaht, formatDateTime, paymentMethodLabels, toDateInputValue, shif
 import { CalendarPicker } from "./calendar-picker";
 import { ReceiptViewer } from "./receipt-viewer";
 
-const pageSize = 4;
 
 export function ReceiptDeskClient() {
+  const [pageSize, setPageSize] = useState(4);
   const [receipts, setReceipts] = useState<Receipt[]>([]);
   const [selectedReceipt, setSelectedReceipt] = useState<Receipt | null>(null);
   const [selectedReceiptId, setSelectedReceiptId] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState(() => toDateInputValue(new Date()));
   const [page, setPage] = useState(1);
-  const [pagination, setPagination] = useState({ page: 1, pageSize, totalItems: 0, totalPages: 1 });
+  const [pagination, setPagination] = useState({ page: 1, pageSize: 4, totalItems: 0, totalPages: 1 });
   const [loading, setLoading] = useState(true);
   const [detailLoading, setDetailLoading] = useState(false);
   const [error, setError] = useState("");
   const [actionMessage, setActionMessage] = useState("");
   const detailRequestRef = useRef(0);
   const selectedReceiptRef = useRef<Receipt | null>(null);
+
+  useEffect(() => {
+    const ipadMediaQuery = window.matchMedia("(max-width: 1366px) and (any-pointer: coarse)");
+    const syncPageSize = () => setPageSize(ipadMediaQuery.matches ? 5 : 4);
+    syncPageSize();
+    ipadMediaQuery.addEventListener("change", syncPageSize);
+    return () => ipadMediaQuery.removeEventListener("change", syncPageSize);
+  }, []);
 
   const today = useMemo(() => toDateInputValue(new Date()), []);
   const yesterday = useMemo(() => shiftDateInputValue(-1), []);
@@ -92,7 +100,7 @@ export function ReceiptDeskClient() {
     return () => {
       cancelled = true;
     };
-  }, [page, selectedDate]);
+  }, [page, selectedDate, pageSize]);
 
   async function selectReceipt(receipt: Receipt) {
     const requestId = detailRequestRef.current + 1;
@@ -122,8 +130,8 @@ export function ReceiptDeskClient() {
   }
 
   return (
-    <div className="grid min-h-0 grid-cols-[minmax(0,1.25fr)_minmax(320px,0.75fr)] items-start gap-[18px] max-[1366px]:grid-cols-1 max-[820px]:gap-4">
-      <section className="relative z-20 grid h-fit max-h-[calc(100dvh-220px)] min-h-0 content-start gap-[18px] overflow-visible rounded-none border border-[var(--border)] bg-[var(--panel-strong)] px-5 py-[18px] shadow-[var(--shadow-soft)] max-[1366px]:max-h-none max-[820px]:px-4 max-[820px]:py-4 [@media(max-height:860px)]:max-h-none">
+    <div className="grid min-h-0 grid-cols-[minmax(0,1.25fr)_minmax(320px,0.75fr)] items-stretch gap-[18px] max-[1366px]:grid-cols-1 max-[820px]:gap-4">
+      <section className="relative z-20 grid h-full max-h-[calc(100dvh-220px)] min-h-0 content-start gap-[18px] overflow-visible rounded-none border border-[var(--border)] bg-[var(--panel-strong)] px-5 py-[18px] shadow-[var(--shadow-soft)] max-[1366px]:h-auto max-[1366px]:max-h-none max-[820px]:px-4 max-[820px]:py-4 [@media(max-height:860px)]:h-auto [@media(max-height:860px)]:max-h-none">
         <div className="flex items-start justify-between gap-4 max-[720px]:flex-col max-[720px]:items-stretch">
           <div>
             <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[var(--eyebrow)]">Recent Receipts</p>
