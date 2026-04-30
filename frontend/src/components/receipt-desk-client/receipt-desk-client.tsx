@@ -123,7 +123,7 @@ export function ReceiptDeskClient() {
 
   return (
     <div className="grid min-h-0 grid-cols-[minmax(0,1.25fr)_minmax(320px,0.75fr)] items-start gap-[18px] max-[1366px]:grid-cols-1 max-[820px]:gap-4">
-      <section className="relative z-20 grid h-fit max-h-[calc(100vh-220px)] min-h-0 content-start gap-[18px] overflow-visible rounded-none border border-[var(--border)] bg-[var(--panel-strong)] px-5 py-[18px] shadow-[var(--shadow-soft)] max-[1366px]:max-h-none max-[820px]:px-4 max-[820px]:py-4">
+      <section className="relative z-20 grid h-fit max-h-[calc(100dvh-220px)] min-h-0 content-start gap-[18px] overflow-visible rounded-none border border-[var(--border)] bg-[var(--panel-strong)] px-5 py-[18px] shadow-[var(--shadow-soft)] max-[1366px]:max-h-none max-[820px]:px-4 max-[820px]:py-4 [@media(max-height:860px)]:max-h-none">
         <div className="flex items-start justify-between gap-4 max-[720px]:flex-col max-[720px]:items-stretch">
           <div>
             <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[var(--eyebrow)]">Recent Receipts</p>
@@ -142,7 +142,7 @@ export function ReceiptDeskClient() {
           </div>
         </div>
 
-        <div className="grid gap-3 rounded-none border border-[var(--border-muted)] bg-[var(--panel-subtle)] p-3">
+        <div className="grid gap-3 rounded-none border border-[var(--border-muted)] bg-[var(--panel-subtle)] p-3 max-[520px]:p-2.5">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <span className="text-[0.72rem] font-bold uppercase tracking-[0.22em] text-[var(--eyebrow)]">Receipt Date</span>
             <span className="rounded-none border border-[var(--accent-border)] bg-[var(--accent-surface)] px-3 py-1 text-[0.78rem] font-bold text-[var(--accent-text)]">

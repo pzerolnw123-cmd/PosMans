@@ -442,7 +442,7 @@ export function ProfitCalculatorClient() {
 
   return (
     <div className="grid h-full min-h-0 grid-cols-[minmax(0,0.65fr)_minmax(280px,0.35fr)] items-stretch gap-[18px] max-[1280px]:h-auto max-[1280px]:grid-cols-1">
-      <section className="grid h-full min-h-0 grid-rows-[auto_auto_minmax(0,1fr)] gap-[18px] overflow-hidden rounded-none border border-[var(--border)] bg-[var(--panel-strong)] px-5 py-5 shadow-[var(--shadow-soft)] max-[1280px]:h-fit max-[820px]:px-4 max-[820px]:py-4">
+      <section className="grid h-full min-h-0 grid-rows-[auto_auto_minmax(0,1fr)] gap-[18px] overflow-hidden rounded-none border border-[var(--border)] bg-[var(--panel-strong)] px-5 py-5 shadow-[var(--shadow-soft)] max-[1280px]:h-fit max-[1280px]:overflow-visible max-[820px]:px-4 max-[820px]:py-4">
         <div className="grid grid-cols-[minmax(0,1fr)_minmax(280px,auto)] items-start gap-3 max-[720px]:grid-cols-1">
           <div>
             <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[var(--eyebrow)]">Real Sales Costing</p>
@@ -490,7 +490,7 @@ export function ProfitCalculatorClient() {
           ))}
         </div>
 
-        <div className="grid h-full min-h-0 grid-rows-[auto_minmax(0,1fr)] rounded-none border border-[var(--border)] bg-[var(--panel-subtle)] p-4 max-[1280px]:h-auto">
+        <div className="grid h-full min-h-0 grid-rows-[auto_minmax(0,1fr)] rounded-none border border-[var(--border)] bg-[var(--panel-subtle)] p-4 max-[1280px]:h-auto max-[640px]:p-3">
           <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
             <div>
               <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.22em] text-[var(--eyebrow)]">Product Cost Inputs</p>
@@ -531,7 +531,7 @@ export function ProfitCalculatorClient() {
                 const totalCost = unitCost * product.quantity;
                 const profit = product.sales - totalCost;
                 return (
-                  <div key={product.name} className="grid w-[calc(100%-32px)] justify-self-start grid-cols-[minmax(180px,1.35fr)_minmax(118px,0.72fr)_minmax(104px,0.56fr)_minmax(104px,0.56fr)] items-center gap-x-6 gap-y-3 rounded-none border border-[var(--border)] bg-[var(--surface)] px-4 py-3 max-[1024px]:gap-x-4 max-[780px]:w-full max-[780px]:grid-cols-1 max-[780px]:px-3">
+                  <div key={product.name} className="grid w-[calc(100%-32px)] justify-self-start grid-cols-[minmax(180px,1.35fr)_minmax(118px,0.72fr)_minmax(104px,0.56fr)_minmax(104px,0.56fr)] items-center gap-x-6 gap-y-3 rounded-none border border-[var(--border)] bg-[var(--surface)] px-4 py-3 max-[1180px]:w-full max-[1180px]:grid-cols-[minmax(180px,1fr)_minmax(118px,180px)] max-[780px]:grid-cols-1 max-[780px]:px-3">
                     <div className="min-w-0">
                       <strong className="block truncate text-[var(--foreground)]">{product.name}</strong>
                       <span className="mt-1 block text-[0.78rem] font-bold text-[var(--foreground-soft)]">{product.quantity.toLocaleString("th-TH")} ชิ้น / ยอดขาย {formatBaht(product.sales)}</span>
@@ -592,7 +592,7 @@ export function ProfitCalculatorClient() {
           <p className="m-0 text-[0.8rem] leading-[1.35] text-[var(--foreground-soft)]">คำนวณจากยอดขายจริงและต้นทุนที่กรอก</p>
         </div>
 
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-2 gap-2 max-[420px]:grid-cols-1">
           {[
             ["ยอดขาย", formatBaht(calculation.sales)],
             ["ต้นทุนรวม", formatBaht(calculation.totalCost)],

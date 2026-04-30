@@ -74,7 +74,7 @@ export function PaymentCheckoutPanels({
 }: PaymentCheckoutPanelsProps) {
   return (
     <>
-      <section className="grid min-h-0 grid-rows-[auto_minmax(0,1fr)_auto] gap-[16px] rounded-none border border-[var(--border)] bg-[var(--panel-strong)] px-5 py-[18px] shadow-[var(--shadow-soft)] max-[820px]:px-4 max-[820px]:py-4">
+      <section className="grid min-h-0 grid-rows-[auto_minmax(0,1fr)_auto] gap-[16px] rounded-none border border-[var(--border)] bg-[var(--panel-strong)] px-5 py-[18px] shadow-[var(--shadow-soft)] max-[1180px]:grid-rows-[auto_auto_auto] max-[820px]:px-4 max-[820px]:py-4">
         <div>
           <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[var(--eyebrow)]">Bill Summary</p>
           <strong className="my-[10px] block text-[1.4rem] leading-none tracking-[-0.04em] text-[var(--foreground)]">
@@ -85,15 +85,15 @@ export function PaymentCheckoutPanels({
           </p>
         </div>
 
-        <div className="relative min-h-0">
+        <div className="relative min-h-0 max-[1180px]:min-h-[220px] max-[640px]:min-h-0">
           {billItems.length > 0 ? (
             <>
               <div
                 ref={billScrollRef}
                 className={
                   billScrollMetric.visible
-                    ? "sales-cart-scroll grid h-full min-h-0 touch-none cursor-grab select-none content-start gap-3 overflow-y-auto overflow-x-hidden py-0 pl-0 pr-4 active:cursor-grabbing"
-                    : "grid h-full min-h-0 touch-none select-none content-start gap-3 overflow-hidden py-0 pl-0 pr-0"
+                    ? "sales-cart-scroll grid h-full min-h-0 touch-none cursor-grab select-none content-start gap-3 overflow-y-auto overflow-x-hidden py-0 pl-0 pr-4 active:cursor-grabbing max-[1180px]:max-h-[360px] max-[640px]:max-h-none max-[640px]:overflow-visible max-[640px]:pr-0"
+                    : "grid h-full min-h-0 touch-none select-none content-start gap-3 overflow-hidden py-0 pl-0 pr-0 max-[1180px]:max-h-[360px] max-[640px]:max-h-none max-[640px]:overflow-visible"
                 }
                 onScroll={updateBillScrollbar}
                 onPointerDown={handleBillPointerDown}
@@ -120,7 +120,7 @@ export function PaymentCheckoutPanels({
                 ))}
               </div>
               {billScrollMetric.visible ? (
-                <span className="pointer-events-none absolute bottom-0 right-0 top-0 w-[7px] rounded-full bg-[var(--scroll-track)]">
+                <span className="pointer-events-none absolute bottom-0 right-0 top-0 w-[7px] rounded-full bg-[var(--scroll-track)] max-[640px]:hidden">
                   <span
                     className="absolute left-0 w-full rounded-full [background:var(--scroll-thumb)] shadow-[var(--brand-shadow)_0_0_14px]"
                     style={{ top: `${billScrollMetric.top}%`, height: `${billScrollMetric.height}%` }}
@@ -129,7 +129,7 @@ export function PaymentCheckoutPanels({
               ) : null}
             </>
           ) : (
-            <div className="grid h-full min-h-0 place-items-center rounded-none border border-dashed border-[var(--border-soft)] px-4 text-center text-[var(--foreground-soft)]">
+            <div className="grid h-full min-h-[180px] place-items-center rounded-none border border-dashed border-[var(--border-soft)] px-4 text-center text-[var(--foreground-soft)]">
               กลับไปหน้าขายเพื่อเพิ่มสินค้าเข้าตะกร้า
             </div>
           )}
@@ -159,7 +159,7 @@ export function PaymentCheckoutPanels({
           </p>
         </div>
 
-        <div className="grid grid-cols-2 gap-3 max-[720px]:grid-cols-1">
+        <div className="grid grid-cols-2 gap-3 max-[860px]:grid-cols-1">
           {paymentMethods.map((method) => (
             <button
               key={method.value}
@@ -175,7 +175,7 @@ export function PaymentCheckoutPanels({
         </div>
 
         <div className="grid content-start gap-4">
-          <div className="grid grid-cols-2 gap-3 max-[720px]:grid-cols-1">
+          <div className="grid grid-cols-2 gap-3 max-[860px]:grid-cols-1">
             {paymentMethod === "CASH" && !completedSale && (
               <label className="grid gap-2">
                 <span className="text-[0.92rem] font-bold text-[var(--brand-strong)]">รับเงินมา</span>
@@ -196,7 +196,7 @@ export function PaymentCheckoutPanels({
                 />
               </label>
             )}
-            <label className={`grid gap-2 ${paymentMethod !== "CASH" || completedSale ? "col-span-2" : ""}`}>
+            <label className={`grid gap-2 ${paymentMethod !== "CASH" || completedSale ? "col-span-2 max-[860px]:col-span-1" : ""}`}>
               <span className="flex items-center gap-2 text-[0.92rem] text-[var(--foreground-soft)]">
                 ส่วนลด <span className="rounded-[4px] bg-[var(--success-bright)]/10 px-1.5 py-0.5 text-[0.72rem] font-bold text-[var(--success-bright)]">%</span>
               </span>
@@ -251,7 +251,7 @@ export function PaymentCheckoutPanels({
           {error ? <div className="rounded-none border border-[var(--danger-border)] bg-[var(--danger-soft)] px-3 py-2 text-[0.86rem] font-bold text-[var(--danger-bright)]">{error}</div> : null}
         </div>
 
-        <div className="grid grid-cols-2 gap-3 max-[720px]:grid-cols-1">
+        <div className="grid grid-cols-2 gap-3 max-[860px]:grid-cols-1">
           <button type="button" className={`${secondaryButtonClass} min-h-[52px] rounded-2xl`} onClick={onBackToSales}>
             {completedSale ? "เปิดออเดอร์ใหม่" : "กลับไปขาย"}
           </button>

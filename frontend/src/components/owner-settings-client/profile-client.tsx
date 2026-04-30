@@ -100,7 +100,7 @@ export function OwnerProfileClient({
 
   return (
     <form className="mt-2" onSubmit={handleSubmit}>
-      <div className="grid gap-4 min-[1024px]:grid-cols-2">
+      <div className="grid gap-4 min-[1024px]:grid-cols-2 [@media(min-width:1025px)_and_(max-width:1180px)]:grid-cols-1">
         <label className="grid gap-2">
           <span className={fieldLabelClass}>ชื่อร้าน</span>
           <input

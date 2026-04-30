@@ -95,7 +95,7 @@ function ThemePickerModal({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[320] grid place-items-center bg-[var(--modal-backdrop)] p-3 backdrop-blur-[16px] max-[640px]:p-2.5"
+      className="fixed inset-0 z-[320] grid place-items-center bg-[var(--modal-backdrop)] p-3 backdrop-blur-[16px] [@media(min-width:1025px)_and_(max-width:1240px)]:backdrop-blur-none max-[640px]:p-2.5"
       onClick={onClose}
     >
       <div className="absolute inset-0 [background:var(--modal-brand-glow)]" />

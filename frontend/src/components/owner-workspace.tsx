@@ -122,7 +122,7 @@ export async function OwnerWorkspace({ session, paymentStore, activeSection }: O
   const showFooterCards = !screen.standalone;
   const shell = (
     <BackofficeShell
-      className="workspace-screen-content h-[calc(100vh-24px)] max-[1180px]:h-auto"
+      className="workspace-screen-content h-[calc(100dvh-24px)] [@media(min-width:1025px)_and_(max-width:1240px)]:h-auto max-[1024px]:h-auto"
       brandName="Menu Store"
       brandSubtitle="โหมดใช้งานหลักสำหรับเจ้าของร้านที่ต้องการขาย จัดการสินค้า ดูรายงาน และควบคุมภาพหน้าร้านได้จากบัญชีเดียว"
       eyebrow="OWNER WORKSPACE"
@@ -168,8 +168,8 @@ export async function OwnerWorkspace({ session, paymentStore, activeSection }: O
   );
 
   return (
-    <main className="workspace-screen-shell h-screen overflow-hidden max-[1180px]:h-auto max-[1180px]:overflow-auto">
-      <div className="workspace-screen-frame mx-auto h-screen w-[min(1400px,calc(100%-32px))] px-0 py-3 max-[1180px]:h-auto max-[1180px]:w-[min(100%-24px,100%)] max-[1180px]:py-3 max-[820px]:w-[min(100%-16px,100%)] max-[720px]:pt-2.5">
+    <main className="workspace-screen-shell h-dvh overflow-hidden [@media(min-width:1025px)_and_(max-width:1240px)]:h-auto [@media(min-width:1025px)_and_(max-width:1240px)]:overflow-auto max-[1024px]:h-auto max-[1024px]:overflow-auto">
+      <div className="workspace-screen-frame mx-auto h-dvh w-[min(1400px,calc(100%-32px))] px-0 py-3 [@media(min-width:1025px)_and_(max-width:1240px)]:h-auto max-[1024px]:h-auto max-[1024px]:w-[min(100%-24px,100%)] max-[1024px]:py-3 max-[820px]:w-[min(100%-16px,100%)] max-[720px]:pt-2.5">
         <OwnerLogoProvider initialLogoUrl={session.user.store?.logoUrl}>{shell}</OwnerLogoProvider>
       </div>
     </main>

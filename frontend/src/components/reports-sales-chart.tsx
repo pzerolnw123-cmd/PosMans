@@ -201,7 +201,7 @@ export function ReportsSalesChart() {
           ))}
         </div>
 
-        <div className="relative min-h-[380px] overflow-hidden rounded-none border border-[var(--border)] bg-[var(--panel-subtle)] p-4">
+        <div className="relative min-h-[380px] overflow-hidden rounded-none border border-[var(--border)] bg-[var(--panel-subtle)] p-4 max-[640px]:min-h-[300px] max-[640px]:p-3">
           {loading ? (
             <div className="grid min-h-[348px] place-items-center">
               <LoadingState
@@ -216,7 +216,7 @@ export function ReportsSalesChart() {
             </div>
           ) : report ? (
             <>
-              <svg className="block h-[348px] w-full" viewBox={`0 0 ${chart.width} ${chart.height}`} preserveAspectRatio="none" role="img" aria-label="กราฟเส้นยอดขาย">
+              <svg className="block h-[348px] w-full max-[640px]:h-[268px]" viewBox={`0 0 ${chart.width} ${chart.height}`} preserveAspectRatio="none" role="img" aria-label="กราฟเส้นยอดขาย">
                 <defs>
                   <linearGradient id="sales-line-gradient" x1="0" x2="1" y1="0" y2="0">
                     <stop offset="0%" stopColor="var(--brand)" />
@@ -288,7 +288,7 @@ export function ReportsSalesChart() {
           ) : report && report.topProducts.length > 0 ? (
             <div className="grid gap-[10px]">
               {report.topProducts.map((product, index) => (
-                <div key={product.name} className="grid grid-cols-[44px_minmax(0,1fr)_auto] items-center gap-3 rounded-none border border-[var(--border)] bg-[var(--surface-muted)] px-3 py-3">
+                <div key={product.name} className="grid grid-cols-[44px_minmax(0,1fr)_auto] items-center gap-3 rounded-none border border-[var(--border)] bg-[var(--surface-muted)] px-3 py-3 max-[420px]:grid-cols-[44px_minmax(0,1fr)]">
                   <span className="grid h-11 w-11 place-items-center rounded-none border border-[var(--accent-border)] bg-[var(--accent-surface)] text-[1rem] font-black text-[var(--brand-strong)]">
                     {index + 1}
                   </span>
@@ -296,7 +296,7 @@ export function ReportsSalesChart() {
                     <strong className="block truncate text-[1rem] leading-tight text-[var(--foreground)]">{product.name}</strong>
                     <span className="mt-1 block text-[0.78rem] font-bold text-[var(--foreground-soft)]">{product.quantity.toLocaleString("th-TH")} ชิ้น</span>
                   </div>
-                  <strong className="text-right text-[0.96rem] text-[var(--foreground)]">{formatBaht(product.sales)}</strong>
+                  <strong className="text-right text-[0.96rem] text-[var(--foreground)] max-[420px]:col-span-2 max-[420px]:text-left">{formatBaht(product.sales)}</strong>
                 </div>
               ))}
             </div>

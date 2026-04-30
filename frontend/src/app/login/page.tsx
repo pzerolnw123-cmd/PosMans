@@ -11,8 +11,8 @@ export default async function LoginPage() {
   }
 
   return (
-    <main className="grid h-dvh overflow-hidden">
-      <div className="mx-auto grid h-full w-[min(1400px,calc(100%-32px))] py-3 max-[1180px]:w-[min(100%-24px,100%)] max-[720px]:w-[min(100%-16px,100%)] max-[720px]:py-2">
+    <main className="grid h-dvh overflow-hidden [@media(max-height:620px)]:h-auto [@media(max-height:620px)]:overflow-auto">
+      <div className="mx-auto grid h-full w-[min(1400px,calc(100%-32px))] py-3 max-[1180px]:w-[min(100%-24px,100%)] max-[720px]:w-[min(100%-16px,100%)] max-[720px]:py-2 [@media(max-height:620px)]:h-auto">
         <section className="grid min-h-0 items-center gap-[18px] [grid-template-columns:minmax(0,0.92fr)_minmax(420px,0.72fr)] max-[1180px]:grid-cols-[minmax(0,0.86fr)_minmax(390px,0.74fr)] max-[900px]:grid-cols-1 max-[900px]:items-start">
           <article className="grid min-h-0 gap-4 rounded-[22px] border border-[var(--border)] bg-[var(--surface)] p-6 shadow-[var(--shadow-card)] backdrop-blur-[14px] max-[1180px]:p-5 max-[900px]:hidden">
             <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[var(--eyebrow)]">Login Experience</p>

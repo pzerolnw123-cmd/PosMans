@@ -91,7 +91,7 @@ export function ProductDetailPanel({
           </h2>
           </div>
           {selectedProduct ? (
-            <div className="relative z-20 grid w-[180px] translate-y-5 justify-items-center gap-3 max-[720px]:w-full">
+            <div className="relative z-20 grid w-[180px] translate-y-5 justify-items-center gap-3 max-[720px]:w-full max-[720px]:translate-y-0">
               <span className={selectedProduct.trackStock ? "inline-flex min-h-[40px] w-full whitespace-nowrap items-center justify-center gap-2 rounded-none border border-[var(--accent-border)] bg-[var(--accent-surface)] px-3 py-2 text-[0.78rem] font-bold text-[var(--accent-text)]" : "inline-flex min-h-[40px] w-full whitespace-nowrap items-center justify-center gap-2 rounded-none border border-[var(--border-strong)] bg-[var(--surface-muted)] px-3 py-2 text-[0.78rem] font-bold text-[var(--foreground-soft)]"}>
                 {selectedProduct.trackStock ? "ทำการเปิดสต๊อก" : "ทำการปิดสต๊อก"}
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
@@ -112,7 +112,7 @@ export function ProductDetailPanel({
           ) : null}
         </div>
         {selectedProduct ? (
-          <div className="relative z-0 -mt-3 grid grid-cols-[minmax(0,312px)_180px] items-stretch gap-4 max-[720px]:grid-cols-1">
+          <div className="relative z-0 -mt-3 grid grid-cols-[minmax(0,312px)_180px] items-stretch gap-4 [@media(min-width:1025px)_and_(max-width:1180px)]:grid-cols-[minmax(0,1fr)_180px] max-[720px]:mt-0 max-[720px]:grid-cols-1">
             <div className="min-w-0 max-[720px]:w-full">
               <div className="h-[186px] w-full overflow-hidden rounded-[14px] border border-[var(--border)] bg-[var(--panel-subtle)] max-[1180px]:h-[148px] max-[720px]:h-[186px]">
                 {selectedProduct.imageUrl && canUseNextImage(selectedProduct.imageUrl) ? (
@@ -133,8 +133,8 @@ export function ProductDetailPanel({
               </div>
             </div>
 
-            <div className="flex h-[186px] w-[180px] flex-col justify-between justify-self-end pt-6 max-[1180px]:h-[148px] max-[720px]:h-auto max-[720px]:w-full max-[720px]:gap-4">
-              <div className="grid w-full justify-items-center pt-5">
+            <div className="flex h-[186px] w-[180px] flex-col justify-between justify-self-end pt-6 max-[1180px]:h-[148px] max-[720px]:h-auto max-[720px]:w-full max-[720px]:gap-4 max-[720px]:pt-0">
+              <div className="grid w-full justify-items-center pt-5 max-[720px]:pt-0">
                 <div
                   className={
                     selectedProduct.trackStock
@@ -178,7 +178,7 @@ export function ProductDetailPanel({
       </div>
 
       {selectedProduct ? (
-        <div className="-mt-3 pr-1">
+        <div className="-mt-3 pr-1 max-[720px]:mt-0 max-[720px]:pr-0">
 
           <div className="mt-3 grid gap-[10px]">
             <div className={selectedProduct.trackStock ? "grid grid-cols-[minmax(0,1fr)_minmax(120px,180px)] items-end gap-3 max-[720px]:grid-cols-1" : "grid items-end gap-3"}>

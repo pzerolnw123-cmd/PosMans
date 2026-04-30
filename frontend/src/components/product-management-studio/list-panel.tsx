@@ -53,7 +53,7 @@ export function ProductListPanel({
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-[10px] pt-3 max-[640px]:gap-2">
+        <div className="flex flex-wrap gap-[10px] pt-3 max-[640px]:grid max-[640px]:grid-cols-2 max-[640px]:gap-2 max-[420px]:grid-cols-1">
           {categoryOptions.map((category) => {
             const active = activeCategory === category;
 
@@ -166,7 +166,7 @@ export function ProductListPanel({
                   />
 
                   <div className="min-w-0 self-center">
-                    <strong className="block text-[1rem] tracking-[-0.03em] text-[var(--foreground)]">
+                    <strong className="block text-[1rem] tracking-[-0.03em] text-[var(--foreground)] [overflow-wrap:anywhere]">
                       {item.name}
                       {stockLabel ? <span className="ml-2 text-[0.82rem] font-bold text-[var(--foreground)]">({stockLabel})</span> : null}
                     </strong>

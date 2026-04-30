@@ -419,7 +419,7 @@ export function PaymentCheckoutClient({ paymentSettings }: { paymentSettings: Ow
 
   return (
     <>
-      <div className="grid h-full min-h-0 grid-cols-[minmax(0,1fr)_minmax(0,1fr)_280px] gap-[18px] max-[1366px]:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] max-[1180px]:grid-cols-1 max-[820px]:gap-4">
+      <div className="grid h-full min-h-0 grid-cols-[minmax(0,1fr)_minmax(0,1fr)_280px] gap-[18px] max-[1366px]:h-auto max-[1366px]:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] max-[1180px]:grid-cols-1 max-[820px]:gap-4 [@media(max-height:860px)]:h-auto">
         <PaymentCheckoutPanels
           billItems={billItems}
           billScrollMetric={billScrollMetric}

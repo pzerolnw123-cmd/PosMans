@@ -58,7 +58,7 @@ const dangerAlertClass = "border-[var(--alert-danger-border)] [background:var(--
 const dangerAlertEyebrowClass = "text-[var(--alert-danger-eyebrow)]";
 const dangerAlertMessageClass = "text-[var(--alert-danger-text)]";
 const sidebarShellClass =
-  "h-fit overflow-hidden rounded-none border border-[var(--border)] bg-[var(--surface)] p-3 shadow-[var(--shadow-card)] backdrop-blur-[14px] max-[1180px]:p-2.5 max-[640px]:p-2";
+  "h-fit overflow-hidden rounded-none border border-[var(--border)] bg-[var(--surface)] p-3 shadow-[var(--shadow-card)] backdrop-blur-[14px] [@media(min-width:1025px)_and_(max-width:1240px)]:backdrop-blur-none max-[1180px]:p-2.5 max-[640px]:p-2";
 const sidebarHeaderClass = "border-b border-b-[var(--border)] px-[10px] pb-[18px] pt-[14px]";
 const sidebarEyebrowClass = eyebrowClass;
 const sidebarBrandNameClass =
@@ -171,9 +171,9 @@ export function BackofficeShell({
   return (
     <BackofficeShellAlertContext.Provider value={contextValue}>
       <div
-        className={`relative mx-auto grid h-full min-h-0 w-full max-w-[1600px] translate-x-[-149px] grid-cols-[304px_minmax(0,1fr)] items-start gap-[18px] max-[1380px]:translate-x-0 max-[1180px]:gap-4 max-[1180px]:grid-cols-1 ${className}`.trim()}
+        className={`relative mx-auto grid h-full min-h-0 w-full max-w-[1600px] translate-x-[-149px] grid-cols-[304px_minmax(0,1fr)] items-start gap-[18px] max-[1380px]:translate-x-0 max-[1024px]:gap-4 max-[1024px]:grid-cols-1 ${className}`.trim()}
       >
-        <div className="grid gap-[14px] max-[1180px]:gap-4">
+        <div className="relative grid gap-[14px] max-[1024px]:gap-4">
           <aside className={sidebarShellClass}>
             <div className={sidebarHeaderClass}>
               <p className={sidebarEyebrowClass}>{eyebrow}</p>
@@ -181,7 +181,7 @@ export function BackofficeShell({
               <p className={sidebarSubtitleClass}>{brandSubtitle}</p>
             </div>
 
-            <nav className="grid gap-[8px] px-[2px] py-3 max-[1180px]:grid-cols-2 max-[700px]:grid-cols-1 max-[640px]:gap-[6px]" aria-label="Primary navigation">
+            <nav className="grid gap-[8px] px-[2px] py-3 max-[1024px]:grid-cols-2 max-[700px]:grid-cols-1 max-[640px]:gap-[6px]" aria-label="Primary navigation">
               {sidebarItems.map((item) => (
                 <Link
                   key={item.label}
@@ -201,7 +201,7 @@ export function BackofficeShell({
 
           {shellAlert ? (
             <section
-              className={`rounded-none border px-4 py-3 shadow-[var(--shadow-pop)] ${shellAlert.tone === "success"
+              className={`rounded-none border px-4 py-3 shadow-[var(--shadow-pop)] [@media(min-width:1025px)_and_(max-width:1240px)]:pointer-events-none [@media(min-width:1025px)_and_(max-width:1240px)]:absolute [@media(min-width:1025px)_and_(max-width:1240px)]:left-0 [@media(min-width:1025px)_and_(max-width:1240px)]:top-full [@media(min-width:1025px)_and_(max-width:1240px)]:z-30 [@media(min-width:1025px)_and_(max-width:1240px)]:mt-[14px] [@media(min-width:1025px)_and_(max-width:1240px)]:w-full ${shellAlert.tone === "success"
                   ? successAlertClass
                   : shellAlert.tone === "info"
                     ? "border-[var(--accent-border)] [background:var(--active-surface)]"
@@ -227,7 +227,7 @@ export function BackofficeShell({
             </section>
           ) : null}
 
-          <div className="hidden rounded-none border border-[var(--border)] bg-[var(--surface)] p-3 shadow-[var(--shadow-card)] backdrop-blur-[14px] max-[1380px]:block">
+          <div className="hidden rounded-none border border-[var(--border)] bg-[var(--surface)] p-3 shadow-[var(--shadow-card)] backdrop-blur-[14px] [@media(min-width:1025px)_and_(max-width:1240px)]:backdrop-blur-none max-[1380px]:block [@media(min-width:1025px)_and_(max-width:1240px)]:order-2">
             <StoreStatusSummary brandName={profileName} statusStoreContent={statusStoreContent} />
             <div className="mt-4">
               <ProfileSummaryCard
@@ -242,9 +242,11 @@ export function BackofficeShell({
           </div>
         </div>
 
-        <div className="grid h-full min-h-0 gap-[18px] overflow-hidden max-[1366px]:overflow-visible max-[1180px]:gap-4">{children}</div>
+        <div className="grid h-full min-h-0 gap-[18px] overflow-hidden max-[1366px]:overflow-visible [@media(min-width:1025px)_and_(max-width:1240px)]:h-auto max-[1024px]:gap-4">
+          {children}
+        </div>
 
-        <aside className="absolute left-full top-0 ml-[18px] flex h-fit w-[280px] rounded-none border border-[var(--border)] bg-[var(--surface)] p-3 shadow-[var(--shadow-card)] backdrop-blur-[14px] max-[1380px]:hidden">
+        <aside className="absolute left-full top-0 ml-[18px] flex h-fit w-[280px] rounded-none border border-[var(--border)] bg-[var(--surface)] p-3 shadow-[var(--shadow-card)] backdrop-blur-[14px] [@media(min-width:1025px)_and_(max-width:1240px)]:backdrop-blur-none max-[1380px]:hidden">
           <div className="flex w-full flex-col">
             <StoreStatusSummary brandName={profileName} statusStoreContent={statusStoreContent} />
             <div className="mt-4">
@@ -293,7 +295,7 @@ export function PanelCard({
 }) {
   return (
     <section
-      className={`rounded-none border border-[var(--border)] bg-[var(--surface)] px-6 py-5 shadow-[var(--shadow-card)] backdrop-blur-[14px] max-[820px]:px-4 max-[820px]:py-4 max-[640px]:px-3.5 max-[640px]:py-3.5 ${className}`.trim()}
+      className={`rounded-none border border-[var(--border)] bg-[var(--surface)] px-6 py-5 shadow-[var(--shadow-card)] backdrop-blur-[14px] [@media(min-width:1025px)_and_(max-width:1240px)]:backdrop-blur-none max-[820px]:px-4 max-[820px]:py-4 max-[640px]:px-3.5 max-[640px]:py-3.5 ${className}`.trim()}
     >
       <div className="flex items-start justify-between gap-4 max-[720px]:flex-col max-[720px]:items-stretch">
         <div>

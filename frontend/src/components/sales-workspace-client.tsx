@@ -303,10 +303,10 @@ export function SalesWorkspaceClient() {
   }
 
   return (
-    <div className="grid h-full min-h-0 grid-cols-[minmax(0,1fr)_320px] gap-[18px] max-[1366px]:grid-cols-1 max-[820px]:gap-4">
-      <section className="grid min-h-0 grid-rows-[auto_auto_auto] content-start gap-[18px]" aria-label="sales main area">
-        <div className="rounded-none border border-[var(--border)] bg-[var(--surface)] px-[22px] py-5 shadow-[var(--shadow-soft)]">
-          <div className="flex flex-wrap gap-[10px]">
+    <div className="grid h-full min-h-0 grid-cols-[minmax(0,1fr)_320px] gap-[18px] max-[1366px]:h-auto max-[1366px]:grid-cols-1 max-[820px]:gap-4">
+      <section className="grid min-h-0 grid-rows-[auto_auto_auto] content-start gap-[18px] max-[1366px]:min-h-0" aria-label="sales main area">
+        <div className="rounded-none border border-[var(--border)] bg-[var(--surface)] px-[22px] py-5 shadow-[var(--shadow-soft)] max-[820px]:px-4 max-[820px]:py-4 max-[520px]:px-3.5">
+          <div className="flex flex-wrap gap-[10px] max-[520px]:grid max-[520px]:grid-cols-1">
             {categoryOptions.map((category) => {
               const active = activeCategory === category;
 
@@ -316,8 +316,8 @@ export function SalesWorkspaceClient() {
                   type="button"
                   className={
                     active
-                      ? "inline-flex min-h-10 items-center gap-[10px] rounded-[10px] border border-[var(--accent-border)] bg-[var(--accent-surface)] px-[18px] font-bold text-[var(--brand-strong)] shadow-[var(--brand-shadow)_0_6px_12px] transition hover:-translate-y-px"
-                      : "inline-flex min-h-10 items-center gap-[10px] rounded-[10px] border border-[var(--border)] bg-[var(--surface-muted)] px-[18px] font-bold text-[var(--foreground)] transition hover:-translate-y-px hover:shadow-[var(--shadow-soft)]"
+                      ? "inline-flex min-h-10 items-center justify-center gap-[10px] rounded-[10px] border border-[var(--accent-border)] bg-[var(--accent-surface)] px-[18px] font-bold text-[var(--brand-strong)] shadow-[var(--brand-shadow)_0_6px_12px] transition hover:-translate-y-px"
+                      : "inline-flex min-h-10 items-center justify-center gap-[10px] rounded-[10px] border border-[var(--border)] bg-[var(--surface-muted)] px-[18px] font-bold text-[var(--foreground)] transition hover:-translate-y-px hover:shadow-[var(--shadow-soft)]"
                   }
                   onClick={() => handleCategoryChange(category)}
                 >
@@ -329,7 +329,7 @@ export function SalesWorkspaceClient() {
           </div>
         </div>
 
-          <div className="grid min-h-0 grid-cols-3 content-start items-start gap-4 overflow-visible p-1 max-[900px]:grid-cols-2 max-[520px]:grid-cols-1" aria-label="products">
+          <div className="grid min-h-0 grid-cols-3 content-start items-start gap-4 overflow-visible p-1 max-[1180px]:grid-cols-2 max-[640px]:grid-cols-1" aria-label="products">
           {loading ? (
             <div className="col-span-full grid min-h-[226px] place-items-center rounded-none border border-dashed border-[var(--border)] bg-[var(--panel-subtle)] px-4 py-8 text-center">
               <LoadingState
@@ -352,8 +352,8 @@ export function SalesWorkspaceClient() {
                   key={product.id}
                   className={
                     activePulse
-                      ? "relative grid h-[226px] animate-[cart-card-pop_520ms_cubic-bezier(.2,.8,.2,1)] content-start gap-3 overflow-hidden rounded-none border border-[var(--cart-glow-border)] [background:var(--panel-elevated)] p-[14px] pb-[68px] shadow-[var(--cart-shadow-mid)_0_8px_20px] max-[640px]:h-auto max-[640px]:min-h-[226px]"
-                      : "relative grid h-[226px] content-start gap-3 overflow-hidden rounded-none border border-[var(--border)] [background:var(--panel-elevated)] p-[14px] pb-[68px] transition-all duration-500 hover:-translate-y-0.5 hover:border-[var(--cart-glow-border-soft)] max-[640px]:h-auto max-[640px]:min-h-[226px]"
+                      ? "relative grid min-h-[226px] animate-[cart-card-pop_520ms_cubic-bezier(.2,.8,.2,1)] content-start gap-3 overflow-hidden rounded-none border border-[var(--cart-glow-border)] [background:var(--panel-elevated)] p-[14px] pb-[68px] shadow-[var(--cart-shadow-mid)_0_8px_20px]"
+                      : "relative grid min-h-[226px] content-start gap-3 overflow-hidden rounded-none border border-[var(--border)] [background:var(--panel-elevated)] p-[14px] pb-[68px] transition-all duration-500 hover:-translate-y-0.5 hover:border-[var(--cart-glow-border-soft)]"
                   }
                 >
                   {added ? (
@@ -364,18 +364,18 @@ export function SalesWorkspaceClient() {
                       +1 เพิ่มแล้ว
                     </span>
                   ) : null}
-                  <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-start justify-between gap-3 max-[420px]:flex-col">
                     {product.imageUrl ? (
                       <span
-                        className="shrink-0 h-[96px] w-[118px] rounded-xl border border-[var(--border-subtle)] bg-cover bg-center"
+                        className="h-[96px] w-[118px] shrink-0 rounded-xl border border-[var(--border-subtle)] bg-cover bg-center max-[420px]:w-full"
                         style={{ backgroundImage: `url(${product.imageUrl})` }}
                         role="img"
                         aria-label={product.name}
                       />
                     ) : (
-                      <div className="shrink-0 h-[96px] w-[118px] rounded-xl border border-[var(--border-subtle)] bg-[var(--panel-subtle)]" />
+                      <div className="h-[96px] w-[118px] shrink-0 rounded-xl border border-[var(--border-subtle)] bg-[var(--panel-subtle)] max-[420px]:w-full" />
                     )}
-                    <div className="grid min-w-0 justify-items-end gap-1 text-right">
+                    <div className="grid min-w-0 justify-items-end gap-1 text-right max-[420px]:w-full max-[420px]:justify-items-start max-[420px]:text-left">
                       <b className="text-base leading-[1.2] text-[var(--foreground)]">{formatBaht(product.price)}</b>
                       <span className={saleStatusLabel === "พร้อมขาย" ? "text-[0.78rem] font-bold text-[var(--success)]" : "text-[0.78rem] font-bold text-[var(--foreground-soft)]"}>{saleStatusLabel}</span>
                       <span className="max-w-[86px] text-[0.62rem] leading-[1.2] text-[var(--foreground-soft)]">{product.category}</span>

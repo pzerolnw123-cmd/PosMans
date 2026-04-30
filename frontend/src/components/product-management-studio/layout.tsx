@@ -55,8 +55,8 @@ export function ProductManagementStudioLayout({
     <div
       className={
         compactMode
-          ? "grid h-full min-h-0 grid-rows-[minmax(0,1fr)] gap-[18px]"
-          : "grid h-full min-h-0 grid-rows-[156px_minmax(0,1fr)] gap-[18px] max-[1180px]:grid-rows-[auto_minmax(0,1fr)] max-[820px]:gap-4"
+          ? "grid h-auto min-h-0 grid-rows-[auto] gap-[18px]"
+          : "grid h-full min-h-0 grid-rows-[156px_minmax(0,1fr)] gap-[18px] max-[1180px]:h-auto max-[1180px]:grid-rows-[auto_auto] max-[820px]:gap-4 [@media(max-height:860px)]:h-auto [@media(max-height:860px)]:grid-rows-[auto_auto]"
       }
     >
       {!compactMode ? (
@@ -72,7 +72,7 @@ export function ProductManagementStudioLayout({
         />
       ) : null}
 
-      <div className="grid min-h-0 items-start gap-[18px] [grid-template-columns:minmax(400px,1fr)_minmax(0,1.3fr)] max-[1366px]:grid-cols-1 max-[820px]:gap-4">
+      <div className="grid min-h-0 items-start gap-[18px] [grid-template-columns:minmax(360px,1fr)_minmax(0,1.3fr)] max-[1366px]:grid-cols-1 max-[820px]:gap-4 max-[420px]:[grid-template-columns:minmax(0,1fr)]">
         <ProductDetailPanel
           compactMode={compactMode}
           productsLoading={productsLoading}
