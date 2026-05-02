@@ -1,4 +1,5 @@
 import { ghostButtonClass, LoadingState, secondaryButtonClass, StatusPill } from "@/components/ui-primitives";
+import { studioResponsiveClass } from "@/components/product-management-studio/layout-classes";
 import { ProductImage } from "@/components/product-management-studio/shared";
 import { categoryOptions, formatPrice, type ProductCategory, type ProductItem } from "@/components/product-management-studio/types";
 
@@ -39,10 +40,12 @@ export function ProductListPanel({
   onPageChange,
   onSelectProduct,
 }: ProductListPanelProps) {
+  const listPanelClass = `grid grid-rows-[auto_auto_auto] self-start overflow-hidden ${studioResponsiveClass.panelSurface} ${studioResponsiveClass.panelPadding}`;
+
   return (
-    <div className="ml-auto grid w-[96%] gap-3 self-start max-[1366px]:w-full max-[820px]:gap-4">
-      <section className="grid grid-rows-[auto_auto_auto] self-start overflow-hidden rounded-none border border-[var(--border)] bg-[var(--panel-strong)] px-5 py-[18px] shadow-[var(--shadow-soft)] backdrop-blur-[14px] max-[1180px]:px-4 max-[1180px]:py-4">
-        <div className="flex items-start justify-between gap-3 max-[720px]:flex-col max-[720px]:items-stretch">
+    <div className="ml-auto grid w-[96%] gap-3 self-start max-[820px]:w-full max-[820px]:gap-4">
+      <section className={listPanelClass}>
+        <div className={studioResponsiveClass.stackedHeader}>
           <div>
             <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[var(--eyebrow)]">รายการสินค้าทั้งหมด</p>
             <h2 className="mb-0 mt-[8px] text-[clamp(1.45rem,2vw,2rem)] leading-[1.02] tracking-[-0.06em]">เลือกสินค้าเพื่อแก้ไขได้ทันที</h2>
@@ -53,7 +56,7 @@ export function ProductListPanel({
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-[10px] pt-3 max-[640px]:grid max-[640px]:grid-cols-2 max-[640px]:gap-2 max-[420px]:grid-cols-1">
+        <div className={studioResponsiveClass.chipGrid}>
           {categoryOptions.map((category) => {
             const active = activeCategory === category;
 
@@ -152,17 +155,17 @@ export function ProductListPanel({
                   type="button"
                   className={
                     active
-                      ? "mx-auto grid min-h-[124px] w-full grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 rounded-[18px] border border-[var(--brand)] bg-[var(--brand-soft)] px-3 py-3 text-left shadow-[var(--brand-shadow)] transition hover:-translate-y-px max-[520px]:grid-cols-[62px_minmax(0,1fr)]"
+                      ? `mx-auto ${studioResponsiveClass.listCardGrid} min-h-[124px] w-full rounded-[18px] border border-[var(--brand)] bg-[var(--brand-soft)] px-3 py-3 text-left shadow-[var(--brand-shadow)] transition hover:-translate-y-px`
                       : selectionTransitionLocked
-                        ? "mx-auto grid min-h-[124px] w-full grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 rounded-[18px] border border-[var(--border)] bg-[var(--surface)] px-3 py-3 text-left max-[520px]:grid-cols-[62px_minmax(0,1fr)]"
-                        : "mx-auto grid min-h-[124px] w-full grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 rounded-[18px] border border-[var(--border)] bg-[var(--surface)] px-3 py-3 text-left transition hover:-translate-y-px hover:shadow-[var(--shadow-hover-subtle)] max-[520px]:grid-cols-[62px_minmax(0,1fr)]"
+                        ? `mx-auto ${studioResponsiveClass.listCardGrid} min-h-[124px] w-full rounded-[18px] border border-[var(--border)] bg-[var(--surface)] px-3 py-3 text-left`
+                        : `mx-auto ${studioResponsiveClass.listCardGrid} min-h-[124px] w-full rounded-[18px] border border-[var(--border)] bg-[var(--surface)] px-3 py-3 text-left transition hover:-translate-y-px hover:shadow-[var(--shadow-hover-subtle)]`
                   }
                   onClick={() => onSelectProduct(item.id)}
                 >
                   <ProductImage
                     product={item}
-                    className="h-[74px] w-[74px] rounded-[18px] border border-[var(--border)] object-cover max-[1180px]:h-[62px] max-[1180px]:w-[62px]"
-                    fallbackClassName="grid h-[74px] w-[74px] place-items-center rounded-[18px] border border-[var(--border)] bg-[var(--panel-subtle)] max-[1180px]:h-[62px] max-[1180px]:w-[62px]"
+                    className={studioResponsiveClass.listCardImage}
+                    fallbackClassName={studioResponsiveClass.listCardImageFallback}
                   />
 
                   <div className="min-w-0 self-center">
@@ -203,7 +206,7 @@ export function ProductListPanel({
         </div>
       </section>
 
-      <div className="flex max-w-full items-center justify-between gap-3 px-2 py-1 max-[720px]:flex-col max-[720px]:items-stretch">
+      <div className={studioResponsiveClass.stackedFooter}>
         <button
           type="button"
           className={ghostButtonClass}
@@ -225,4 +228,3 @@ export function ProductListPanel({
     </div>
   );
 }
-

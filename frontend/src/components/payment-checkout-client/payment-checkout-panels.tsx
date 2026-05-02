@@ -1,6 +1,11 @@
 "use client";
 
 import type { Dispatch, PointerEvent, ReactNode, RefObject, SetStateAction } from "react";
+import {
+  ownerLandscapeClass,
+  ownerLandscapeCompactPanelPaddingClass,
+  ownerLandscapePanelPaddingClass,
+} from "@/components/owner-workspace/landscape-preset";
 import { inputClass, primaryButtonClass, secondaryButtonClass } from "@/components/ui-primitives";
 import type { OwnerPaymentSettingsValue } from "@/components/owner-settings-client";
 import type { CompletedSale, PaymentMethod } from "./shared";
@@ -72,12 +77,16 @@ type PaymentCheckoutPanelsProps = {
 export function PaymentCheckoutPanels({
   billItems, billScrollMetric, billScrollRef, billSubtotal, billDiscount, billTax, billTotal, completedSale, items, itemCount, paymentMethod, setPaymentMethod, displayedPaymentMethod, paymentMethodLabel, receivedAmount, setReceivedAmount, receivedDraft, setReceivedDraft, discountPercent, setDiscountPercent, discountDraft, setDiscountDraft, taxPercent, setTaxPercent, taxDraft, setTaxDraft, note, setNote, error, busy, discount, subtotal, cashPaymentMissingReceivedAmount, qrPaymentConfigured, transferPaymentConfigured, qrPaymentSelected, transferSelected, paymentSettings, dynamicPromptPayReady, staticQrReady, promptPayQrDataUrl, bankInfoFilled, changeAmount, updateBillScrollbar, handleBillPointerDown, handleBillPointerMove, stopBillDrag, onBackToSales, handleConfirmPayment, customerDisplayControl,
 }: PaymentCheckoutPanelsProps) {
+  const billPanelClass = `grid min-h-0 min-w-0 grid-rows-[auto_minmax(0,1fr)_auto] gap-[16px] rounded-none border border-[var(--border)] bg-[var(--panel-strong)] px-5 py-[18px] shadow-[var(--shadow-soft)] ${ownerLandscapePanelPaddingClass} ${ownerLandscapeClass}:gap-[14px] max-[1180px]:grid-rows-[auto_auto_auto] max-[820px]:px-4 max-[820px]:py-4`;
+  const paymentPanelClass = `grid h-fit min-w-0 content-start gap-[16px] rounded-none border border-[var(--border)] bg-[var(--panel-strong)] px-5 py-[18px] shadow-[var(--shadow-soft)] ${ownerLandscapePanelPaddingClass} ${ownerLandscapeClass}:gap-[14px] max-[820px]:px-4 max-[820px]:py-4`;
+  const quickPanelClass = `grid h-fit min-w-0 gap-[14px] overflow-hidden rounded-none border border-[var(--border)] bg-[var(--panel-strong)] px-4 py-[18px] shadow-[var(--shadow-soft)] ${ownerLandscapeCompactPanelPaddingClass} max-[820px]:px-4 max-[820px]:py-4`;
+
   return (
     <>
-      <section className="grid min-h-0 min-w-0 grid-rows-[auto_minmax(0,1fr)_auto] gap-[16px] rounded-none border border-[var(--border)] bg-[var(--panel-strong)] px-5 py-[18px] shadow-[var(--shadow-soft)] max-[1180px]:grid-rows-[auto_auto_auto] max-[820px]:px-4 max-[820px]:py-4">
+      <section className={billPanelClass}>
         <div>
           <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[var(--eyebrow)]">Bill Summary</p>
-          <strong className="my-[10px] block text-[1.4rem] leading-none tracking-[-0.04em] text-[var(--foreground)]">
+          <strong className={`my-[10px] block text-[1.4rem] leading-none tracking-[-0.04em] text-[var(--foreground)] ${ownerLandscapeClass}:text-[1.28rem]`}>
             {completedSale ? "ชำระเงินสำเร็จ (ล่าสุด)" : items.length > 0 ? "รายการรอชำระ" : "ยังไม่มีรายการ"}
           </strong>
           <p className="m-0 text-[0.95rem] leading-[1.65] text-[var(--foreground-soft)]">
@@ -85,15 +94,15 @@ export function PaymentCheckoutPanels({
           </p>
         </div>
 
-        <div className="relative min-h-0 max-[1180px]:min-h-[220px] max-[640px]:min-h-0">
+        <div className={`relative min-h-0 ${ownerLandscapeClass}:min-h-[0] max-[1180px]:min-h-[220px] max-[640px]:min-h-0`}>
           {billItems.length > 0 ? (
             <>
               <div
                 ref={billScrollRef}
                 className={
                   billScrollMetric.visible
-                    ? "sales-cart-scroll grid h-full min-h-0 touch-none cursor-grab select-none content-start gap-3 overflow-y-auto overflow-x-hidden py-0 pl-0 pr-4 active:cursor-grabbing max-[1180px]:max-h-[360px] max-[640px]:max-h-none max-[640px]:overflow-visible max-[640px]:pr-0"
-                    : "grid h-full min-h-0 touch-none select-none content-start gap-3 overflow-hidden py-0 pl-0 pr-0 max-[1180px]:max-h-[360px] max-[640px]:max-h-none max-[640px]:overflow-visible"
+                    ? `sales-cart-scroll grid h-full min-h-0 touch-none cursor-grab select-none content-start gap-3 overflow-y-auto overflow-x-hidden py-0 pl-0 pr-4 active:cursor-grabbing ${ownerLandscapeClass}:max-h-none ${ownerLandscapeClass}:gap-2.5 max-[1180px]:max-h-[360px] max-[640px]:max-h-none max-[640px]:overflow-visible max-[640px]:pr-0`
+                    : `grid h-full min-h-0 touch-none select-none content-start gap-3 overflow-hidden py-0 pl-0 pr-0 ${ownerLandscapeClass}:max-h-none ${ownerLandscapeClass}:gap-2.5 max-[1180px]:max-h-[360px] max-[640px]:max-h-none max-[640px]:overflow-visible`
                 }
                 onScroll={updateBillScrollbar}
                 onPointerDown={handleBillPointerDown}
@@ -103,19 +112,19 @@ export function PaymentCheckoutPanels({
                 onPointerLeave={stopBillDrag}
               >
                 {billItems.map((item) => (
-                  <div key={item.key} className="grid grid-cols-[52px_minmax(0,1fr)_auto] items-center gap-3 rounded-none border border-[var(--border-subtle)] bg-[var(--panel-subtle)] p-3 max-[520px]:grid-cols-[52px_minmax(0,1fr)]">
+                  <div key={item.key} className={`grid grid-cols-[52px_minmax(0,1fr)_auto] items-center gap-3 rounded-none border border-[var(--border-subtle)] bg-[var(--panel-subtle)] p-3 ${ownerLandscapeClass}:gap-2.5 ${ownerLandscapeClass}:p-2.5 max-[520px]:grid-cols-[52px_minmax(0,1fr)]`}>
                     {item.imageUrl ? (
                       <span className="h-[52px] w-[52px] rounded-[10px] border border-[var(--border-subtle)] bg-cover bg-center" style={{ backgroundImage: `url(${item.imageUrl})` }} />
                     ) : (
                       <div className="h-[52px] w-[52px] rounded-[10px] border border-[var(--border-subtle)] bg-[var(--surface-muted)]" />
                     )}
                     <div className="grid min-w-0 gap-1">
-                      <strong className="truncate text-base leading-[1.2] text-[var(--foreground)]">{item.name}</strong>
-                      <span className="text-[0.92rem] text-[var(--foreground-soft)]">
+                      <strong className={`truncate text-base leading-[1.2] text-[var(--foreground)] ${ownerLandscapeClass}:text-[0.95rem]`}>{item.name}</strong>
+                      <span className={`text-[0.92rem] text-[var(--foreground-soft)] ${ownerLandscapeClass}:text-[0.84rem]`}>
                         {formatBaht(item.unitPrice)} x {item.quantity}
                       </span>
                     </div>
-                    <strong className="text-base leading-[1.2] text-[var(--foreground)] max-[520px]:col-span-2 max-[520px]:justify-self-end">{formatBaht(item.lineTotal)}</strong>
+                    <strong className={`text-base leading-[1.2] text-[var(--foreground)] ${ownerLandscapeClass}:text-[0.95rem] max-[520px]:col-span-2 max-[520px]:justify-self-end`}>{formatBaht(item.lineTotal)}</strong>
                   </div>
                 ))}
               </div>
@@ -150,21 +159,21 @@ export function PaymentCheckoutPanels({
         </div>
       </section>
 
-      <section className="grid h-fit min-w-0 content-start gap-[16px] rounded-none border border-[var(--border)] bg-[var(--panel-strong)] px-5 py-[18px] shadow-[var(--shadow-soft)] max-[820px]:px-4 max-[820px]:py-4">
+      <section className={paymentPanelClass}>
         <div>
           <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[var(--eyebrow)]">Payment Methods</p>
-          <strong className="my-[10px] block text-[1.4rem] leading-none tracking-[-0.04em] text-[var(--foreground)]">{completedSale ? "วิธีชำระล่าสุด" : "เลือกวิธีชำระ"}</strong>
+          <strong className={`my-[10px] block text-[1.4rem] leading-none tracking-[-0.04em] text-[var(--foreground)] ${ownerLandscapeClass}:text-[1.28rem]`}>{completedSale ? "วิธีชำระล่าสุด" : "เลือกวิธีชำระ"}</strong>
           <p className="m-0 text-[0.95rem] leading-[1.65] text-[var(--foreground-soft)]">
             {completedSale ? "บิลนี้ชำระสำเร็จแล้ว รายละเอียดถูกล็อกไว้" : "เลือกวิธีรับเงินก่อนบันทึกบิลจริง"}
           </p>
         </div>
 
-        <div className="grid grid-cols-2 gap-3 max-[860px]:grid-cols-1">
+        <div className={`grid grid-cols-2 gap-3 ${ownerLandscapeClass}:gap-2.5 max-[860px]:grid-cols-1`}>
           {paymentMethods.map((method) => (
             <button
               key={method.value}
               type="button"
-              className={displayedPaymentMethod === method.value ? `${primaryButtonClass} payment-method-active min-h-[52px] rounded-2xl` : `${secondaryButtonClass} min-h-[52px] rounded-2xl`}
+              className={displayedPaymentMethod === method.value ? `${primaryButtonClass} payment-method-active min-h-[52px] rounded-2xl ${ownerLandscapeClass}:min-h-[46px] ${ownerLandscapeClass}:text-[0.92rem]` : `${secondaryButtonClass} min-h-[52px] rounded-2xl ${ownerLandscapeClass}:min-h-[46px] ${ownerLandscapeClass}:text-[0.92rem]`}
               onClick={() => setPaymentMethod(method.value)}
               disabled={Boolean(completedSale) || method.value === "CARD"}
               aria-disabled={method.value === "CARD"}
@@ -174,8 +183,8 @@ export function PaymentCheckoutPanels({
           ))}
         </div>
 
-        <div className="grid content-start gap-4">
-          <div className="grid grid-cols-2 gap-3 max-[860px]:grid-cols-1">
+        <div className={`grid content-start gap-4 ${ownerLandscapeClass}:gap-3`}>
+          <div className={`grid grid-cols-2 gap-3 ${ownerLandscapeClass}:gap-2.5 max-[860px]:grid-cols-1`}>
             {paymentMethod === "CASH" && !completedSale && (
               <label className="grid gap-2">
                 <span className="text-[0.92rem] font-bold text-[var(--brand-strong)]">รับเงินมา</span>
@@ -266,10 +275,10 @@ export function PaymentCheckoutPanels({
         </div>
       </section>
 
-      <section className="grid h-fit min-w-0 gap-[14px] overflow-hidden rounded-none border border-[var(--border)] bg-[var(--panel-strong)] px-4 py-[18px] shadow-[var(--shadow-soft)] max-[1280px]:col-span-2 max-[1180px]:col-span-1 max-[820px]:px-4 max-[820px]:py-4">
+      <section className={`${quickPanelClass} ${ownerLandscapeClass}:col-span-1 max-[820px]:px-4 max-[820px]:py-4`}>
         <div>
           <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[var(--eyebrow)]">Quick Panel</p>
-          <strong className="my-[10px] block text-[1.28rem] leading-tight tracking-[-0.04em] text-[var(--foreground)]">สถานะชำระเงิน</strong>
+          <strong className={`my-[10px] block text-[1.28rem] leading-tight tracking-[-0.04em] text-[var(--foreground)] ${ownerLandscapeClass}:text-[1.16rem]`}>สถานะชำระเงิน</strong>
         </div>
         <div className="grid gap-2">
           {!completedSale && qrPaymentSelected ? (

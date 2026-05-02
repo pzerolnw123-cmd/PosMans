@@ -2,6 +2,7 @@ import type { ChangeEvent, Dispatch, RefObject, SetStateAction } from "react";
 import { ConfirmDeleteModal } from "@/components/product-management-studio/confirm-delete-modal";
 import { CropModal } from "@/components/product-management-studio/crop-modal";
 import { ProductDetailPanel } from "@/components/product-management-studio/detail-panel";
+import { studioResponsiveClass } from "@/components/product-management-studio/layout-classes";
 import { ProductListPanel } from "@/components/product-management-studio/list-panel";
 import type { CropDraft, ProductCategory, ProductItem } from "@/components/product-management-studio/types";
 import { PageHeader, StatusPill } from "@/components/ui-primitives";
@@ -55,8 +56,8 @@ export function ProductManagementStudioLayout({
     <div
       className={
         compactMode
-          ? "grid h-auto min-h-0 grid-rows-[auto] gap-[18px]"
-          : "grid h-full min-h-0 grid-rows-[156px_minmax(0,1fr)] gap-[18px] max-[1180px]:h-auto max-[1180px]:grid-rows-[auto_auto] max-[820px]:gap-4 [@media(max-height:860px)]:h-auto [@media(max-height:860px)]:grid-rows-[auto_auto]"
+          ? studioResponsiveClass.compactPageGrid
+          : studioResponsiveClass.pageGrid
       }
     >
       {!compactMode ? (
@@ -72,7 +73,7 @@ export function ProductManagementStudioLayout({
         />
       ) : null}
 
-      <div className="grid min-h-0 items-start gap-[18px] [grid-template-columns:minmax(360px,1fr)_minmax(0,1.3fr)] max-[1366px]:grid-cols-1 max-[820px]:gap-4 max-[420px]:[grid-template-columns:minmax(0,1fr)]">
+      <div className={studioResponsiveClass.contentGrid}>
         <ProductDetailPanel
           compactMode={compactMode}
           productsLoading={productsLoading}

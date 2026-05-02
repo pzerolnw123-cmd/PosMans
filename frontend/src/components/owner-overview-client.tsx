@@ -3,6 +3,12 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import type { OwnerPaymentSettingsValue } from "@/components/owner-settings-client/shared";
+import {
+  ownerLandscapeClass,
+  ownerLandscapeCompactPanelPaddingClass,
+  ownerLandscapePanelPaddingClass,
+  ownerLandscapeTightGapClass,
+} from "@/components/owner-workspace/landscape-preset";
 import { requestJson, requestProductList } from "@/components/product-management-studio/lib";
 import type { ProductItem } from "@/components/product-management-studio/types";
 import { formatBaht, normalizeStockValue, salesCartStorageKey } from "@/components/sales-workspace/helpers";
@@ -203,16 +209,16 @@ export function OwnerOverviewClient({
   const openTasks = tasks.filter((task) => !task.done);
 
   return (
-    <div className="grid h-full min-h-0 grid-cols-[minmax(0,1fr)_320px] items-start gap-[18px] max-[1366px]:grid-cols-1 max-[820px]:gap-4">
-      <section className="grid min-h-0 grid-rows-[auto_auto_minmax(0,1fr)] content-start gap-[18px]" aria-label="store overview main area">
-        <div className="grid grid-cols-4 gap-[10px] rounded-none border border-[var(--border)] bg-[var(--surface)] px-[22px] py-5 shadow-[var(--shadow-soft)] max-[1180px]:grid-cols-2 max-[640px]:grid-cols-1">
+    <div className={`grid h-full min-h-0 grid-cols-[minmax(0,1fr)_320px] items-start gap-[18px] ${ownerLandscapeClass}:grid-cols-[minmax(0,1fr)_272px] ${ownerLandscapeClass}:gap-[14px] max-[820px]:grid-cols-1 max-[820px]:gap-4`}>
+      <section className={`grid min-h-0 grid-rows-[auto_auto_minmax(0,1fr)] content-start gap-[18px] ${ownerLandscapeTightGapClass}`} aria-label="store overview main area">
+        <div className={`grid grid-cols-4 gap-[10px] rounded-none border border-[var(--border)] bg-[var(--surface)] px-[22px] py-5 shadow-[var(--shadow-soft)] ${ownerLandscapePanelPaddingClass} ${ownerLandscapeClass}:grid-cols-4 max-[1180px]:grid-cols-2 max-[640px]:grid-cols-1`}>
           {[
             ["ร้านวันนี้", "ออนไลน์ / พร้อมขาย"],
             ["QR พร้อมรับเงิน", qrReady ? "พร้อม" : "ยังไม่พร้อม"],
             ["สินค้าเปิดขาย", `${productStatus.ready} รายการ`],
             ["งานที่ควรทำ", `${openTasks.length} รายการ`],
           ].map(([label, value]) => (
-            <div key={label} className="grid h-[72px] content-center rounded-none border border-[var(--border)] bg-[var(--surface-muted)] px-3 py-2.5">
+            <div key={label} className={`grid h-[72px] content-center rounded-none border border-[var(--border)] bg-[var(--surface-muted)] px-3 py-2.5 ${ownerLandscapeClass}:h-[66px] ${ownerLandscapeClass}:px-2.5`}>
               <span className="truncate text-[0.78rem] text-[var(--foreground-soft)]">{label}</span>
               <strong className="mt-1 block truncate text-[1rem] text-[var(--foreground)]">{value}</strong>
             </div>
@@ -223,8 +229,8 @@ export function OwnerOverviewClient({
           <div className="rounded-none border border-[var(--danger-border)] bg-[var(--danger-soft)] px-4 py-3 text-[var(--danger-bright)]">{error}</div>
         ) : null}
 
-        <div className="grid min-h-0 grid-cols-[minmax(0,1.1fr)_minmax(300px,0.9fr)] items-start gap-[18px] max-[1180px]:grid-cols-1">
-          <section className="grid min-h-0 content-start gap-[18px] rounded-none border border-[var(--border)] bg-[var(--panel-strong)] px-5 py-[18px] shadow-[var(--shadow-soft)] max-[820px]:px-4 max-[820px]:py-4">
+        <div className={`grid min-h-0 grid-cols-[minmax(0,1.1fr)_minmax(300px,0.9fr)] items-start gap-[18px] ${ownerLandscapeClass}:grid-cols-[minmax(0,1.18fr)_minmax(260px,0.82fr)] ${ownerLandscapeClass}:gap-[14px] max-[820px]:grid-cols-1`}>
+          <section className={`grid min-h-0 content-start gap-[18px] rounded-none border border-[var(--border)] bg-[var(--panel-strong)] px-5 py-[18px] shadow-[var(--shadow-soft)] ${ownerLandscapePanelPaddingClass} ${ownerLandscapeClass}:gap-[14px] max-[820px]:px-4 max-[820px]:py-4`}>
             <div className="flex items-start justify-between gap-3">
               <div>
                 <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[var(--eyebrow)]">Store Readiness</p>
@@ -264,7 +270,7 @@ export function OwnerOverviewClient({
             )}
           </section>
 
-          <section className="grid content-start gap-[18px] rounded-none border border-[var(--border)] bg-[var(--panel-strong)] px-5 py-[18px] shadow-[var(--shadow-soft)] max-[820px]:px-4 max-[820px]:py-4">
+          <section className={`grid content-start gap-[18px] rounded-none border border-[var(--border)] bg-[var(--panel-strong)] px-5 py-[18px] shadow-[var(--shadow-soft)] ${ownerLandscapePanelPaddingClass} ${ownerLandscapeClass}:gap-[14px] max-[820px]:px-4 max-[820px]:py-4`}>
             <div>
               <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[var(--eyebrow)]">Product Operations</p>
               <strong className="my-[10px] block text-[1.4rem] leading-none tracking-[-0.04em] text-[var(--foreground)]">สถานะสินค้า</strong>
@@ -289,7 +295,7 @@ export function OwnerOverviewClient({
         </div>
       </section>
 
-      <aside className="grid h-fit min-h-0 content-start gap-[18px] rounded-none border border-[var(--border)] bg-[var(--panel-strong)] p-[18px] shadow-[var(--shadow-soft)] max-[720px]:p-4">
+      <aside className={`grid h-fit min-h-0 content-start gap-[18px] rounded-none border border-[var(--border)] bg-[var(--panel-strong)] p-[18px] shadow-[var(--shadow-soft)] ${ownerLandscapeCompactPanelPaddingClass} ${ownerLandscapeClass}:gap-[14px] max-[720px]:p-4`}>
         <div>
           <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[var(--eyebrow)]">Action Queue</p>
           <strong className="my-[10px] block text-[1.4rem] leading-none tracking-[-0.04em] text-[var(--foreground)]">บิล / งานค้าง</strong>

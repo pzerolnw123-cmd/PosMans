@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { ownerLandscapeClass, ownerLandscapeCompactPanelPaddingClass, ownerLandscapePanelPaddingClass } from "@/components/owner-workspace/landscape-preset";
 import { requestJson } from "@/components/product-management-studio/lib";
 import { CalendarPicker } from "@/components/receipt-desk-client/calendar-picker";
 import { LoadingState } from "@/components/ui-primitives";
@@ -157,8 +158,8 @@ export function ReportsSalesChart() {
     : [];
 
   return (
-    <div className="grid min-h-0 grid-cols-[minmax(0,0.65fr)_minmax(260px,0.35fr)] items-start gap-[18px] max-[1280px]:grid-cols-1">
-      <div className="grid h-fit min-h-0 gap-[18px] overflow-visible rounded-none border border-[var(--border)] bg-[var(--panel-strong)] px-5 py-[18px] shadow-[var(--shadow-soft)] max-[820px]:px-4 max-[820px]:py-4">
+    <div className={`grid min-h-0 grid-cols-[minmax(0,0.65fr)_minmax(260px,0.35fr)] items-start gap-[18px] ${ownerLandscapeClass}:grid-cols-[minmax(0,0.7fr)_248px] ${ownerLandscapeClass}:gap-[14px] max-[1280px]:grid-cols-1`}>
+      <div className={`grid h-fit min-h-0 gap-[18px] overflow-visible rounded-none border border-[var(--border)] bg-[var(--panel-strong)] px-5 py-[18px] shadow-[var(--shadow-soft)] ${ownerLandscapePanelPaddingClass} ${ownerLandscapeClass}:gap-[14px] max-[820px]:px-4 max-[820px]:py-4`}>
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[var(--eyebrow)]">Sales Trend</p>
@@ -192,7 +193,7 @@ export function ReportsSalesChart() {
           </div>
         </div>
 
-        <div className="grid grid-cols-4 gap-[10px] max-[1180px]:grid-cols-2 max-[640px]:grid-cols-1">
+        <div className={`grid grid-cols-4 gap-[10px] ${ownerLandscapeClass}:grid-cols-2 max-[1180px]:grid-cols-2 max-[640px]:grid-cols-1`}>
           {summaryItems.map(([label, value]) => (
             <div key={label} className="rounded-none border border-[var(--border)] bg-[var(--surface-muted)] px-4 py-3">
               <span className="text-[0.8rem] text-[var(--foreground-soft)]">{label}</span>
@@ -266,7 +267,7 @@ export function ReportsSalesChart() {
         </div>
       </div>
 
-      <aside className="grid h-fit gap-[14px] overflow-hidden rounded-none border border-[var(--border)] bg-[var(--panel-strong)] px-5 py-[18px] shadow-[var(--shadow-soft)] max-[820px]:px-4 max-[820px]:py-4">
+      <aside className={`grid h-fit gap-[14px] overflow-hidden rounded-none border border-[var(--border)] bg-[var(--panel-strong)] px-5 py-[18px] shadow-[var(--shadow-soft)] ${ownerLandscapeCompactPanelPaddingClass} max-[820px]:px-4 max-[820px]:py-4`}>
         <section className="grid gap-[14px]">
           <div className="flex items-start justify-between gap-3">
             <div>

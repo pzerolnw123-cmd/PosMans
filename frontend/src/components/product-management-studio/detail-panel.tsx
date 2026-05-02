@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
+import { studioResponsiveClass } from "@/components/product-management-studio/layout-classes";
 import { dangerButtonClass, inputClass, Loader, LoadingState, primaryButtonClass, secondaryButtonClass, selectClass, successButtonClass, whiteButtonClass } from "@/components/ui-primitives";
 import { canUseNextImage, Field } from "@/components/product-management-studio/shared";
 import type { ProductItem } from "@/components/product-management-studio/types";
@@ -39,6 +40,11 @@ export function ProductDetailPanel({
   onResetForm,
   onDeleteConfirmed,
 }: ProductDetailPanelProps) {
+  const detailPanelClass = `grid w-[calc(100%+22px)] content-start gap-[10px] overflow-visible ${studioResponsiveClass.panelSurface} ${studioResponsiveClass.densePanelPadding} max-[820px]:w-full`;
+  const detailFieldRowClass = selectedProduct?.trackStock
+    ? studioResponsiveClass.detailFieldRowWithStock
+    : studioResponsiveClass.detailFieldRow;
+
   const [priceDraft, setPriceDraft] = useState<{ productId: string; value: string } | null>(null);
   const [costPerUnitDraft, setCostPerUnitDraft] = useState<{ productId: string; value: string } | null>(null);
   const [stockQuantityDraft, setStockQuantityDraft] = useState<{ productId: string; value: string } | null>(null);
@@ -81,9 +87,9 @@ export function ProductDetailPanel({
   const isSaveDisabled = saveBusy || deleteBusy || !isDirty || !selectedProduct?.name?.trim() || (selectedProduct?.price ?? 0) <= 0 || costInvalid || stockInvalid;
 
   return (
-    <section className="grid w-[calc(100%+22px)] content-start gap-[10px] overflow-visible rounded-none border border-[var(--border)] bg-[var(--panel-strong)] px-5 py-5 shadow-[var(--shadow-soft)] backdrop-blur-[14px] max-[1366px]:w-full max-[1180px]:px-4 max-[1180px]:py-4 max-[640px]:px-3.5 max-[640px]:py-3.5">
+    <section className={detailPanelClass}>
       <div className="grid gap-[10px]">
-        <div className="flex items-start justify-between gap-3 max-[720px]:flex-col max-[720px]:items-stretch">
+        <div className={studioResponsiveClass.stackedHeader}>
           <div>
             <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[var(--eyebrow)]">รายละเอียดสินค้า</p>
             <h2 className="my-[8px] text-[clamp(1.45rem,2.2vw,2rem)] leading-[0.98] tracking-[-0.06em]">
@@ -91,7 +97,7 @@ export function ProductDetailPanel({
             </h2>
           </div>
           {selectedProduct ? (
-            <div className="relative z-20 grid w-[180px] translate-y-5 justify-items-center gap-3 max-[720px]:w-full max-[720px]:translate-y-0">
+            <div className={studioResponsiveClass.detailToggleDock}>
               <span className={selectedProduct.trackStock ? "inline-flex min-h-[40px] w-full whitespace-nowrap items-center justify-center gap-2 rounded-none border border-[var(--accent-border)] bg-[var(--accent-surface)] px-3 py-2 text-[0.78rem] font-bold text-[var(--accent-text)]" : "inline-flex min-h-[40px] w-full whitespace-nowrap items-center justify-center gap-2 rounded-none border border-[var(--border-strong)] bg-[var(--surface-muted)] px-3 py-2 text-[0.78rem] font-bold text-[var(--foreground-soft)]"}>
                 {selectedProduct.trackStock ? "ทำการเปิดสต๊อก" : "ทำการปิดสต๊อก"}
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
@@ -112,9 +118,9 @@ export function ProductDetailPanel({
           ) : null}
         </div>
         {selectedProduct ? (
-          <div className="relative z-0 -mt-3 grid grid-cols-[minmax(0,312px)_180px] items-stretch gap-4 [@media(min-width:1025px)_and_(max-width:1180px)]:grid-cols-[minmax(0,1fr)_180px] max-[720px]:mt-0 max-[720px]:grid-cols-1">
+          <div className={studioResponsiveClass.detailHeroGrid}>
             <div className="min-w-0 max-[720px]:w-full">
-              <div className="h-[186px] w-full overflow-hidden rounded-[14px] border border-[var(--border)] bg-[var(--panel-subtle)] max-[1180px]:h-[148px] max-[720px]:h-[186px]">
+              <div className={studioResponsiveClass.detailImageFrame}>
                 {selectedProduct.imageUrl && canUseNextImage(selectedProduct.imageUrl) ? (
                   <Image
                     src={selectedProduct.imageUrl}
@@ -133,7 +139,7 @@ export function ProductDetailPanel({
               </div>
             </div>
 
-            <div className="flex h-[186px] w-[180px] flex-col justify-between justify-self-end pt-6 max-[1180px]:h-[148px] max-[720px]:h-auto max-[720px]:w-full max-[720px]:gap-4 max-[720px]:pt-0">
+            <div className={studioResponsiveClass.detailSidebar}>
               <div className="grid w-full justify-items-center pt-5 max-[720px]:pt-0">
                 <div
                   className={
@@ -181,7 +187,7 @@ export function ProductDetailPanel({
         <div className="-mt-3 pr-1 max-[720px]:mt-0 max-[720px]:pr-0">
 
           <div className="mt-3 grid gap-[10px]">
-            <div className={selectedProduct.trackStock ? "grid grid-cols-[minmax(0,1fr)_minmax(120px,180px)] items-end gap-3 max-[720px]:grid-cols-1" : "grid items-end gap-3"}>
+            <div className={detailFieldRowClass}>
               <Field label="ชื่อสินค้า" className="max-w-full">
                 <input className={inputClass} value={selectedProduct.name} onChange={(event) => onUpdateProduct({ name: event.target.value })} />
               </Field>
@@ -208,7 +214,7 @@ export function ProductDetailPanel({
               ) : null}
             </div>
 
-            <div className={selectedProduct.trackStock ? "grid grid-cols-[minmax(0,1fr)_minmax(120px,180px)] items-end gap-3 max-[720px]:grid-cols-1" : "grid items-end gap-3"}>
+            <div className={detailFieldRowClass}>
               <Field label="ประเภทสินค้า">
                 <div className="relative" ref={categoryRef}>
                   <button
@@ -337,7 +343,7 @@ export function ProductDetailPanel({
             </div>
           </div>
 
-          <div className="mt-[10px] grid gap-[10px] sm:grid-cols-2 xl:grid-cols-2 max-[520px]:grid-cols-1">
+          <div className={studioResponsiveClass.detailActionGrid}>
             <button
               type="button"
               className={`${secondaryButtonClass} disabled:opacity-40`}

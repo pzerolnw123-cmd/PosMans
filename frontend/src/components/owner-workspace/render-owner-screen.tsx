@@ -35,7 +35,7 @@ export async function renderOwnerScreen(
       actions: <StatusPill tone="success">Layout Locked</StatusPill>,
       body: (
         <section
-          className="grid h-full min-h-0 grid-rows-[156px_minmax(0,1fr)] gap-[18px] max-[1180px]:h-auto max-[1180px]:grid-rows-[auto_auto] [@media(max-height:860px)]:h-auto [@media(max-height:860px)]:grid-rows-[auto_auto]"
+          className="grid h-full min-h-0 grid-rows-[156px_minmax(0,1fr)] gap-[18px] max-[820px]:h-auto max-[820px]:grid-rows-[auto_auto] [@media(max-height:860px)_and_(max-width:820px)]:h-auto [@media(max-height:860px)_and_(max-width:820px)]:grid-rows-[auto_auto]"
           aria-label="sales layout"
         >
           <PageHeader
@@ -43,7 +43,7 @@ export async function renderOwnerScreen(
             title="ขายหน้าร้าน"
             description="จัดการรายการขายหน้าร้านของคุณ เลือกสินค้า เพิ่มลงตะกร้า และติดตามบิลที่กำลังขาย พร้อมเข้าสู่ขั้นตอนชำระเงินได้อย่างรวดเร็ว"
             actions={<StatusPill tone="success">พร้อมขายแล้ว</StatusPill>}
-            className="h-[144px] min-h-[144px] max-h-[144px] px-4 py-4 max-[1180px]:h-auto max-[1180px]:min-h-0 max-[1180px]:max-h-none max-[640px]:px-3.5 max-[640px]:py-3.5 [@media(max-height:860px)]:h-auto [@media(max-height:860px)]:min-h-0 [@media(max-height:860px)]:max-h-none"
+            className="h-[144px] min-h-[144px] max-h-[144px] px-4 py-4 max-[820px]:h-auto max-[820px]:min-h-0 max-[820px]:max-h-none max-[640px]:px-3.5 max-[640px]:py-3.5 [@media(max-height:860px)_and_(max-width:820px)]:h-auto [@media(max-height:860px)_and_(max-width:820px)]:min-h-0 [@media(max-height:860px)_and_(max-width:820px)]:max-h-none"
           />
 
           <SalesWorkspaceClient />
@@ -62,7 +62,7 @@ export async function renderOwnerScreen(
       actions: <StatusPill tone="success">พร้อมรับชำระ</StatusPill>,
       body: (
         <section
-          className="grid h-full min-h-0 grid-rows-[156px_minmax(0,1fr)] gap-[18px] max-[1180px]:h-auto max-[1180px]:grid-rows-[auto_auto] [@media(max-height:860px)]:h-auto [@media(max-height:860px)]:grid-rows-[auto_auto]"
+          className="grid h-full min-h-0 grid-rows-[156px_minmax(0,1fr)] gap-[18px] max-[820px]:h-auto max-[820px]:grid-rows-[auto_auto] [@media(max-height:860px)_and_(max-width:820px)]:h-auto [@media(max-height:860px)_and_(max-width:820px)]:grid-rows-[auto_auto]"
           aria-label="payment layout"
         >
           <PageHeader
@@ -87,7 +87,7 @@ export async function renderOwnerScreen(
       description: "รวมการค้นบิล ซ้ำพิมพ์ และส่งสลิปแบบย่อในจอเดียว",
       actions: <StatusPill tone="success">เชื่อมบิลขายจริง</StatusPill>,
       body: (
-        <section className="grid h-full min-h-0 grid-rows-[156px_minmax(0,1fr)] gap-[18px] max-[1180px]:h-auto max-[1180px]:grid-rows-[auto_auto] max-[820px]:gap-4 [@media(max-height:860px)]:h-auto [@media(max-height:860px)]:grid-rows-[auto_auto]">
+        <section className="grid h-full min-h-0 grid-rows-[156px_minmax(0,1fr)] gap-[18px] max-[820px]:h-auto max-[820px]:grid-rows-[auto_auto] max-[820px]:gap-4 [@media(max-height:860px)_and_(max-width:820px)]:h-auto [@media(max-height:860px)_and_(max-width:820px)]:grid-rows-[auto_auto]">
           <PageHeader
             eyebrow="Receipt Desk"
             title="ใบเสร็จ"
@@ -110,7 +110,7 @@ export async function renderOwnerScreen(
       description: "มุมมองยอดขายจริงแบบอ่านเร็ว พร้อมกราฟแนวโน้มตามช่วงเวลาที่เลือก",
       actions: <StatusPill tone="success">ข้อมูลยอดขายจริง</StatusPill>,
       body: (
-        <section className="grid h-full min-h-0 grid-rows-[156px_minmax(0,1fr)] gap-[18px] max-[1180px]:h-auto max-[1180px]:grid-rows-[auto_auto] max-[820px]:gap-4 [@media(max-height:860px)]:h-auto [@media(max-height:860px)]:grid-rows-[auto_auto]">
+        <section className="grid h-full min-h-0 grid-rows-[156px_minmax(0,1fr)] gap-[18px] max-[820px]:h-auto max-[820px]:grid-rows-[auto_auto] max-[820px]:gap-4 [@media(max-height:860px)_and_(max-width:820px)]:h-auto [@media(max-height:860px)_and_(max-width:820px)]:grid-rows-[auto_auto]">
           <PageHeader
             eyebrow="Reports"
             title="รายงาน"
@@ -147,7 +147,7 @@ export async function renderOwnerScreen(
       description: "หน้ารวมสำหรับ owner โดยไม่ปะปนเรื่อง platform-level control ของ superadmin",
       actions: <StatusPill>{storeName}</StatusPill>,
       body: (
-        <section className="grid h-full min-h-0 grid-rows-[156px_minmax(0,1fr)] gap-[18px] max-[1180px]:h-auto max-[1180px]:grid-rows-[auto_auto] max-[820px]:gap-4 [@media(max-height:860px)]:h-auto [@media(max-height:860px)]:grid-rows-[auto_auto]">
+        <section className="grid h-full min-h-0 grid-rows-[156px_minmax(0,1fr)] gap-[18px] max-[820px]:h-auto max-[820px]:grid-rows-[auto_auto] max-[820px]:gap-4 [@media(max-height:860px)_and_(max-width:820px)]:h-auto [@media(max-height:860px)_and_(max-width:820px)]:grid-rows-[auto_auto]">
           <PageHeader
             eyebrow="Overview"
             description="ตรวจความพร้อมของร้าน สินค้า การรับเงิน และงานค้างที่ควรจัดการก่อนเริ่มขาย"
@@ -216,7 +216,7 @@ export async function renderOwnerScreen(
       description: "ดึงยอดขายจริง แล้วให้เจ้าของร้านกรอกต้นทุนเองเพื่อประเมินกำไร",
       actions: <StatusPill tone="success">พร้อมคำนวณ</StatusPill>,
       body: (
-        <section className="grid h-full min-h-0 grid-rows-[156px_minmax(0,1fr)] gap-[18px] max-[1180px]:h-auto max-[1180px]:grid-rows-[auto_auto] max-[820px]:gap-4 [@media(max-height:860px)]:h-auto [@media(max-height:860px)]:grid-rows-[auto_auto]">
+        <section className="grid h-full min-h-0 grid-rows-[156px_minmax(0,1fr)] gap-[18px] max-[820px]:h-auto max-[820px]:grid-rows-[auto_auto] max-[820px]:gap-4 [@media(max-height:860px)_and_(max-width:820px)]:h-auto [@media(max-height:860px)_and_(max-width:820px)]:grid-rows-[auto_auto]">
           <PageHeader
             eyebrow="Cost Calculator"
             title="คำนวณ"
@@ -249,7 +249,7 @@ export async function renderOwnerScreen(
     description: "จัดการข้อมูลร้าน เจ้าของร้าน และรหัสผ่านของบัญชีนี้",
     actions: <StatusPill tone="success">พร้อมตั้งค่าแล้ว</StatusPill>,
     body: (
-      <section className="grid h-full min-h-0 grid-rows-[156px_minmax(0,1fr)] gap-[18px] max-[1180px]:h-auto max-[1180px]:grid-rows-[auto_auto] [@media(min-width:1025px)_and_(max-width:1240px)]:h-auto [@media(min-width:1025px)_and_(max-width:1240px)]:grid-rows-[auto_auto] [@media(max-height:860px)]:h-auto [@media(max-height:860px)]:grid-rows-[auto_auto]">
+      <section className="grid h-full min-h-0 grid-rows-[156px_minmax(0,1fr)] gap-[18px] max-[820px]:h-auto max-[820px]:grid-rows-[auto_auto] [@media(min-width:821px)_and_(max-width:1240px)_and_(orientation:landscape)]:h-full [@media(max-height:860px)_and_(max-width:820px)]:h-auto [@media(max-height:860px)_and_(max-width:820px)]:grid-rows-[auto_auto]">
         <PageHeader
           eyebrow="Store Settings"
           title="ตั้งค่าร้าน"
@@ -257,7 +257,7 @@ export async function renderOwnerScreen(
           actions={<StatusPill tone="success">พร้อมตั้งค่าแล้ว</StatusPill>}
         />
 
-        <div className="grid min-h-0 grid-cols-[minmax(250px,1fr)_minmax(250px,1fr)_minmax(250px,1fr)] items-start gap-[12px] max-[1366px]:grid-cols-[repeat(2,minmax(250px,1fr))] [@media(min-width:1025px)_and_(max-width:1240px)]:hidden max-[980px]:grid-cols-1 max-[820px]:gap-4">
+        <div className="grid min-h-0 grid-cols-[minmax(250px,1fr)_minmax(250px,1fr)_minmax(250px,1fr)] items-start gap-[12px] [@media(min-width:821px)_and_(max-width:1240px)_and_(orientation:landscape)]:grid-cols-[repeat(2,minmax(250px,1fr))] max-[980px]:grid-cols-1 max-[820px]:gap-4">
           <PanelCard
             eyebrow="ความปลอดภัยของบัญชี"
             title="เปลี่ยนรหัสผ่าน"
@@ -317,7 +317,7 @@ export async function renderOwnerScreen(
           </div>
         </div>
 
-        <div className="hidden min-h-0 content-start items-start gap-[12px] [@media(min-width:1025px)_and_(max-width:1240px)]:grid">
+        <div className="hidden min-h-0 content-start items-start gap-[12px]">
           <PanelCard
             eyebrow="ความปลอดภัยของบัญชี"
             title="เปลี่ยนรหัสผ่าน"

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { ownerLandscapeClass, ownerLandscapePanelPaddingClass, ownerLandscapeTightGapClass } from "@/components/owner-workspace/landscape-preset";
 import { requestJson } from "@/components/product-management-studio/lib";
 import { LoadingState, secondaryButtonClass, StatusPill } from "@/components/ui-primitives";
 import type { Receipt, ReceiptDetailResponse, ReceiptListResponse } from "./shared";
@@ -130,8 +131,8 @@ export function ReceiptDeskClient() {
   }
 
   return (
-    <div className="grid min-h-0 grid-cols-[minmax(0,1.25fr)_minmax(320px,0.75fr)] items-start gap-[18px] max-[1366px]:grid-cols-1 max-[820px]:gap-4">
-      <section className="relative z-20 grid max-h-[calc(100dvh-220px)] min-h-0 content-start gap-[18px] overflow-visible rounded-none border border-[var(--border)] bg-[var(--panel-strong)] px-5 py-[18px] shadow-[var(--shadow-soft)] max-[1366px]:h-auto max-[1366px]:max-h-none max-[820px]:px-4 max-[820px]:py-4 [@media(max-height:860px)]:h-auto [@media(max-height:860px)]:max-h-none">
+    <div className={`grid min-h-0 grid-cols-[minmax(0,1.25fr)_minmax(320px,0.75fr)] items-start gap-[18px] ${ownerLandscapeClass}:grid-cols-[minmax(0,1.18fr)_280px] ${ownerLandscapeClass}:gap-[14px] max-[820px]:grid-cols-1 max-[820px]:gap-4`}>
+      <section className={`relative z-20 grid max-h-[calc(100dvh-220px)] min-h-0 content-start gap-[18px] overflow-visible rounded-none border border-[var(--border)] bg-[var(--panel-strong)] px-5 py-[18px] shadow-[var(--shadow-soft)] ${ownerLandscapePanelPaddingClass} ${ownerLandscapeTightGapClass} max-[820px]:h-auto max-[820px]:max-h-none max-[820px]:px-4 max-[820px]:py-4 [@media(max-height:860px)_and_(max-width:820px)]:h-auto [@media(max-height:860px)_and_(max-width:820px)]:max-h-none`}>
         <div className="flex items-start justify-between gap-4 max-[720px]:flex-col max-[720px]:items-stretch">
           <div>
             <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[var(--eyebrow)]">Recent Receipts</p>

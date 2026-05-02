@@ -40,7 +40,7 @@ export function ProductManagementStudio() {
   const pendingDraftRef = useRef<ProductItem | null>(null);
 
   useEffect(() => {
-    const compactMediaQuery = window.matchMedia("(min-width: 1181px) and (max-height: 860px)");
+    const compactMediaQuery = window.matchMedia("(max-width: 820px) and (max-height: 860px)");
     const syncCompactMode = () => setCompactMode(compactMediaQuery.matches);
 
     const ipadMediaQuery = window.matchMedia("(max-width: 1366px) and (any-pointer: coarse)");

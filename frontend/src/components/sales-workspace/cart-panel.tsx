@@ -1,6 +1,7 @@
 "use client";
 
 import type { PointerEvent, RefObject } from "react";
+import { ownerLandscapeClass, ownerLandscapeCompactPanelPaddingClass } from "@/components/owner-workspace/landscape-preset";
 import type { ProductItem } from "@/components/product-management-studio/types";
 import { StatusPill } from "@/components/ui-primitives";
 import { BasketIcon, formatBaht, stockLimit } from "@/components/sales-workspace/helpers";
@@ -31,8 +32,8 @@ export function SalesCartPanel({ cartPulse, itemCount, cartItems, cartScrollMetr
       <aside
         className={
           cartPulse
-            ? "grid min-h-0 animate-[cart-panel-pulse_560ms_ease-out] grid-rows-[auto_minmax(0,1fr)_auto_auto] gap-[18px] rounded-none border border-[var(--cart-panel-border)] bg-[var(--panel-strong)] p-[18px] shadow-[var(--cart-shadow-strong)_0_8px_24px] max-[720px]:p-4"
-            : "grid min-h-0 grid-rows-[auto_minmax(0,1fr)_auto_auto] gap-[18px] rounded-none border border-[var(--border)] bg-[var(--panel-strong)] p-[18px] shadow-[var(--shadow-soft)] transition-all duration-500 max-[720px]:p-4"
+            ? `grid min-h-0 animate-[cart-panel-pulse_560ms_ease-out] grid-rows-[auto_minmax(0,1fr)_auto_auto] gap-[18px] rounded-none border border-[var(--cart-panel-border)] bg-[var(--panel-strong)] p-[18px] shadow-[var(--cart-shadow-strong)_0_8px_24px] ${ownerLandscapeCompactPanelPaddingClass} ${ownerLandscapeClass}:gap-[14px] max-[720px]:p-4`
+            : `grid min-h-0 grid-rows-[auto_minmax(0,1fr)_auto_auto] gap-[18px] rounded-none border border-[var(--border)] bg-[var(--panel-strong)] p-[18px] shadow-[var(--shadow-soft)] transition-all duration-500 ${ownerLandscapeCompactPanelPaddingClass} ${ownerLandscapeClass}:gap-[14px] max-[720px]:p-4`
         }
         aria-label="cart layout"
       >
@@ -45,13 +46,13 @@ export function SalesCartPanel({ cartPulse, itemCount, cartItems, cartScrollMetr
         </div>
 
         {cartItems.length > 0 ? (
-          <div className="relative min-h-0 max-[1366px]:max-h-[56vh] max-[720px]:max-h-[46vh]">
+          <div className="relative min-h-0 max-[820px]:max-h-[56vh] max-[720px]:max-h-[46vh]">
             <div
               ref={cartScrollRef}
               className={
                 cartScrollMetric.visible
-                   ? "sales-cart-scroll grid h-full min-h-0 touch-auto cursor-grab select-none content-start gap-3 overflow-y-auto overflow-x-hidden pb-2 pl-0 pr-4 pt-[1px] active:cursor-grabbing max-[1366px]:max-h-[56vh] max-[720px]:max-h-[46vh]"
-                   : "sales-cart-scroll grid h-full min-h-0 touch-auto select-auto content-start gap-3 overflow-y-auto overflow-x-hidden pb-2 pl-0 pr-0 pt-[1px] max-[1366px]:max-h-[56vh] max-[720px]:max-h-[46vh]"
+                   ? "sales-cart-scroll grid h-full min-h-0 touch-auto cursor-grab select-none content-start gap-3 overflow-y-auto overflow-x-hidden pb-2 pl-0 pr-4 pt-[1px] active:cursor-grabbing max-[820px]:max-h-[56vh] max-[720px]:max-h-[46vh]"
+                   : "sales-cart-scroll grid h-full min-h-0 touch-auto select-auto content-start gap-3 overflow-y-auto overflow-x-hidden pb-2 pl-0 pr-0 pt-[1px] max-[820px]:max-h-[56vh] max-[720px]:max-h-[46vh]"
               }
               onScroll={updateCartScrollbar}
               onPointerDown={handleCartPointerDown}

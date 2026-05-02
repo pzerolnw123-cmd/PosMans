@@ -22,7 +22,11 @@ type StoredSalesCart = {
 
 import { BasketIcon, CategoryIcon, displaySaleStatus, formatBaht, isProductSellable, normalizeStockValue, salesCartStorageKey, stockLabel, stockLimit } from "@/components/sales-workspace/helpers";
 import { SalesCartPanel } from "@/components/sales-workspace/cart-panel";
+import { ownerLandscapeClass, ownerLandscapePanelPaddingClass, ownerLandscapeTightGapClass } from "@/components/owner-workspace/landscape-preset";
 import { LoadingState } from "@/components/ui-primitives";
+
+const desktopFinePointerClass = "[@media(min-width:1181px)_and_(pointer:fine)]";
+
 export function SalesWorkspaceClient() {
   const router = useRouter();
   const [products, setProducts] = useState<ProductItem[]>([]);
@@ -382,9 +386,9 @@ export function SalesWorkspaceClient() {
   }
 
   return (
-    <div className="grid h-full min-h-0 grid-cols-[minmax(0,1fr)_minmax(280px,320px)] gap-[18px] max-[1280px]:h-auto max-[1280px]:grid-cols-1 max-[820px]:gap-4">
-      <section className="flex min-h-0 flex-col gap-[18px] max-[1280px]:min-h-0" aria-label="sales main area">
-        <div className="rounded-none border border-[var(--border)] bg-[var(--surface)] px-[22px] py-5 shadow-[var(--shadow-soft)] max-[820px]:px-4 max-[820px]:py-4 max-[520px]:px-3.5">
+    <div className={`grid h-full min-h-0 grid-cols-[minmax(0,1fr)_minmax(280px,320px)] gap-[18px] ${ownerLandscapeClass}:grid-cols-[minmax(0,1fr)_272px] ${ownerLandscapeClass}:gap-[14px] max-[820px]:h-auto max-[820px]:grid-cols-1 max-[820px]:gap-4`}>
+      <section className={`flex min-h-0 flex-col gap-[18px] ${ownerLandscapeTightGapClass} max-[1280px]:min-h-0`} aria-label="sales main area">
+        <div className={`rounded-none border border-[var(--border)] bg-[var(--surface)] px-[22px] py-5 shadow-[var(--shadow-soft)] ${ownerLandscapePanelPaddingClass} max-[820px]:px-4 max-[820px]:py-4 max-[520px]:px-3.5`}>
           <div className="flex flex-wrap gap-[10px] max-[520px]:grid max-[520px]:grid-cols-1">
             {categoryOptions.map((category) => {
               const active = activeCategory === category;
@@ -395,8 +399,8 @@ export function SalesWorkspaceClient() {
                   type="button"
                   className={
                     active
-                      ? "inline-flex min-h-10 items-center justify-center gap-[10px] rounded-[10px] border border-[var(--accent-border)] bg-[var(--accent-surface)] px-[18px] font-bold text-[var(--brand-strong)] shadow-[var(--brand-shadow)_0_6px_12px] transition hover:-translate-y-px"
-                      : "inline-flex min-h-10 items-center justify-center gap-[10px] rounded-[10px] border border-[var(--border)] bg-[var(--surface-muted)] px-[18px] font-bold text-[var(--foreground)] transition hover:-translate-y-px hover:shadow-[var(--shadow-soft)]"
+                      ? `inline-flex min-h-10 items-center justify-center gap-[10px] rounded-[10px] border border-[var(--accent-border)] bg-[var(--accent-surface)] px-[18px] font-bold text-[var(--brand-strong)] shadow-[var(--brand-shadow)_0_6px_12px] transition hover:-translate-y-px ${ownerLandscapeClass}:min-h-[38px] ${ownerLandscapeClass}:px-[14px] ${ownerLandscapeClass}:text-[0.92rem]`
+                      : `inline-flex min-h-10 items-center justify-center gap-[10px] rounded-[10px] border border-[var(--border)] bg-[var(--surface-muted)] px-[18px] font-bold text-[var(--foreground)] transition hover:-translate-y-px hover:shadow-[var(--shadow-soft)] ${ownerLandscapeClass}:min-h-[38px] ${ownerLandscapeClass}:px-[14px] ${ownerLandscapeClass}:text-[0.92rem]`
                   }
                   onClick={() => handleCategoryChange(category)}
                 >
@@ -419,8 +423,8 @@ export function SalesWorkspaceClient() {
             onPointerLeave={stopProductDrag}
             className={
               productScrollMetric.visible
-                ? "sales-cart-scroll grid h-full min-h-0 touch-auto cursor-grab select-none content-start gap-4 p-1 pb-6 pr-4 active:cursor-grabbing grid-cols-3 [@media(max-width:1366px)]:grid-cols-2 [@media(any-pointer:coarse)]:grid-cols-2 max-[1024px]:grid-cols-2 max-[820px]:grid-cols-2 max-[640px]:grid-cols-1"
-                : "sales-cart-scroll grid h-full min-h-0 touch-auto select-auto content-start gap-4 p-1 pb-6 pr-0 grid-cols-3 [@media(max-width:1366px)]:grid-cols-2 [@media(any-pointer:coarse)]:grid-cols-2 max-[1024px]:grid-cols-2 max-[820px]:grid-cols-2 max-[640px]:grid-cols-1"
+                ? `sales-cart-scroll grid h-full min-h-0 touch-auto cursor-grab select-none content-start gap-4 p-1 pb-6 pr-4 active:cursor-grabbing grid-cols-3 [@media(max-width:1366px)_and_(any-pointer:coarse)]:grid-cols-2 [@media(any-pointer:coarse)]:grid-cols-2 max-[1024px]:grid-cols-2 max-[820px]:grid-cols-2 max-[640px]:grid-cols-1 ${desktopFinePointerClass}:grid-cols-3 ${ownerLandscapeClass}:gap-3`
+                : `sales-cart-scroll grid h-full min-h-0 touch-auto select-auto content-start gap-4 p-1 pb-6 pr-0 grid-cols-3 [@media(max-width:1366px)_and_(any-pointer:coarse)]:grid-cols-2 [@media(any-pointer:coarse)]:grid-cols-2 max-[1024px]:grid-cols-2 max-[820px]:grid-cols-2 max-[640px]:grid-cols-1 ${desktopFinePointerClass}:grid-cols-3 ${ownerLandscapeClass}:gap-3`
             }
             aria-label="products"
           >
@@ -446,8 +450,8 @@ export function SalesWorkspaceClient() {
                   key={product.id}
                   className={
                     activePulse
-                      ? "relative grid min-h-[226px] animate-[cart-card-pop_520ms_cubic-bezier(.2,.8,.2,1)] content-start gap-3 overflow-hidden rounded-none border border-[var(--cart-glow-border)] [background:var(--panel-elevated)] p-[14px] pb-[68px] shadow-[var(--cart-shadow-mid)_0_8px_20px]"
-                      : "relative grid min-h-[226px] content-start gap-3 overflow-hidden rounded-none border border-[var(--border)] [background:var(--panel-elevated)] p-[14px] pb-[68px] transition-all duration-500 hover:-translate-y-0.5 hover:border-[var(--cart-glow-border-soft)]"
+                      ? `relative grid min-h-[226px] animate-[cart-card-pop_520ms_cubic-bezier(.2,.8,.2,1)] content-start gap-3 overflow-hidden rounded-none border border-[var(--cart-glow-border)] [background:var(--panel-elevated)] p-[14px] pb-[68px] shadow-[var(--cart-shadow-mid)_0_8px_20px] ${ownerLandscapeClass}:min-h-[204px] ${ownerLandscapeClass}:gap-2.5 ${ownerLandscapeClass}:p-3 ${ownerLandscapeClass}:pb-[60px]`
+                      : `relative grid min-h-[226px] content-start gap-3 overflow-hidden rounded-none border border-[var(--border)] [background:var(--panel-elevated)] p-[14px] pb-[68px] transition-all duration-500 hover:-translate-y-0.5 hover:border-[var(--cart-glow-border-soft)] ${ownerLandscapeClass}:min-h-[204px] ${ownerLandscapeClass}:gap-2.5 ${ownerLandscapeClass}:p-3 ${ownerLandscapeClass}:pb-[60px]`
                   }
                 >
                   {added ? (
@@ -461,16 +465,16 @@ export function SalesWorkspaceClient() {
                   <div className="flex items-start justify-between gap-3 max-[420px]:flex-col">
                     {product.imageUrl ? (
                       <span
-                        className="h-[96px] w-[118px] shrink-0 rounded-xl border border-[var(--border-subtle)] bg-cover bg-center max-[420px]:w-full"
+                        className={`h-[96px] w-[118px] shrink-0 rounded-xl border border-[var(--border-subtle)] bg-cover bg-center ${ownerLandscapeClass}:h-[82px] ${ownerLandscapeClass}:w-[102px] max-[420px]:w-full`}
                         style={{ backgroundImage: `url(${product.imageUrl})` }}
                         role="img"
                         aria-label={product.name}
                       />
                     ) : (
-                      <div className="h-[96px] w-[118px] shrink-0 rounded-xl border border-[var(--border-subtle)] bg-[var(--panel-subtle)] max-[420px]:w-full" />
+                      <div className={`h-[96px] w-[118px] shrink-0 rounded-xl border border-[var(--border-subtle)] bg-[var(--panel-subtle)] ${ownerLandscapeClass}:h-[82px] ${ownerLandscapeClass}:w-[102px] max-[420px]:w-full`} />
                     )}
                       <div className="grid min-w-0 justify-items-end gap-1 text-right max-[420px]:w-full max-[420px]:justify-items-start max-[420px]:text-left">
-                        <b className="text-base leading-[1.2] text-[var(--foreground)] max-[1366px]:text-[1.25rem]">{formatBaht(product.price)}</b>
+                        <b className={`text-base leading-[1.2] text-[var(--foreground)] max-[1366px]:text-[1.25rem] ${ownerLandscapeClass}:text-[1.02rem]`}>{formatBaht(product.price)}</b>
                         <span className={saleStatusLabel === "พร้อมขาย" ? "text-[0.78rem] font-bold text-[var(--success)] max-[1366px]:text-[0.95rem]" : "text-[0.78rem] font-bold text-[var(--foreground-soft)] max-[1366px]:text-[0.95rem]"}>{saleStatusLabel}</span>
                         <span className="max-w-[86px] text-[0.62rem] leading-[1.2] text-[var(--foreground-soft)] max-[1366px]:max-w-[120px] max-[1366px]:text-[0.85rem]">{product.category}</span>
                         <span className="max-w-[86px] truncate text-[0.6rem] font-bold uppercase tracking-[0.1em] text-[var(--foreground-soft)] max-[1366px]:max-w-[120px] max-[1366px]:text-[0.75rem]">
