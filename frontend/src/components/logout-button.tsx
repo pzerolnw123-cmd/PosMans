@@ -6,7 +6,7 @@ import { revokeStoredCustomerDisplay } from "@/components/customer-display-sessi
 import { fetchWithCsrfRetry } from "@/lib/csrf";
 import { clearStoredOwnerTheme } from "@/lib/owner-theme";
 
-export function LogoutButton() {
+export function LogoutButton({ className = "" }: { className?: string }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
 
@@ -27,7 +27,7 @@ export function LogoutButton() {
           router.refresh();
         });
       }}
-      className="mt-[14px] inline-flex min-h-[42px] w-full items-center justify-center gap-[10px] rounded-[10px] border border-[var(--border)] bg-[var(--surface-muted)] px-[18px] font-bold text-[var(--foreground)] transition hover:-translate-y-px hover:border-[var(--border-strong)] hover:shadow-[var(--shadow-hover)] disabled:cursor-not-allowed disabled:opacity-[0.62] disabled:shadow-none"
+      className={`mt-[14px] inline-flex min-h-[42px] w-full items-center justify-center gap-[10px] rounded-[10px] border border-[var(--border)] bg-[var(--surface-muted)] px-[18px] font-bold text-[var(--foreground)] transition hover:-translate-y-px hover:border-[var(--border-strong)] hover:shadow-[var(--shadow-hover)] disabled:cursor-not-allowed disabled:opacity-[0.62] disabled:shadow-none ${className}`.trim()}
     >
       {pending ? "กำลังออกจากระบบ..." : "ออกจากระบบ"}
     </button>

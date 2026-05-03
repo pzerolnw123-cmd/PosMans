@@ -45,6 +45,10 @@ Additional requirements for ambiguous, visual, or behavior-sensitive work:
 - when a result cannot be verified locally, say so explicitly and describe what remains uncertain
 - do not say a UI, layout, or responsive behavior "matches", "is fixed", or "is back to normal" unless the relevant state has been checked against the target reference
 - when changing responsive behavior, identify which breakpoints, device classes, input modes, or layout containers are being changed, and verify that unrelated target layouts are not being unintentionally affected
+- when the user says not to change a specific area, treat that as a hard constraint and describe how the change respected it
+- do not expand a page-specific fix into shared shells, shared layout primitives, or other pages unless the user explicitly asked for that broader scope
+- when restoring a previous UI or layout state, identify what baseline or reference is being restored instead of relying on memory or inference
+- before calling a change isolated, check whether the edited file or layout primitive is reused by other pages
 
 ## 4. Change Scope
 
@@ -112,6 +116,8 @@ AI agents must not:
 - describe a visual result as matching a reference if that was not actually verified against the reference
 - hide TODOs or incomplete work in code without saying so
 - introduce speculative fixes outside the requested scope without explaining them
+- claim "no impact", "same as before", "restored", or "matched" without verification or an explicit statement that this is only the expected outcome
+- use runtime-generated utility class names or other build-time-undetectable styling patterns unless the build setup already supports them explicitly
 
 AI agents must:
 - summarize what changed
@@ -120,6 +126,31 @@ AI agents must:
 - prefer asking for approval before high-impact or ambiguous changes
 - separate confirmed facts from guesses, expectations, or likely outcomes
 - explicitly call out when a response is based on code inspection only versus direct validation
+- name the exact files changed when reporting UI, layout, or responsive fixes
+- for visual or responsive work, separate the handoff into:
+  - confirmed
+  - expected after the code change
+  - not yet verified
+
+## 8A. UI And Responsive Work
+
+For UI, layout, and responsive tasks:
+- prefer the smallest local fix before changing shared shells or cross-page layout primitives
+- identify whether the issue is coming from shell spacing, page-level layout, component-level layout, overflow, or scrollbar/browser behavior before editing
+- do not change both overall page structure and component sizing in the same pass unless there is a stated reason
+- do not change both left and right spacing when the user identified only one side as incorrect
+- if using Tailwind or similar utility compilation, avoid dynamic arbitrary-value classes unless they are safelisted or already established in the codebase
+- state the intended scope explicitly:
+  - one page only
+  - all pages sharing the shell
+  - desktop only
+  - tablet only
+  - phone only
+  - portrait only
+  - landscape only
+- if the issue was shown in a screenshot, fix that exact area first before making broader visual adjustments elsewhere
+- if the user names a specific screen, device class, breakpoint range, orientation, or target viewport, treat that as a locked scope and do not change other screen classes, breakpoints, or orientations unless the user explicitly expands the scope
+- when working on a single device target, report which other screen classes were intentionally left untouched
 
 ## 9. File And Dependency Hygiene
 
@@ -151,6 +182,8 @@ For UI, layout, responsive, and reference-matching tasks also verify:
 - the final result is compared against the provided screenshot, mock, or described reference state
 - the intended viewport or device class is checked explicitly instead of inferred from screen size names alone
 - nearby layouts that must remain unchanged were sanity-checked after the edit
+- if a shared shell or layout primitive was changed, the handoff states whether the impact is page-specific or cross-page
+- if the user asked to preserve a specific area, the handoff states how that constraint was protected
 
 ## 12. Owner Override
 

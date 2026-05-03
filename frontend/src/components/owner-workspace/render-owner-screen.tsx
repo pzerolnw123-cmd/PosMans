@@ -1,12 +1,31 @@
 import type { ReactNode } from "react";
+import Link from "next/link";
 import { PanelCard } from "@/components/backoffice-shell";
 import type { OwnerPaymentSettingsValue } from "@/components/owner-settings-client/shared";
+import { ipadAirLandscapeClass, ipadAirOnlyFlexClass, ipadAirOnlyGridRowsSingleClass, ipadAirOnlyHideClass } from "@/components/owner-workspace/ipad-air-classes";
+import { ProfileHeaderInjector } from "@/components/owner-workspace/profile-header-injector";
 import { ListStack, NoteStack, ThreeUpStats } from "@/components/owner-workspace/shared";
 import { PageHeader, StatusPill } from "@/components/ui-primitives";
 import type { OwnerSectionKey } from "@/components/owner-workspace";
 
 const storeNamePrompt = "กรอกชื่อร้าน";
 const ownerNamePrompt = "กรอกชื่อของคุณ";
+
+const ownerPageWithHeaderClass = `grid h-full min-h-0 grid-rows-[156px_minmax(0,1fr)] gap-[18px] ${ipadAirOnlyGridRowsSingleClass} max-[820px]:h-auto max-[820px]:grid-rows-[auto_auto] [@media(max-height:860px)_and_(max-width:820px)]:h-auto [@media(max-height:860px)_and_(max-width:820px)]:grid-rows-[auto_auto]`;
+const ownerPageWithHeaderGapClass = `${ownerPageWithHeaderClass} max-[820px]:gap-4`;
+
+function hasPromptPayValue(settings: OwnerPaymentSettingsValue) {
+  return Boolean(
+    settings.promptPayMobileId.trim() ||
+      settings.promptPayNationalId.trim() ||
+      settings.promptPayTaxId.trim() ||
+      settings.paymentQrImageUrl.trim(),
+  );
+}
+
+function hasBankTransferValue(settings: OwnerPaymentSettingsValue) {
+  return Boolean(settings.bankName.trim() && settings.bankAccountName.trim() && settings.bankAccountNumber.trim());
+}
 
 type OwnerScreen = {
   eyebrow: string;
@@ -34,10 +53,7 @@ export async function renderOwnerScreen(
       description: "โครงหน้าขายแบบอิง reference เดิม แต่ย้ายไปใช้ Tailwind utility ใน JSX เพื่อให้ปรับหน้านี้ได้ตรงจุด",
       actions: <StatusPill tone="success">Layout Locked</StatusPill>,
       body: (
-        <section
-          className="grid h-full min-h-0 grid-rows-[156px_minmax(0,1fr)] gap-[18px] max-[820px]:h-auto max-[820px]:grid-rows-[auto_auto] [@media(max-height:860px)_and_(max-width:820px)]:h-auto [@media(max-height:860px)_and_(max-width:820px)]:grid-rows-[auto_auto]"
-          aria-label="sales layout"
-        >
+        <section className={ownerPageWithHeaderClass} aria-label="sales layout">
           <PageHeader
             eyebrow="Sales Floor"
             title="ขายหน้าร้าน"
@@ -61,10 +77,7 @@ export async function renderOwnerScreen(
       description: "รับตะกร้าจากหน้าขาย เลือกวิธีรับเงิน ใส่ส่วนลดหรือภาษี แล้วบันทึกบิลจริง",
       actions: <StatusPill tone="success">พร้อมรับชำระ</StatusPill>,
       body: (
-        <section
-          className="grid h-full min-h-0 grid-rows-[156px_minmax(0,1fr)] gap-[18px] max-[820px]:h-auto max-[820px]:grid-rows-[auto_auto] [@media(max-height:860px)_and_(max-width:820px)]:h-auto [@media(max-height:860px)_and_(max-width:820px)]:grid-rows-[auto_auto]"
-          aria-label="payment layout"
-        >
+        <section className={ownerPageWithHeaderClass} aria-label="payment layout">
           <PageHeader
             eyebrow="Checkout"
             title="ชำระเงิน"
@@ -87,7 +100,7 @@ export async function renderOwnerScreen(
       description: "รวมการค้นบิล ซ้ำพิมพ์ และส่งสลิปแบบย่อในจอเดียว",
       actions: <StatusPill tone="success">เชื่อมบิลขายจริง</StatusPill>,
       body: (
-        <section className="grid h-full min-h-0 grid-rows-[156px_minmax(0,1fr)] gap-[18px] max-[820px]:h-auto max-[820px]:grid-rows-[auto_auto] max-[820px]:gap-4 [@media(max-height:860px)_and_(max-width:820px)]:h-auto [@media(max-height:860px)_and_(max-width:820px)]:grid-rows-[auto_auto]">
+        <section className={ownerPageWithHeaderGapClass}>
           <PageHeader
             eyebrow="Receipt Desk"
             title="ใบเสร็จ"
@@ -110,7 +123,7 @@ export async function renderOwnerScreen(
       description: "มุมมองยอดขายจริงแบบอ่านเร็ว พร้อมกราฟแนวโน้มตามช่วงเวลาที่เลือก",
       actions: <StatusPill tone="success">ข้อมูลยอดขายจริง</StatusPill>,
       body: (
-        <section className="grid h-full min-h-0 grid-rows-[156px_minmax(0,1fr)] gap-[18px] max-[820px]:h-auto max-[820px]:grid-rows-[auto_auto] max-[820px]:gap-4 [@media(max-height:860px)_and_(max-width:820px)]:h-auto [@media(max-height:860px)_and_(max-width:820px)]:grid-rows-[auto_auto]">
+        <section className={ownerPageWithHeaderGapClass}>
           <PageHeader
             eyebrow="Reports"
             title="รายงาน"
@@ -147,7 +160,7 @@ export async function renderOwnerScreen(
       description: "หน้ารวมสำหรับ owner โดยไม่ปะปนเรื่อง platform-level control ของ superadmin",
       actions: <StatusPill>{storeName}</StatusPill>,
       body: (
-        <section className="grid h-full min-h-0 grid-rows-[156px_minmax(0,1fr)] gap-[18px] max-[820px]:h-auto max-[820px]:grid-rows-[auto_auto] max-[820px]:gap-4 [@media(max-height:860px)_and_(max-width:820px)]:h-auto [@media(max-height:860px)_and_(max-width:820px)]:grid-rows-[auto_auto]">
+        <section className={ownerPageWithHeaderGapClass}>
           <PageHeader
             eyebrow="Overview"
             description="ตรวจความพร้อมของร้าน สินค้า การรับเงิน และงานค้างที่ควรจัดการก่อนเริ่มขาย"
@@ -216,7 +229,7 @@ export async function renderOwnerScreen(
       description: "ดึงยอดขายจริง แล้วให้เจ้าของร้านกรอกต้นทุนเองเพื่อประเมินกำไร",
       actions: <StatusPill tone="success">พร้อมคำนวณ</StatusPill>,
       body: (
-        <section className="grid h-full min-h-0 grid-rows-[156px_minmax(0,1fr)] gap-[18px] max-[820px]:h-auto max-[820px]:grid-rows-[auto_auto] max-[820px]:gap-4 [@media(max-height:860px)_and_(max-width:820px)]:h-auto [@media(max-height:860px)_and_(max-width:820px)]:grid-rows-[auto_auto]">
+        <section className={ownerPageWithHeaderGapClass}>
           <PageHeader
             eyebrow="Cost Calculator"
             title="คำนวณ"
@@ -249,15 +262,17 @@ export async function renderOwnerScreen(
     description: "จัดการข้อมูลร้าน เจ้าของร้าน และรหัสผ่านของบัญชีนี้",
     actions: <StatusPill tone="success">พร้อมตั้งค่าแล้ว</StatusPill>,
     body: (
-      <section className="grid h-full min-h-0 grid-rows-[156px_minmax(0,1fr)] gap-[18px] max-[820px]:h-auto max-[820px]:grid-rows-[auto_auto] [@media(min-width:821px)_and_(max-width:1240px)_and_(orientation:landscape)]:h-full [@media(max-height:860px)_and_(max-width:820px)]:h-auto [@media(max-height:860px)_and_(max-width:820px)]:grid-rows-[auto_auto]">
+      <section className={`${ownerPageWithHeaderClass} ${ipadAirLandscapeClass}:h-full`}>
         <PageHeader
           eyebrow="Store Settings"
           title="ตั้งค่าร้าน"
           description="จัดการชื่อร้าน ชื่อเจ้าของร้าน และรหัสผ่านของบัญชีเจ้าของร้าน"
           actions={<StatusPill tone="success">พร้อมตั้งค่าแล้ว</StatusPill>}
+          className={ipadAirOnlyHideClass}
         />
 
-        <div className="grid min-h-0 grid-cols-[minmax(250px,1fr)_minmax(250px,1fr)_minmax(250px,1fr)] items-start gap-[12px] [@media(min-width:821px)_and_(max-width:1240px)_and_(orientation:landscape)]:grid-cols-[repeat(2,minmax(250px,1fr))] max-[980px]:grid-cols-1 max-[820px]:gap-4">
+        <div className="grid min-h-0 grid-cols-[minmax(250px,1fr)_minmax(250px,1fr)_minmax(250px,1fr)] items-start gap-[12px] max-[980px]:grid-cols-1 max-[820px]:gap-4">
+          <div className="grid gap-[12px] max-[820px]:gap-4">
           <PanelCard
             eyebrow="ความปลอดภัยของบัญชี"
             title="เปลี่ยนรหัสผ่าน"
@@ -266,6 +281,9 @@ export async function renderOwnerScreen(
           >
             <OwnerPasswordClient />
           </PanelCard>
+
+          <ProfileHeaderInjector className={`hidden ${ipadAirOnlyFlexClass}`} />
+          </div>
 
           <div className="grid gap-[12px] max-[820px]:gap-4">
             <PanelCard
@@ -315,6 +333,40 @@ export async function renderOwnerScreen(
               <OwnerPaymentSettingsClient initialSettings={paymentSettings} />
             </PanelCard>
           </div>
+
+          {false ? <aside className={`hidden min-h-0 ${ipadAirLandscapeClass}:grid`}>
+            <PanelCard
+              eyebrow="Quick Panel"
+              title="สถานะตั้งค่า"
+              titleClassName="my-[10px] text-[1.2rem] leading-tight tracking-[-0.04em]"
+              className="grid h-full min-h-0 content-start px-3.5 py-3.5"
+            >
+              <div className="grid gap-3">
+                <div className="rounded-none border border-[var(--border-subtle)] bg-[var(--panel-subtle)] px-3.5 py-3">
+                  <span className="text-[0.82rem] text-[var(--foreground-soft)]">ข้อมูลร้าน</span>
+                  <strong className="mt-1 block text-[1.05rem] leading-[1.1] text-[var(--foreground)]">
+                    {(formStoreName.trim() ? 1 : 0) + (formOwnerName.trim() ? 1 : 0)} / 2 ส่วน
+                  </strong>
+                </div>
+                <div className="rounded-none border border-[var(--border-subtle)] bg-[var(--panel-subtle)] px-3.5 py-3">
+                  <span className="text-[0.82rem] text-[var(--foreground-soft)]">ช่องทางรับเงิน</span>
+                  <strong className="mt-1 block text-[1.05rem] leading-[1.1] text-[var(--foreground)]">
+                    {Number(hasPromptPayValue(paymentSettings)) + Number(hasBankTransferValue(paymentSettings))} / 2 วิธี
+                  </strong>
+                </div>
+                <div className="border-t border-t-[var(--border-subtle)] pt-3">
+                  <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[var(--eyebrow)]">Customer Display</p>
+                  <strong className="mt-2 block text-[1.18rem] leading-tight tracking-[-0.04em] text-[var(--foreground)]">จอลูกค้า</strong>
+                  <Link
+                    href="/owner/payments"
+                    className="mt-3 inline-flex min-h-[44px] w-full items-center justify-center rounded-2xl border border-[var(--accent-border)] bg-[var(--surface)] px-4 py-2.5 text-[0.98rem] font-bold text-[var(--foreground)] transition hover:-translate-y-px hover:shadow-[var(--shadow-soft)]"
+                  >
+                    เปิดจอ
+                  </Link>
+                </div>
+              </div>
+            </PanelCard>
+          </aside> : null}
         </div>
 
         <div className="hidden min-h-0 content-start items-start gap-[12px]">

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import type { ChangeEvent, Dispatch, RefObject, SetStateAction } from "react";
 import type { OwnerPaymentSettingsValue, PromptPayDrafts, PromptPayRecipientType, SubmitState } from "./shared";
@@ -155,8 +155,7 @@ export function PaymentSettingsFormFields({
 
         <div className="grid gap-2">
           <span className={fieldLabelClass}>ประเภทผู้รับเงิน</span>
-          <span className="text-[0.78rem] leading-[1.2] text-[var(--foreground-soft)]">คุณสามารถกรอกเบอร์พร้อมเพย์, เลขบัตรประชาชน, เลขผู้เสียภาษี, หรือรูป QR พร้อมกับข้อมูลบัญชีธนาคารได้</span>
-          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                    <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
             {promptPayRecipientOptions.map((option) => (
               <button
                 key={option.value}
@@ -398,3 +397,4 @@ export function PaymentSettingsFormFields({
     </>
   );
 }
+

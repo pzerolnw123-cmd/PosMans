@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { ProfileHeaderInjector } from "@/components/owner-workspace/profile-header-injector";
+import { ipadAirOnlyHideClass } from "@/components/owner-workspace/ipad-air-classes";
 
 export const eyebrowTextClass = "m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[var(--eyebrow)]";
 
@@ -68,7 +69,7 @@ export function PageHeader({
         {actions ? <div className="flex flex-none flex-wrap items-center justify-end gap-3 max-[720px]:w-full max-[720px]:justify-stretch">{actions}</div> : null}
       </div>
 
-      <ProfileHeaderInjector className={`hidden [@media(max-width:1366px)_and_(any-pointer:coarse)]:flex ${className}`.trim()} />
+      <ProfileHeaderInjector className={`hidden [@media(max-width:1366px)_and_(any-pointer:coarse)]:flex ${ipadAirOnlyHideClass} ${className}`.trim()} />
     </>
   );
 }

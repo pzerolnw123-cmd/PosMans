@@ -1,6 +1,8 @@
+import { ipadAirOnlyGridRowsSingleClass } from "@/components/owner-workspace/ipad-air-classes";
+
 export const studioResponsiveClass = {
   pageGrid:
-    "grid h-full min-h-0 grid-rows-[156px_minmax(0,1fr)] gap-[18px] max-[820px]:h-auto max-[820px]:grid-rows-[auto_auto] max-[820px]:gap-4 [@media(max-height:860px)]:h-auto [@media(max-height:860px)]:grid-rows-[auto_auto]",
+    `grid h-full min-h-0 grid-rows-[156px_minmax(0,1fr)] gap-[18px] ${ipadAirOnlyGridRowsSingleClass} max-[820px]:h-auto max-[820px]:grid-rows-[auto_auto] max-[820px]:gap-4 [@media(max-height:860px)]:h-auto [@media(max-height:860px)]:grid-rows-[auto_auto]`,
   compactPageGrid: "grid h-auto min-h-0 grid-rows-[auto] gap-[18px]",
   contentGrid:
     "grid min-h-0 items-start gap-[18px] [grid-template-columns:minmax(360px,1fr)_minmax(0,1.3fr)] max-[820px]:grid-cols-1 max-[820px]:gap-4 max-[420px]:[grid-template-columns:minmax(0,1fr)]",

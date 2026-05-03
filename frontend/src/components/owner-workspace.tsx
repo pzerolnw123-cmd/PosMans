@@ -137,7 +137,7 @@ export async function OwnerWorkspace({ session, paymentStore, activeSection }: O
       profileMeta={ownerName}
       profileRole={roleLabel}
       profileStatus="ออนไลน์"
-      profileAction={<LogoutButton />}
+      profileAction={<LogoutButton className="mt-0 w-auto whitespace-nowrap px-3 py-2 text-[0.88rem] min-h-[34px]" />}
       statusStoreContent={<OwnerLogoStatusPreview />}
     >
       {screen.standalone ? (
