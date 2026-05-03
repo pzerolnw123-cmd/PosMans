@@ -126,12 +126,21 @@ export function OwnerProfileClient({
           />
         </label>
       </div>
-      <div className="mt-5 flex flex-wrap justify-start gap-3 max-[900px]:[&>*]:w-full">
-        <button type="button" className={activeGhostButtonClass} onClick={handleRevert} disabled={pending || !profileChanged}>
+      <div className="mt-5 flex flex-wrap justify-start gap-3 max-[900px]:[&>*]:w-full [@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:grid [@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:grid-cols-2 [@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:[&>*]:!w-auto [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:grid [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:grid-cols-2 [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:[&>*]:!w-auto">
+        <button
+          type="button"
+          className={`${activeGhostButtonClass} [@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:min-h-[40px] [@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:px-3 [@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:text-[0.9rem] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:min-h-[40px] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:px-3 [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:text-[0.9rem]`}
+          onClick={handleRevert}
+          disabled={pending || !profileChanged}
+        >
           ย้อนกลับ
         </button>
-        <button type="submit" className={primaryButtonClass} disabled={pending || !canSaveProfile}>
-          {pending ? "กำลังบันทึก..." : "บันทึกข้อมูลร้าน"}
+        <button
+          type="submit"
+          className={`${primaryButtonClass} [@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:min-h-[40px] [@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:px-3 [@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:text-[0.9rem] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:min-h-[40px] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:px-3 [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:text-[0.9rem]`}
+          disabled={pending || !canSaveProfile}
+        >
+          {pending ? "กำลังบันทึก..." : "บันทึก"}
         </button>
       </div>
     </form>

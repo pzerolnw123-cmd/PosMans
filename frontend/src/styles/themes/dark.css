@@ -73,6 +73,10 @@ html[data-store-theme="dark"] {
   --alert-success-border: rgba(244, 196, 48, 0.22);
   --alert-success-text: #ffd84d;
   --alert-success-eyebrow: rgba(244, 196, 48, 0.72);
+  --alert-danger-bg: linear-gradient(180deg, rgba(28, 21, 8, 0.92), rgba(14, 11, 4, 0.98));
+  --alert-danger-border: rgba(244, 196, 48, 0.24);
+  --alert-danger-text: #ffe08a;
+  --alert-danger-eyebrow: rgba(244, 196, 48, 0.78);
 
   --eyebrow: #cccccc;
   --toggle-track: #242014;

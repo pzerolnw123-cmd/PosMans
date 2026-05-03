@@ -19,6 +19,10 @@ const storeNamePrompt = "กรอกชื่อร้าน";
 const ownerNamePrompt = "กรอกชื่อของคุณ";
 const unsetStoreNames = new Set(["", "Main Store", "FastManFoods"]);
 const unsetOwnerNames = new Set(["", "Store Owner"]);
+const ipadAirOnlyClass =
+  "[@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:block [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:block";
+const ipadAirHideClass =
+  "[@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:hidden [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:hidden";
 
 const sectionMeta: Record<OwnerSectionKey, { label: string; href: string }> = {
   sales: { label: "ขาย / Sale", href: "/owner/sales" },
@@ -132,12 +136,19 @@ export async function OwnerWorkspace({ session, paymentStore, activeSection }: O
         active: key === activeSection,
         icon: sectionIcons[key],
       }))}
+      sidebarAction={
+        <div
+          className={`hidden ${ipadAirOnlyClass} mt-1 border-t border-t-[var(--border)] px-[2px] pb-2 pt-2`}
+        >
+          <LogoutButton className="w-full justify-center whitespace-nowrap px-3 py-2 text-[0.88rem] min-h-[36px]" />
+        </div>
+      }
       profileName={storeName}
       profileSubtitle="เจ้าของร้าน"
       profileMeta={ownerName}
       profileRole={roleLabel}
       profileStatus="ออนไลน์"
-      profileAction={<LogoutButton className="mt-0 w-auto whitespace-nowrap px-3 py-2 text-[0.88rem] min-h-[34px]" />}
+      profileAction={<LogoutButton className={`mt-0 w-auto whitespace-nowrap px-3 py-2 text-[0.88rem] min-h-[34px] ${ipadAirHideClass}`} />}
       statusStoreContent={<OwnerLogoStatusPreview />}
     >
       {screen.standalone ? (

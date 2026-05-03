@@ -136,6 +136,8 @@ export function CropModal({
                 style={{
                   width: cropMetrics.renderWidth,
                   height: cropMetrics.renderHeight,
+                  maxWidth: "none",
+                  maxHeight: "none",
                   transform: `translate(calc(-50% + ${offsetX}px), calc(-50% + ${offsetY}px))`,
                 }}
               />

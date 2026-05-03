@@ -186,7 +186,7 @@ export function OwnerThemeStatusPill() {
 
 // ── OwnerThemeClient ─────────────────────────────────────────────────────────
 
-export function OwnerThemeClient() {
+export function OwnerThemeClient({ compact = false, className = "" }: { compact?: boolean; className?: string }) {
   const { setShellAlert } = useBackofficeShellAlert();
   const [themePickerOpen, setThemePickerOpen] = useState(false);
   const storedTheme = useSyncExternalStore(subscribeOwnerTheme, getOwnerThemeSnapshot, getServerOwnerThemeSnapshot);
@@ -196,26 +196,30 @@ export function OwnerThemeClient() {
   const activeThemeOption = ownerThemeOptions.find((option) => option.id === activeTheme) || ownerThemeOptions[0];
 
   return (
-    <div className="mt-1 grid min-w-0 gap-2 max-[520px]:gap-2">
+    <div className={`${compact ? "" : "mt-1 "}grid min-w-0 ${compact ? "gap-1.5" : "gap-2 max-[520px]:gap-2"} ${className}`.trim()}>
       <button
         type="button"
-        className="grid min-w-0 gap-2 rounded-[12px] border border-[var(--border)] bg-[var(--surface-muted)] p-3 text-left transition hover:border-[var(--border-strong)] hover:bg-[var(--surface)] max-[520px]:rounded-[11px] max-[520px]:p-2.5"
+        className={`grid min-w-0 rounded-[12px] border border-[var(--border)] bg-[var(--surface-muted)] text-left transition hover:border-[var(--border-strong)] hover:bg-[var(--surface)] max-[520px]:rounded-[11px] ${compact ? "gap-1.5 p-2.5" : "gap-2 p-3 max-[520px]:p-2.5"}`}
         onClick={() => setThemePickerOpen(true)}
         aria-expanded={themePickerOpen}
         aria-haspopup="dialog"
       >
-        <div className="flex min-w-0 items-start justify-between gap-2.5 max-[520px]:gap-2">
+        <div className={`flex min-w-0 justify-between ${compact ? "items-center gap-2" : "items-start gap-2.5 max-[520px]:gap-2"}`}>
           <div className="min-w-0 flex-1">
-            <span className="text-[0.72rem] font-bold uppercase tracking-[0.22em] text-[var(--eyebrow)]">ธีมที่กำลังใช้</span>
-            <strong className="mt-1 block break-words text-[0.94rem] leading-tight text-[var(--foreground)] max-[520px]:text-[0.86rem]">{activeThemeOption.label}</strong>
+            {compact ? null : <span className="text-[0.72rem] font-bold uppercase tracking-[0.22em] text-[var(--eyebrow)]">ธีมที่กำลังใช้</span>}
+            <strong className={`block break-words text-[var(--foreground)] ${compact ? "text-[0.92rem] leading-[1.2]" : "mt-1 text-[0.94rem] leading-tight max-[520px]:text-[0.86rem]"}`}>
+              {activeThemeOption.label}
+            </strong>
           </div>
           <span
-            className="h-9 w-9 shrink-0 overflow-hidden rounded-[11px] ring-1 ring-inset ring-[var(--border-hairline)] max-[520px]:h-8 max-[520px]:w-8"
+            className={`shrink-0 overflow-hidden ring-1 ring-inset ring-[var(--border-hairline)] ${compact ? "h-8 w-8 rounded-[10px]" : "h-9 w-9 rounded-[11px] max-[520px]:h-8 max-[520px]:w-8"}`}
             style={{ background: activeThemeOption.preview }}
             aria-hidden="true"
           />
         </div>
-        <p className="m-0 text-[0.78rem] leading-[1.45] text-[var(--foreground-soft)] max-[520px]:text-[0.72rem]">{activeThemeOption.description}</p>
+        <p className={`m-0 text-[var(--foreground-soft)] ${compact ? "text-[0.72rem] leading-[1.35]" : "text-[0.78rem] leading-[1.45] max-[520px]:text-[0.72rem]"}`}>
+          {activeThemeOption.description}
+        </p>
       </button>
 
       <ThemePickerModal

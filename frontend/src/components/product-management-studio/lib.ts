@@ -95,9 +95,11 @@ export function loadImage(src: string) {
 }
 
 export function buildCropMetrics(image: HTMLImageElement, zoom: number, viewportSize: number) {
-  const baseScale = Math.max(viewportSize / image.width, viewportSize / image.height);
-  const renderWidth = image.width * baseScale * zoom;
-  const renderHeight = image.height * baseScale * zoom;
+  const sourceWidth = image.naturalWidth || image.width;
+  const sourceHeight = image.naturalHeight || image.height;
+  const baseScale = Math.min(viewportSize / sourceWidth, viewportSize / sourceHeight);
+  const renderWidth = sourceWidth * baseScale * zoom;
+  const renderHeight = sourceHeight * baseScale * zoom;
 
   return {
     renderWidth,
@@ -141,9 +143,11 @@ export async function createCroppedBlob(draft: CropDraft, zoom: number, offsetX:
   context.imageSmoothingEnabled = true;
   context.imageSmoothingQuality = "high";
 
-  const baseScale = Math.max(canvas.width / draft.image.width, canvas.height / draft.image.height);
-  const drawWidth = draft.image.width * baseScale * zoom;
-  const drawHeight = draft.image.height * baseScale * zoom;
+  const sourceWidth = draft.image.naturalWidth || draft.image.width;
+  const sourceHeight = draft.image.naturalHeight || draft.image.height;
+  const baseScale = Math.min(canvas.width / sourceWidth, canvas.height / sourceHeight);
+  const drawWidth = sourceWidth * baseScale * zoom;
+  const drawHeight = sourceHeight * baseScale * zoom;
   const offsetScale = CROPPED_EXPORT_SIZE / CROP_VIEWPORT_SIZE;
   const drawX = (canvas.width - drawWidth) / 2 + offsetX * offsetScale;
   const drawY = (canvas.height - drawHeight) / 2 + offsetY * offsetScale;

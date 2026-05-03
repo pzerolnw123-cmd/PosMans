@@ -32,6 +32,7 @@ type BackofficeShellProps = {
   profileMeta: string;
   profileRole: string;
   profileAction?: ReactNode;
+  sidebarAction?: ReactNode;
   statusStoreContent?: ReactNode;
   hideDesktopStatusStore?: boolean;
   className?: string;
@@ -60,15 +61,16 @@ const dangerAlertEyebrowClass = "text-[var(--alert-danger-eyebrow)]";
 const dangerAlertMessageClass = "text-[var(--alert-danger-text)]";
 const sidebarShellClass =
   "h-fit overflow-hidden rounded-none border border-[var(--border)] bg-[var(--surface)] p-3 shadow-[var(--shadow-card)] backdrop-blur-[14px] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:p-2.5 [@media(min-width:821px)_and_(max-width:1240px)_and_(orientation:landscape)]:backdrop-blur-none max-[1180px]:p-2.5 max-[640px]:p-2";
-const sidebarHeaderClass = "border-b border-b-[var(--border)] px-[10px] pb-[18px] pt-[14px]";
+const sidebarHeaderClass =
+  "border-b border-b-[var(--border)] px-[10px] pb-[18px] pt-[14px] [@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:pb-[12px] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:pb-[12px]";
 const sidebarEyebrowClass = eyebrowClass;
 const sidebarBrandNameClass =
   "[background-image:var(--brand-text-gradient)] bg-clip-text font-black tracking-normal text-transparent";
 const sidebarSubtitleClass = "m-0 text-[0.99rem] leading-[1.7] text-[var(--foreground-soft)] [@media(max-width:1366px)_and_(any-pointer:coarse)]:hidden";
 const sidebarActiveLinkClass =
-  "inline-flex min-h-[48px] items-center gap-3 rounded-xl border border-[var(--accent-border)] [background:var(--brand-gradient)] px-[18px] py-3 font-semibold text-[var(--button-text)] shadow-[var(--brand-shadow)_0_8px_18px] max-[640px]:min-h-[44px] max-[640px]:px-[14px] max-[640px]:py-2.5";
+  "inline-flex min-h-[48px] items-center gap-3 rounded-xl border border-[var(--accent-border)] [background:var(--brand-gradient)] px-[18px] py-3 font-semibold text-[var(--button-text)] shadow-[var(--brand-shadow)_0_8px_18px] [@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:min-h-[41px] [@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:px-[15px] [@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:py-[10px] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:min-h-[41px] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:px-[15px] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:py-[10px] max-[640px]:min-h-[44px] max-[640px]:px-[14px] max-[640px]:py-2.5";
 const sidebarInactiveLinkClass =
-  "inline-flex min-h-[48px] items-center gap-3 rounded-xl px-[18px] py-3 font-semibold text-[var(--foreground)] transition duration-150 hover:translate-x-[2px] hover:bg-[var(--brand-soft)] max-[640px]:min-h-[44px] max-[640px]:px-[14px] max-[640px]:py-2.5";
+  "inline-flex min-h-[48px] items-center gap-3 rounded-xl px-[18px] py-3 font-semibold text-[var(--foreground)] transition duration-150 hover:translate-x-[2px] hover:bg-[var(--brand-soft)] [@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:min-h-[41px] [@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:px-[15px] [@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:py-[10px] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:min-h-[41px] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:px-[15px] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:py-[10px] max-[640px]:min-h-[44px] max-[640px]:px-[14px] max-[640px]:py-2.5";
 
 function ProfileSummaryCard({
   profileName,
@@ -137,6 +139,7 @@ export function BackofficeShell({
   profileMeta,
   profileRole,
   profileAction,
+  sidebarAction,
   statusStoreContent,
   hideDesktopStatusStore = false,
   className = "",
@@ -199,7 +202,7 @@ export function BackofficeShell({
               <p className={sidebarSubtitleClass}>{brandSubtitle}</p>
             </div>
 
-            <nav className="grid gap-[8px] px-[2px] py-3 max-[820px]:grid-cols-2 max-[700px]:grid-cols-1 max-[640px]:gap-[6px]" aria-label="Primary navigation">
+            <nav className="grid gap-[8px] px-[2px] py-3 [@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:gap-[4px] [@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:py-2 [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:gap-[4px] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:py-2 max-[820px]:grid-cols-2 max-[700px]:grid-cols-1 max-[640px]:gap-[6px]" aria-label="Primary navigation">
               {sidebarItems.map((item) => (
                 <Link
                   key={item.label}
@@ -215,6 +218,7 @@ export function BackofficeShell({
                 </Link>
               ))}
             </nav>
+            {sidebarAction ? <div>{sidebarAction}</div> : null}
           </aside>
 
           {shellAlert ? (

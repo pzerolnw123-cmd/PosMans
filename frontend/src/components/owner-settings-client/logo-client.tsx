@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { createContext, useContext, useEffect, useState } from "react";
 import type { ReactNode } from "react";
@@ -81,11 +81,11 @@ export function OwnerLogoProvider({ children, initialLogoUrl = "" }: { children:
 
 function SelectedLogoStatus({ saved }: { saved: boolean }) {
   return (
-    <p className="inline-flex items-center gap-2 text-[0.86rem] leading-[1.5] text-[var(--foreground-soft)]">
+    <p className="inline-flex items-center gap-2 whitespace-nowrap text-[0.8rem] leading-[1.35] text-[var(--foreground-soft)]">
       <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" className="opacity-80 text-[var(--success)]" aria-hidden="true">
         <path fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="2" d="m7 12l3.488 3.837a.2.2 0 0 0 .296 0L17 9" />
       </svg>
-      {saved ? "คุณมีรูปภาพโลโก้แล้ว" : "เลือกรูปภาพแล้ว"}
+      <span className="whitespace-nowrap">{saved ? "คุณมีรูปภาพโลโก้แล้ว" : "เลือกรูปภาพแล้ว"}</span>
     </p>
   );
 }
@@ -122,7 +122,7 @@ export function OwnerLogoStatusPreview() {
 
   return (
     <div className="grid aspect-square min-h-[206px] place-items-center overflow-hidden rounded-[14px] border border-dashed border-[var(--border-strong)] bg-[var(--field-bg)]">
-      <span className="text-[0.95rem] font-semibold text-[var(--foreground-soft)]">โลโก้ร้าน</span>
+      <span className="whitespace-nowrap text-[0.88rem] font-semibold text-[var(--foreground-soft)]">โลโก้ร้าน</span>
     </div>
   );
 }
@@ -315,7 +315,7 @@ export function OwnerLogoClient({ compact = false }: { compact?: boolean }) {
               aria-label={fileName || "โลโก้ร้าน"}
             />
           ) : (
-            <span className="text-[0.95rem] font-semibold text-[var(--foreground-soft)]">โลโก้ร้าน</span>
+            <span className="whitespace-nowrap text-[0.88rem] font-semibold text-[var(--foreground-soft)]">โลโก้ร้าน</span>
           )}
           <input className="sr-only" type="file" accept="image/png,image/jpeg,image/webp" onChange={handleLogoChange} />
         </label>
@@ -348,7 +348,7 @@ export function OwnerLogoClient({ compact = false }: { compact?: boolean }) {
               />
             </g>
           </svg>
-          {saved ? "เลือกโลโก้ร้านของคุณใหม่" : "เลือกรูปภาพโลโก้ร้านของคุณ"}
+          {saved ? "เลือกโลโก้ร้านใหม่" : "เลือกรูปภาพโลโก้ร้าน"}
           <input className="sr-only" type="file" accept="image/png,image/jpeg,image/webp" onChange={handleLogoChange} />
         </label>
       </div>
@@ -367,3 +367,4 @@ export function OwnerLogoClient({ compact = false }: { compact?: boolean }) {
     </div>
   );
 }
+
