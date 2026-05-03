@@ -190,8 +190,8 @@
 }
 
 
-/* Snow Blue base overrides */
-:root {
+/* Snow Blue theme overrides */
+html[data-store-theme="light"] {
   --background: #eef4fb;
   --foreground: #142033;
   --foreground-soft: #5f7291;

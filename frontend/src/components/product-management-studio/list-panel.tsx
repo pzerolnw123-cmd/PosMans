@@ -41,6 +41,8 @@ export function ProductListPanel({
   onSelectProduct,
 }: ProductListPanelProps) {
   const listPanelClass = `grid grid-rows-[auto_auto_auto] self-start overflow-hidden ${studioResponsiveClass.panelSurface} ${studioResponsiveClass.panelPadding}`;
+  const ipadAirCardWidthClass =
+    "[@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:!w-[97%] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:!w-[97%]";
 
   return (
     <div className="ml-auto grid w-[96%] gap-3 self-start max-[820px]:w-full max-[820px]:gap-4">
@@ -155,10 +157,10 @@ export function ProductListPanel({
                   type="button"
                   className={
                     active
-                      ? `mx-auto ${studioResponsiveClass.listCardGrid} min-h-[124px] w-full rounded-[18px] border border-[var(--brand)] bg-[var(--brand-soft)] px-3 py-3 text-left shadow-[var(--brand-shadow)] transition hover:-translate-y-px`
+                      ? `mx-auto ${studioResponsiveClass.listCardGrid} ${ipadAirCardWidthClass} min-h-[124px] w-full rounded-[18px] border border-[var(--brand)] bg-[var(--brand-soft)] px-3 py-3 text-left shadow-[var(--brand-shadow)] transition hover:-translate-y-px`
                       : selectionTransitionLocked
-                        ? `mx-auto ${studioResponsiveClass.listCardGrid} min-h-[124px] w-full rounded-[18px] border border-[var(--border)] bg-[var(--surface)] px-3 py-3 text-left`
-                        : `mx-auto ${studioResponsiveClass.listCardGrid} min-h-[124px] w-full rounded-[18px] border border-[var(--border)] bg-[var(--surface)] px-3 py-3 text-left transition hover:-translate-y-px hover:shadow-[var(--shadow-hover-subtle)]`
+                        ? `mx-auto ${studioResponsiveClass.listCardGrid} ${ipadAirCardWidthClass} min-h-[124px] w-full rounded-[18px] border border-[var(--border)] bg-[var(--surface)] px-3 py-3 text-left`
+                        : `mx-auto ${studioResponsiveClass.listCardGrid} ${ipadAirCardWidthClass} min-h-[124px] w-full rounded-[18px] border border-[var(--border)] bg-[var(--surface)] px-3 py-3 text-left transition hover:-translate-y-px hover:shadow-[var(--shadow-hover-subtle)]`
                   }
                   onClick={() => onSelectProduct(item.id)}
                 >
@@ -171,7 +173,11 @@ export function ProductListPanel({
                   <div className="min-w-0 self-center">
                     <strong className="block text-[1rem] tracking-[-0.03em] text-[var(--foreground)] [overflow-wrap:anywhere]">
                       {item.name}
-                      {stockLabel ? <span className="ml-2 text-[0.82rem] font-bold text-[var(--foreground)]">({stockLabel})</span> : null}
+                      {stockLabel ? (
+                        <span className="ml-2 text-[0.82rem] font-bold text-[var(--foreground)] [@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:hidden [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:hidden">
+                          ({stockLabel})
+                        </span>
+                      ) : null}
                     </strong>
                     <div className="mt-1.5 flex flex-wrap items-center gap-2">
                       <span className="text-[0.92rem] text-[var(--foreground-soft)]">{item.category}</span>
@@ -184,6 +190,11 @@ export function ProductListPanel({
                     <div className="mt-2">
                       <StatusPill tone={saleStatusLabel === "พร้อมขาย" ? "success" : "ghost"}>{saleStatusLabel}</StatusPill>
                     </div>
+                    {stockLabel ? (
+                      <span className="mt-1 hidden text-[0.78rem] font-bold text-[var(--foreground-soft)] [@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:block [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:block">
+                        {stockLabel}
+                      </span>
+                    ) : null}
                   </div>                </button>
               );
             })}

@@ -77,9 +77,12 @@ type PaymentCheckoutPanelsProps = {
 export function PaymentCheckoutPanels({
   billItems, billScrollMetric, billScrollRef, billSubtotal, billDiscount, billTax, billTotal, completedSale, items, itemCount, paymentMethod, setPaymentMethod, displayedPaymentMethod, paymentMethodLabel, receivedAmount, setReceivedAmount, receivedDraft, setReceivedDraft, discountPercent, setDiscountPercent, discountDraft, setDiscountDraft, taxPercent, setTaxPercent, taxDraft, setTaxDraft, note, setNote, error, busy, discount, subtotal, cashPaymentMissingReceivedAmount, qrPaymentConfigured, transferPaymentConfigured, qrPaymentSelected, transferSelected, paymentSettings, dynamicPromptPayReady, staticQrReady, promptPayQrDataUrl, bankInfoFilled, changeAmount, updateBillScrollbar, handleBillPointerDown, handleBillPointerMove, stopBillDrag, onBackToSales, handleConfirmPayment, customerDisplayControl,
 }: PaymentCheckoutPanelsProps) {
-  const billPanelClass = `grid min-h-0 min-w-0 grid-rows-[auto_minmax(0,1fr)_auto] gap-[16px] rounded-none border border-[var(--border)] bg-[var(--panel-strong)] px-5 py-[18px] shadow-[var(--shadow-soft)] ${ownerLandscapePanelPaddingClass} ${ownerLandscapeClass}:gap-[14px] max-[1180px]:grid-rows-[auto_auto_auto] max-[820px]:px-4 max-[820px]:py-4`;
+  const billPanelClass = `grid min-h-0 min-w-0 grid-rows-[auto_minmax(0,1fr)_auto] gap-[16px] rounded-none border border-[var(--border)] bg-[var(--panel-strong)] px-5 py-[18px] shadow-[var(--shadow-soft)] ${ownerLandscapePanelPaddingClass} ${ownerLandscapeClass}:gap-[14px] max-[1180px]:grid-rows-[auto_auto_auto] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:h-full [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:!grid-rows-[auto_minmax(0,1fr)_auto] max-[820px]:px-4 max-[820px]:py-4`;
   const paymentPanelClass = `grid h-fit min-w-0 content-start gap-[16px] rounded-none border border-[var(--border)] bg-[var(--panel-strong)] px-5 py-[18px] shadow-[var(--shadow-soft)] ${ownerLandscapePanelPaddingClass} ${ownerLandscapeClass}:gap-[14px] max-[820px]:px-4 max-[820px]:py-4`;
-  const quickPanelClass = `grid h-fit min-w-0 gap-[14px] overflow-hidden rounded-none border border-[var(--border)] bg-[var(--panel-strong)] px-4 py-[18px] shadow-[var(--shadow-soft)] ${ownerLandscapeCompactPanelPaddingClass} max-[820px]:px-4 max-[820px]:py-4`;
+  const quickPanelClass = `grid h-fit min-w-0 gap-[14px] overflow-hidden rounded-none border border-[var(--border)] bg-[var(--panel-strong)] px-4 py-[18px] shadow-[var(--shadow-soft)] ${ownerLandscapeCompactPanelPaddingClass} max-[820px]:px-4 max-[820px]:py-4 [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:h-full [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1.18fr)] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:grid-rows-[auto_auto] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:items-start [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:gap-x-2 [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:gap-y-2 [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:px-3 [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:py-3`;
+  const quickPanelBodyClass = "grid gap-2.5 [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:contents";
+  const quickMetricCardClass = "min-w-0 rounded-none border border-[var(--border-subtle)] bg-[var(--panel-subtle)] px-3.5 py-3 [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:min-h-[74px] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:px-2.5 [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:py-2";
+  const hasPendingItems = !completedSale && items.length > 0;
 
   return (
     <>
@@ -101,8 +104,8 @@ export function PaymentCheckoutPanels({
                 ref={billScrollRef}
                 className={
                   billScrollMetric.visible
-                    ? `sales-cart-scroll grid h-full min-h-0 touch-none cursor-grab select-none content-start gap-3 overflow-y-auto overflow-x-hidden py-0 pl-0 pr-4 active:cursor-grabbing ${ownerLandscapeClass}:max-h-none ${ownerLandscapeClass}:gap-2.5 max-[1180px]:max-h-[360px] max-[640px]:max-h-none max-[640px]:overflow-visible max-[640px]:pr-0`
-                    : `grid h-full min-h-0 touch-none select-none content-start gap-3 overflow-hidden py-0 pl-0 pr-0 ${ownerLandscapeClass}:max-h-none ${ownerLandscapeClass}:gap-2.5 max-[1180px]:max-h-[360px] max-[640px]:max-h-none max-[640px]:overflow-visible`
+                    ? `sales-cart-scroll grid h-full min-h-0 touch-none cursor-grab select-none content-start gap-3 overflow-y-auto overflow-x-hidden py-0 pl-0 pr-4 active:cursor-grabbing ${ownerLandscapeClass}:max-h-none ${ownerLandscapeClass}:gap-2.5 max-[1180px]:max-h-[360px] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:!h-full [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:!max-h-none max-[640px]:max-h-none max-[640px]:overflow-visible max-[640px]:pr-0`
+                    : `grid h-full min-h-0 touch-none select-none content-start gap-3 overflow-hidden py-0 pl-0 pr-0 ${ownerLandscapeClass}:max-h-none ${ownerLandscapeClass}:gap-2.5 max-[1180px]:max-h-[360px] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:!h-full [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:!max-h-none max-[640px]:max-h-none max-[640px]:overflow-visible`
                 }
                 onScroll={updateBillScrollbar}
                 onPointerDown={handleBillPointerDown}
@@ -159,13 +162,21 @@ export function PaymentCheckoutPanels({
         </div>
       </section>
 
-      <section className={paymentPanelClass}>
-        <div>
+      <div className="contents [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:col-span-2 [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:col-start-2 [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:grid [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:h-full [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:min-h-0 [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:grid-rows-[minmax(0,1fr)_auto] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:gap-3">
+      <section className={`${paymentPanelClass} [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:h-full [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:min-h-0`}>
+        <div className="[@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:grid [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:items-start [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:gap-3">
+          <div className="min-w-0">
           <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[var(--eyebrow)]">Payment Methods</p>
           <strong className={`my-[10px] block text-[1.4rem] leading-none tracking-[-0.04em] text-[var(--foreground)] ${ownerLandscapeClass}:text-[1.28rem]`}>{completedSale ? "วิธีชำระล่าสุด" : "เลือกวิธีชำระ"}</strong>
           <p className="m-0 text-[0.95rem] leading-[1.65] text-[var(--foreground-soft)]">
             {completedSale ? "บิลนี้ชำระสำเร็จแล้ว รายละเอียดถูกล็อกไว้" : "เลือกวิธีรับเงินก่อนบันทึกบิลจริง"}
           </p>
+          </div>
+          {customerDisplayControl ? (
+            <div className="hidden min-w-0 [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:block">
+              {customerDisplayControl}
+            </div>
+          ) : null}
         </div>
 
         <div className={`grid grid-cols-2 gap-3 ${ownerLandscapeClass}:gap-2.5 max-[860px]:grid-cols-1`}>
@@ -173,10 +184,10 @@ export function PaymentCheckoutPanels({
             <button
               key={method.value}
               type="button"
-              className={displayedPaymentMethod === method.value ? `${primaryButtonClass} payment-method-active min-h-[52px] rounded-2xl ${ownerLandscapeClass}:min-h-[46px] ${ownerLandscapeClass}:text-[0.92rem]` : `${secondaryButtonClass} min-h-[52px] rounded-2xl ${ownerLandscapeClass}:min-h-[46px] ${ownerLandscapeClass}:text-[0.92rem]`}
+              className={hasPendingItems && displayedPaymentMethod === method.value ? `${primaryButtonClass} payment-method-active min-h-[52px] rounded-2xl ${ownerLandscapeClass}:min-h-[46px] ${ownerLandscapeClass}:text-[0.92rem]` : `${secondaryButtonClass} min-h-[52px] rounded-2xl ${ownerLandscapeClass}:min-h-[46px] ${ownerLandscapeClass}:text-[0.92rem]`}
               onClick={() => setPaymentMethod(method.value)}
-              disabled={Boolean(completedSale) || method.value === "CARD"}
-              aria-disabled={method.value === "CARD"}
+              disabled={!hasPendingItems || Boolean(completedSale) || method.value === "CARD"}
+              aria-disabled={!hasPendingItems || method.value === "CARD"}
             >
               {method.label}
             </button>
@@ -251,7 +262,7 @@ export function PaymentCheckoutPanels({
           <label className="grid gap-2">
             <span className="text-[0.92rem] text-[var(--foreground-soft)]">หมายเหตุบิล</span>
             <textarea
-              className="min-h-[116px] rounded-none border border-[var(--border-field)] bg-[var(--field-bg)] px-[14px] py-3 text-[var(--foreground)] outline-none transition placeholder:text-[var(--field-placeholder)] focus:border-[var(--brand-strong)] focus:shadow-[inset_0_0_0_1px_var(--ring)] disabled:cursor-not-allowed disabled:opacity-70 flex-shrink-0 resize-none max-[640px]:min-h-[96px] [&::-webkit-scrollbar]:w-[6px] [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-[var(--scroll-track)] [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:[background:var(--scroll-thumb)] hover:[&::-webkit-scrollbar-thumb]:[background:var(--scroll-thumb-hover)]"
+              className="min-h-[116px] rounded-none border border-[var(--border-field)] bg-[var(--field-bg)] px-[14px] py-3 text-[var(--foreground)] outline-none transition placeholder:text-[var(--field-placeholder)] focus:border-[var(--brand-strong)] focus:shadow-[inset_0_0_0_1px_var(--ring)] disabled:cursor-not-allowed disabled:opacity-70 flex-shrink-0 resize-none max-[640px]:min-h-[96px] [@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)]:min-h-[90px] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:min-h-[72px] [&::-webkit-scrollbar]:w-[6px] [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-[var(--scroll-track)] [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:[background:var(--scroll-thumb)] hover:[&::-webkit-scrollbar-thumb]:[background:var(--scroll-thumb-hover)]"
               value={completedSale ? completedSale.note || "" : note}
               onChange={(event) => setNote(event.target.value)}
               disabled={Boolean(completedSale)}
@@ -275,32 +286,57 @@ export function PaymentCheckoutPanels({
         </div>
       </section>
 
-      <section className={`${quickPanelClass} ${ownerLandscapeClass}:col-span-1 max-[820px]:px-4 max-[820px]:py-4`}>
-        <div>
-          <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[var(--eyebrow)]">Quick Panel</p>
-          <strong className={`my-[10px] block text-[1.28rem] leading-tight tracking-[-0.04em] text-[var(--foreground)] ${ownerLandscapeClass}:text-[1.16rem]`}>สถานะชำระเงิน</strong>
+      <section className={`${quickPanelClass} ${ownerLandscapeClass}:col-span-1 max-[820px]:px-4 max-[820px]:py-4 ${!completedSale && transferSelected ? "[@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:relative [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:gap-[10px] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:px-2.5 [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:py-2.5" : ""}`}>
+        <div className={!completedSale && transferSelected ? "[@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:min-h-[44px] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:pr-[92px] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:[&>strong]:text-[0.92rem] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:[&>strong]:whitespace-nowrap" : undefined}>
+          <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[var(--eyebrow)] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:whitespace-nowrap">Quick Panel</p>
+          <strong className={`my-[10px] block text-[1.28rem] leading-tight tracking-[-0.04em] text-[var(--foreground)] ${ownerLandscapeClass}:text-[1.16rem] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:my-[8px] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:text-[1.05rem]`}>สถานะชำระเงิน</strong>
         </div>
-        <div className="grid gap-2">
-          {!completedSale && qrPaymentSelected ? (
-            <QrPaymentInstructions
-              compact
-              qrPaymentSelected={qrPaymentSelected}
-              completedSale={Boolean(completedSale)}
-              billTotal={billTotal}
-              paymentSettings={paymentSettings}
-              dynamicPromptPayReady={dynamicPromptPayReady}
-              staticQrReady={staticQrReady}
-              promptPayQrDataUrl={promptPayQrDataUrl}
-            />
+        {!completedSale && transferSelected ? (
+          <div className="hidden [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:absolute [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:right-2.5 [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:top-2.5 [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:grid [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:justify-items-end [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:gap-0.5 [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:text-right">
+            <strong className="text-[0.82rem] leading-tight text-[var(--foreground)]">ยอดโอน {formatBaht(billTotal)}</strong>
+            <span className="text-[0.62rem] font-bold leading-tight text-[var(--warning)]">ตรวจสลิปหลังโอน</span>
+          </div>
+        ) : null}
+        <div className={quickPanelBodyClass}>
+          {!completedSale && !hasPendingItems ? (
+            <>
+              <div className="rounded-none border border-dashed border-[var(--border-soft)] bg-[var(--panel-subtle)] px-3.5 py-3 text-[0.92rem] leading-[1.6] text-[var(--foreground-soft)] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:col-span-full">
+                เพิ่มสินค้าในตะกร้าก่อน แล้วค่อยเลือกวิธีชำระเงิน
+              </div>
+              <div className={`${quickMetricCardClass} [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:col-start-1 [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:row-start-2`}>
+                <span className="text-[0.82rem] text-[var(--foreground-soft)] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:text-[0.76rem]">จำนวนรายการ</span>
+                <strong className="mt-1 block text-[1.05rem] leading-[1.1] text-[var(--foreground)] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:text-[0.95rem]">0 รายการ / 0 ชิ้น</strong>
+              </div>
+              <div className={`${quickMetricCardClass} [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:col-start-2 [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:row-start-2`}>
+                <span className="text-[0.82rem] text-[var(--foreground-soft)] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:text-[0.76rem]">ยอดสุทธิ</span>
+                <strong className="mt-1 block text-[1.05rem] leading-[1.1] text-[var(--foreground)] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:text-[0.95rem]">{formatBaht(0)}</strong>
+              </div>
+            </>
+          ) : !completedSale && qrPaymentSelected ? (
+            <div className="[@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:col-span-full">
+              <QrPaymentInstructions
+                compact
+                qrPaymentSelected={qrPaymentSelected}
+                completedSale={Boolean(completedSale)}
+                billTotal={billTotal}
+                paymentSettings={paymentSettings}
+                dynamicPromptPayReady={dynamicPromptPayReady}
+                staticQrReady={staticQrReady}
+                promptPayQrDataUrl={promptPayQrDataUrl}
+              />
+            </div>
           ) : !completedSale && transferSelected ? (
-            <TransferInstructions
-              compact
-              transferSelected={transferSelected}
-              completedSale={Boolean(completedSale)}
-              billTotal={billTotal}
-              paymentSettings={paymentSettings}
-              bankInfoFilled={bankInfoFilled}
-            />
+            <div className="[@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:col-span-full">
+              <TransferInstructions
+                compact
+                hideCompactSummary
+                transferSelected={transferSelected}
+                completedSale={Boolean(completedSale)}
+                billTotal={billTotal}
+                paymentSettings={paymentSettings}
+                bankInfoFilled={bankInfoFilled}
+              />
+            </div>
           ) : (
             <>
               {completedSale ? (
@@ -310,26 +346,27 @@ export function PaymentCheckoutPanels({
                 </div>
               ) : null}
               {paymentMethod === "CASH" && !completedSale && receivedAmount > 0 && (
-                <div className="rounded-none border border-[var(--accent-border)] bg-[var(--accent-surface)] px-3.5 py-3 shadow-[var(--brand-shadow)_0_0_15px]">
+                <div className="rounded-none border border-[var(--accent-border)] bg-[var(--accent-surface)] px-3.5 py-3 shadow-[var(--brand-shadow)_0_0_15px] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:col-start-1 [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:row-start-2">
                   <span className="text-[0.82rem] text-[var(--brand-strong)]">เงินทอน</span>
                   <strong className="mt-1 block text-[1.05rem] leading-[1.1] text-[var(--foreground)]">{formatBaht(changeAmount)}</strong>
                 </div>
               )}
-              <div className="rounded-none border border-[var(--border-subtle)] bg-[var(--panel-subtle)] px-3.5 py-3">
-                <span className="text-[0.82rem] text-[var(--foreground-soft)]">จำนวนรายการ</span>
-                <strong className="mt-1 block text-[1.05rem] leading-[1.1] text-[var(--foreground)]">
+              <div className={`${quickMetricCardClass} ${paymentMethod === "CASH" && !completedSale && receivedAmount > 0 ? "[@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:col-start-2" : "[@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:col-start-1"} [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:row-start-2`}>
+                <span className="text-[0.82rem] text-[var(--foreground-soft)] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:text-[0.76rem]">จำนวนรายการ</span>
+                <strong className="mt-1 block text-[1.05rem] leading-[1.1] text-[var(--foreground)] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:text-[0.92rem] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:whitespace-nowrap">
                   {billItems.length} รายการ / {itemCount} ชิ้น
                 </strong>
               </div>
-              <div className="rounded-none border border-[var(--border-subtle)] bg-[var(--panel-subtle)] px-3.5 py-3">
-                <span className="text-[0.82rem] text-[var(--foreground-soft)]">ยอดสุทธิ</span>
-                <strong className="mt-1 block text-[1.05rem] leading-[1.1] text-[var(--foreground)]">{formatBaht(billTotal)}</strong>
+              <div className={`${quickMetricCardClass} ${paymentMethod === "CASH" && !completedSale && receivedAmount > 0 ? "[@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:col-start-3" : "[@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:col-start-2"} [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:row-start-2`}>
+                <span className="text-[0.82rem] text-[var(--foreground-soft)] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:text-[0.76rem]">ยอดสุทธิ</span>
+                <strong className="mt-1 block text-[1.05rem] leading-[1.1] text-[var(--foreground)] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:text-[0.94rem]">{formatBaht(billTotal)}</strong>
               </div>
             </>
           )}
+          {customerDisplayControl ? <div className="min-w-0 [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:hidden">{customerDisplayControl}</div> : null}
         </div>
-        {customerDisplayControl ? <div className="border-t border-t-[var(--border-subtle)] pt-3">{customerDisplayControl}</div> : null}
       </section>
+      </div>
     </>
   );
 }

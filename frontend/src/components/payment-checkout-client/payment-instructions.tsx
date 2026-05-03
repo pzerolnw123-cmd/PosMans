@@ -4,6 +4,7 @@ import { LoadingState } from "@/components/ui-primitives";
 
 export type PaymentInstructionsProps = {
   compact?: boolean;
+  hideCompactSummary?: boolean;
   qrPaymentSelected: boolean;
   transferSelected: boolean;
   completedSale: boolean;
@@ -109,6 +110,7 @@ export function QrPaymentInstructions({
 
 export function TransferInstructions({
   compact = false,
+  hideCompactSummary = false,
   transferSelected,
   billTotal,
   paymentSettings,
@@ -118,7 +120,9 @@ export function TransferInstructions({
     return null;
   }
 
-  const wrapperClass = compact ? "grid content-start gap-3" : "grid gap-3 rounded-none border border-[var(--border-muted)] bg-[var(--overlay-white-03)] p-4";
+  const wrapperClass = compact
+    ? "grid content-start gap-3 [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:grid-cols-[minmax(0,1fr)_auto] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:grid-rows-[auto_auto] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:gap-x-3 [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:gap-y-2"
+    : "grid gap-3 rounded-none border border-[var(--border-muted)] bg-[var(--overlay-white-03)] p-4";
 
   return (
     <div className={wrapperClass}>
@@ -130,10 +134,14 @@ export function TransferInstructions({
           </div>
           <strong className="whitespace-nowrap text-[var(--foreground)]">{formatBaht(billTotal)}</strong>
         </div>
-      ) : (
-        <div className="flex items-center justify-between gap-3 max-[520px]:flex-col max-[520px]:items-start">
-          <strong className="text-[0.95rem] text-[var(--foreground)]">ยอดโอน {formatBaht(billTotal)}</strong>
-          <span className="text-[0.75rem] font-bold text-[var(--warning)]">ตรวจสลิปหลังโอน</span>
+      ) : hideCompactSummary ? null : (
+        <div className="flex items-center justify-between gap-3 max-[520px]:flex-col max-[520px]:items-start [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:col-start-2 [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:row-start-1 [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:self-start [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:-mt-0.5 [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:grid [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:justify-items-end [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:justify-self-end [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:gap-1 [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:leading-tight [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:text-right">
+          <strong className="text-[0.95rem] text-[var(--foreground)] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:text-[0.88rem]">
+            ยอดโอน {formatBaht(billTotal)}
+          </strong>
+          <span className="text-[0.75rem] font-bold text-[var(--warning)] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:block [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:text-[0.68rem]">
+            ตรวจสลิปหลังโอน
+          </span>
         </div>
       )}
 
@@ -142,10 +150,21 @@ export function TransferInstructions({
           ยังไม่ได้เปิดใช้การรับโอนเงิน <br />ในหน้าตั้งค่า
         </div>
       ) : bankInfoFilled ? (
-        <div className="grid gap-2 rounded-none border border-[var(--border-subtle)] bg-[var(--field-bg)] px-3.5 py-3 text-[0.86rem]">
-          <div className="flex justify-between gap-3"><span className="text-[var(--foreground-soft)]">ธนาคาร</span><strong className="text-[var(--foreground)]">{paymentSettings.bankName}</strong></div>
-          <div className="flex justify-between gap-3"><span className="text-[var(--foreground-soft)]">ชื่อบัญชี</span><strong className="text-[var(--foreground)]">{paymentSettings.bankAccountName}</strong></div>
-          <div className="flex justify-between gap-3"><span className="text-[var(--foreground-soft)] text-left">เลขบัญชี</span><strong className="text-[1.05rem] text-[var(--brand-strong)] select-all">{paymentSettings.bankAccountNumber}</strong></div>
+        <div className="grid gap-2 rounded-none border border-[var(--border-subtle)] bg-[var(--field-bg)] px-3.5 py-3 text-[0.86rem] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:col-span-2 [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:col-start-1 [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:row-start-2 [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:mt-0 [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:w-full [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:justify-self-stretch [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:gap-0.5 [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:px-2.5 [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:py-1 [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:text-[0.76rem]">
+          <div className="grid grid-cols-[72px_minmax(0,1fr)] items-center gap-3 [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:grid-cols-[56px_minmax(0,1fr)] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:gap-2">
+            <span className="text-[var(--foreground-soft)]">ธนาคาร</span>
+            <strong className="min-w-0 text-right leading-tight text-[var(--foreground)] [overflow-wrap:anywhere] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:text-[0.82rem]">{paymentSettings.bankName}</strong>
+          </div>
+          <div className="grid grid-cols-[72px_minmax(0,1fr)] items-center gap-3 [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:grid-cols-[56px_minmax(0,1fr)] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:gap-2">
+            <span className="text-[var(--foreground-soft)]">ชื่อบัญชี</span>
+            <strong className="min-w-0 text-right leading-tight text-[var(--foreground)] [overflow-wrap:anywhere] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:text-[0.82rem]">{paymentSettings.bankAccountName}</strong>
+          </div>
+          <div className="grid grid-cols-[72px_minmax(0,1fr)] items-center gap-3 [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:grid-cols-[56px_minmax(0,1fr)] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:gap-2">
+            <span className="text-[var(--foreground-soft)] text-left">เลขบัญชี</span>
+            <strong className="text-right text-[1.05rem] leading-tight text-[var(--brand-strong)] select-all [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:text-[0.9rem]">
+              {paymentSettings.bankAccountNumber}
+            </strong>
+          </div>
         </div>
       ) : (
         <div className="border border-[var(--danger-border)] bg-[var(--danger-soft)] px-3 py-2 text-[0.84rem] font-bold text-[var(--danger-bright)]">

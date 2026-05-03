@@ -3,6 +3,7 @@ export type OwnerThemeId = (typeof ownerThemeIds)[number];
 
 export const defaultOwnerTheme: OwnerThemeId = "light";
 export const ownerThemeStorageKey = "pos-mans-owner-theme";
+export const ownerThemeCookieKey = "pos-mans-owner-theme";
 export const ownerThemeChangeEvent = "pos-mans-owner-theme-change";
 
 const ownerThemeSet = new Set<string>(ownerThemeIds);
@@ -45,6 +46,12 @@ export function storeOwnerTheme(theme: OwnerThemeId) {
   } catch {
     // Persisting the theme is optional; the visual update should still work.
   }
+
+  try {
+    document.cookie = `${ownerThemeCookieKey}=${theme}; path=/; max-age=31536000; samesite=lax`;
+  } catch {
+    // Cookie persistence is optional; the visual update should still work.
+  }
 }
 
 export function clearStoredOwnerTheme() {
@@ -56,6 +63,12 @@ export function clearStoredOwnerTheme() {
     window.localStorage.removeItem(ownerThemeStorageKey);
   } catch {
     // Persisting the theme is optional; the visual update should still work.
+  }
+
+  try {
+    document.cookie = `${ownerThemeCookieKey}=; path=/; max-age=0; samesite=lax`;
+  } catch {
+    // Cookie persistence is optional; the visual update should still work.
   }
 }
 

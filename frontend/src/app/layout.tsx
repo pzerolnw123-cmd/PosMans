@@ -1,8 +1,10 @@
 import type { Metadata, Viewport } from "next";
+import Script from "next/script";
+import { cookies } from "next/headers";
 import "./globals.css";
 import { ThemeSync } from "@/components/theme-sync";
 import { getCurrentSession } from "@/lib/session";
-import { defaultOwnerTheme, ownerThemeIds, ownerThemeStorageKey } from "@/lib/owner-theme";
+import { defaultOwnerTheme, isOwnerTheme, ownerThemeCookieKey, ownerThemeIds, ownerThemeStorageKey } from "@/lib/owner-theme";
 
 const themeInitScript = `(() => {
   const validThemes = new Set(${JSON.stringify(ownerThemeIds)});
@@ -77,20 +79,25 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const session = await getCurrentSession();
-  const ownerTheme = session?.user.storeRole === "OWNER" && session.user.ownerTheme ? session.user.ownerTheme : "light";
-  const userThemeSource = session?.user.storeRole === "OWNER" && session.user.ownerTheme ? "server" : "local";
+  const cookieStore = await cookies();
+  const cookieThemeValue = cookieStore.get(ownerThemeCookieKey)?.value;
+  const cookieTheme = isOwnerTheme(cookieThemeValue) ? cookieThemeValue : null;
+  const ownerTheme = session?.user.storeRole === "OWNER" && session.user.ownerTheme ? session.user.ownerTheme : cookieTheme || "light";
+  const userThemeSource = session?.user.storeRole === "OWNER" && session.user.ownerTheme ? "server" : cookieTheme ? "server" : "local";
 
   return (
     <html
       lang="th"
       suppressHydrationWarning
       data-scroll-behavior="smooth"
-      data-store-theme="light"
+      data-store-theme={ownerTheme}
       data-server-store-theme={ownerTheme}
       data-user-theme-source={userThemeSource}
     >
+      <head>
+        <Script id="owner-theme-init" strategy="beforeInteractive" dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+      </head>
       <body suppressHydrationWarning>
-        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
         <ThemeSync serverTheme={ownerTheme} source={userThemeSource} />
         {children}
       </body>

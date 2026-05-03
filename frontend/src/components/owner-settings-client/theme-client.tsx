@@ -18,8 +18,8 @@ function getOwnerThemeSnapshot(): OwnerThemeId {
   return readActiveOwnerTheme();
 }
 
-function getServerOwnerThemeSnapshot(): OwnerThemeId | null {
-  return null;
+function getServerOwnerThemeSnapshot(theme: OwnerThemeId): OwnerThemeId {
+  return theme;
 }
 
 async function persistOwnerTheme(theme: OwnerThemeId) {
@@ -186,10 +186,18 @@ export function OwnerThemeStatusPill() {
 
 // ── OwnerThemeClient ─────────────────────────────────────────────────────────
 
-export function OwnerThemeClient({ compact = false, className = "" }: { compact?: boolean; className?: string }) {
+export function OwnerThemeClient({
+  compact = false,
+  className = "",
+  serverTheme = defaultOwnerTheme,
+}: {
+  compact?: boolean;
+  className?: string;
+  serverTheme?: OwnerThemeId;
+}) {
   const { setShellAlert } = useBackofficeShellAlert();
   const [themePickerOpen, setThemePickerOpen] = useState(false);
-  const storedTheme = useSyncExternalStore(subscribeOwnerTheme, getOwnerThemeSnapshot, getServerOwnerThemeSnapshot);
+  const storedTheme = useSyncExternalStore(subscribeOwnerTheme, getOwnerThemeSnapshot, () => getServerOwnerThemeSnapshot(serverTheme));
   const [optimisticTheme, setOptimisticTheme] = useState<OwnerThemeId | null>(null);
   const activeTheme = optimisticTheme || storedTheme;
 

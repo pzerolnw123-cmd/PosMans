@@ -41,20 +41,27 @@ export function ProductManagementStudio() {
 
   useEffect(() => {
     const compactMediaQuery = window.matchMedia("(max-width: 820px) and (max-height: 860px)");
-    const syncCompactMode = () => setCompactMode(compactMediaQuery.matches);
-
+    const ipadAirPortraitMediaQuery = window.matchMedia("(min-width: 768px) and (max-width: 820px) and (orientation: portrait) and (any-pointer: coarse)");
+    const ipadAirLandscapeMediaQuery = window.matchMedia("(min-width: 821px) and (max-width: 1180px) and (orientation: landscape) and (any-pointer: coarse)");
     const ipadMediaQuery = window.matchMedia("(max-width: 1366px) and (any-pointer: coarse)");
+    const syncCompactMode = () => setCompactMode(compactMediaQuery.matches);
     const syncPageSize = () => setItemsPerPageLimit(ipadMediaQuery.matches ? 4 : 3);
+    const syncItemsPerPage = () =>
+      setItemsPerPageLimit(ipadAirPortraitMediaQuery.matches || ipadAirLandscapeMediaQuery.matches ? 3 : ipadMediaQuery.matches ? 4 : 3);
 
     syncCompactMode();
-    syncPageSize();
+    syncItemsPerPage();
 
     compactMediaQuery.addEventListener("change", syncCompactMode);
-    ipadMediaQuery.addEventListener("change", syncPageSize);
+    ipadAirPortraitMediaQuery.addEventListener("change", syncItemsPerPage);
+    ipadAirLandscapeMediaQuery.addEventListener("change", syncItemsPerPage);
+    ipadMediaQuery.addEventListener("change", syncItemsPerPage);
 
     return () => {
       compactMediaQuery.removeEventListener("change", syncCompactMode);
-      ipadMediaQuery.removeEventListener("change", syncPageSize);
+      ipadAirPortraitMediaQuery.removeEventListener("change", syncItemsPerPage);
+      ipadAirLandscapeMediaQuery.removeEventListener("change", syncItemsPerPage);
+      ipadMediaQuery.removeEventListener("change", syncItemsPerPage);
     };
   }, []);
 

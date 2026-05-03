@@ -44,6 +44,7 @@ export async function renderOwnerScreen(
   formOwnerName: string,
   paymentSettings: OwnerPaymentSettingsValue,
   storeLogoUrl = "",
+  ownerTheme = "light",
 ) {
   if (activeSection === "sales") {
     const { SalesWorkspaceClient } = await import("@/components/sales-workspace-client");
@@ -291,7 +292,7 @@ export async function renderOwnerScreen(
             titleClassName="my-[6px] text-[1.42rem] leading-[1.06] tracking-[-0.035em]"
             className="hidden [@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:grid [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:grid h-fit min-h-0 min-w-0 content-start overflow-hidden px-4 py-4 max-[820px]:px-4 max-[820px]:py-4 max-[640px]:px-3.5 max-[640px]:py-3.5"
           >
-            <OwnerThemeClient className="mt-0" />
+            <OwnerThemeClient className="mt-0" serverTheme={ownerTheme} />
           </PanelCard>
 
           </div>
@@ -330,7 +331,7 @@ export async function renderOwnerScreen(
               titleClassName="my-[8px] text-[clamp(1.5rem,1.9vw,1.8rem)] leading-[1.05] tracking-[-0.04em] max-[520px]:text-[1.68rem]"
               className={`grid h-fit min-h-0 min-w-0 content-start overflow-hidden px-4 py-4 max-[820px]:px-4 max-[820px]:py-4 max-[640px]:px-3.5 max-[640px]:py-3.5 ${ipadAirOnlyHideClass}`}
             >
-              <OwnerThemeClient />
+              <OwnerThemeClient serverTheme={ownerTheme} />
             </PanelCard>
           </div>
 

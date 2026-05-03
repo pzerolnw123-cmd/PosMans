@@ -61,6 +61,7 @@ export function PaymentCheckoutClient({ paymentSettings }: { paymentSettings: Ow
   const billTax = completedSale ? completedSale.tax : tax;
   const billTotal = completedSale ? completedSale.total : currentTotal;
   const displayedPaymentMethod = completedSale?.paymentMethod ?? paymentMethod;
+  const hasPendingItems = !completedSale && items.length > 0;
   const qrPaymentSelected = displayedPaymentMethod === "QR";
   const transferSelected = displayedPaymentMethod === "TRANSFER";
   const bankInfoFilled = Boolean(paymentSettings.bankName && paymentSettings.bankAccountName && paymentSettings.bankAccountNumber);
@@ -80,6 +81,12 @@ export function PaymentCheckoutClient({ paymentSettings }: { paymentSettings: Ow
     );
   const staticQrReady = paymentSettings.promptPayEnabled && paymentSettings.promptPayRecipientType === "STATIC_QR" && Boolean(paymentSettings.paymentQrImageUrl);
   const qrPaymentConfigured = dynamicPromptPayReady || staticQrReady;
+  const selectedQrDataUrl =
+    paymentMethod === "QR"
+      ? promptPayQrDataUrl || (staticQrReady ? paymentSettings.paymentQrImageUrl : "")
+      : paymentMethod === "TRANSFER"
+        ? paymentSettings.paymentQrImageUrl
+        : "";
   const itemCount = useMemo(
     () => (completedSale ? completedSale.items.reduce((totalItems, item) => totalItems + item.quantity, 0) : items.reduce((totalItems, item) => totalItems + item.quantity, 0)),
     [completedSale, items],
@@ -373,8 +380,15 @@ export function PaymentCheckoutClient({ paymentSettings }: { paymentSettings: Ow
       return;
     }
 
-    const qrDataUrl = paymentMethod === "QR" ? promptPayQrDataUrl || (staticQrReady ? paymentSettings.paymentQrImageUrl : "") : paymentMethod === "TRANSFER" ? paymentSettings.paymentQrImageUrl : "";
-    const shouldShowPayment = (paymentMethod === "QR" && qrPaymentConfigured && Boolean(qrDataUrl)) || (paymentMethod === "TRANSFER" && transferPaymentConfigured);
+    if (!hasPendingItems) {
+      const timeoutId = window.setTimeout(() => {
+        void updateCustomerDisplay({ status: "IDLE" });
+      }, 150);
+
+      return () => window.clearTimeout(timeoutId);
+    }
+
+    const shouldShowPayment = (paymentMethod === "QR" && qrPaymentConfigured && Boolean(selectedQrDataUrl)) || (paymentMethod === "TRANSFER" && transferPaymentConfigured);
 
     const timeoutId = window.setTimeout(() => {
       if (!shouldShowPayment) {
@@ -386,13 +400,13 @@ export function PaymentCheckoutClient({ paymentSettings }: { paymentSettings: Ow
         status: "PAYMENT",
         amount: billTotal,
         paymentMethod,
-        qrDataUrl: qrDataUrl || null,
+        qrDataUrl: selectedQrDataUrl || null,
         message: paymentMethod === "TRANSFER" ? "โอนเงินตามยอด แล้วแจ้งพนักงานหลังโอนสำเร็จ" : "สแกนเพื่อชำระเงิน แล้วแจ้งพนักงานหลังโอนสำเร็จ",
       });
     }, 350);
 
     return () => window.clearTimeout(timeoutId);
-  }, [billTotal, completedSale, customerDisplay, paymentMethod, paymentSettings.paymentQrImageUrl, promptPayQrDataUrl, qrPaymentConfigured, staticQrReady, transferPaymentConfigured, updateCustomerDisplay]);
+  }, [billTotal, completedSale, customerDisplay, hasPendingItems, paymentMethod, selectedQrDataUrl, qrPaymentConfigured, staticQrReady, transferPaymentConfigured, updateCustomerDisplay]);
 
   function handleConfirmPaymentRequest() {
     if (items.length === 0 || busy || cashPaymentMissingReceivedAmount) {
@@ -419,7 +433,7 @@ export function PaymentCheckoutClient({ paymentSettings }: { paymentSettings: Ow
 
   return (
     <>
-      <div className="grid h-full min-h-0 grid-cols-[minmax(240px,1fr)_minmax(280px,1.08fr)_240px] gap-[14px] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:grid-cols-[minmax(300px,1.22fr)_minmax(236px,0.96fr)_minmax(150px,0.56fr)] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:gap-3 max-[820px]:h-auto max-[820px]:grid-cols-1 max-[820px]:gap-4 [@media(max-height:860px)_and_(max-width:820px)]:h-auto">
+      <div className="grid h-full min-h-0 grid-cols-[minmax(240px,1fr)_minmax(280px,1.08fr)_240px] gap-[14px] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:grid-cols-[minmax(286px,1.1fr)_minmax(204px,0.76fr)_minmax(210px,0.82fr)] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:gap-3 max-[820px]:h-auto max-[820px]:grid-cols-1 max-[820px]:gap-4 [@media(max-height:860px)_and_(max-width:820px)]:h-auto">
         <PaymentCheckoutPanels
           billItems={billItems}
           billScrollMetric={billScrollMetric}
@@ -528,13 +542,13 @@ function CustomerDisplayControl({
   onOpen: () => void;
 }) {
   return (
-    <div className="grid gap-2 rounded-none border border-[var(--border-subtle)] bg-[var(--panel-subtle)] p-3">
-      <div className="grid gap-2">
-        <div className="min-w-0">
-          <span className="block whitespace-nowrap text-[0.72rem] font-bold uppercase tracking-[0.16em] text-[var(--eyebrow)]">Customer Display</span>
+    <div className="grid min-w-0 gap-2 rounded-none border border-[var(--border-subtle)] bg-[var(--panel-subtle)] p-3 [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:min-h-[74px] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:p-2">
+      <div className="grid gap-2 [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:gap-1">
+        <div className="min-w-0 [@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)]:[&_strong]:hidden [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:[&_strong]:hidden">
+          <span className="block whitespace-nowrap text-[0.72rem] font-bold uppercase tracking-[0.16em] text-[var(--eyebrow)] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:text-[0.68rem]">Customer Display</span>
           <strong className="mt-1 block text-[0.98rem] leading-tight text-[var(--foreground)]">จอลูกค้า</strong>
         </div>
-        <button type="button" className={`${secondaryButtonClass} min-h-[38px] w-full rounded-xl px-3 text-[0.86rem]`} onClick={onOpen} disabled={busy}>
+        <button type="button" className={`${secondaryButtonClass} min-h-[38px] w-full rounded-xl px-3 text-[0.86rem] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:min-h-[32px] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:px-2 [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:text-[0.8rem]`} onClick={onOpen} disabled={busy}>
           {busy ? "กำลังเปิด..." : displayUrl ? "เปิดอีกครั้ง" : "เปิดจอ"}
         </button>
       </div>
