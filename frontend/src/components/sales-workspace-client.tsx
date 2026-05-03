@@ -386,8 +386,8 @@ export function SalesWorkspaceClient() {
   }
 
   return (
-    <div className={`grid h-full min-h-0 grid-cols-[minmax(0,1fr)_minmax(280px,320px)] gap-[18px] ${ownerLandscapeClass}:grid-cols-[minmax(0,1fr)_272px] ${ownerLandscapeClass}:gap-[14px] max-[820px]:h-auto max-[820px]:grid-cols-1 max-[820px]:gap-4`}>
-      <section className={`flex min-h-0 flex-col gap-[18px] ${ownerLandscapeTightGapClass} max-[1280px]:min-h-0`} aria-label="sales main area">
+    <div className={`grid h-full min-h-0 grid-cols-[minmax(0,1fr)_316px] gap-[18px] ${desktopFinePointerClass}:grid-cols-[minmax(0,1fr)_316px] ${desktopFinePointerClass}:gap-[18px] ${ownerLandscapeClass}:grid-cols-[minmax(0,1fr)_292px] ${ownerLandscapeClass}:gap-[14px] max-[820px]:h-auto max-[820px]:grid-cols-1 max-[820px]:gap-4`}>
+      <section className={`flex min-h-0 flex-col gap-[18px] ${desktopFinePointerClass}:gap-[18px] ${ownerLandscapeTightGapClass} max-[1280px]:min-h-0`} aria-label="sales main area">
         <div className={`rounded-none border border-[var(--border)] bg-[var(--surface)] px-[22px] py-5 shadow-[var(--shadow-soft)] ${ownerLandscapePanelPaddingClass} max-[820px]:px-4 max-[820px]:py-4 max-[520px]:px-3.5`}>
           <div className="flex flex-wrap gap-[10px] max-[520px]:grid max-[520px]:grid-cols-1">
             {categoryOptions.map((category) => {
@@ -423,8 +423,8 @@ export function SalesWorkspaceClient() {
             onPointerLeave={stopProductDrag}
             className={
               productScrollMetric.visible
-                ? `sales-cart-scroll grid h-full min-h-0 touch-auto cursor-grab select-none content-start gap-4 p-1 pb-6 pr-4 active:cursor-grabbing grid-cols-3 [@media(max-width:1366px)_and_(any-pointer:coarse)]:grid-cols-2 [@media(any-pointer:coarse)]:grid-cols-2 max-[1024px]:grid-cols-2 max-[820px]:grid-cols-2 max-[640px]:grid-cols-1 ${desktopFinePointerClass}:grid-cols-3 ${ownerLandscapeClass}:gap-3`
-                : `sales-cart-scroll grid h-full min-h-0 touch-auto select-auto content-start gap-4 p-1 pb-6 pr-0 grid-cols-3 [@media(max-width:1366px)_and_(any-pointer:coarse)]:grid-cols-2 [@media(any-pointer:coarse)]:grid-cols-2 max-[1024px]:grid-cols-2 max-[820px]:grid-cols-2 max-[640px]:grid-cols-1 ${desktopFinePointerClass}:grid-cols-3 ${ownerLandscapeClass}:gap-3`
+                ? `sales-cart-scroll grid h-full min-h-0 touch-auto cursor-grab select-none content-start gap-4 p-1 pb-6 pr-4 active:cursor-grabbing grid-cols-3 [@media(max-width:1366px)_and_(any-pointer:coarse)]:grid-cols-2 max-[1024px]:grid-cols-2 max-[820px]:grid-cols-2 max-[640px]:grid-cols-1 ${desktopFinePointerClass}:grid-cols-3 ${desktopFinePointerClass}:gap-4 ${ownerLandscapeClass}:gap-3`
+                : `sales-cart-scroll grid h-full min-h-0 touch-auto select-auto content-start gap-4 p-1 pb-6 pr-0 grid-cols-3 [@media(max-width:1366px)_and_(any-pointer:coarse)]:grid-cols-2 max-[1024px]:grid-cols-2 max-[820px]:grid-cols-2 max-[640px]:grid-cols-1 ${desktopFinePointerClass}:grid-cols-3 ${desktopFinePointerClass}:gap-4 ${ownerLandscapeClass}:gap-3`
             }
             aria-label="products"
           >
@@ -450,8 +450,8 @@ export function SalesWorkspaceClient() {
                   key={product.id}
                   className={
                     activePulse
-                      ? `relative grid min-h-[226px] animate-[cart-card-pop_520ms_cubic-bezier(.2,.8,.2,1)] content-start gap-3 overflow-hidden rounded-none border border-[var(--cart-glow-border)] [background:var(--panel-elevated)] p-[14px] pb-[68px] shadow-[var(--cart-shadow-mid)_0_8px_20px] ${ownerLandscapeClass}:min-h-[204px] ${ownerLandscapeClass}:gap-2.5 ${ownerLandscapeClass}:p-3 ${ownerLandscapeClass}:pb-[60px]`
-                      : `relative grid min-h-[226px] content-start gap-3 overflow-hidden rounded-none border border-[var(--border)] [background:var(--panel-elevated)] p-[14px] pb-[68px] transition-all duration-500 hover:-translate-y-0.5 hover:border-[var(--cart-glow-border-soft)] ${ownerLandscapeClass}:min-h-[204px] ${ownerLandscapeClass}:gap-2.5 ${ownerLandscapeClass}:p-3 ${ownerLandscapeClass}:pb-[60px]`
+                      ? `relative grid min-h-[226px] animate-[cart-card-pop_520ms_cubic-bezier(.2,.8,.2,1)] content-start gap-3 overflow-hidden rounded-none border border-[var(--cart-glow-border)] [background:var(--panel-elevated)] p-[14px] pb-[68px] shadow-[var(--cart-shadow-mid)_0_8px_20px] ${desktopFinePointerClass}:min-h-[226px] ${desktopFinePointerClass}:gap-3 ${desktopFinePointerClass}:p-[14px] ${desktopFinePointerClass}:pb-[68px] ${ownerLandscapeClass}:min-h-[204px] ${ownerLandscapeClass}:gap-2.5 ${ownerLandscapeClass}:p-3 ${ownerLandscapeClass}:pb-[60px]`
+                      : `relative grid min-h-[226px] content-start gap-3 overflow-hidden rounded-none border border-[var(--border)] [background:var(--panel-elevated)] p-[14px] pb-[68px] transition-all duration-500 hover:-translate-y-0.5 hover:border-[var(--cart-glow-border-soft)] ${desktopFinePointerClass}:min-h-[226px] ${desktopFinePointerClass}:gap-3 ${desktopFinePointerClass}:p-[14px] ${desktopFinePointerClass}:pb-[68px] ${ownerLandscapeClass}:min-h-[204px] ${ownerLandscapeClass}:gap-2.5 ${ownerLandscapeClass}:p-3 ${ownerLandscapeClass}:pb-[60px]`
                   }
                 >
                   {added ? (

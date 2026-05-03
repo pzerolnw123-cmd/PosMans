@@ -6,6 +6,8 @@ import type { ProductItem } from "@/components/product-management-studio/types";
 import { StatusPill } from "@/components/ui-primitives";
 import { BasketIcon, formatBaht, stockLimit } from "@/components/sales-workspace/helpers";
 
+const desktopFinePointerClass = "[@media(min-width:1181px)_and_(pointer:fine)]";
+
 type CartItem = { product: ProductItem; quantity: number };
 
 type SalesCartPanelProps = {
@@ -32,8 +34,8 @@ export function SalesCartPanel({ cartPulse, itemCount, cartItems, cartScrollMetr
       <aside
         className={
           cartPulse
-            ? `grid min-h-0 animate-[cart-panel-pulse_560ms_ease-out] grid-rows-[auto_minmax(0,1fr)_auto_auto] gap-[18px] rounded-none border border-[var(--cart-panel-border)] bg-[var(--panel-strong)] p-[18px] shadow-[var(--cart-shadow-strong)_0_8px_24px] ${ownerLandscapeCompactPanelPaddingClass} ${ownerLandscapeClass}:gap-[14px] max-[720px]:p-4`
-            : `grid min-h-0 grid-rows-[auto_minmax(0,1fr)_auto_auto] gap-[18px] rounded-none border border-[var(--border)] bg-[var(--panel-strong)] p-[18px] shadow-[var(--shadow-soft)] transition-all duration-500 ${ownerLandscapeCompactPanelPaddingClass} ${ownerLandscapeClass}:gap-[14px] max-[720px]:p-4`
+            ? `grid min-h-0 animate-[cart-panel-pulse_560ms_ease-out] grid-rows-[auto_minmax(0,1fr)_auto_auto] gap-[18px] rounded-none border border-[var(--cart-panel-border)] bg-[var(--panel-strong)] p-[18px] shadow-[var(--cart-shadow-strong)_0_8px_24px] ${desktopFinePointerClass}:gap-[18px] ${desktopFinePointerClass}:p-[18px] ${ownerLandscapeCompactPanelPaddingClass} ${ownerLandscapeClass}:gap-[14px] max-[720px]:p-4`
+            : `grid min-h-0 grid-rows-[auto_minmax(0,1fr)_auto_auto] gap-[18px] rounded-none border border-[var(--border)] bg-[var(--panel-strong)] p-[18px] shadow-[var(--shadow-soft)] transition-all duration-500 ${desktopFinePointerClass}:gap-[18px] ${desktopFinePointerClass}:p-[18px] ${ownerLandscapeCompactPanelPaddingClass} ${ownerLandscapeClass}:gap-[14px] max-[720px]:p-4`
         }
         aria-label="cart layout"
       >
@@ -69,13 +71,13 @@ export function SalesCartPanel({ cartPulse, itemCount, cartItems, cartScrollMetr
                     key={item.product.id}
                     className={
                       highlighted
-                        ? "grid animate-[cart-row-enter_340ms_cubic-bezier(.2,.8,.2,1)] grid-cols-[75px_minmax(0,1fr)] items-start gap-3 rounded-none border border-[var(--cart-row-border)] bg-[var(--surface)] p-[10px] shadow-[var(--cart-shadow-mid)_0_4px_10px]"
-                        : "grid grid-cols-[75px_minmax(0,1fr)] items-start gap-3 rounded-none border border-[var(--border)] bg-[var(--surface)] p-[10px] transition-all duration-500"
+                        ? "grid animate-[cart-row-enter_340ms_cubic-bezier(.2,.8,.2,1)] grid-cols-[64px_minmax(0,1fr)] items-start gap-2.5 rounded-none border border-[var(--cart-row-border)] bg-[var(--surface)] p-[9px] shadow-[var(--cart-shadow-mid)_0_4px_10px]"
+                        : "grid grid-cols-[64px_minmax(0,1fr)] items-start gap-2.5 rounded-none border border-[var(--border)] bg-[var(--surface)] p-[9px] transition-all duration-500"
                     }
                   >
                     {item.product.imageUrl ? (
                       <span
-                        className="h-[83px] w-[75px] rounded-[10px] border border-[var(--border-subtle)] bg-cover bg-center"
+                        className="h-[72px] w-[64px] rounded-[10px] border border-[var(--border-subtle)] bg-cover bg-center"
                         style={{ backgroundImage: `url(${item.product.imageUrl})` }}
                         role="img"
                         aria-label={item.product.name}
@@ -85,15 +87,15 @@ export function SalesCartPanel({ cartPulse, itemCount, cartItems, cartScrollMetr
                         <BasketIcon size={18} />
                       </span>
                     )}
-                    <div className="grid min-w-0 gap-2 pt-0.5">
+                    <div className="grid min-w-0 gap-1.5 pt-0.5">
                       <div className="grid min-w-0 gap-1">
-                        <strong className="truncate text-[0.95rem] leading-[1.25] text-[var(--foreground)]">{item.product.name}</strong>
-                        <span className="text-[0.78rem] text-[var(--foreground-soft)]">
+                        <strong className="truncate text-[0.88rem] leading-[1.2] text-[var(--foreground)]">{item.product.name}</strong>
+                        <span className="text-[0.74rem] text-[var(--foreground-soft)]">
                           {formatBaht(item.product.price)} x {item.quantity}
                         </span>
                       </div>
-                      <div className="flex items-center justify-between gap-2">
-                        <div className="inline-flex h-8 select-none items-center overflow-hidden rounded-[10px] border border-[var(--border)] bg-[var(--surface-muted)]">
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        <div className="inline-flex h-8 min-w-[98px] select-none items-center overflow-hidden rounded-[10px] border border-[var(--border)] bg-[var(--surface-muted)]">
                           <button
                             type="button"
                             className="grid h-8 w-8 cursor-pointer place-items-center text-[1rem] font-bold leading-none text-[var(--foreground)] transition hover:bg-[var(--overlay-white-06)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-soft)] disabled:cursor-not-allowed disabled:text-[var(--foreground-soft)] disabled:opacity-45 disabled:hover:bg-transparent"
@@ -103,7 +105,7 @@ export function SalesCartPanel({ cartPulse, itemCount, cartItems, cartScrollMetr
                           >
                             -
                           </button>
-                          <span className="grid h-8 min-w-8 cursor-default place-items-center px-1 text-[0.85rem] font-bold leading-none text-[var(--foreground)]">{item.quantity}</span>
+                          <span className="grid h-8 min-w-[34px] cursor-default place-items-center px-1 text-[0.82rem] font-bold leading-none text-[var(--foreground)]">{item.quantity}</span>
                           <button
                             type="button"
                             className="grid h-8 w-8 cursor-pointer place-items-center text-[1rem] font-bold leading-none text-[var(--foreground)] transition hover:bg-[var(--overlay-white-06)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-soft)] disabled:cursor-not-allowed disabled:text-[var(--foreground-soft)] disabled:opacity-45 disabled:hover:bg-transparent"
@@ -116,7 +118,7 @@ export function SalesCartPanel({ cartPulse, itemCount, cartItems, cartScrollMetr
                         </div>
                         <button
                           type="button"
-                          className="h-8 rounded-[10px] border border-[var(--danger-soft)] px-2.5 text-[0.78rem] font-bold text-[var(--danger)] transition hover:bg-[var(--danger-soft)]"
+                          className="h-8 shrink-0 rounded-[10px] border border-[var(--danger-soft)] px-2 text-[0.74rem] font-bold text-[var(--danger)] transition hover:bg-[var(--danger-soft)]"
                           onClick={() => removeItem(item.product.id)}
                         >
                           ลบ

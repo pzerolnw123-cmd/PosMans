@@ -2,6 +2,7 @@
 
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { revokeStoredCustomerDisplay } from "@/components/customer-display-session";
 import { fetchWithCsrfRetry } from "@/lib/csrf";
 import { clearStoredOwnerTheme } from "@/lib/owner-theme";
 
@@ -14,6 +15,7 @@ export function LogoutButton() {
       type="button"
       disabled={pending}
       onClick={async () => {
+        await revokeStoredCustomerDisplay().catch(() => undefined);
         await fetchWithCsrfRetry("/api/auth/logout", {
           method: "POST",
         });

@@ -38,6 +38,14 @@ For every meaningful change:
 - run the most relevant validation available
 - document residual risks if full validation is not possible
 
+Additional requirements for ambiguous, visual, or behavior-sensitive work:
+- do not guess when the user has provided a concrete reference, screenshot, recording, or described target behavior
+- treat the user-provided reference as the source of truth unless the user explicitly says otherwise
+- if a change is meant to match an existing layout, flow, device behavior, or prior state, compare against that target directly instead of inferring intent from nearby code
+- when a result cannot be verified locally, say so explicitly and describe what remains uncertain
+- do not say a UI, layout, or responsive behavior "matches", "is fixed", or "is back to normal" unless the relevant state has been checked against the target reference
+- when changing responsive behavior, identify which breakpoints, device classes, input modes, or layout containers are being changed, and verify that unrelated target layouts are not being unintentionally affected
+
 ## 4. Change Scope
 
 Allowed:
@@ -100,6 +108,8 @@ AI agents must not:
 - claim to have run tests they did not run
 - claim code is secure without noting assumptions and limits
 - fabricate logs, results, metrics, or user scenarios
+- present inferred behavior as confirmed behavior
+- describe a visual result as matching a reference if that was not actually verified against the reference
 - hide TODOs or incomplete work in code without saying so
 - introduce speculative fixes outside the requested scope without explaining them
 
@@ -108,6 +118,8 @@ AI agents must:
 - mention verification performed
 - call out blockers, assumptions, and known risks
 - prefer asking for approval before high-impact or ambiguous changes
+- separate confirmed facts from guesses, expectations, or likely outcomes
+- explicitly call out when a response is based on code inspection only versus direct validation
 
 ## 9. File And Dependency Hygiene
 
@@ -134,6 +146,11 @@ Before considering work complete, verify:
 - relevant checks were run where possible
 - documentation was updated if behavior or setup changed
 - assumptions and residual risks are clearly stated
+
+For UI, layout, responsive, and reference-matching tasks also verify:
+- the final result is compared against the provided screenshot, mock, or described reference state
+- the intended viewport or device class is checked explicitly instead of inferred from screen size names alone
+- nearby layouts that must remain unchanged were sanity-checked after the edit
 
 ## 12. Owner Override
 

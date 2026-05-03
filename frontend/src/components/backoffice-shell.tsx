@@ -33,6 +33,7 @@ type BackofficeShellProps = {
   profileRole: string;
   profileAction?: ReactNode;
   statusStoreContent?: ReactNode;
+  hideDesktopStatusStore?: boolean;
   className?: string;
   children: ReactNode;
 };
@@ -137,6 +138,7 @@ export function BackofficeShell({
   profileRole,
   profileAction,
   statusStoreContent,
+  hideDesktopStatusStore = false,
   className = "",
   children,
 }: BackofficeShellProps) {
@@ -169,6 +171,11 @@ export function BackofficeShell({
   }, []);
 
   const contextValue = useMemo(() => ({ setShellAlert: setTimedShellAlert }), [setTimedShellAlert]);
+  const shellGridClass = hideDesktopStatusStore
+    ? "grid-cols-[clamp(244px,18vw,304px)_minmax(0,1fr)]"
+    : "grid-cols-[clamp(244px,18vw,304px)_minmax(0,1fr)_clamp(232px,17vw,280px)]";
+  const mainScrollClass =
+    "workspace-main-scroll grid h-full min-h-0 gap-[18px] overflow-y-auto overflow-x-hidden pr-0 max-[820px]:h-auto max-[820px]:overflow-visible max-[820px]:pr-0 max-[820px]:gap-4";
 
   const handleSidebarNavigation = useCallback(
     (href: string) => {
@@ -182,7 +189,7 @@ export function BackofficeShell({
   return (
     <BackofficeShellAlertContext.Provider value={contextValue}>
       <div
-        className={`relative mx-auto grid h-full min-h-0 w-full max-w-[1700px] grid-cols-[clamp(244px,18vw,304px)_minmax(0,1fr)_clamp(232px,17vw,280px)] items-start gap-[18px] overflow-hidden [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:grid-cols-[252px_minmax(0,1fr)] [@media(max-width:1366px)_and_(any-pointer:coarse)]:grid-cols-[clamp(244px,18vw,304px)_minmax(0,1fr)] max-[1024px]:gap-4 max-[820px]:grid-cols-1 ${className}`.trim()}
+        className={`relative mx-auto grid h-full min-h-0 w-full max-w-[1760px] ${shellGridClass} items-start gap-[18px] overflow-hidden [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:grid-cols-[252px_minmax(0,1fr)] [@media(max-width:1366px)_and_(any-pointer:coarse)]:grid-cols-[clamp(244px,18vw,304px)_minmax(0,1fr)] max-[1024px]:gap-4 max-[820px]:grid-cols-1 ${className}`.trim()}
       >
         <div className="relative grid max-h-full content-start gap-[14px] overflow-visible max-[1280px]:max-h-none max-[820px]:gap-4">
           <aside className={sidebarShellClass}>
@@ -253,13 +260,13 @@ export function BackofficeShell({
           </div>
         </div>
 
-        <div className="workspace-main-scroll grid h-full min-h-0 gap-[18px] overflow-y-auto overflow-x-hidden pr-3 [scrollbar-gutter:stable] max-[820px]:h-auto max-[820px]:overflow-visible max-[820px]:pr-0 max-[820px]:gap-4">
+        <div className={mainScrollClass}>
           <OwnerProfileContext.Provider value={{ profileName, profileSubtitle, profileStatus, profileMeta, profileRole, profileAction, profileLogo: statusStoreContent }}>
             {children}
           </OwnerProfileContext.Provider>
         </div>
 
-        <aside className="flex max-h-full min-w-0 self-start overflow-visible rounded-none border border-[var(--border)] bg-[var(--surface)] p-3 shadow-[var(--shadow-card)] backdrop-blur-[14px] [@media(min-width:821px)_and_(max-width:1240px)_and_(orientation:landscape)]:backdrop-blur-none max-[1240px]:hidden [@media(max-width:1366px)_and_(any-pointer:coarse)]:hidden">
+        <aside className={`${hideDesktopStatusStore ? "hidden" : "flex"} max-h-full min-w-0 self-start overflow-visible rounded-none border border-[var(--border)] bg-[var(--surface)] p-3 shadow-[var(--shadow-card)] backdrop-blur-[14px] [@media(min-width:821px)_and_(max-width:1240px)_and_(orientation:landscape)]:backdrop-blur-none max-[1240px]:hidden [@media(max-width:1366px)_and_(any-pointer:coarse)]:hidden`}>
           <div className="flex w-full flex-col">
             <StoreStatusSummary brandName={profileName} statusStoreContent={statusStoreContent} />
             <div className="mt-4">
