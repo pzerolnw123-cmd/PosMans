@@ -5,6 +5,7 @@ import { LoadingState } from "@/components/ui-primitives";
 export type PaymentInstructionsProps = {
   compact?: boolean;
   hideCompactSummary?: boolean;
+  hideCompactStatus?: boolean;
   qrPaymentSelected: boolean;
   transferSelected: boolean;
   completedSale: boolean;
@@ -18,6 +19,7 @@ export type PaymentInstructionsProps = {
 
 export function QrPaymentInstructions({
   compact = false,
+  hideCompactStatus = false,
   qrPaymentSelected,
   completedSale,
   billTotal,
@@ -30,7 +32,16 @@ export function QrPaymentInstructions({
     return null;
   }
 
-  const wrapperClass = compact ? "grid content-start justify-items-center gap-4" : "grid gap-3 rounded-none border border-[var(--border-muted)] bg-[var(--overlay-white-03)] p-4";
+  const compactQrSize = 148;
+  const compactQrLandscapeSize = 104;
+  const compactQrInlineSize = compact ? compactQrSize : 148;
+  const compactQrLandscapeGridClass =
+    "[@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:min-h-[74px]";
+  const compactQrLandscapeSizeClass =
+    "[--compact-qr-size:148px] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:[--compact-qr-size:120px] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:max-w-[120px]";
+  const wrapperClass = compact
+    ? "grid w-full content-start justify-items-center gap-2.5 [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:justify-items-stretch"
+    : "grid gap-3 rounded-none border border-[var(--border-muted)] bg-[var(--overlay-white-03)] p-4";
 
   return (
     <div className={wrapperClass}>
@@ -51,53 +62,95 @@ export function QrPaymentInstructions({
           ยังไม่ได้เปิดใช้ QR PromptPay <br />ในหน้าตั้งค่า
         </div>
       ) : dynamicPromptPayReady ? (
-        <div className={compact ? "grid justify-items-center gap-4 text-center" : "grid grid-cols-[148px_minmax(0,1fr)] items-center gap-4 max-[860px]:grid-cols-1"}>
+        <div className={compact ? `grid w-full justify-items-center gap-2.5 text-center ${compactQrLandscapeGridClass}` : "grid grid-cols-[148px_minmax(0,1fr)] items-center gap-4 max-[860px]:grid-cols-1"}>
           {promptPayQrDataUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={promptPayQrDataUrl} alt="PromptPay QR" className={compact ? "aspect-square w-full max-w-[240px] rounded-none bg-[var(--qr-background)] p-3 shadow-[var(--brand-shadow)_0_0_24px]" : "h-[148px] w-[148px] rounded-none border border-[var(--accent-border)] bg-[var(--qr-background)] p-2 shadow-[var(--brand-shadow)_0_0_15px]"} />
+            <img
+              src={promptPayQrDataUrl}
+              alt="PromptPay QR"
+              width={compact ? compactQrLandscapeSize : 148}
+              height={compact ? compactQrLandscapeSize : 148}
+              style={
+                compact
+                  ? {
+                      width: "var(--compact-qr-size)",
+                      height: "var(--compact-qr-size)",
+                      maxWidth: "var(--compact-qr-size)",
+                    }
+                  : undefined
+              }
+              className={
+                compact
+                  ? `aspect-square w-full max-w-[148px] rounded-none bg-[var(--qr-background)] p-1 shadow-[var(--brand-shadow)_0_0_24px] ${compactQrLandscapeSizeClass} [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:absolute [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:left-1/2 [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:top-1/2 [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:-translate-x-1/2 [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:-translate-y-1/2`
+                  : "h-[148px] w-[148px] rounded-none border border-[var(--accent-border)] bg-[var(--qr-background)] p-2 shadow-[var(--brand-shadow)_0_0_15px]"
+              }
+            />
           ) : (
-            <div className={compact ? "grid aspect-square w-full max-w-[240px] place-items-center rounded-none border border-dashed border-[var(--accent-border)] text-center text-[0.86rem] text-[var(--foreground-soft)]" : "grid h-[148px] w-[148px] place-items-center rounded-none border border-dashed border-[var(--accent-border)] text-center text-[0.82rem] text-[var(--foreground-soft)]"}>
+            <div
+              style={
+                compact
+                  ? {
+                      width: "var(--compact-qr-size)",
+                      height: "var(--compact-qr-size)",
+                      maxWidth: "var(--compact-qr-size)",
+                    }
+                  : undefined
+              }
+              className={
+                compact
+                  ? `grid aspect-square w-full max-w-[148px] place-items-center rounded-none border border-dashed border-[var(--accent-border)] text-center text-[0.82rem] text-[var(--foreground-soft)] ${compactQrLandscapeSizeClass} [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:absolute [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:left-1/2 [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:top-1/2 [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:-translate-x-1/2 [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:-translate-y-1/2`
+                  : "grid h-[148px] w-[148px] place-items-center rounded-none border border-dashed border-[var(--accent-border)] text-center text-[0.82rem] text-[var(--foreground-soft)]"
+              }
+            >
               <LoadingState size={compact ? 44 : 32} label="กำลังสร้าง QR..." />
             </div>
           )}
-          <div className={compact ? "grid w-full max-w-[240px] gap-3 text-[0.9rem] leading-[1.45] text-[var(--text-on-dark-muted)]" : "grid gap-2 text-[0.9rem] text-[var(--foreground-soft)]"}>
-            {compact ? (
-              <div className="flex items-start justify-between gap-4 text-left max-[520px]:flex-col">
-                <div className="grid min-w-0 gap-1.5">
-                  <strong className="block leading-[1.28] text-[var(--foreground)]">QR PromptPay / โอนเงิน</strong>
-                  <span className="text-[0.78rem] leading-[1.55] text-[var(--foreground-soft)]">ยอดถูกฝังใน QR แล้ว</span>
-                </div>
-                <strong className="whitespace-nowrap text-[var(--foreground)]">{formatBaht(billTotal)}</strong>
+          {compact ? (
+            <>
+              <div className="grid w-full justify-items-center gap-0.5 text-center text-[0.82rem] leading-[1.2] text-[var(--text-on-dark-muted)] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:absolute [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:left-[6px] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:bottom-[14px] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:w-fit [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:max-w-[148px] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:justify-items-start [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:gap-0.5 [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:rounded-none [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:border [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:border-[var(--border-subtle)] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:bg-[var(--panel-subtle)] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:px-2 [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:py-1 [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:text-left">
+                <strong className="block whitespace-nowrap text-[0.74rem] leading-[1.1] text-[var(--foreground)]">QR PromptPay / {formatBaht(billTotal)}</strong>
+                <span className="text-[0.6rem] leading-[1.1] text-[var(--foreground-soft)]">โอนเงิน</span>
               </div>
-            ) : (
+              {hideCompactStatus ? null : (
+                <div className="grid gap-0.5 text-right [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:absolute [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:right-[8px] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:top-[8px]">
+                  <span className="text-[0.54rem] leading-[1.05] text-[var(--foreground-soft)]">ยอดถูกฝังใน QR แล้ว</span>
+                  <span className="text-[0.58rem] font-bold leading-[1.05] text-[var(--warning)]">ตรวจสลิปก่อนยืนยัน</span>
+                </div>
+              )}
+            </>
+          ) : (
+            <div className="grid gap-2 text-[0.9rem] text-[var(--foreground-soft)]">
               <>
                 <span>ประเภท: {promptPayRecipientOptionsLabel(paymentSettings.promptPayRecipientType)}</span>
                 <span>ยอดถูกฝังใน QR แล้ว</span>
               </>
-            )}
-            <span className="block pt-1 text-center font-bold leading-[1.35] text-[var(--warning)]">ตรวจสลิปก่อนยืนยัน</span>
-          </div>
+            </div>
+          )}
         </div>
       ) : staticQrReady ? (
-        <div className={compact ? "grid justify-items-center gap-4 text-center" : "grid grid-cols-[148px_minmax(0,1fr)] items-center gap-4 max-[860px]:grid-cols-1"}>
-          <span className={compact ? "aspect-square w-full max-w-[240px] bg-cover bg-center bg-[var(--qr-background)]" : "h-[148px] w-[148px] rounded-[12px] border border-[var(--overlay-white-10)] bg-cover bg-center bg-[var(--qr-background)]"} style={{ backgroundImage: `url(${paymentSettings.paymentQrImageUrl})` }} />
-          <div className={compact ? "grid w-full max-w-[240px] gap-3 text-[0.9rem] leading-[1.45] text-[var(--text-on-dark-muted)]" : "grid gap-2 text-[0.9rem] text-[var(--foreground-soft)]"}>
-            {compact ? (
-              <div className="flex items-start justify-between gap-4 text-left max-[520px]:flex-col">
-                <div className="grid min-w-0 gap-1.5">
-                  <strong className="block leading-[1.28] text-[var(--foreground)]">Static QR จากธนาคาร</strong>
-                  <span className="text-[0.78rem] leading-[1.55] text-[var(--foreground-soft)]">ให้ลูกค้าโอนยอดนี้</span>
-                </div>
-                <strong className="whitespace-nowrap text-[var(--foreground)]">{formatBaht(billTotal)}</strong>
+        <div className={compact ? `grid w-full justify-items-center gap-2.5 text-center ${compactQrLandscapeGridClass}` : "grid grid-cols-[148px_minmax(0,1fr)] items-center gap-4 max-[860px]:grid-cols-1"}>
+          <span className={compact ? `aspect-square w-full max-w-[148px] bg-cover bg-center bg-[var(--qr-background)] ${compactQrLandscapeSizeClass} [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:absolute [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:left-1/2 [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:top-1/2 [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:-translate-x-1/2 [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:-translate-y-1/2` : "h-[148px] w-[148px] rounded-[12px] border border-[var(--overlay-white-10)] bg-cover bg-center bg-[var(--qr-background)]"} style={compact ? { backgroundImage: `url(${paymentSettings.paymentQrImageUrl})`, width: "var(--compact-qr-size)", height: "var(--compact-qr-size)", maxWidth: "var(--compact-qr-size)" } : { backgroundImage: `url(${paymentSettings.paymentQrImageUrl})` }} />
+          {compact ? (
+            <>
+              <div className="grid w-full justify-items-center gap-0.5 text-center text-[0.82rem] leading-[1.2] text-[var(--text-on-dark-muted)] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:absolute [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:left-[6px] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:bottom-[14px] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:w-fit [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:max-w-[148px] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:justify-items-start [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:gap-0.5 [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:rounded-none [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:border [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:border-[var(--border-subtle)] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:bg-[var(--panel-subtle)] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:px-2 [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:py-1 [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:text-left">
+                <strong className="block whitespace-nowrap text-[0.74rem] leading-[1.1] text-[var(--foreground)]">Static QR / {formatBaht(billTotal)}</strong>
+                <span className="text-[0.6rem] leading-[1.1] text-[var(--foreground-soft)]">โอนเงิน</span>
               </div>
-            ) : (
+              {hideCompactStatus ? null : (
+                <div className="grid gap-0.5 text-right [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:absolute [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:right-[8px] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:top-[8px]">
+                  <span className="text-[0.54rem] leading-[1.05] text-[var(--foreground-soft)]">ให้ลูกค้าโอนยอดนี้</span>
+                  <span className="text-[0.58rem] font-bold leading-[1.05] text-[var(--warning)]">ตรวจสลิปก่อนยืนยัน</span>
+                </div>
+              )}
+            </>
+          ) : (
+            <div className="grid gap-2 text-[0.9rem] text-[var(--foreground-soft)]">
               <>
                 <span>Static QR จากธนาคาร</span>
                 <span>ให้ลูกค้าโอน {formatBaht(billTotal)}</span>
               </>
-            )}
-            <span className="block pt-1 text-center font-bold leading-[1.35] text-[var(--warning)]">ตรวจสลิปก่อนยืนยัน</span>
-          </div>
+            </div>
+          )}
         </div>
       ) : (
         <div className="rounded-[10px] border border-[var(--danger-border)] bg-[var(--danger-soft)] px-3 py-2 text-[0.84rem] font-bold text-[var(--danger-bright)]">

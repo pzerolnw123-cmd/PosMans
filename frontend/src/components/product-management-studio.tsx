@@ -138,7 +138,7 @@ export function ProductManagementStudio() {
   function handleCreateNewProduct() {
     const next = makeNewProduct();
     pendingDraftRef.current = next;
-    setProducts((current) => [next, ...current].slice(0, itemsPerPage));
+    setProducts((current) => [next, ...current].slice(0, itemsPerPageLimit));
     setSelectedId(next.id);
     setActiveCategory(categoryOptions[0]);
     setPage(1);
@@ -294,7 +294,7 @@ export function ProductManagementStudio() {
     if (selectedProduct) {
       if (isDraftProduct(selectedProduct)) {
         pendingDraftRef.current = null;
-        const restoredProducts = serverProducts.slice(0, itemsPerPage);
+        const restoredProducts = serverProducts.slice(0, itemsPerPageLimit);
         setProducts(restoredProducts);
         nextSelectedId = restoredProducts[0]?.id ?? "";
       } else {

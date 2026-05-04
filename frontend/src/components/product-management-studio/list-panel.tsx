@@ -42,10 +42,10 @@ export function ProductListPanel({
 }: ProductListPanelProps) {
   const listPanelClass = `grid grid-rows-[auto_auto_auto] self-start overflow-hidden ${studioResponsiveClass.panelSurface} ${studioResponsiveClass.panelPadding}`;
   const ipadAirCardWidthClass =
-    "[@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:!w-[97%] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:!w-[97%]";
+    "[@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:!w-[96%] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:!w-[96%]";
 
   return (
-    <div className="ml-auto grid w-[96%] gap-3 self-start max-[820px]:w-full max-[820px]:gap-4">
+    <div className="ml-auto grid w-[96%] gap-3 self-start max-[820px]:w-full max-[820px]:gap-4 [@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:ml-[6px] [@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:w-[95%] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:ml-[6px] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:w-[95%]">
       <section className={listPanelClass}>
         <div className={studioResponsiveClass.stackedHeader}>
           <div>
@@ -171,7 +171,7 @@ export function ProductListPanel({
                   />
 
                   <div className="min-w-0 self-center">
-                    <strong className="block text-[1rem] tracking-[-0.03em] text-[var(--foreground)] [overflow-wrap:anywhere]">
+                    <strong className="block text-[1rem] tracking-[-0.03em] text-[var(--foreground)] [overflow-wrap:anywhere] [@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:text-[0.92rem] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:text-[0.92rem]">
                       {item.name}
                       {stockLabel ? (
                         <span className="ml-2 text-[0.82rem] font-bold text-[var(--foreground)] [@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:hidden [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:hidden">

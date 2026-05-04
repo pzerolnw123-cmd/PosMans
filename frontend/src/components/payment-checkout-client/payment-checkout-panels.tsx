@@ -286,7 +286,7 @@ export function PaymentCheckoutPanels({
         </div>
       </section>
 
-      <section className={`${quickPanelClass} ${ownerLandscapeClass}:col-span-1 max-[820px]:px-4 max-[820px]:py-4 ${!completedSale && transferSelected ? "[@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:relative [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:gap-[10px] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:px-2.5 [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:py-2.5" : ""}`}>
+      <section className={`${quickPanelClass} ${ownerLandscapeClass}:col-span-1 max-[820px]:px-4 max-[820px]:py-4 ${!completedSale && transferSelected ? "[@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:relative [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:gap-[10px] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:px-2.5 [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:py-2.5" : ""} ${!completedSale && qrPaymentSelected ? "[@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:relative" : ""}`}>
         <div className={!completedSale && transferSelected ? "[@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:min-h-[44px] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:pr-[92px] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:[&>strong]:text-[0.92rem] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:[&>strong]:whitespace-nowrap" : undefined}>
           <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[var(--eyebrow)] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:whitespace-nowrap">Quick Panel</p>
           <strong className={`my-[10px] block text-[1.28rem] leading-tight tracking-[-0.04em] text-[var(--foreground)] ${ownerLandscapeClass}:text-[1.16rem] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:my-[8px] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:text-[1.05rem]`}>สถานะชำระเงิน</strong>
@@ -295,6 +295,11 @@ export function PaymentCheckoutPanels({
           <div className="hidden [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:absolute [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:right-2.5 [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:top-2.5 [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:grid [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:justify-items-end [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:gap-0.5 [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:text-right">
             <strong className="text-[0.82rem] leading-tight text-[var(--foreground)]">ยอดโอน {formatBaht(billTotal)}</strong>
             <span className="text-[0.62rem] font-bold leading-tight text-[var(--warning)]">ตรวจสลิปหลังโอน</span>
+          </div>
+        ) : !completedSale && qrPaymentSelected ? (
+          <div className="hidden [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:absolute [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:right-3 [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:top-2.5 [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:grid [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:justify-items-end [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:gap-0.5 [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:text-right">
+            <span className="text-[0.54rem] leading-[1.05] text-[var(--foreground-soft)]">ยอดถูกฝังใน QR แล้ว</span>
+            <span className="text-[0.58rem] font-bold leading-[1.05] text-[var(--warning)]">ตรวจสลิปก่อนยืนยัน</span>
           </div>
         ) : null}
         <div className={quickPanelBodyClass}>
@@ -316,6 +321,7 @@ export function PaymentCheckoutPanels({
             <div className="[@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:col-span-full">
               <QrPaymentInstructions
                 compact
+                hideCompactStatus
                 qrPaymentSelected={qrPaymentSelected}
                 completedSale={Boolean(completedSale)}
                 billTotal={billTotal}

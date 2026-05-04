@@ -27,10 +27,19 @@ export function ReceiptDeskClient() {
 
   useEffect(() => {
     const ipadMediaQuery = window.matchMedia("(max-width: 1366px) and (any-pointer: coarse)");
-    const syncPageSize = () => setPageSize(ipadMediaQuery.matches ? 5 : 4);
+    const ipadAirPortraitQuery = window.matchMedia("(min-width: 768px) and (max-width: 820px) and (orientation: portrait)");
+    const ipadAirLandscapeQuery = window.matchMedia("(min-width: 821px) and (max-width: 1180px) and (orientation: landscape)");
+    const syncPageSize = () =>
+      setPageSize(ipadAirPortraitQuery.matches || ipadAirLandscapeQuery.matches ? 4 : ipadMediaQuery.matches ? 5 : 4);
     syncPageSize();
     ipadMediaQuery.addEventListener("change", syncPageSize);
-    return () => ipadMediaQuery.removeEventListener("change", syncPageSize);
+    ipadAirPortraitQuery.addEventListener("change", syncPageSize);
+    ipadAirLandscapeQuery.addEventListener("change", syncPageSize);
+    return () => {
+      ipadMediaQuery.removeEventListener("change", syncPageSize);
+      ipadAirPortraitQuery.removeEventListener("change", syncPageSize);
+      ipadAirLandscapeQuery.removeEventListener("change", syncPageSize);
+    };
   }, []);
 
   const today = useMemo(() => toDateInputValue(new Date()), []);
@@ -132,7 +141,7 @@ export function ReceiptDeskClient() {
 
   return (
     <div className={`grid min-h-0 grid-cols-[minmax(0,1.25fr)_minmax(320px,0.75fr)] items-start gap-[18px] ${ownerLandscapeClass}:grid-cols-[minmax(0,1.18fr)_280px] ${ownerLandscapeClass}:gap-[14px] max-[820px]:grid-cols-1 max-[820px]:gap-4`}>
-      <section className={`relative z-20 grid max-h-[calc(100dvh-220px)] min-h-0 content-start gap-[18px] overflow-visible rounded-none border border-[var(--border)] bg-[var(--panel-strong)] px-5 py-[18px] shadow-[var(--shadow-soft)] ${ownerLandscapePanelPaddingClass} ${ownerLandscapeTightGapClass} max-[820px]:h-auto max-[820px]:max-h-none max-[820px]:px-4 max-[820px]:py-4 [@media(max-height:860px)_and_(max-width:820px)]:h-auto [@media(max-height:860px)_and_(max-width:820px)]:max-h-none`}>
+      <section className={`relative z-20 grid h-fit self-start max-h-[calc(100dvh-220px)] min-h-0 content-start gap-[18px] overflow-visible rounded-none border border-[var(--border)] bg-[var(--panel-strong)] px-5 py-[18px] shadow-[var(--shadow-soft)] ${ownerLandscapePanelPaddingClass} ${ownerLandscapeTightGapClass} max-[820px]:h-auto max-[820px]:max-h-none max-[820px]:px-4 max-[820px]:py-4 [@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)]:flex [@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)]:flex-col [@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)]:gap-[18px] [@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)]:max-h-none [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:flex [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:flex-col [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:gap-[14px] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:max-h-none [@media(max-height:860px)_and_(max-width:820px)]:h-auto [@media(max-height:860px)_and_(max-width:820px)]:max-h-none`}>
         <div className="flex items-start justify-between gap-4 max-[720px]:flex-col max-[720px]:items-stretch">
           <div>
             <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[var(--eyebrow)]">Recent Receipts</p>

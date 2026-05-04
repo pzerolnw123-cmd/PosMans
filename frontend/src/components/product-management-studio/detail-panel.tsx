@@ -40,7 +40,9 @@ export function ProductDetailPanel({
   onResetForm,
   onDeleteConfirmed,
 }: ProductDetailPanelProps) {
-  const detailPanelClass = `grid w-[calc(100%+22px)] content-start gap-[10px] overflow-visible ${studioResponsiveClass.panelSurface} ${studioResponsiveClass.densePanelPadding} max-[820px]:w-full`;
+  const ipadAirHideLeadingIconClass =
+    "[@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:hidden [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:hidden";
+  const detailPanelClass = `grid w-[calc(100%+22px)] content-start gap-[10px] overflow-visible ${studioResponsiveClass.panelSurface} ${studioResponsiveClass.densePanelPadding} [@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:w-[calc(100%+10px)] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:w-[calc(100%+10px)] max-[820px]:w-full`;
   const detailFieldRowClass = selectedProduct?.trackStock
     ? studioResponsiveClass.detailFieldRowWithStock
     : studioResponsiveClass.detailFieldRow;
@@ -306,7 +308,7 @@ export function ProductDetailPanel({
                     {saveBusy ? (
                       <Loader size={18} label="กำลังบันทึก" />
                     ) : (
-                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" className="opacity-90">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" className={`opacity-90 ${ipadAirHideLeadingIconClass}`}>
                         <g fill="none" stroke="currentColor" strokeWidth="2">
                           <path d="m15.078 5.626l.537-.843l-.537.843c.348.222.661.528 1.493 1.36l.707-.708l-.707.707l.954.954c.31.31.425.426.524.543a4 4 0 0 1 .938 2.264c.012.153.013.316.013.754v.5c0 1.417 0 2.419-.065 3.203c-.063.772-.182 1.243-.371 1.613a4 4 0 0 1-1.748 1.748c-.37.189-.841.308-1.613.371C14.419 19 13.417 19 12 19s-2.419 0-3.203-.065c-.771-.063-1.243-.182-1.613-.371a4 4 0 0 1-1.748-1.748c-.189-.37-.308-.841-.371-1.613C5 14.419 5 13.417 5 12v-.222c0-1.31 0-2.238.056-2.965c.054-.716.157-1.156.319-1.504a4 4 0 0 1 1.934-1.934c.348-.162.788-.265 1.504-.32C9.54 5.002 10.467 5 11.778 5c1.176 0 1.614.006 2.017.095c.455.1.89.28 1.283.531Z" />
                           <path strokeLinecap="round" strokeLinejoin="round" d="M12 15a2 2 0 1 0 0-4a2 2 0 0 0 0 4m2-9.5V7a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1V5.2" />
@@ -326,7 +328,7 @@ export function ProductDetailPanel({
 
                 <div className="mt-auto grid">
                   <button type="button" className={`${successButtonClass} whitespace-nowrap mt-auto`} onClick={onChooseImageClick}>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" className="opacity-80">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" className={`opacity-80 ${ipadAirHideLeadingIconClass}`}>
                       <g fill="none" stroke="currentColor" strokeWidth="2">
                         <rect width="14" height="14" x="5" y="5" rx="4" />
                         <path
