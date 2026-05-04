@@ -101,7 +101,9 @@ export async function renderOwnerScreen(
       description: "รวมการค้นบิล ซ้ำพิมพ์ และส่งสลิปแบบย่อในจอเดียว",
       actions: <StatusPill tone="success">เชื่อมบิลขายจริง</StatusPill>,
       body: (
-        <section className={ownerPageWithHeaderGapClass}>
+        <section
+          className={`${ownerPageWithHeaderGapClass} ${ipadAirLandscapeClass}:!flex ${ipadAirLandscapeClass}:!h-[calc(100dvh-48px)] ${ipadAirLandscapeClass}:!min-h-[calc(100dvh-48px)] ${ipadAirLandscapeClass}:!flex-col ${ipadAirLandscapeClass}:overflow-hidden ${ipadAirLandscapeClass}:gap-[18px]`}
+        >
           <PageHeader
             eyebrow="Receipt Desk"
             title="ใบเสร็จ"
@@ -123,8 +125,10 @@ export async function renderOwnerScreen(
       title: "รายงาน",
       description: "มุมมองยอดขายจริงแบบอ่านเร็ว พร้อมกราฟแนวโน้มตามช่วงเวลาที่เลือก",
       actions: <StatusPill tone="success">ข้อมูลยอดขายจริง</StatusPill>,
-      body: (
-        <section className={ownerPageWithHeaderGapClass}>
+        body: (
+          <section
+            className={`${ownerPageWithHeaderGapClass} ${ipadAirLandscapeClass}:!flex ${ipadAirLandscapeClass}:!h-[calc(100dvh-48px)] ${ipadAirLandscapeClass}:!min-h-[calc(100dvh-48px)] ${ipadAirLandscapeClass}:!w-full ${ipadAirLandscapeClass}:!flex-col ${ipadAirLandscapeClass}:overflow-hidden ${ipadAirLandscapeClass}:gap-[18px]`}
+          >
           <PageHeader
             eyebrow="Reports"
             title="รายงาน"
@@ -134,7 +138,11 @@ export async function renderOwnerScreen(
             }
           />
 
-          <ReportsSalesChart />
+            <div
+              className={`min-h-0 ${ipadAirLandscapeClass}:h-full ${ipadAirLandscapeClass}:min-h-0 ${ipadAirLandscapeClass}:w-full ${ipadAirLandscapeClass}:justify-self-stretch ${ipadAirLandscapeClass}:flex-1 ${ipadAirLandscapeClass}:overflow-hidden`}
+            >
+              <ReportsSalesChart />
+            </div>
         </section>
       ),
       standalone: true,

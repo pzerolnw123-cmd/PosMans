@@ -169,7 +169,7 @@ export function PaymentCheckoutPanels({
           <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[var(--eyebrow)]">Payment Methods</p>
           <strong className={`my-[10px] block text-[1.4rem] leading-none tracking-[-0.04em] text-[var(--foreground)] ${ownerLandscapeClass}:text-[1.28rem]`}>{completedSale ? "วิธีชำระล่าสุด" : "เลือกวิธีชำระ"}</strong>
           <p className="m-0 text-[0.95rem] leading-[1.65] text-[var(--foreground-soft)]">
-            {completedSale ? "บิลนี้ชำระสำเร็จแล้ว รายละเอียดถูกล็อกไว้" : "เลือกวิธีรับเงินก่อนบันทึกบิลจริง"}
+            {completedSale ? "บิลนี้ชำระสำเร็จแล้ว" : "เลือกวิธีรับเงินก่อนบันทึกบิลจริง"}
           </p>
           </div>
           {customerDisplayControl ? (
@@ -346,7 +346,7 @@ export function PaymentCheckoutPanels({
           ) : (
             <>
               {completedSale ? (
-                <div className="rounded-none border border-[var(--success-border)] bg-[var(--success-wash)] px-3.5 py-3">
+                <div className="rounded-none border border-[var(--success-border)] bg-[var(--success-wash)] px-3.5 py-3 [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:col-start-1 [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:row-start-2">
                   <span className="text-[0.82rem] text-[var(--foreground-soft)]">วิธีชำระเงิน</span>
                   <strong className="mt-1 block text-[1.05rem] leading-[1.1] text-[var(--success)]">{paymentMethodLabel}</strong>
                 </div>
@@ -357,13 +357,13 @@ export function PaymentCheckoutPanels({
                   <strong className="mt-1 block text-[1.05rem] leading-[1.1] text-[var(--foreground)]">{formatBaht(changeAmount)}</strong>
                 </div>
               )}
-              <div className={`${quickMetricCardClass} ${paymentMethod === "CASH" && !completedSale && receivedAmount > 0 ? "[@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:col-start-2" : "[@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:col-start-1"} [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:row-start-2`}>
+              <div className={`${quickMetricCardClass} ${completedSale ? "[@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:col-start-2" : paymentMethod === "CASH" && !completedSale && receivedAmount > 0 ? "[@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:col-start-2" : "[@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:col-start-1"} [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:row-start-2`}>
                 <span className="text-[0.82rem] text-[var(--foreground-soft)] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:text-[0.76rem]">จำนวนรายการ</span>
                 <strong className="mt-1 block text-[1.05rem] leading-[1.1] text-[var(--foreground)] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:text-[0.92rem] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:whitespace-nowrap">
                   {billItems.length} รายการ / {itemCount} ชิ้น
                 </strong>
               </div>
-              <div className={`${quickMetricCardClass} ${paymentMethod === "CASH" && !completedSale && receivedAmount > 0 ? "[@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:col-start-3" : "[@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:col-start-2"} [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:row-start-2`}>
+              <div className={`${quickMetricCardClass} ${completedSale ? "[@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:col-start-3" : paymentMethod === "CASH" && !completedSale && receivedAmount > 0 ? "[@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:col-start-3" : "[@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:col-start-2"} [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:row-start-2`}>
                 <span className="text-[0.82rem] text-[var(--foreground-soft)] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:text-[0.76rem]">ยอดสุทธิ</span>
                 <strong className="mt-1 block text-[1.05rem] leading-[1.1] text-[var(--foreground)] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:text-[0.94rem]">{formatBaht(billTotal)}</strong>
               </div>

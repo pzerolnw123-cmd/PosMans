@@ -26,7 +26,6 @@ import { ownerLandscapeClass, ownerLandscapePanelPaddingClass, ownerLandscapeTig
 import { LoadingState } from "@/components/ui-primitives";
 
 const desktopFinePointerClass = "[@media(min-width:1181px)_and_(pointer:fine)]";
-
 export function SalesWorkspaceClient() {
   const router = useRouter();
   const [products, setProducts] = useState<ProductItem[]>([]);
@@ -474,28 +473,28 @@ export function SalesWorkspaceClient() {
                       <div className={`h-[96px] w-[118px] shrink-0 rounded-xl border border-[var(--border-subtle)] bg-[var(--panel-subtle)] ${ownerLandscapeClass}:h-[82px] ${ownerLandscapeClass}:w-[102px] max-[420px]:w-full`} />
                     )}
                       <div className="grid min-w-0 justify-items-end gap-1 text-right max-[420px]:w-full max-[420px]:justify-items-start max-[420px]:text-left">
-                        <b className={`text-base leading-[1.2] text-[var(--foreground)] max-[1366px]:text-[1.25rem] ${ownerLandscapeClass}:text-[1.02rem]`}>{formatBaht(product.price)}</b>
-                        <span className={saleStatusLabel === "พร้อมขาย" ? "text-[0.78rem] font-bold text-[var(--success)] max-[1366px]:text-[0.95rem]" : "text-[0.78rem] font-bold text-[var(--foreground-soft)] max-[1366px]:text-[0.95rem]"}>{saleStatusLabel}</span>
-                        <span className="max-w-[86px] text-[0.62rem] leading-[1.2] text-[var(--foreground-soft)] max-[1366px]:max-w-[120px] max-[1366px]:text-[0.85rem]">{product.category}</span>
-                        <span className="max-w-[86px] truncate text-[0.6rem] font-bold uppercase tracking-[0.1em] text-[var(--foreground-soft)] max-[1366px]:max-w-[120px] max-[1366px]:text-[0.75rem]">
+                        <b className={`text-base leading-[1.2] text-[var(--foreground)] max-[1366px]:text-[1.25rem] ${ownerLandscapeClass}:text-[1.02rem] [@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:text-[1.05rem] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:text-[1.05rem]`}>{formatBaht(product.price)}</b>
+                        <span className={saleStatusLabel === "พร้อมขาย" ? "text-[0.78rem] font-bold text-[var(--success)] max-[1366px]:text-[0.95rem] [@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:text-[0.82rem] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:text-[0.82rem]" : "text-[0.78rem] font-bold text-[var(--foreground-soft)] max-[1366px]:text-[0.95rem] [@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:text-[0.82rem] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:text-[0.82rem]"}>{saleStatusLabel}</span>
+                        <span className="max-w-[86px] text-[0.62rem] leading-[1.2] text-[var(--foreground-soft)] max-[1366px]:max-w-[120px] max-[1366px]:text-[0.85rem] [@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:text-[0.72rem] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:text-[0.72rem]">{product.category}</span>
+                        <span className="max-w-[86px] truncate text-[0.6rem] font-bold uppercase tracking-[0.1em] text-[var(--foreground-soft)] max-[1366px]:max-w-[120px] max-[1366px]:text-[0.75rem] [@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:text-[0.66rem] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:text-[0.66rem]">
                           {product.code}
                         </span>
                         {productStockLabel ? (
-                          <span className={ready ? "max-w-[86px] truncate text-[0.68rem] font-bold text-[var(--success)] max-[1366px]:max-w-[120px] max-[1366px]:text-[0.85rem]" : "max-w-[86px] truncate text-[0.68rem] font-bold text-[var(--danger)] max-[1366px]:max-w-[120px] max-[1366px]:text-[0.85rem]"}>
+                          <span className={ready ? "max-w-[86px] truncate text-[0.68rem] font-bold text-[var(--success)] max-[1366px]:max-w-[120px] max-[1366px]:text-[0.85rem] [@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:text-[0.76rem] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:text-[0.76rem]" : "max-w-[86px] truncate text-[0.68rem] font-bold text-[var(--danger)] max-[1366px]:max-w-[120px] max-[1366px]:text-[0.85rem] [@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:text-[0.76rem] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:text-[0.76rem]"}>
                             {productStockLabel}
                           </span>
                         ) : null}
                       </div>
                   </div>
                   <div className="grid gap-1.5">
-                    <strong className="text-base leading-[1.2] text-[var(--foreground)] max-[1366px]:text-[1.15rem]">{product.name}</strong>
+                    <strong className="text-base leading-[1.2] text-[var(--foreground)] max-[1366px]:text-[1.15rem] [@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:text-[1.02rem] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:text-[1.02rem]">{product.name}</strong>
                   </div>
                   <button
                     type="button"
                     className={
                       ready
-                        ? "absolute bottom-[14px] left-[14px] inline-flex h-[42px] min-w-[126px] items-center justify-center gap-2 rounded-[10px] border border-transparent [background:var(--brand-gradient)] px-4 text-[0.92rem] font-bold text-[var(--button-text)] shadow-[var(--brand-shadow)_0_8px_18px] transition duration-200 hover:-translate-y-0.5 hover:shadow-[var(--brand-shadow)_0_12px_24px] active:scale-95 max-[1366px]:h-[48px] max-[1366px]:text-[1.1rem]"
-                        : "absolute bottom-[14px] left-[14px] inline-flex h-[42px] min-w-[126px] cursor-not-allowed items-center justify-center gap-2 rounded-[10px] border border-[var(--border)] bg-[var(--surface-muted)] px-4 text-[0.92rem] font-bold text-[var(--foreground-soft)] opacity-60 max-[1366px]:h-[48px] max-[1366px]:text-[1.1rem]"
+                        ? "absolute bottom-[14px] left-[14px] inline-flex h-[42px] min-w-[126px] items-center justify-center gap-2 rounded-[10px] border border-transparent [background:var(--brand-gradient)] px-4 text-[0.92rem] font-bold text-[var(--button-text)] shadow-[var(--brand-shadow)_0_8px_18px] transition duration-200 hover:-translate-y-0.5 hover:shadow-[var(--brand-shadow)_0_12px_24px] active:scale-95 max-[1366px]:h-[48px] max-[1366px]:text-[1.1rem] [@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:h-[44px] [@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:min-w-[116px] [@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:px-3 [@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:text-[0.92rem] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:h-[44px] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:min-w-[116px] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:px-3 [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:text-[0.92rem]"
+                        : "absolute bottom-[14px] left-[14px] inline-flex h-[42px] min-w-[126px] cursor-not-allowed items-center justify-center gap-2 rounded-[10px] border border-[var(--border)] bg-[var(--surface-muted)] px-4 text-[0.92rem] font-bold text-[var(--foreground-soft)] opacity-60 max-[1366px]:h-[48px] max-[1366px]:text-[1.1rem] [@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:h-[44px] [@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:min-w-[116px] [@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:px-3 [@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:text-[0.92rem] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:h-[44px] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:min-w-[116px] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:px-3 [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:text-[0.92rem]"
                     }
                     disabled={!ready}
                     onClick={() => handleAddToCart(product)}
@@ -553,4 +552,3 @@ export function SalesWorkspaceClient() {
     </div>
   );
 }
-

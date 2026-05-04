@@ -150,18 +150,28 @@ export function ReportsSalesChart() {
 
   const summaryItems = report
     ? [
-      ["ยอดขาย", formatBaht(report.totals.sales)],
-      ["จำนวนบิล", `${report.totals.orders.toLocaleString("th-TH")} บิล`],
-      ["บิลเฉลี่ย", formatBaht(report.totals.averageOrder)],
-      ["ช่วงพีค", report.totals.peakLabel || "-"],
-    ]
-    : [];
+        ["ยอดขาย", formatBaht(report.totals.sales)],
+        ["จำนวนบิล", `${report.totals.orders.toLocaleString("th-TH")} บิล`],
+        ["บิลเฉลี่ย", formatBaht(report.totals.averageOrder)],
+        ["ช่วงพีค", report.totals.peakLabel || "-"],
+      ]
+    : [
+        ["ยอดขาย", "—"],
+        ["จำนวนบิล", "—"],
+        ["บิลเฉลี่ย", "—"],
+        ["ช่วงพีค", "—"],
+      ];
+  const initialLoading = loading && !report;
 
   return (
-    <div className={`grid min-h-0 grid-cols-[minmax(0,0.65fr)_minmax(260px,0.35fr)] items-start gap-[18px] ${ownerLandscapeClass}:grid-cols-[minmax(0,0.7fr)_248px] ${ownerLandscapeClass}:gap-[14px] max-[1280px]:grid-cols-1`}>
-      <div className={`grid h-fit min-h-0 gap-[18px] overflow-visible rounded-none border border-[var(--border)] bg-[var(--panel-strong)] px-5 py-[18px] shadow-[var(--shadow-soft)] ${ownerLandscapePanelPaddingClass} ${ownerLandscapeClass}:gap-[14px] max-[820px]:px-4 max-[820px]:py-4`}>
+    <div
+      className={`grid min-h-0 w-full max-w-full self-stretch grid-cols-[minmax(0,0.65fr)_minmax(260px,0.35fr)] items-start gap-[18px] ${ownerLandscapeClass}:grid-cols-[minmax(0,0.7fr)_248px] ${ownerLandscapeClass}:gap-[14px] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:grid-cols-[minmax(0,1fr)_290px] max-[820px]:grid-cols-1`}
+    >
+      <div
+        className={`grid h-fit min-h-0 min-w-0 w-full max-w-full gap-[18px] overflow-hidden rounded-none border border-[var(--border)] bg-[var(--panel-strong)] px-5 py-[18px] shadow-[var(--shadow-soft)] ${ownerLandscapePanelPaddingClass} ${ownerLandscapeClass}:gap-[14px] max-[820px]:px-4 max-[820px]:py-4`}
+      >
         <div className="flex flex-wrap items-start justify-between gap-3">
-          <div>
+          <div className="min-w-0">
             <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[var(--eyebrow)]">Sales Trend</p>
             <h2 className="my-[7px] text-[clamp(1.5rem,2.4vw,2.25rem)] leading-none tracking-[-0.055em] text-[var(--foreground)]">กราฟยอดขาย</h2>
             <p className="m-0 text-[0.92rem] text-[var(--foreground-soft)]">แสดงยอดขายจริงตามช่วงเวลาที่เลือก</p>
@@ -193,7 +203,7 @@ export function ReportsSalesChart() {
           </div>
         </div>
 
-        <div className={`grid grid-cols-4 gap-[10px] ${ownerLandscapeClass}:grid-cols-2 max-[1180px]:grid-cols-2 max-[640px]:grid-cols-1`}>
+        <div className={`grid grid-cols-4 gap-[10px] max-[1180px]:grid-cols-2 max-[640px]:grid-cols-1 ${ownerLandscapeClass}:grid-cols-4`}>
           {summaryItems.map(([label, value]) => (
             <div key={label} className="rounded-none border border-[var(--border)] bg-[var(--surface-muted)] px-4 py-3">
               <span className="text-[0.8rem] text-[var(--foreground-soft)]">{label}</span>
@@ -203,14 +213,19 @@ export function ReportsSalesChart() {
         </div>
 
         <div className="relative min-h-[380px] overflow-hidden rounded-none border border-[var(--border)] bg-[var(--panel-subtle)] p-4 max-[640px]:min-h-[300px] max-[640px]:p-3">
-          {loading ? (
-            <div className="grid min-h-[348px] place-items-center">
-              <LoadingState
-                size={58}
-                label="กำลังโหลดกราฟรายงาน..."
-                description="ระบบกำลังดึงยอดขายตามช่วงเวลาที่เลือก"
-              />
-            </div>
+          {initialLoading ? (
+            <>
+              <svg className="block h-[348px] w-full opacity-0 max-[640px]:h-[268px]" viewBox="0 0 760 360" preserveAspectRatio="none" aria-hidden="true">
+                <rect x="0" y="0" width="760" height="360" fill="transparent" />
+              </svg>
+              <div className="absolute inset-4 grid place-items-center rounded-none border border-[var(--border)] bg-[color:color-mix(in_srgb,var(--surface)_88%,transparent)] px-4 text-center backdrop-blur-[1px]">
+                <LoadingState
+                  size={58}
+                  label="กำลังโหลดกราฟรายงาน..."
+                  description="ระบบกำลังดึงยอดขายตามช่วงเวลาที่เลือก"
+                />
+              </div>
+            </>
           ) : error ? (
             <div className="grid min-h-[348px] place-items-center text-center">
               <div className="rounded-none border border-[var(--danger-border)] bg-[var(--danger-soft)] px-4 py-3 text-[var(--danger-bright)]">{error}</div>
@@ -262,13 +277,24 @@ export function ReportsSalesChart() {
                   </div>
                 </div>
               ) : null}
+              {loading ? (
+                <div className="absolute inset-4 grid place-items-center rounded-none border border-[var(--border)] bg-[color:color-mix(in_srgb,var(--surface)_88%,transparent)] px-4 text-center backdrop-blur-[1px]">
+                  <LoadingState
+                    size={58}
+                    label="กำลังโหลดกราฟรายงาน..."
+                    description="ระบบกำลังดึงยอดขายตามช่วงเวลาที่เลือก"
+                  />
+                </div>
+              ) : null}
             </>
           ) : null}
         </div>
       </div>
 
-      <aside className={`grid h-fit gap-[14px] overflow-hidden rounded-none border border-[var(--border)] bg-[var(--panel-strong)] px-5 py-[18px] shadow-[var(--shadow-soft)] ${ownerLandscapeCompactPanelPaddingClass} max-[820px]:px-4 max-[820px]:py-4`}>
-        <section className="grid gap-[14px]">
+      <aside
+        className={`grid h-fit min-w-0 w-full max-w-full gap-[14px] overflow-hidden rounded-none border border-[var(--border)] bg-[var(--panel-strong)] px-5 py-[18px] shadow-[var(--shadow-soft)] ${ownerLandscapeCompactPanelPaddingClass} max-[820px]:px-4 max-[820px]:py-4`}
+      >
+        <section className="relative grid gap-[14px]">
           <div className="flex items-start justify-between gap-3">
             <div>
               <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[var(--eyebrow)]">Top Products</p>
@@ -280,9 +306,31 @@ export function ReportsSalesChart() {
             </span>
           </div>
 
-          {loading ? (
-            <div className="grid min-h-[220px] place-items-center rounded-none border border-[var(--border)] bg-[var(--panel-subtle)]">
-              <LoadingState size={42} label="กำลังโหลดอันดับสินค้า..." />
+          {initialLoading ? (
+            <div className="relative min-h-[220px]">
+              <div className="grid gap-[10px]">
+                {Array.from({ length: 3 }).map((_, index) => (
+                  <div
+                    key={`top-product-placeholder-${index}`}
+                    className="grid grid-cols-[44px_minmax(0,1fr)_auto] items-center gap-3 rounded-none border border-[var(--border)] bg-[var(--surface-muted)] px-3 py-3 opacity-0 max-[420px]:grid-cols-[44px_minmax(0,1fr)]"
+                    aria-hidden="true"
+                  >
+                    <span className="grid h-11 w-11 place-items-center rounded-none border border-[var(--accent-border)] bg-[var(--accent-surface)] text-[1rem] font-black text-[var(--brand-strong)]">
+                      {index + 1}
+                    </span>
+                    <div className="min-w-0">
+                      <strong className="block truncate text-[1rem] leading-tight text-[var(--foreground)]">placeholder</strong>
+                      <span className="mt-1 block text-[0.78rem] font-bold text-[var(--foreground-soft)]">0 ชิ้น</span>
+                    </div>
+                    <strong className="text-right text-[0.96rem] text-[var(--foreground)] max-[420px]:col-span-2 max-[420px]:text-left">
+                      ฿0
+                    </strong>
+                  </div>
+                ))}
+              </div>
+              <div className="absolute inset-0 grid place-items-center rounded-none border border-[var(--border)] bg-[color:color-mix(in_srgb,var(--surface)_88%,transparent)] px-4 text-center backdrop-blur-[1px]">
+                <LoadingState size={42} label="กำลังโหลดอันดับสินค้า..." />
+              </div>
             </div>
           ) : error ? (
             <div className="rounded-none border border-[var(--danger-border)] bg-[var(--danger-soft)] px-4 py-3 text-[0.88rem] font-bold text-[var(--danger-bright)]">โหลดอันดับสินค้าไม่สำเร็จ</div>
@@ -309,18 +357,40 @@ export function ReportsSalesChart() {
               </div>
             </div>
           )}
+          {loading && report ? (
+            <div className="absolute inset-x-0 top-[92px] bottom-0 grid place-items-center rounded-none border border-[var(--border)] bg-[color:color-mix(in_srgb,var(--surface)_88%,transparent)] px-4 text-center backdrop-blur-[1px]">
+                <LoadingState size={42} label="กำลังโหลดอันดับสินค้า..." />
+            </div>
+          ) : null}
         </section>
 
-        <section className="grid gap-[12px] border-t border-[var(--border-muted)] pt-[14px]">
+        <section className="relative grid gap-[12px] border-t border-[var(--border-muted)] pt-[14px]">
           <div>
             <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[var(--eyebrow)]">Payment Mix</p>
             <h3 className="my-[6px] text-[clamp(1.2rem,1.65vw,1.55rem)] leading-none tracking-[-0.04em] text-[var(--foreground)]">วิธีชำระเงิน</h3>
             <p className="m-0 text-[0.84rem] text-[var(--foreground-soft)]">สรุปยอดตามวิธีรับเงิน</p>
           </div>
 
-          {loading ? (
-            <div className="grid min-h-[140px] place-items-center rounded-none border border-[var(--border)] bg-[var(--panel-subtle)]">
-              <LoadingState size={38} label="กำลังโหลดวิธีชำระเงิน..." />
+          {initialLoading ? (
+            <div className="relative min-h-[146px]">
+              <div className="grid gap-2">
+                {Array.from({ length: 3 }).map((_, index) => (
+                  <div
+                    key={`payment-summary-placeholder-${index}`}
+                    className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 rounded-none border border-[var(--border)] bg-[var(--surface-muted)] px-3 py-2.5 opacity-0"
+                    aria-hidden="true"
+                  >
+                    <div className="min-w-0">
+                      <strong className="block truncate text-[0.94rem] text-[var(--foreground)]">placeholder</strong>
+                      <span className="mt-1 block text-[0.76rem] font-bold text-[var(--foreground-soft)]">0 บิล</span>
+                    </div>
+                    <strong className="text-right text-[0.94rem] text-[var(--foreground)]">฿0</strong>
+                  </div>
+                ))}
+              </div>
+              <div className="absolute inset-0 grid place-items-center rounded-none border border-[var(--border)] bg-[color:color-mix(in_srgb,var(--surface)_88%,transparent)] px-4 text-center backdrop-blur-[1px]">
+                <LoadingState size={38} label="กำลังโหลดวิธีชำระเงิน..." />
+              </div>
             </div>
           ) : error ? (
             <div className="rounded-none border border-[var(--danger-border)] bg-[var(--danger-soft)] px-4 py-3 text-[0.88rem] font-bold text-[var(--danger-bright)]">โหลดสรุปวิธีชำระเงินไม่สำเร็จ</div>
@@ -335,6 +405,11 @@ export function ReportsSalesChart() {
                   <strong className="text-right text-[0.94rem] text-[var(--foreground)]">{formatBaht(payment.sales)}</strong>
                 </div>
               ))}
+            </div>
+          ) : null}
+          {loading && report ? (
+            <div className="absolute inset-x-0 top-[86px] bottom-0 grid place-items-center rounded-none border border-[var(--border)] bg-[color:color-mix(in_srgb,var(--surface)_88%,transparent)] px-4 text-center backdrop-blur-[1px]">
+                <LoadingState size={38} label="กำลังโหลดวิธีชำระเงิน..." />
             </div>
           ) : null}
         </section>
