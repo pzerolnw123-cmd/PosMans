@@ -226,9 +226,9 @@ export function CustomerDisplayClient({ displayId, token }: { displayId: string;
 
   const { store, display } = payload;
   return (
-    <main className="h-dvh overflow-hidden bg-[var(--background-start)] text-[var(--foreground)]" data-store-theme={displayTheme}>
-      <div className="mx-auto grid h-full min-h-0 w-full max-w-[980px] grid-rows-[auto_minmax(0,1fr)_auto] px-8 py-5 max-[720px]:px-5 max-[720px]:py-4">
-        <header className="flex items-center justify-between gap-5 border-b border-[var(--border)] pb-3">
+    <main className="h-dvh overflow-hidden bg-[var(--background-start)] text-[var(--foreground)] [@media(orientation:portrait)]:h-auto [@media(orientation:portrait)]:min-h-dvh [@media(orientation:portrait)]:overflow-auto" data-store-theme={displayTheme}>
+      <div className="mx-auto grid h-full min-h-0 w-full max-w-[980px] grid-rows-[auto_minmax(0,1fr)_auto] px-8 py-5 [@media(orientation:portrait)]:px-5 [@media(orientation:portrait)]:py-4 [@media(orientation:portrait)_and_(max-width:640px)]:px-4 [@media(orientation:portrait)_and_(max-width:640px)]:py-3.5 max-[720px]:px-5 max-[720px]:py-4">
+        <header className="flex items-center justify-between gap-5 border-b border-[var(--border)] pb-3 [@media(orientation:portrait)_and_(max-width:640px)]:flex-col [@media(orientation:portrait)_and_(max-width:640px)]:items-start">
           <div className="flex min-w-0 items-center gap-4">
             {store.logoUrl ? <img className="h-12 w-12 rounded-none border border-[var(--border)] object-cover" src={store.logoUrl} alt="" /> : null}
             <div className="min-w-0">
@@ -265,18 +265,18 @@ function PaymentDisplay({ display }: { display: CustomerDisplayState }) {
   const method = display.paymentMethod ? paymentLabels[display.paymentMethod] : "ชำระเงิน";
 
   return (
-    <section className="grid h-full min-h-0 place-items-center gap-3 overflow-hidden py-3 text-center">
+    <section className="grid h-full min-h-0 place-items-center gap-3 overflow-hidden py-3 text-center [@media(orientation:portrait)]:py-5">
       <div>
         <p className="m-0 text-[0.92rem] font-bold uppercase tracking-[0.36em] text-[var(--brand-strong)]">{method}</p>
         <h2 className="m-0 mt-2 text-[clamp(2.35rem,8dvh,5.1rem)] leading-none tracking-[-0.08em]">{formatBaht(display.amount)}</h2>
       </div>
 
       {display.qrDataUrl ? (
-        <div className="grid aspect-square w-[min(50dvh,520px,84vw)] place-items-center border border-[var(--border)] bg-[var(--foreground-inverse)] p-[clamp(14px,2.5vw,26px)] shadow-[var(--shadow-card)]">
+        <div className="grid aspect-square w-[min(50dvh,520px,84vw)] place-items-center border border-[var(--border)] bg-[var(--foreground-inverse)] p-[clamp(14px,2.5vw,26px)] shadow-[var(--shadow-card)] [@media(orientation:portrait)]:w-[min(78vw,520px)] [@media(orientation:portrait)_and_(max-width:640px)]:w-[min(88vw,420px)]">
           <img className="h-full w-full object-contain" src={display.qrDataUrl} alt="QR สำหรับชำระเงิน" />
         </div>
       ) : (
-        <div className="grid min-h-[280px] w-[min(560px,88vw)] place-items-center border border-dashed border-[var(--border-strong)] bg-[var(--surface-muted)] text-[var(--foreground-soft)]">
+        <div className="grid min-h-[280px] w-[min(560px,88vw)] place-items-center border border-dashed border-[var(--border-strong)] bg-[var(--surface-muted)] text-[var(--foreground-soft)] [@media(orientation:portrait)]:w-[min(88vw,560px)]">
           รอยอดชำระจากแคชเชียร์
         </div>
       )}

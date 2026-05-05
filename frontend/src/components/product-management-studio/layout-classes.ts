@@ -5,7 +5,7 @@ export const studioResponsiveClass = {
     `grid h-full min-h-0 grid-rows-[156px_minmax(0,1fr)] gap-[18px] ${ipadAirOnlyGridRowsSingleClass} max-[820px]:h-auto max-[820px]:grid-rows-[auto_auto] max-[820px]:gap-4 [@media(max-height:860px)]:h-auto [@media(max-height:860px)]:grid-rows-[auto_auto]`,
   compactPageGrid: "grid h-auto min-h-0 grid-rows-[auto] gap-[18px]",
   contentGrid:
-    "grid min-h-0 items-start gap-[18px] [grid-template-columns:minmax(360px,1fr)_minmax(0,1.3fr)] [@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:[grid-template-columns:minmax(0,1.02fr)_minmax(0,0.98fr)] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:[grid-template-columns:minmax(0,1.02fr)_minmax(0,0.98fr)] max-[820px]:grid-cols-1 max-[820px]:gap-4 max-[420px]:[grid-template-columns:minmax(0,1fr)]",
+    "grid min-h-0 items-start gap-[18px] [grid-template-columns:minmax(360px,1fr)_minmax(0,1.3fr)] [@media(orientation:portrait)]:grid-cols-1 [@media(orientation:portrait)]:gap-4 [@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:[grid-template-columns:minmax(0,1.02fr)_minmax(0,0.98fr)] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:[grid-template-columns:minmax(0,1.02fr)_minmax(0,0.98fr)] max-[820px]:grid-cols-1 max-[820px]:gap-4 max-[420px]:[grid-template-columns:minmax(0,1fr)]",
   panelSurface:
     "rounded-none border border-[var(--border)] bg-[var(--panel-strong)] shadow-[var(--shadow-soft)] backdrop-blur-[14px]",
   panelPadding: "px-5 py-[18px] max-[1180px]:px-4 max-[1180px]:py-4",
@@ -18,12 +18,12 @@ export const studioResponsiveClass = {
   listCardImageFallback:
     "grid h-[74px] w-[74px] place-items-center rounded-[18px] border border-[var(--border)] bg-[var(--panel-subtle)] max-[1180px]:h-[62px] max-[1180px]:w-[62px]",
   detailHeroGrid:
-    "relative z-0 -mt-3 grid grid-cols-[minmax(0,312px)_180px] items-stretch gap-4 [@media(min-width:1025px)_and_(max-width:1180px)]:grid-cols-[minmax(0,1fr)_180px] max-[720px]:mt-0 max-[720px]:grid-cols-1",
+    "relative z-0 -mt-3 grid grid-cols-[minmax(0,312px)_180px] items-stretch gap-4 [@media(orientation:portrait)]:mt-0 [@media(orientation:portrait)]:grid-cols-1 [@media(min-width:1025px)_and_(max-width:1180px)]:grid-cols-[minmax(0,1fr)_180px] max-[720px]:mt-0 max-[720px]:grid-cols-1",
   detailImageFrame: "h-[186px] w-full overflow-hidden rounded-[14px] border border-[var(--border)] bg-[var(--panel-subtle)] max-[1180px]:h-[148px] max-[720px]:h-[186px]",
   detailSidebar:
-    "flex h-[186px] w-[180px] flex-col justify-between justify-self-end pt-6 max-[1180px]:h-[148px] max-[720px]:h-auto max-[720px]:w-full max-[720px]:gap-4 max-[720px]:pt-0",
-  detailToggleDock: "relative z-20 grid w-[180px] translate-y-5 justify-items-center gap-3 max-[720px]:w-full max-[720px]:translate-y-0",
-  detailFieldRowWithStock: "grid grid-cols-[minmax(0,1fr)_minmax(120px,180px)] items-end gap-3 max-[720px]:grid-cols-1",
+    "flex h-[186px] w-[180px] flex-col justify-between justify-self-end pt-6 [@media(orientation:portrait)]:h-auto [@media(orientation:portrait)]:w-full [@media(orientation:portrait)]:gap-4 [@media(orientation:portrait)]:pt-0 max-[1180px]:h-[148px] max-[720px]:h-auto max-[720px]:w-full max-[720px]:gap-4 max-[720px]:pt-0",
+  detailToggleDock: "relative z-20 grid w-[180px] translate-y-5 justify-items-center gap-3 [@media(orientation:portrait)]:w-full [@media(orientation:portrait)]:translate-y-0 max-[720px]:w-full max-[720px]:translate-y-0",
+  detailFieldRowWithStock: "grid grid-cols-[minmax(0,1fr)_minmax(120px,180px)] items-end gap-3 [@media(orientation:portrait)]:grid-cols-1 max-[720px]:grid-cols-1",
   detailFieldRow: "grid items-end gap-3",
   detailActionGrid: "mt-[10px] grid gap-[10px] sm:grid-cols-2 xl:grid-cols-2 max-[520px]:grid-cols-1",
 } as const;

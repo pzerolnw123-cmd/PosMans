@@ -4,7 +4,7 @@ import type { ChangeEvent } from "react";
 import { useEffect, useRef, useState } from "react";
 import { useBackofficeShellAlert } from "@/components/backoffice-shell";
 import { ProductManagementStudioLayout } from "@/components/product-management-studio/layout";
-import { ACCEPTED_IMAGE_TYPES, clampOffset, createCroppedBlob, CROP_VIEWPORT_SIZE, createImageObjectUrl, invalidateProductListCache, loadImage, MAX_IMAGE_BYTES, requestJson, requestSignedUpload, revokeManagedObjectUrl, uploadBlobToR2 } from "@/components/product-management-studio/lib";
+import { ACCEPTED_IMAGE_TYPES, clampOffset, createCroppedBlob, CROP_VIEWPORT_SIZE, createImageObjectUrl, invalidateProductListCache, loadImage, MAX_IMAGE_BYTES, requestJson, requestProductList, requestSignedUpload, revokeManagedObjectUrl, uploadBlobToR2 } from "@/components/product-management-studio/lib";
 import { useProductListLoader } from "@/components/product-management-studio/use-product-list-loader";
 import { categoryOptions, isDraftProduct, makeNewProduct, type CropDraft, type ProductCategory, type ProductItem } from "@/components/product-management-studio/types";
 
@@ -45,7 +45,6 @@ export function ProductManagementStudio() {
     const ipadAirLandscapeMediaQuery = window.matchMedia("(min-width: 821px) and (max-width: 1180px) and (orientation: landscape) and (any-pointer: coarse)");
     const ipadMediaQuery = window.matchMedia("(max-width: 1366px) and (any-pointer: coarse)");
     const syncCompactMode = () => setCompactMode(compactMediaQuery.matches);
-    const syncPageSize = () => setItemsPerPageLimit(ipadMediaQuery.matches ? 4 : 3);
     const syncItemsPerPage = () =>
       setItemsPerPageLimit(ipadAirPortraitMediaQuery.matches || ipadAirLandscapeMediaQuery.matches ? 3 : ipadMediaQuery.matches ? 4 : 3);
 
@@ -105,6 +104,49 @@ export function ProductManagementStudio() {
       );
     })()
   ) : false;
+
+  function getNextSelectedIdAfterRemoval(currentItems: ProductItem[], removedId: string) {
+    const removedIndex = currentItems.findIndex((item) => item.id === removedId);
+    const remainingItems = currentItems.filter((item) => item.id !== removedId);
+
+    if (remainingItems.length === 0) {
+      return "";
+    }
+
+    if (removedIndex < 0) {
+      return remainingItems[0].id;
+    }
+
+    const fallbackIndex = Math.min(removedIndex, remainingItems.length - 1);
+    return remainingItems[fallbackIndex]?.id ?? remainingItems[0].id;
+  }
+
+  async function reloadProductPageAfterDelete(removedId: string, targetPage: number) {
+    const params = new URLSearchParams({
+      page: String(targetPage),
+      pageSize: String(itemsPerPageLimit),
+      category: activeCategory,
+    });
+    const response = await requestProductList(params, { force: true });
+    const nextProducts = response.products.slice(0, itemsPerPageLimit);
+    const fallbackSelectedId = getNextSelectedIdAfterRemoval(products, removedId);
+
+    setPagination(response.pagination);
+    setPage(response.pagination.page);
+    setProducts(nextProducts);
+    setServerProducts(response.products);
+    setSelectedId((current) => {
+      if (nextProducts.length === 0) {
+        return "";
+      }
+
+      if (current && current !== removedId && nextProducts.some((item) => item.id === current)) {
+        return current;
+      }
+
+      return nextProducts.some((item) => item.id === fallbackSelectedId) ? fallbackSelectedId : nextProducts[0].id;
+    });
+  }
 
   function updateSelectedProduct(patch: Partial<ProductItem>) {
     if (!selectedProduct) return;
@@ -426,7 +468,7 @@ export function ProductManagementStudio() {
       objectUrlsRef.current = revokeManagedObjectUrl(selectedProduct.imageUrl, objectUrlsRef.current);
       const remaining = products.filter((item) => item.id !== selectedProduct.id);
       setProducts(remaining);
-      setSelectedId(remaining[0]?.id ?? "");
+      setSelectedId(getNextSelectedIdAfterRemoval(products, selectedProduct.id));
       setPage(1);
       setIsDeleteModalOpen(false);
 
@@ -442,20 +484,9 @@ export function ProductManagementStudio() {
       invalidateProductListCache();
 
       objectUrlsRef.current = revokeManagedObjectUrl(selectedProduct.imageUrl, objectUrlsRef.current);
-      const remaining = products.filter((item) => item.id !== selectedProduct.id);
-      setProducts(remaining);
-      setServerProducts((current) => current.filter((item) => item.id !== selectedProduct.id));
-      setSelectedId(remaining[0]?.id ?? "");
-      setPagination((current) => {
-        const totalItems = Math.max(0, current.totalItems - 1);
-        const totalPages = Math.max(1, Math.ceil(totalItems / current.pageSize));
-        return {
-          ...current,
-          totalItems,
-          totalPages,
-        };
-      });
-      setPage((current) => (remaining.length === 0 ? Math.max(1, current - 1) : current));
+      const remainingCountOnPage = products.filter((item) => item.id !== selectedProduct.id).length;
+      const targetPage = remainingCountOnPage === 0 ? Math.max(1, page - 1) : page;
+      await reloadProductPageAfterDelete(selectedProduct.id, targetPage);
 
       setShellAlert({ message: "ลบสินค้าออกจากระบบเรียบร้อยแล้ว", tone: "success" });
     } catch (error) {

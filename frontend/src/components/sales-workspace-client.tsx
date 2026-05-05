@@ -26,6 +26,21 @@ import { ownerLandscapeClass, ownerLandscapePanelPaddingClass, ownerLandscapeTig
 import { LoadingState } from "@/components/ui-primitives";
 
 const desktopFinePointerClass = "[@media(min-width:1181px)_and_(pointer:fine)]";
+
+async function loadAllProducts() {
+  const pageSize = 50;
+  const firstParams = new URLSearchParams({ page: "1", pageSize: String(pageSize) });
+  const firstPage = await requestProductList(firstParams, { force: true });
+  const allProducts = [...firstPage.products];
+
+  for (let page = 2; page <= firstPage.pagination.totalPages; page += 1) {
+    const params = new URLSearchParams({ page: String(page), pageSize: String(pageSize) });
+    const response = await requestProductList(params, { force: true });
+    allProducts.push(...response.products);
+  }
+
+  return allProducts;
+}
 export function SalesWorkspaceClient() {
   const router = useRouter();
   const [products, setProducts] = useState<ProductItem[]>([]);
@@ -45,6 +60,7 @@ export function SalesWorkspaceClient() {
   const cartScrollRef = useRef<HTMLDivElement | null>(null);
   const productScrollRef = useRef<HTMLDivElement | null>(null);
   const animationTimersRef = useRef<number[]>([]);
+  const cartReconciledRef = useRef(false);
   const dragScrollRef = useRef({
     active: false,
     pointerId: 0,
@@ -176,6 +192,45 @@ export function SalesWorkspaceClient() {
   useEffect(() => {
     if (!cartHydrated) {
       return;
+    }
+
+    if (cartItems.length > 0 && !cartReconciledRef.current) {
+      cartReconciledRef.current = true;
+
+      let cancelled = false;
+
+      void (async () => {
+        const liveProducts = await loadAllProducts().catch(() => []);
+        const liveProductsById = new Map(liveProducts.map((product) => [product.id, product] as const));
+        const reconciledItems = cartItems
+          .map((item) => {
+            const liveProduct = liveProductsById.get(item.product.id);
+            if (!liveProduct) {
+              return null;
+            }
+
+            return {
+              product: {
+                ...liveProduct,
+                status: liveProduct.status || "à¸žà¸£à¹‰à¸­à¸¡à¸‚à¸²à¸¢",
+                costPerUnit: normalizeStockValue(liveProduct.costPerUnit),
+                trackStock: liveProduct.trackStock ?? false,
+                stockQuantity: normalizeStockValue(liveProduct.stockQuantity),
+                lowStockThreshold: normalizeStockValue(liveProduct.lowStockThreshold),
+              },
+              quantity: Math.max(1, Math.floor(item.quantity)),
+            };
+          })
+          .filter((item): item is CartItem => Boolean(item));
+
+        if (!cancelled) {
+          setCartItems(reconciledItems);
+        }
+      })();
+
+      return () => {
+        cancelled = true;
+      };
     }
 
     if (cartItems.length === 0) {
@@ -385,7 +440,7 @@ export function SalesWorkspaceClient() {
   }
 
   return (
-    <div className={`grid h-full min-h-0 grid-cols-[minmax(0,1fr)_316px] gap-[18px] ${desktopFinePointerClass}:grid-cols-[minmax(0,1fr)_316px] ${desktopFinePointerClass}:gap-[18px] ${ownerLandscapeClass}:grid-cols-[minmax(0,1fr)_292px] ${ownerLandscapeClass}:gap-[14px] max-[820px]:h-auto max-[820px]:grid-cols-1 max-[820px]:gap-4`}>
+    <div className={`grid h-full min-h-0 grid-cols-[minmax(0,1fr)_316px] gap-[18px] [@media(orientation:portrait)]:h-auto [@media(orientation:portrait)]:grid-cols-1 [@media(orientation:portrait)]:gap-4 ${desktopFinePointerClass}:grid-cols-[minmax(0,1fr)_316px] ${desktopFinePointerClass}:gap-[18px] ${ownerLandscapeClass}:grid-cols-[minmax(0,1fr)_292px] ${ownerLandscapeClass}:gap-[14px] max-[820px]:h-auto max-[820px]:grid-cols-1 max-[820px]:gap-4`}>
       <section className={`flex min-h-0 flex-col gap-[18px] ${desktopFinePointerClass}:gap-[18px] ${ownerLandscapeTightGapClass} max-[1280px]:min-h-0`} aria-label="sales main area">
         <div className={`rounded-none border border-[var(--border)] bg-[var(--surface)] px-[22px] py-5 shadow-[var(--shadow-soft)] ${ownerLandscapePanelPaddingClass} max-[820px]:px-4 max-[820px]:py-4 max-[520px]:px-3.5`}>
           <div className="flex flex-wrap gap-[10px] max-[520px]:grid max-[520px]:grid-cols-1">
@@ -422,8 +477,8 @@ export function SalesWorkspaceClient() {
             onPointerLeave={stopProductDrag}
             className={
               productScrollMetric.visible
-                ? `sales-cart-scroll grid h-full min-h-0 touch-auto cursor-grab select-none content-start gap-4 p-1 pb-6 pr-4 active:cursor-grabbing grid-cols-3 [@media(max-width:1366px)_and_(any-pointer:coarse)]:grid-cols-2 max-[1024px]:grid-cols-2 max-[820px]:grid-cols-2 max-[640px]:grid-cols-1 ${desktopFinePointerClass}:grid-cols-3 ${desktopFinePointerClass}:gap-4 ${ownerLandscapeClass}:gap-3`
-                : `sales-cart-scroll grid h-full min-h-0 touch-auto select-auto content-start gap-4 p-1 pb-6 pr-0 grid-cols-3 [@media(max-width:1366px)_and_(any-pointer:coarse)]:grid-cols-2 max-[1024px]:grid-cols-2 max-[820px]:grid-cols-2 max-[640px]:grid-cols-1 ${desktopFinePointerClass}:grid-cols-3 ${desktopFinePointerClass}:gap-4 ${ownerLandscapeClass}:gap-3`
+                ? `sales-cart-scroll grid h-full min-h-0 touch-auto cursor-grab select-none content-start gap-4 p-1 pb-6 pr-4 active:cursor-grabbing grid-cols-3 [@media(orientation:portrait)]:grid-cols-2 [@media(orientation:portrait)_and_(max-width:640px)]:grid-cols-1 [@media(max-width:1366px)_and_(any-pointer:coarse)]:grid-cols-2 max-[1024px]:grid-cols-2 max-[820px]:grid-cols-2 max-[640px]:grid-cols-1 ${desktopFinePointerClass}:grid-cols-3 ${desktopFinePointerClass}:gap-4 ${ownerLandscapeClass}:gap-3`
+                : `sales-cart-scroll grid h-full min-h-0 touch-auto select-auto content-start gap-4 p-1 pb-6 pr-0 grid-cols-3 [@media(orientation:portrait)]:grid-cols-2 [@media(orientation:portrait)_and_(max-width:640px)]:grid-cols-1 [@media(max-width:1366px)_and_(any-pointer:coarse)]:grid-cols-2 max-[1024px]:grid-cols-2 max-[820px]:grid-cols-2 max-[640px]:grid-cols-1 ${desktopFinePointerClass}:grid-cols-3 ${desktopFinePointerClass}:gap-4 ${ownerLandscapeClass}:gap-3`
             }
             aria-label="products"
           >

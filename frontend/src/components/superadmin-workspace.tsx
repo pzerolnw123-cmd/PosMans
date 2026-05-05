@@ -21,12 +21,12 @@ const sectionMeta: Record<SuperAdminSectionKey, { label: string; href: string }>
 };
 
 function SectionGrid({ children }: { children: ReactNode }) {
-  return <div className="mt-4 grid grid-cols-2 gap-[14px] max-[1180px]:grid-cols-1 max-[820px]:gap-4">{children}</div>;
+  return <div className="mt-4 grid grid-cols-2 gap-[14px] [@media(orientation:portrait)]:grid-cols-1 [@media(orientation:portrait)]:gap-4 max-[1180px]:grid-cols-1 max-[820px]:gap-4">{children}</div>;
 }
 
 function ThreeUpStats({ items }: { items: Array<[string, string]> }) {
   return (
-    <div className="grid grid-cols-3 gap-[10px] max-[1180px]:grid-cols-2 max-[720px]:grid-cols-1">
+    <div className="grid grid-cols-3 gap-[10px] [@media(orientation:portrait)]:grid-cols-2 [@media(orientation:portrait)_and_(max-width:640px)]:grid-cols-1 max-[1180px]:grid-cols-2 max-[720px]:grid-cols-1">
       {items.map(([label, value]) => (
         <div
           key={label}
@@ -239,10 +239,10 @@ export function SuperAdminWorkspace({ session, activeSection }: SuperAdminWorksp
   const screen = renderSuperAdminScreen(activeSection);
 
   return (
-    <main className="workspace-screen-shell h-screen overflow-hidden max-[1180px]:h-auto max-[1180px]:overflow-auto">
-      <div className="workspace-screen-frame mx-auto h-screen w-[min(1400px,calc(100%-32px))] px-0 py-3 max-[1180px]:h-auto max-[1180px]:w-[min(100%-24px,100%)] max-[1180px]:py-3 max-[820px]:w-[min(100%-16px,100%)] max-[720px]:pt-2.5">
+    <main className="workspace-screen-shell h-screen overflow-hidden [@media(orientation:portrait)]:h-auto [@media(orientation:portrait)]:overflow-auto max-[1180px]:h-auto max-[1180px]:overflow-auto">
+      <div className="workspace-screen-frame mx-auto h-screen w-[min(1400px,calc(100%-32px))] px-0 py-3 [@media(orientation:portrait)]:h-auto [@media(orientation:portrait)]:w-[min(100%-24px,100%)] [@media(orientation:portrait)]:py-3 [@media(orientation:portrait)_and_(max-width:720px)]:w-[min(100%-16px,100%)] [@media(orientation:portrait)_and_(max-width:720px)]:pt-2.5 max-[1180px]:h-auto max-[1180px]:w-[min(100%-24px,100%)] max-[1180px]:py-3 max-[820px]:w-[min(100%-16px,100%)] max-[720px]:pt-2.5">
         <BackofficeShell
-          className="workspace-screen-content h-[calc(100vh-24px)] max-[1180px]:h-auto"
+          className="workspace-screen-content h-[calc(100vh-24px)] [@media(orientation:portrait)]:h-auto max-[1180px]:h-auto"
           brandName="POS MANS"
           brandSubtitle="ชุดควบคุมระดับระบบสำหรับดูร้านทั้งหมด เจ้าของร้าน ความปลอดภัย และการตั้งค่า platform"
           eyebrow="SUPERADMIN WORKSPACE"

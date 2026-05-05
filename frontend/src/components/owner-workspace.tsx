@@ -135,7 +135,7 @@ export async function OwnerWorkspace({ session, paymentStore, activeSection }: O
   const showFooterCards = !screen.standalone;
   const shell = (
     <BackofficeShell
-      className="workspace-screen-content h-[calc(100dvh-24px)] max-[820px]:h-auto"
+      className="workspace-screen-content h-[calc(100dvh-24px)] [@media(orientation:portrait)]:h-auto max-[820px]:h-auto"
       brandName="Menu Store"
       brandSubtitle="โหมดใช้งานหลักสำหรับเจ้าของร้านที่ต้องการขาย จัดการสินค้า ดูรายงาน และควบคุมภาพหน้าร้านได้จากบัญชีเดียว"
       eyebrow="OWNER WORKSPACE"
@@ -180,7 +180,7 @@ export async function OwnerWorkspace({ session, paymentStore, activeSection }: O
       )}
 
       {showFooterCards ? (
-        <div className="grid grid-cols-2 gap-[18px] max-[1180px]:grid-cols-1">
+        <div className="grid grid-cols-2 gap-[18px] [@media(orientation:portrait)]:grid-cols-1 [@media(orientation:portrait)]:gap-4 max-[1180px]:grid-cols-1">
           <PanelCard eyebrow="Store Snapshot" title="สถานะการใช้งาน" description="ข้อมูลของร้านเท่านั้น ไม่ปะปนงานระดับ platform" className="px-[18px] py-4">
             <ThreeUpStats items={[["ร้าน", storeName], ["ผู้ใช้", ownerName], ["Session", "Secure"]]} />
           </PanelCard>
@@ -199,8 +199,8 @@ export async function OwnerWorkspace({ session, paymentStore, activeSection }: O
   );
 
   return (
-    <main className="workspace-screen-shell h-dvh overflow-hidden max-[820px]:h-auto max-[820px]:overflow-auto">
-      <div className="workspace-screen-frame mx-auto h-dvh w-[min(1700px,calc(100%-32px))] px-0 py-3 max-[820px]:h-auto max-[820px]:w-[min(100%-16px,100%)] max-[820px]:py-3 max-[720px]:pt-2.5">
+    <main className="workspace-screen-shell h-dvh overflow-hidden [@media(orientation:portrait)]:h-auto [@media(orientation:portrait)]:overflow-auto max-[820px]:h-auto max-[820px]:overflow-auto">
+      <div className="workspace-screen-frame mx-auto h-dvh w-[min(1700px,calc(100%-32px))] px-0 py-3 [@media(orientation:portrait)]:h-auto [@media(orientation:portrait)]:w-[min(100%-24px,100%)] [@media(orientation:portrait)]:py-3 [@media(orientation:portrait)_and_(max-width:720px)]:w-[min(100%-16px,100%)] [@media(orientation:portrait)_and_(max-width:720px)]:pt-2.5 max-[820px]:h-auto max-[820px]:w-[min(100%-16px,100%)] max-[820px]:py-3 max-[720px]:pt-2.5">
         <OwnerLogoProvider initialLogoUrl={session.user.store?.logoUrl}>{shell}</OwnerLogoProvider>
       </div>
     </main>

@@ -11,7 +11,7 @@ import type { OwnerSectionKey } from "@/components/owner-workspace";
 const storeNamePrompt = "กรอกชื่อร้าน";
 const ownerNamePrompt = "กรอกชื่อของคุณ";
 
-const ownerPageWithHeaderClass = `grid h-full min-h-0 grid-rows-[156px_minmax(0,1fr)] gap-[18px] ${ipadAirOnlyGridRowsSingleClass} max-[820px]:h-auto max-[820px]:grid-rows-[auto_auto] [@media(max-height:860px)_and_(max-width:820px)]:h-auto [@media(max-height:860px)_and_(max-width:820px)]:grid-rows-[auto_auto]`;
+const ownerPageWithHeaderClass = `grid h-full min-h-0 grid-rows-[156px_minmax(0,1fr)] gap-[18px] ${ipadAirOnlyGridRowsSingleClass} [@media(orientation:portrait)]:h-auto [@media(orientation:portrait)]:grid-rows-[auto_auto] [@media(orientation:portrait)]:gap-4 max-[820px]:h-auto max-[820px]:grid-rows-[auto_auto] [@media(max-height:860px)_and_(max-width:820px)]:h-auto [@media(max-height:860px)_and_(max-width:820px)]:grid-rows-[auto_auto]`;
 const ownerPageWithHeaderGapClass = `${ownerPageWithHeaderClass} max-[820px]:gap-4`;
 
 function hasPromptPayValue(settings: OwnerPaymentSettingsValue) {
@@ -280,7 +280,7 @@ export async function renderOwnerScreen(
           className={ipadAirOnlyHideClass}
         />
 
-        <div className="grid min-h-0 grid-cols-[minmax(250px,1fr)_minmax(250px,1fr)_minmax(250px,1fr)] items-start gap-[12px] max-[980px]:grid-cols-1 max-[820px]:gap-4">
+        <div className="grid min-h-0 grid-cols-[minmax(250px,1fr)_minmax(250px,1fr)_minmax(250px,1fr)] items-start gap-[12px] [@media(orientation:portrait)]:grid-cols-1 [@media(orientation:portrait)]:gap-4 max-[980px]:grid-cols-1 max-[820px]:gap-4">
           <div className="grid gap-[12px] max-[820px]:gap-4">
           <PanelCard
             eyebrow="ความปลอดภัยของบัญชี"

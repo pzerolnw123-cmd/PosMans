@@ -60,7 +60,7 @@ const dangerAlertClass = "border-[var(--alert-danger-border)] [background:var(--
 const dangerAlertEyebrowClass = "text-[var(--alert-danger-eyebrow)]";
 const dangerAlertMessageClass = "text-[var(--alert-danger-text)]";
 const sidebarShellClass =
-  "h-fit overflow-hidden rounded-none border border-[var(--border)] bg-[var(--surface)] p-3 shadow-[var(--shadow-card)] backdrop-blur-[14px] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:p-2.5 [@media(min-width:821px)_and_(max-width:1240px)_and_(orientation:landscape)]:backdrop-blur-none max-[1180px]:p-2.5 max-[640px]:p-2";
+  "h-fit overflow-hidden rounded-none border border-[var(--border)] bg-[var(--surface)] p-3 shadow-[var(--shadow-card)] backdrop-blur-[14px] [@media(min-width:821px)_and_(max-width:1240px)_and_(orientation:portrait)]:p-2.5 [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:p-2.5 [@media(min-width:821px)_and_(max-width:1240px)_and_(orientation:landscape)]:backdrop-blur-none max-[1180px]:p-2.5 max-[640px]:p-2";
 const sidebarHeaderClass =
   "border-b border-b-[var(--border)] px-[10px] pb-[18px] pt-[14px] [@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:pb-[12px] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:pb-[12px]";
 const sidebarEyebrowClass = eyebrowClass;
@@ -178,7 +178,7 @@ export function BackofficeShell({
     ? "grid-cols-[clamp(244px,18vw,304px)_minmax(0,1fr)]"
     : "grid-cols-[clamp(244px,18vw,304px)_minmax(0,1fr)_clamp(232px,17vw,280px)]";
   const mainScrollClass =
-    "workspace-main-scroll grid h-full min-h-0 gap-[18px] overflow-y-auto overflow-x-hidden pr-0 max-[820px]:h-auto max-[820px]:overflow-visible max-[820px]:pr-0 max-[820px]:gap-4";
+    "workspace-main-scroll grid h-full min-h-0 gap-[18px] overflow-y-auto overflow-x-hidden pr-0 [@media(orientation:portrait)]:h-auto [@media(orientation:portrait)]:overflow-visible [@media(orientation:portrait)]:gap-4 max-[820px]:h-auto max-[820px]:overflow-visible max-[820px]:pr-0 max-[820px]:gap-4";
 
   const handleSidebarNavigation = useCallback(
     (href: string) => {
@@ -192,9 +192,9 @@ export function BackofficeShell({
   return (
     <BackofficeShellAlertContext.Provider value={contextValue}>
       <div
-        className={`relative mx-auto grid h-full min-h-0 w-full max-w-[1760px] ${shellGridClass} items-start gap-[18px] overflow-hidden [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:grid-cols-[252px_minmax(0,1fr)] [@media(max-width:1366px)_and_(any-pointer:coarse)]:grid-cols-[clamp(244px,18vw,304px)_minmax(0,1fr)] max-[1024px]:gap-4 max-[820px]:grid-cols-1 ${className}`.trim()}
+        className={`relative mx-auto grid h-full min-h-0 w-full max-w-[1760px] ${shellGridClass} items-start gap-[18px] overflow-hidden [@media(orientation:portrait)]:h-auto [@media(orientation:portrait)]:grid-cols-1 [@media(orientation:portrait)]:overflow-visible [@media(orientation:portrait)]:gap-4 [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)]:grid-cols-[252px_minmax(0,1fr)] [@media(max-width:1366px)_and_(any-pointer:coarse)]:grid-cols-[clamp(244px,18vw,304px)_minmax(0,1fr)] max-[1024px]:gap-4 max-[820px]:grid-cols-1 ${className}`.trim()}
       >
-        <div className="relative grid max-h-full content-start gap-[14px] overflow-visible max-[1280px]:max-h-none max-[820px]:gap-4">
+        <div className="relative grid max-h-full content-start gap-[14px] overflow-visible [@media(orientation:portrait)]:max-h-none [@media(orientation:portrait)]:gap-4 max-[1280px]:max-h-none max-[820px]:gap-4">
           <aside className={sidebarShellClass}>
             <div className={sidebarHeaderClass}>
               <p className={sidebarEyebrowClass}>{eyebrow}</p>
@@ -202,7 +202,7 @@ export function BackofficeShell({
               <p className={sidebarSubtitleClass}>{brandSubtitle}</p>
             </div>
 
-            <nav className="grid gap-[8px] px-[2px] py-3 [@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:gap-[4px] [@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:py-2 [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:gap-[4px] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:py-2 max-[820px]:grid-cols-2 max-[700px]:grid-cols-1 max-[640px]:gap-[6px]" aria-label="Primary navigation">
+            <nav className="grid gap-[8px] px-[2px] py-3 [@media(orientation:portrait)]:grid-cols-2 [@media(orientation:portrait)]:gap-[6px] [@media(orientation:portrait)]:py-2 [@media(orientation:portrait)_and_(max-width:700px)]:grid-cols-1 [@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:gap-[4px] [@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:py-2 [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:gap-[4px] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:py-2 max-[820px]:grid-cols-2 max-[700px]:grid-cols-1 max-[640px]:gap-[6px]" aria-label="Primary navigation">
               {sidebarItems.map((item) => (
                 <Link
                   key={item.label}
@@ -249,7 +249,7 @@ export function BackofficeShell({
             </section>
           ) : null}
 
-          <div className="hidden rounded-none border border-[var(--border)] bg-[var(--surface)] p-3 shadow-[var(--shadow-card)] backdrop-blur-[14px] max-[820px]:block [@media(max-width:1366px)_and_(any-pointer:coarse)]:hidden">
+          <div className="hidden rounded-none border border-[var(--border)] bg-[var(--surface)] p-3 shadow-[var(--shadow-card)] backdrop-blur-[14px] [@media(orientation:portrait)]:block max-[820px]:block [@media(max-width:1366px)_and_(any-pointer:coarse)]:hidden">
             <StoreStatusSummary brandName={profileName} statusStoreContent={statusStoreContent} />
             <div className="mt-4">
               <ProfileSummaryCard
@@ -270,7 +270,7 @@ export function BackofficeShell({
           </OwnerProfileContext.Provider>
         </div>
 
-        <aside className={`${hideDesktopStatusStore ? "hidden" : "flex"} max-h-full min-w-0 self-start overflow-visible rounded-none border border-[var(--border)] bg-[var(--surface)] p-3 shadow-[var(--shadow-card)] backdrop-blur-[14px] [@media(min-width:821px)_and_(max-width:1240px)_and_(orientation:landscape)]:backdrop-blur-none max-[1240px]:hidden [@media(max-width:1366px)_and_(any-pointer:coarse)]:hidden`}>
+        <aside className={`${hideDesktopStatusStore ? "hidden" : "flex"} max-h-full min-w-0 self-start overflow-visible rounded-none border border-[var(--border)] bg-[var(--surface)] p-3 shadow-[var(--shadow-card)] backdrop-blur-[14px] [@media(orientation:portrait)]:hidden [@media(min-width:821px)_and_(max-width:1240px)_and_(orientation:landscape)]:backdrop-blur-none max-[1240px]:hidden [@media(max-width:1366px)_and_(any-pointer:coarse)]:hidden`}>
           <div className="flex w-full flex-col">
             <StoreStatusSummary brandName={profileName} statusStoreContent={statusStoreContent} />
             <div className="mt-4">

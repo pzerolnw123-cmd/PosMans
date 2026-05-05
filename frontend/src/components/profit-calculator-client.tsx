@@ -441,9 +441,9 @@ export function ProfitCalculatorClient() {
   }
 
   return (
-    <div className="grid h-full min-h-0 grid-cols-[minmax(0,0.65fr)_minmax(280px,0.35fr)] items-stretch gap-[18px] max-[820px]:h-auto max-[820px]:grid-cols-1">
-      <section className="grid h-full min-h-0 grid-rows-[auto_auto_minmax(0,1fr)] gap-[18px] overflow-hidden rounded-none border border-[var(--border)] bg-[var(--panel-strong)] px-5 py-5 shadow-[var(--shadow-soft)] max-[820px]:h-fit max-[820px]:overflow-visible max-[820px]:px-4 max-[820px]:py-4">
-        <div className="grid grid-cols-[minmax(0,1fr)_minmax(280px,auto)] items-start gap-3 max-[720px]:grid-cols-1">
+    <div className="grid h-full min-h-0 grid-cols-[minmax(0,0.65fr)_minmax(280px,0.35fr)] items-stretch gap-[18px] [@media(orientation:portrait)]:h-auto [@media(orientation:portrait)]:grid-cols-1 [@media(orientation:portrait)]:gap-4 max-[820px]:h-auto max-[820px]:grid-cols-1">
+      <section className="grid h-full min-h-0 grid-rows-[auto_auto_minmax(0,1fr)] gap-[18px] overflow-hidden rounded-none border border-[var(--border)] bg-[var(--panel-strong)] px-5 py-5 shadow-[var(--shadow-soft)] [@media(orientation:portrait)]:h-fit [@media(orientation:portrait)]:overflow-visible [@media(orientation:portrait)]:px-4 [@media(orientation:portrait)]:py-4 max-[820px]:h-fit max-[820px]:overflow-visible max-[820px]:px-4 max-[820px]:py-4">
+        <div className="grid grid-cols-[minmax(0,1fr)_minmax(280px,auto)] items-start gap-3 [@media(orientation:portrait)]:grid-cols-1 max-[720px]:grid-cols-1">
           <div>
             <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[var(--eyebrow)]">Real Sales Costing</p>
             <h2 className="my-[7px] text-[clamp(1.5rem,2.4vw,2.25rem)] leading-none tracking-[-0.055em] text-[var(--foreground)]">คำนวณกำไร</h2>
@@ -476,7 +476,7 @@ export function ProfitCalculatorClient() {
           </div>
         </div>
 
-        <div className="grid grid-cols-[repeat(4,minmax(118px,1fr))] items-start gap-[10px] max-[820px]:grid-cols-2 max-[640px]:grid-cols-1">
+        <div className="grid grid-cols-[repeat(4,minmax(118px,1fr))] items-start gap-[10px] [@media(orientation:portrait)]:grid-cols-2 [@media(orientation:portrait)_and_(max-width:640px)]:grid-cols-1 max-[820px]:grid-cols-2 max-[640px]:grid-cols-1">
           {[
             ["ยอดขายจริง", formatBaht(calculation.sales)],
             ["จำนวนบิล", `${(report?.totals.orders || 0).toLocaleString("th-TH")} บิล`],
@@ -585,7 +585,7 @@ export function ProfitCalculatorClient() {
         </div>
       </section>
 
-      <aside className="flex h-full min-h-0 flex-col justify-between gap-[10px] overflow-hidden rounded-none border border-[var(--border)] bg-[var(--panel-strong)] px-4 py-4 shadow-[var(--shadow-soft)] max-[820px]:h-fit max-[820px]:justify-start max-[820px]:overflow-visible max-[820px]:px-4 max-[820px]:py-4">
+      <aside className="flex h-full min-h-0 flex-col justify-between gap-[10px] overflow-hidden rounded-none border border-[var(--border)] bg-[var(--panel-strong)] px-4 py-4 shadow-[var(--shadow-soft)] [@media(orientation:portrait)]:h-fit [@media(orientation:portrait)]:justify-start [@media(orientation:portrait)]:overflow-visible max-[820px]:h-fit max-[820px]:justify-start max-[820px]:overflow-visible max-[820px]:px-4 max-[820px]:py-4">
         <div>
           <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[var(--eyebrow)]">Profit Snapshot</p>
           <h2 className="my-[5px] text-[clamp(1.2rem,1.65vw,1.55rem)] leading-none tracking-[-0.04em] text-[var(--foreground)]">สรุปกำไร</h2>
