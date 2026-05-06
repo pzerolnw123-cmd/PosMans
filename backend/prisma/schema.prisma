@@ -225,6 +225,7 @@ model CustomerDisplaySession {
   id              String                @id @default(cuid())
   name            String
   publicTokenHash String                @unique
+  ownerControlTokenHash String?         @unique
   status          CustomerDisplayStatus @default(IDLE)
   amount          Int                   @default(0)
   paymentMethod   PaymentMethod?
@@ -237,10 +238,13 @@ model CustomerDisplaySession {
   createdAt       DateTime              @default(now())
   updatedAt       DateTime              @updatedAt
   storeId         String
+  createdBySessionId String?
   store           Store                 @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  createdBySession Session?             @relation(fields: [createdBySessionId], references: [id], onDelete: SetNull)
 
   @@index([storeId, updatedAt])
   @@index([revokedAt, expiresAt])
+  @@index([createdBySessionId])
 }
 
 model Session {
@@ -252,6 +256,7 @@ model Session {
   createdAt DateTime @default(now())
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  customerDisplaySessions CustomerDisplaySession[]
 
   @@index([userId])
   @@index([expiresAt])

@@ -1,7 +1,8 @@
 "use client";
 
 /* eslint-disable @next/next/no-img-element -- customer display accepts token-scoped data URLs and store-hosted images that may not be available through next/image loaders. */
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { isCustomerDisplayInvalidated } from "@/components/customer-display-session";
 import { Loader } from "@/components/ui-primitives";
 import { formatBaht, type PaymentMethod } from "@/components/payment-checkout-client/shared";
 import { defaultOwnerTheme, isOwnerTheme, readStoredOwnerTheme, subscribeOwnerTheme, type OwnerThemeId } from "@/lib/owner-theme";
@@ -18,6 +19,7 @@ type CustomerDisplayState = {
   message: string | null;
   saleCode: string | null;
   updatedAt: string;
+  revokedAt?: string | null;
 };
 
 type CustomerDisplayStateEvent = CustomerDisplayState & {
@@ -52,6 +54,7 @@ export function CustomerDisplayClient({ displayId, token }: { displayId: string;
   const [payload, setPayload] = useState<CustomerDisplayPayload | null>(null);
   const [localTheme, setLocalTheme] = useState<OwnerThemeId | null>(() => readStoredOwnerTheme());
   const [connectionState, setConnectionState] = useState<"connecting" | "live" | "offline" | "blocked">("connecting");
+  const [locallyInvalidated, setLocallyInvalidated] = useState(false);
   const connectionStateRef = useRef(connectionState);
   const lastStoreSnapshotAtRef = useRef(0);
   const query = useMemo(() => new URLSearchParams({ token }).toString(), [token]);
@@ -66,14 +69,8 @@ export function CustomerDisplayClient({ displayId, token }: { displayId: string;
   const payloadTheme = isOwnerTheme(payload?.store.ownerTheme) ? payload.store.ownerTheme : null;
   const displayTheme = payloadTheme || localTheme || defaultOwnerTheme;
 
-  useEffect(() => {
-    connectionStateRef.current = connectionState;
-  }, [connectionState]);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    async function loadSnapshot() {
+  const loadSnapshot = useCallback(
+    async (cancelled: () => boolean) => {
       try {
         const response = await fetch(`/api/customer-displays/${encodeURIComponent(displayId)}/state?${query}`, {
           cache: "no-store",
@@ -81,21 +78,42 @@ export function CustomerDisplayClient({ displayId, token }: { displayId: string;
         const data = (await response.json().catch(() => null)) as CustomerDisplayPayload | { error?: string } | null;
 
         if (!response.ok) {
-          setConnectionState("blocked");
+          if (!cancelled()) {
+            if (response.status === 403 || response.status === 404 || response.status === 410) {
+              setPayload(null);
+            }
+            setConnectionState(response.status === 403 || response.status === 404 || response.status === 410 ? "blocked" : "offline");
+          }
           return;
         }
 
-        if (!cancelled && data && "display" in data) {
+        if (!cancelled() && data && "display" in data) {
+          if (data.display.revokedAt) {
+            setConnectionState("blocked");
+            return;
+          }
+
           setPayload(data);
         }
       } catch {
-        if (!cancelled) {
+        if (!cancelled()) {
           setConnectionState("offline");
         }
       }
-    }
+    },
+    [displayId, query],
+  );
 
-    loadSnapshot();
+  useEffect(() => {
+    connectionStateRef.current = connectionState;
+  }, [connectionState]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const isCancelled = () => cancelled;
+    const initialSnapshotTimer = window.setTimeout(() => {
+      void loadSnapshot(isCancelled);
+    }, 0);
 
     const events = new EventSource(eventSourceUrl);
     events.addEventListener("open", () => {
@@ -110,6 +128,10 @@ export function CustomerDisplayClient({ displayId, token }: { displayId: string;
 
       try {
         const display = JSON.parse((event as MessageEvent).data) as CustomerDisplayStateEvent;
+        if (display.revokedAt) {
+          setConnectionState("blocked");
+          return;
+        }
         const { ownerTheme, ...displayState } = display;
         setPayload((current) => {
           if (!current) {
@@ -160,9 +182,27 @@ export function CustomerDisplayClient({ displayId, token }: { displayId: string;
 
     return () => {
       cancelled = true;
+      window.clearTimeout(initialSnapshotTimer);
       events.close();
     };
-  }, [displayId, eventSourceUrl, query]);
+  }, [eventSourceUrl, loadSnapshot]);
+
+  useEffect(() => {
+    if (payload || connectionState === "blocked") {
+      return;
+    }
+
+    let cancelled = false;
+    const isCancelled = () => cancelled;
+    const retryTimer = window.setInterval(() => {
+      void loadSnapshot(isCancelled);
+    }, 1500);
+
+    return () => {
+      cancelled = true;
+      window.clearInterval(retryTimer);
+    };
+  }, [connectionState, loadSnapshot, payload]);
 
   useEffect(() => {
     let cancelled = false;
@@ -171,6 +211,11 @@ export function CustomerDisplayClient({ displayId, token }: { displayId: string;
       try {
         const response = await fetch(storeSnapshotUrl, { cache: "no-store" });
         const data = (await response.json().catch(() => null)) as CustomerDisplayStorePayload | null;
+        if (!cancelled && (response.status === 403 || response.status === 404 || response.status === 410)) {
+          setPayload(null);
+          setConnectionState("blocked");
+          return;
+        }
         if (!cancelled && response.ok && data?.store) {
           setPayload((current) => (current ? { ...current, store: data.store } : current));
         }
@@ -196,6 +241,28 @@ export function CustomerDisplayClient({ displayId, token }: { displayId: string;
   }, [storeSnapshotUrl]);
 
   useEffect(() => {
+    if (connectionState === "blocked") {
+      return;
+    }
+
+    let cancelled = false;
+    const isCancelled = () => cancelled;
+    const pollDelay = connectionState === "live" ? 30000 : 1500;
+    const initialTimer = window.setTimeout(() => {
+      void loadSnapshot(isCancelled);
+    }, 0);
+    const snapshotInterval = window.setInterval(() => {
+      void loadSnapshot(isCancelled);
+    }, pollDelay);
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(initialTimer);
+      window.clearInterval(snapshotInterval);
+    };
+  }, [connectionState, loadSnapshot]);
+
+  useEffect(() => {
     function syncStoredTheme() {
       setLocalTheme(readStoredOwnerTheme());
     }
@@ -208,7 +275,27 @@ export function CustomerDisplayClient({ displayId, token }: { displayId: string;
     document.documentElement.dataset.storeTheme = displayTheme;
   }, [displayTheme]);
 
+  useEffect(() => {
+    function syncInvalidationState(event?: StorageEvent) {
+      if (event && event.key && event.key !== `pos-mans.customerDisplay.invalidated.${displayId}`) {
+        return;
+      }
+
+      setLocallyInvalidated(isCustomerDisplayInvalidated(displayId));
+    }
+
+    syncInvalidationState();
+    window.addEventListener("storage", syncInvalidationState);
+    return () => {
+      window.removeEventListener("storage", syncInvalidationState);
+    };
+  }, [displayId]);
+
   if (!token) {
+    return <DisplayBlocked />;
+  }
+
+  if (locallyInvalidated) {
     return <DisplayBlocked />;
   }
 

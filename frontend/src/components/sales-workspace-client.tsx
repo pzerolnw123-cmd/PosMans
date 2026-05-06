@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useMemo, useRef, useState, type PointerEvent } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type KeyboardEvent, type PointerEvent } from "react";
 import { useRouter } from "next/navigation";
 import { setStoredCustomerDisplayIdle } from "@/components/customer-display-session";
 import { requestProductList } from "@/components/product-management-studio/lib";
@@ -334,6 +334,17 @@ export function SalesWorkspaceClient() {
     triggerAddAnimation(product.id);
   }
 
+  function handleProductCardKeyDown(event: KeyboardEvent<HTMLElement>, product: ProductItem, ready: boolean) {
+    if (!ready) {
+      return;
+    }
+
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      handleAddToCart(product);
+    }
+  }
+
   function changeQuantity(productId: string, direction: 1 | -1) {
     setCartItems((current) =>
       current.map((item) => {
@@ -400,7 +411,7 @@ export function SalesWorkspaceClient() {
   }
 
   function handleProductPointerDown(event: PointerEvent<HTMLDivElement>) {
-    if (event.button !== 0 || (event.target instanceof HTMLElement && event.target.closest("button"))) {
+    if (event.button !== 0 || (event.target instanceof HTMLElement && event.target.closest("button, [data-product-card='true']"))) {
       return;
     }
 
@@ -502,10 +513,16 @@ export function SalesWorkspaceClient() {
               return (
                 <article
                   key={product.id}
+                  data-product-card={ready ? "true" : undefined}
+                  role={ready ? "button" : undefined}
+                  tabIndex={ready ? 0 : undefined}
+                  aria-disabled={ready ? undefined : true}
+                  onClick={ready ? () => handleAddToCart(product) : undefined}
+                  onKeyDown={(event) => handleProductCardKeyDown(event, product, ready)}
                   className={
                     activePulse
-                      ? `relative grid min-h-[226px] animate-[cart-card-pop_520ms_cubic-bezier(.2,.8,.2,1)] content-start gap-3 overflow-hidden rounded-none border border-[var(--cart-glow-border)] [background:var(--panel-elevated)] p-[14px] pb-[68px] shadow-[var(--cart-shadow-mid)_0_8px_20px] ${desktopFinePointerClass}:min-h-[226px] ${desktopFinePointerClass}:gap-3 ${desktopFinePointerClass}:p-[14px] ${desktopFinePointerClass}:pb-[68px] ${ownerLandscapeClass}:min-h-[204px] ${ownerLandscapeClass}:gap-2.5 ${ownerLandscapeClass}:p-3 ${ownerLandscapeClass}:pb-[60px]`
-                      : `relative grid min-h-[226px] content-start gap-3 overflow-hidden rounded-none border border-[var(--border)] [background:var(--panel-elevated)] p-[14px] pb-[68px] transition-all duration-500 hover:-translate-y-0.5 hover:border-[var(--cart-glow-border-soft)] ${desktopFinePointerClass}:min-h-[226px] ${desktopFinePointerClass}:gap-3 ${desktopFinePointerClass}:p-[14px] ${desktopFinePointerClass}:pb-[68px] ${ownerLandscapeClass}:min-h-[204px] ${ownerLandscapeClass}:gap-2.5 ${ownerLandscapeClass}:p-3 ${ownerLandscapeClass}:pb-[60px]`
+                      ? `relative grid min-h-[226px] animate-[cart-card-pop_520ms_cubic-bezier(.2,.8,.2,1)] content-start gap-3 overflow-hidden rounded-none border border-[var(--cart-glow-border)] [background:var(--panel-elevated)] p-[14px] pb-[68px] shadow-[var(--cart-shadow-mid)_0_8px_20px] ${ready ? "cursor-pointer" : "cursor-default"} ${desktopFinePointerClass}:min-h-[226px] ${desktopFinePointerClass}:gap-3 ${desktopFinePointerClass}:p-[14px] ${desktopFinePointerClass}:pb-[68px] ${ownerLandscapeClass}:min-h-[204px] ${ownerLandscapeClass}:gap-2.5 ${ownerLandscapeClass}:p-3 ${ownerLandscapeClass}:pb-[60px]`
+                      : `relative grid min-h-[226px] content-start gap-3 overflow-hidden rounded-none border border-[var(--border)] [background:var(--panel-elevated)] p-[14px] pb-[68px] transition-all duration-500 ${ready ? "cursor-pointer hover:-translate-y-0.5 hover:border-[var(--cart-glow-border-soft)]" : "cursor-default"} ${desktopFinePointerClass}:min-h-[226px] ${desktopFinePointerClass}:gap-3 ${desktopFinePointerClass}:p-[14px] ${desktopFinePointerClass}:pb-[68px] ${ownerLandscapeClass}:min-h-[204px] ${ownerLandscapeClass}:gap-2.5 ${ownerLandscapeClass}:p-3 ${ownerLandscapeClass}:pb-[60px]`
                   }
                 >
                   {added ? (
@@ -552,7 +569,10 @@ export function SalesWorkspaceClient() {
                         : "absolute bottom-[14px] left-[14px] inline-flex h-[42px] min-w-[126px] cursor-not-allowed items-center justify-center gap-2 rounded-[10px] border border-[var(--border)] bg-[var(--surface-muted)] px-4 text-[0.92rem] font-bold text-[var(--foreground-soft)] opacity-60 max-[1366px]:h-[48px] max-[1366px]:text-[1.1rem] [@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:h-[44px] [@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:min-w-[116px] [@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:px-3 [@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:text-[0.92rem] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:h-[44px] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:min-w-[116px] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:px-3 [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:text-[0.92rem]"
                     }
                     disabled={!ready}
-                    onClick={() => handleAddToCart(product)}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      handleAddToCart(product);
+                    }}
                   >
                     <BasketIcon />
                     เพิ่มตะกร้า

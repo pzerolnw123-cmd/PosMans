@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import type { SessionPayload } from "@/lib/session";
 import { BackofficeShell, PanelCard } from "@/components/backoffice-shell";
 import { LogoutButton } from "@/components/logout-button";
+import { SessionExpiryGuard } from "@/components/session-expiry-guard";
 import { StatusPill } from "@/components/ui-primitives";
 
 export type SuperAdminSectionKey = "overview" | "stores" | "owners" | "security" | "audit" | "system";
@@ -258,6 +259,7 @@ export function SuperAdminWorkspace({ session, activeSection }: SuperAdminWorksp
           profileStatus="ออนไลน์"
           profileAction={<LogoutButton />}
         >
+          <SessionExpiryGuard initialExpiresAt={session.session.expiresAt} />
           <PanelCard eyebrow={screen.eyebrow} title={screen.title} description={screen.description} actions={screen.actions}>
             {screen.body}
           </PanelCard>

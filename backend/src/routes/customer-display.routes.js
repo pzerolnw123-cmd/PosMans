@@ -25,6 +25,12 @@ const displayCreateSchema = z.object({
     .transform((value) => assertSafePlainText(value, "displayName")),
 });
 
+const displayRevokeSchema = z
+  .object({
+    controlToken: z.string().min(32).max(160),
+  })
+  .strict();
+
 const displayStateSchema = z
   .object({
     status: z.enum(["IDLE", "PAYMENT", "SUCCESS"]),
@@ -77,6 +83,7 @@ function serializeDisplay(display) {
     message: display.message,
     saleCode: display.saleCode,
     updatedAt: display.updatedAt,
+    revokedAt: display.revokedAt,
   };
 }
 
@@ -137,6 +144,22 @@ async function findPublicDisplay(displayId, token) {
   return display;
 }
 
+async function findControllableDisplay(displayId, controlToken) {
+  if (!controlToken || controlToken.length < 32 || controlToken.length > 160) {
+    throw new AppError("ไม่สามารถปิดจอลูกค้านี้ได้", 403, { code: "DISPLAY_FORBIDDEN" });
+  }
+
+  const display = await prisma.customerDisplaySession.findUnique({
+    where: { id: displayId },
+  });
+
+  if (!display || !display.ownerControlTokenHash || display.revokedAt || !displayTokenMatches(controlToken, display.ownerControlTokenHash)) {
+    throw new AppError("ไม่สามารถปิดจอลูกค้านี้ได้", 403, { code: "DISPLAY_FORBIDDEN" });
+  }
+
+  return display;
+}
+
 router.get("/", requireStoreRole(["OWNER"]), async (req, res, next) => {
   try {
     const storeId = await getRequiredOwnerStoreId(req, res);
@@ -157,11 +180,14 @@ router.post("/", requireTrustedOrigin, requireCsrf, requireStoreRole(["OWNER"]),
     const storeId = await getRequiredOwnerStoreId(req, res);
     const parsed = displayCreateSchema.parse(req.body || {});
     const token = createDisplayToken();
+    const controlToken = createDisplayToken();
     const display = await prisma.customerDisplaySession.create({
       data: {
         storeId,
+        createdBySessionId: req.session.id,
         name: parsed.name,
         publicTokenHash: hashDisplayToken(token),
+        ownerControlTokenHash: hashDisplayToken(controlToken),
         expiresAt: new Date(Date.now() + displaySessionDays * 24 * 60 * 60 * 1000),
       },
     });
@@ -177,7 +203,7 @@ router.post("/", requireTrustedOrigin, requireCsrf, requireStoreRole(["OWNER"]),
       metadata: { storeId },
     });
 
-    res.status(201).json({ display: serializeDisplay(display), token });
+    res.status(201).json({ display: serializeDisplay(display), token, controlToken });
   } catch (error) {
     next(error);
   }
@@ -189,9 +215,16 @@ router.patch("/:displayId/state", requireTrustedOrigin, requireCsrf, requireStor
     const parsed = displayStateSchema.parse(req.body || {});
     const normalizedStatus = parsed.status;
     const isIdle = normalizedStatus === "IDLE";
+    const existingDisplay = await prisma.customerDisplaySession.findUnique({
+      where: { id: req.params.displayId },
+      select: { ownerControlTokenHash: true },
+    });
+    const controlToken = existingDisplay?.ownerControlTokenHash ? null : createDisplayToken();
     const display = await prisma.customerDisplaySession.update({
       where: { id: req.params.displayId },
       data: {
+        createdBySessionId: req.session.id,
+        ...(controlToken ? { ownerControlTokenHash: hashDisplayToken(controlToken) } : {}),
         status: normalizedStatus,
         amount: isIdle ? 0 : parsed.amount ?? 0,
         paymentMethod: isIdle ? null : parsed.paymentMethod ?? null,
@@ -214,7 +247,7 @@ router.patch("/:displayId/state", requireTrustedOrigin, requireCsrf, requireStor
       metadata: { storeId: req.session.user.storeId, displayStatus: display.status },
     });
 
-    res.json({ display: serializeDisplay(display) });
+    res.json({ display: serializeDisplay(display), ...(controlToken ? { controlToken } : {}) });
   } catch (error) {
     next(error);
   }
@@ -241,6 +274,30 @@ router.delete("/:displayId", requireTrustedOrigin, requireCsrf, requireStoreRole
       metadata: { storeId: req.session.user.storeId },
     });
 
+    res.status(204).send();
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.post("/:displayId/revoke", requireTrustedOrigin, async (req, res, next) => {
+  try {
+    const parsed = displayRevokeSchema.parse(req.body || {});
+    await findControllableDisplay(req.params.displayId, parsed.controlToken);
+    const display = await prisma.customerDisplaySession.update({
+      where: { id: req.params.displayId },
+      data: {
+        status: "IDLE",
+        amount: 0,
+        paymentMethod: null,
+        qrDataUrl: null,
+        message: null,
+        saleCode: null,
+        revokedAt: new Date(),
+      },
+    });
+
+    broadcastDisplay(display);
     res.status(204).send();
   } catch (error) {
     next(error);

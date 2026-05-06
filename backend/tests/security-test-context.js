@@ -13,6 +13,8 @@ jest.mock("../src/lib/db", () => ({
     session: {
       create: jest.fn(),
       deleteMany: jest.fn(),
+      delete: jest.fn(),
+      findMany: jest.fn(),
       findUnique: jest.fn(),
       update: jest.fn(),
     },
@@ -178,6 +180,8 @@ function installSecurityTestLifecycle() {
   beforeEach(() => {
     jest.clearAllMocks();
     prisma.session.deleteMany.mockResolvedValue({ count: 0 });
+    prisma.session.delete.mockResolvedValue({ id: "session-1" });
+    prisma.session.findMany.mockResolvedValue([]);
     prisma.loginChallenge.deleteMany.mockResolvedValue({ count: 0 });
     prisma.auditLog.deleteMany.mockResolvedValue({ count: 0 });
     prisma.auditLog.create.mockResolvedValue({ id: "audit" });

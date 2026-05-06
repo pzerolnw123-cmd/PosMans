@@ -1,6 +1,7 @@
 const crypto = require("node:crypto");
 const { prisma } = require("../lib/db");
 const { env } = require("../config/env");
+const { revokeDisplaysForSessionIds } = require("./customer-display");
 
 const EXPIRED_SESSION_CLEANUP_INTERVAL_MS = 60 * 1000;
 const SESSION_REFRESH_THRESHOLD_MS = Math.min(5 * 60 * 1000, Math.floor(env.SESSION_IDLE_TIMEOUT_MS / 2));
@@ -54,11 +55,26 @@ async function cleanupExpiredSessions() {
   }
 
   lastExpiredSessionCleanupAt = now;
-  expiredSessionCleanupPromise = prisma.session
-    .deleteMany({ where: { expiresAt: { lte: new Date() } } })
-    .finally(() => {
-      expiredSessionCleanupPromise = null;
+  expiredSessionCleanupPromise = (async () => {
+    const expiredSessions = await prisma.session.findMany({
+      where: { expiresAt: { lte: new Date() } },
+      select: { id: true },
     });
+
+    if (expiredSessions.length === 0) {
+      return { count: 0 };
+    }
+
+    await revokeDisplaysForSessionIds(expiredSessions.map((session) => session.id));
+
+    return prisma.session.deleteMany({
+      where: {
+        id: { in: expiredSessions.map((session) => session.id) },
+      },
+    });
+  })().finally(() => {
+    expiredSessionCleanupPromise = null;
+  });
 
   return expiredSessionCleanupPromise;
 }
@@ -92,10 +108,26 @@ async function createSession({ userId, userAgent, ipAddress }) {
 
 async function deleteSession(token) {
   if (!token) return;
-  await prisma.session.deleteMany({ where: { tokenHash: hashToken(token) } });
+  const session = await prisma.session.findUnique({
+    where: { tokenHash: hashToken(token) },
+    select: { id: true },
+  });
+
+  if (!session) {
+    return;
+  }
+
+  await revokeDisplaysForSessionIds([session.id]);
+  await prisma.session.delete({ where: { id: session.id } });
 }
 
 async function deleteAllSessionsForUser(userId) {
+  const sessions = await prisma.session.findMany({
+    where: { userId },
+    select: { id: true },
+  });
+
+  await revokeDisplaysForSessionIds(sessions.map((session) => session.id));
   await prisma.session.deleteMany({ where: { userId } });
 }
 

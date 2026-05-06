@@ -6,6 +6,7 @@ import { LogoutButton } from "@/components/logout-button";
 import type { OwnerPaymentSettingsValue } from "@/components/owner-settings-client/shared";
 import { OwnerLogoProvider, OwnerLogoStatusPreview } from "@/components/owner-settings-client/logo-client";
 import { NoteStack, ThreeUpStats } from "@/components/owner-workspace/shared";
+import { SessionExpiryGuard } from "@/components/session-expiry-guard";
 
 export type OwnerSectionKey = "sales" | "payments" | "receipts" | "reports" | "menu" | "overview" | "calculator" | "settings";
 
@@ -160,6 +161,7 @@ export async function OwnerWorkspace({ session, paymentStore, activeSection }: O
       profileAction={<LogoutButton className={`mt-0 w-auto whitespace-nowrap px-3 py-2 text-[0.88rem] min-h-[34px] ${ipadAirHideClass}`} />}
       statusStoreContent={<OwnerLogoStatusPreview />}
     >
+      <SessionExpiryGuard initialExpiresAt={session.session.expiresAt} />
       {screen.standalone ? (
         screen.body
       ) : (

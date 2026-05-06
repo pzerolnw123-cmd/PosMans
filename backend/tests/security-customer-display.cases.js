@@ -39,11 +39,14 @@ describe("customer display security", () => {
       expect.objectContaining({
         data: expect.objectContaining({
           storeId: "store-1",
+          createdBySessionId: "session-1",
           name: "iPad counter",
           publicTokenHash: expect.not.stringContaining(response.body.token),
+          ownerControlTokenHash: expect.not.stringContaining(response.body.controlToken),
         }),
       }),
     );
+    expect(response.body.controlToken).toEqual(expect.any(String));
   });
 
   test("rejects public display access when token is wrong", async () => {
@@ -83,5 +86,79 @@ describe("customer display security", () => {
     expect(response.status).toBe(200);
     expect(response.body.display.amount).toBe(331);
     expect(response.body.store.name).toBe("Demo Store");
+  });
+
+  test("rebinds an existing display to the current session when updating its state", async () => {
+    mockOwnerSession();
+    prisma.customerDisplaySession.findFirst.mockResolvedValue({
+      id: "display-1",
+      storeId: "store-1",
+      revokedAt: null,
+    });
+
+    const response = await request(createApp())
+      .patch("/api/customer-displays/display-1/state")
+      .set("origin", "http://localhost:3000")
+      .set("Cookie", ["pos_mans_session=session-token", "pos_mans_session_csrf=csrf-token"])
+      .set("x-csrf-token", "csrf-token")
+      .send({ status: "PAYMENT", amount: 630, paymentMethod: "QR", qrDataUrl: "https://example.com/qr.png" });
+
+    expect(response.status).toBe(200);
+    expect(prisma.customerDisplaySession.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: "display-1" },
+        data: expect.objectContaining({
+          createdBySessionId: "session-1",
+          status: "PAYMENT",
+          amount: 630,
+          paymentMethod: "QR",
+        }),
+      }),
+    );
+  });
+
+  test("allows owner-side revoke with control token even without auth session", async () => {
+    const controlToken = "owner-control-token-value-that-is-long-enough";
+    prisma.customerDisplaySession.findUnique
+      .mockResolvedValueOnce({
+        id: "display-1",
+        ownerControlTokenHash: hashDisplayToken(controlToken),
+        revokedAt: null,
+      })
+      .mockResolvedValueOnce({
+        id: "display-1",
+        publicTokenHash: hashDisplayToken("public-display-token-value-that-is-long-enough"),
+        revokedAt: new Date("2026-05-06T00:00:01.000Z"),
+        expiresAt: new Date(Date.now() + 60_000),
+        store: { id: "store-1", name: "Demo Store", logoUrl: null, isActive: true },
+      });
+    prisma.customerDisplaySession.update.mockResolvedValue({
+      id: "display-1",
+      name: "iPad counter",
+      status: "IDLE",
+      amount: 0,
+      paymentMethod: null,
+      qrDataUrl: null,
+      message: null,
+      saleCode: null,
+      updatedAt: new Date("2026-05-06T00:00:00.000Z"),
+      revokedAt: new Date("2026-05-06T00:00:01.000Z"),
+    });
+
+    const revokeResponse = await request(createApp())
+      .post("/api/customer-displays/display-1/revoke")
+      .set("origin", "http://localhost:3000")
+      .send({ controlToken });
+
+    expect(revokeResponse.status).toBe(204);
+    expect(prisma.customerDisplaySession.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: "display-1" },
+        data: expect.objectContaining({
+          status: "IDLE",
+          revokedAt: expect.any(Date),
+        }),
+      }),
+    );
   });
 });

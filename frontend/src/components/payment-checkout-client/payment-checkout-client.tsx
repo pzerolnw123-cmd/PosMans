@@ -268,10 +268,15 @@ export function PaymentCheckoutClient({ paymentSettings }: { paymentSettings: Ow
       }
 
       try {
-        await requestJson(`/api/customer-displays/${encodeURIComponent(customerDisplay.id)}/state`, {
+        const response = await requestJson<CustomerDisplayStateResponse>(`/api/customer-displays/${encodeURIComponent(customerDisplay.id)}/state`, {
           method: "PATCH",
           body: JSON.stringify(payload),
         });
+        if (response.controlToken) {
+          const updatedDisplay = { ...customerDisplay, controlToken: response.controlToken };
+          setCustomerDisplay(updatedDisplay);
+          storeCustomerDisplay(updatedDisplay);
+        }
       } catch {
         setShellAlert({
           tone: "danger",
@@ -295,7 +300,7 @@ export function PaymentCheckoutClient({ paymentSettings }: { paymentSettings: Ow
         body: JSON.stringify({ name: "จอลูกค้า" }),
       });
       const url = `${window.location.origin}/display/${encodeURIComponent(response.display.id)}?token=${encodeURIComponent(response.token)}`;
-      const displayLink = { id: response.display.id, token: response.token, url };
+      const displayLink = { id: response.display.id, token: response.token, controlToken: response.controlToken, url };
       setCustomerDisplay(displayLink);
       storeCustomerDisplay(displayLink);
       openCustomerDisplayWindow(url);
@@ -521,6 +526,7 @@ type CustomerDisplayCreateResponse = {
     status: "IDLE" | "PAYMENT" | "SUCCESS";
   };
   token: string;
+  controlToken: string;
 };
 
 type CustomerDisplayStateUpdate = {
@@ -530,6 +536,13 @@ type CustomerDisplayStateUpdate = {
   qrDataUrl?: string | null;
   message?: string | null;
   saleCode?: string | null;
+};
+
+type CustomerDisplayStateResponse = {
+  display: {
+    id: string;
+  };
+  controlToken?: string;
 };
 
 function CustomerDisplayControl({
