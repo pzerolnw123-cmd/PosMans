@@ -41,10 +41,11 @@ export function ProductManagementStudio() {
 
   useEffect(() => {
     const compactMediaQuery = window.matchMedia("(max-width: 820px) and (max-height: 860px)");
+    const ipadMiniLandscapeMediaQuery = window.matchMedia("(min-width: 821px) and (max-width: 1024px) and (orientation: landscape) and (any-pointer: coarse)");
     const ipadAirPortraitMediaQuery = window.matchMedia("(min-width: 768px) and (max-width: 820px) and (orientation: portrait) and (any-pointer: coarse)");
     const ipadAirLandscapeMediaQuery = window.matchMedia("(min-width: 821px) and (max-width: 1180px) and (orientation: landscape) and (any-pointer: coarse)");
     const ipadMediaQuery = window.matchMedia("(max-width: 1366px) and (any-pointer: coarse)");
-    const syncCompactMode = () => setCompactMode(compactMediaQuery.matches);
+    const syncCompactMode = () => setCompactMode(compactMediaQuery.matches || ipadMiniLandscapeMediaQuery.matches);
     const syncItemsPerPage = () =>
       setItemsPerPageLimit(ipadAirPortraitMediaQuery.matches || ipadAirLandscapeMediaQuery.matches ? 3 : ipadMediaQuery.matches ? 4 : 3);
 
@@ -52,12 +53,14 @@ export function ProductManagementStudio() {
     syncItemsPerPage();
 
     compactMediaQuery.addEventListener("change", syncCompactMode);
+    ipadMiniLandscapeMediaQuery.addEventListener("change", syncCompactMode);
     ipadAirPortraitMediaQuery.addEventListener("change", syncItemsPerPage);
     ipadAirLandscapeMediaQuery.addEventListener("change", syncItemsPerPage);
     ipadMediaQuery.addEventListener("change", syncItemsPerPage);
 
     return () => {
       compactMediaQuery.removeEventListener("change", syncCompactMode);
+      ipadMiniLandscapeMediaQuery.removeEventListener("change", syncCompactMode);
       ipadAirPortraitMediaQuery.removeEventListener("change", syncItemsPerPage);
       ipadAirLandscapeMediaQuery.removeEventListener("change", syncItemsPerPage);
       ipadMediaQuery.removeEventListener("change", syncItemsPerPage);

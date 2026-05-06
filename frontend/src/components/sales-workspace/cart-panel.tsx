@@ -82,13 +82,13 @@ export function SalesCartPanel({ cartPulse, itemCount, cartItems, cartScrollMetr
                       aria-label={item.product.name}
                     />
                   ) : (
-                    <span className="grid h-[52px] w-[52px] place-items-center rounded-[10px] border border-[var(--border-subtle)] bg-[var(--surface-muted)] text-[var(--foreground-soft)]">
+                    <span className="grid h-[72px] w-[64px] place-items-center rounded-[10px] border border-[var(--border-subtle)] bg-[var(--surface-muted)] text-[var(--foreground-soft)]">
                       <BasketIcon size={18} />
                     </span>
                   )}
                   <div className="grid min-w-0 gap-1.5 pt-0.5">
                     <div className="grid min-w-0 gap-1">
-                      <strong className="block min-h-[1.45em] overflow-visible break-words text-[0.88rem] font-semibold leading-[1.45] text-[var(--foreground)]">
+                      <strong className="sales-cart-item-name block min-h-0 max-w-full truncate text-[0.88rem] font-semibold leading-[1.45] text-[var(--foreground)]">
                         {item.product.name}
                       </strong>
                       <span className="text-[0.74rem] text-[var(--foreground-soft)]">

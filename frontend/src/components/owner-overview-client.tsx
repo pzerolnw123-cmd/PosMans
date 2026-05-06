@@ -185,12 +185,12 @@ export function OwnerOverviewClient({
     {
       label: "ยังไม่มีโลโก้ร้าน",
       done: hasStoreLogo,
-      href: "/owner/settings",
+      href: "/owner/profile",
     },
     {
       label: "ยังไม่ได้กรอกชื่อร้าน/ชื่อเจ้าของจริง",
       done: storeProfileComplete,
-      href: "/owner/settings",
+      href: "/owner/profile",
     },
     {
       label: `มีสินค้าไม่มีรูป ${productStatus.noImage} รายการ`,

@@ -2,16 +2,18 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import { PanelCard } from "@/components/backoffice-shell";
 import type { OwnerPaymentSettingsValue } from "@/components/owner-settings-client/shared";
-import { ipadAirLandscapeClass, ipadAirOnlyFlexClass, ipadAirOnlyGridRowsSingleClass, ipadAirOnlyHideClass } from "@/components/owner-workspace/ipad-air-classes";
+import { ipadAirLandscapeClass, ipadAirOnlyFlexClass, ipadAirOnlyGridRowsSingleClass, ipadAirOnlyHideClass, ipadMiniLandscapeClass } from "@/components/owner-workspace/ipad-air-classes";
 import { ProfileHeaderInjector } from "@/components/owner-workspace/profile-header-injector";
 import { ListStack, NoteStack, ThreeUpStats } from "@/components/owner-workspace/shared";
 import { PageHeader, StatusPill } from "@/components/ui-primitives";
+import type { OwnerThemeId } from "@/lib/owner-theme";
 import type { OwnerSectionKey } from "@/components/owner-workspace";
 
 const storeNamePrompt = "กรอกชื่อร้าน";
 const ownerNamePrompt = "กรอกชื่อของคุณ";
 
-const ownerPageWithHeaderClass = `grid h-full min-h-0 grid-rows-[156px_minmax(0,1fr)] gap-[18px] ${ipadAirOnlyGridRowsSingleClass} [@media(orientation:portrait)]:h-auto [@media(orientation:portrait)]:grid-rows-[auto_auto] [@media(orientation:portrait)]:gap-4 max-[820px]:h-auto max-[820px]:grid-rows-[auto_auto] [@media(max-height:860px)_and_(max-width:820px)]:h-auto [@media(max-height:860px)_and_(max-width:820px)]:grid-rows-[auto_auto]`;
+const miniHeaderClass = `${ipadMiniLandscapeClass}:h-[104px] ${ipadMiniLandscapeClass}:min-h-[104px] ${ipadMiniLandscapeClass}:max-h-[104px] ${ipadMiniLandscapeClass}:overflow-hidden ${ipadMiniLandscapeClass}:px-3 ${ipadMiniLandscapeClass}:py-3 ${ipadMiniLandscapeClass}:[&_h2]:my-[5px] ${ipadMiniLandscapeClass}:[&_h2]:text-[1.5rem] ${ipadMiniLandscapeClass}:[&_p]:leading-[1.35] ${ipadMiniLandscapeClass}:[&_p:not(:first-child)]:text-[0.8rem]`;
+const ownerPageWithHeaderClass = `grid h-full min-h-0 grid-rows-[156px_minmax(0,1fr)] gap-[18px] ${ipadAirOnlyGridRowsSingleClass} ${ipadMiniLandscapeClass}:gap-[12px] [@media(orientation:portrait)]:h-auto [@media(orientation:portrait)]:grid-rows-[auto_auto] [@media(orientation:portrait)]:gap-4 max-[820px]:h-auto max-[820px]:grid-rows-[auto_auto] [@media(max-height:860px)_and_(max-width:820px)]:h-auto [@media(max-height:860px)_and_(max-width:820px)]:grid-rows-[auto_auto]`;
 const ownerPageWithHeaderGapClass = `${ownerPageWithHeaderClass} max-[820px]:gap-4`;
 
 function hasPromptPayValue(settings: OwnerPaymentSettingsValue) {
@@ -44,7 +46,7 @@ export async function renderOwnerScreen(
   formOwnerName: string,
   paymentSettings: OwnerPaymentSettingsValue,
   storeLogoUrl = "",
-  ownerTheme = "light",
+  ownerTheme: OwnerThemeId = "light",
 ) {
   if (activeSection === "sales") {
     const { SalesWorkspaceClient } = await import("@/components/sales-workspace-client");
@@ -60,7 +62,7 @@ export async function renderOwnerScreen(
             title="ขายหน้าร้าน"
             description="จัดการรายการขายหน้าร้านของคุณ เลือกสินค้า เพิ่มลงตะกร้า และติดตามบิลที่กำลังขาย พร้อมเข้าสู่ขั้นตอนชำระเงินได้อย่างรวดเร็ว"
             actions={<StatusPill tone="success">พร้อมขายแล้ว</StatusPill>}
-            className="h-[144px] min-h-[144px] max-h-[144px] px-4 py-4 max-[820px]:h-auto max-[820px]:min-h-0 max-[820px]:max-h-none max-[640px]:px-3.5 max-[640px]:py-3.5 [@media(max-height:860px)_and_(max-width:820px)]:h-auto [@media(max-height:860px)_and_(max-width:820px)]:min-h-0 [@media(max-height:860px)_and_(max-width:820px)]:max-h-none"
+            className={`h-[144px] min-h-[144px] max-h-[144px] px-4 py-4 ${miniHeaderClass} max-[820px]:h-auto max-[820px]:min-h-0 max-[820px]:max-h-none max-[640px]:px-3.5 max-[640px]:py-3.5 [@media(max-height:860px)_and_(max-width:820px)]:h-auto [@media(max-height:860px)_and_(max-width:820px)]:min-h-0 [@media(max-height:860px)_and_(max-width:820px)]:max-h-none`}
           />
 
           <SalesWorkspaceClient />
@@ -84,6 +86,7 @@ export async function renderOwnerScreen(
             title="ชำระเงิน"
             description="ตรวจรายการจากตะกร้า เลือกวิธีชำระเงิน และบันทึกบิลขายให้เรียบร้อย"
             actions={<StatusPill tone="success">พร้อมรับชำระ</StatusPill>}
+            className={miniHeaderClass}
           />
 
           <PaymentCheckoutClient paymentSettings={paymentSettings} />
@@ -109,6 +112,7 @@ export async function renderOwnerScreen(
             title="ใบเสร็จ"
             description="ค้นหาบิลขายที่ปิดแล้ว ดูรายละเอียด พิมพ์ซ้ำ และคัดลอกข้อมูลให้ลูกค้า"
             actions={<StatusPill tone="success">ใช้ข้อมูลจริง</StatusPill>}
+            className={miniHeaderClass}
           />
 
           <ReceiptDeskClient />
@@ -136,6 +140,7 @@ export async function renderOwnerScreen(
             actions={
               <StatusPill tone="success">ข้อมูลยอดขายจริง</StatusPill>
             }
+            className={miniHeaderClass}
           />
 
             <div
@@ -179,6 +184,7 @@ export async function renderOwnerScreen(
                 <StatusPill tone="success">พร้อมเช็ก</StatusPill>
               </>
             }
+            className={miniHeaderClass}
           />
 
           <OwnerOverviewClient
@@ -246,9 +252,65 @@ export async function renderOwnerScreen(
             actions={
               <StatusPill tone="success">พร้อมคำนวณ</StatusPill>
             }
+            className={miniHeaderClass}
           />
 
           <ProfitCalculatorClient />
+        </section>
+      ),
+      standalone: true,
+    } satisfies OwnerScreen;
+  }
+
+  if (activeSection === "profile") {
+    const {
+      OwnerLogoClient,
+      OwnerLogoStatusPill,
+      OwnerProfileClient,
+    } = await import("@/components/owner-settings-client");
+
+    return {
+      eyebrow: "Store Profile",
+      title: "โปรไฟล์ร้าน",
+      description: "จัดการชื่อร้าน ชื่อเจ้าของร้าน และโลโก้ร้านที่ใช้ในระบบ",
+      actions: <StatusPill tone="success">พร้อมแก้ไขแล้ว</StatusPill>,
+      body: (
+        <section className={`${ownerPageWithHeaderClass} ${ipadAirLandscapeClass}:h-full`}>
+          <PageHeader
+            eyebrow="Store Profile"
+            title="โปรไฟล์ร้าน"
+            description="จัดการข้อมูลร้านและโลโก้ร้านที่แสดงในระบบ"
+            actions={<StatusPill tone="success">พร้อมแก้ไขแล้ว</StatusPill>}
+            className={`${ipadAirOnlyHideClass} ${miniHeaderClass}`}
+          />
+
+          <div className="grid min-h-0 grid-cols-[minmax(260px,1fr)_minmax(260px,1fr)] items-start gap-[14px] [@media(orientation:portrait)]:grid-cols-1 [@media(orientation:portrait)]:gap-4 max-[820px]:grid-cols-1 max-[820px]:gap-4">
+            <PanelCard
+              eyebrow="โปรไฟล์ร้านค้า"
+              title="ข้อมูลทั่วไป"
+              titleClassName="my-[7px] text-[clamp(1.28rem,1.55vw,1.66rem)] leading-[1.05] tracking-[-0.035em] max-[520px]:text-[1.48rem]"
+              className="grid h-fit min-h-0 min-w-0 content-start overflow-hidden px-3.5 py-3.5 max-[820px]:px-3.5 max-[820px]:py-3.5 max-[640px]:px-3 max-[640px]:py-3"
+            >
+              <div className="grid gap-[18px]">
+                <OwnerProfileClient
+                  storeName={formStoreName}
+                  ownerName={formOwnerName}
+                  storeNamePlaceholder={storeNamePrompt}
+                  ownerNamePlaceholder={ownerNamePrompt}
+                />
+              </div>
+            </PanelCard>
+
+            <PanelCard
+              eyebrow="สัญลักษณ์"
+              title="โลโก้ร้าน"
+              actions={<OwnerLogoStatusPill />}
+              titleClassName="my-[7px] text-[clamp(1.42rem,1.76vw,1.8rem)] leading-[1.05] tracking-[-0.04em]"
+              className="grid h-fit min-h-0 min-w-0 content-start px-3.5 py-3.5 max-[820px]:px-3.5 max-[820px]:py-3.5 max-[640px]:px-3 max-[640px]:py-3"
+            >
+              <OwnerLogoClient />
+            </PanelCard>
+          </div>
         </section>
       ),
       standalone: true,
@@ -277,7 +339,7 @@ export async function renderOwnerScreen(
           title="ตั้งค่าร้าน"
           description="จัดการชื่อร้าน ชื่อเจ้าของร้าน และรหัสผ่านของบัญชีเจ้าของร้าน"
           actions={<StatusPill tone="success">พร้อมตั้งค่าแล้ว</StatusPill>}
-          className={ipadAirOnlyHideClass}
+          className={`${ipadAirOnlyHideClass} ${miniHeaderClass}`}
         />
 
         <div className="grid min-h-0 grid-cols-[minmax(250px,1fr)_minmax(250px,1fr)_minmax(250px,1fr)] items-start gap-[12px] [@media(orientation:portrait)]:grid-cols-1 [@media(orientation:portrait)]:gap-4 max-[980px]:grid-cols-1 max-[820px]:gap-4">
@@ -310,7 +372,7 @@ export async function renderOwnerScreen(
               eyebrow="โปรไฟล์ร้านค้า"
               title="ข้อมูลทั่วไป"
               titleClassName="my-[7px] text-[clamp(1.28rem,1.55vw,1.66rem)] leading-[1.05] tracking-[-0.035em] max-[520px]:text-[1.48rem]"
-              className="grid h-fit min-h-0 min-w-0 content-start overflow-hidden px-3.5 py-3.5 max-[820px]:px-3.5 max-[820px]:py-3.5 max-[640px]:px-3 max-[640px]:py-3"
+              className="hidden"
             >
               <div className="grid gap-[18px]">
                 <OwnerProfileClient
@@ -327,7 +389,7 @@ export async function renderOwnerScreen(
               title="โลโก้ร้าน"
               actions={<OwnerLogoStatusPill />}
               titleClassName="my-[7px] text-[clamp(1.42rem,1.76vw,1.8rem)] leading-[1.05] tracking-[-0.04em]"
-              className="grid h-fit min-h-0 min-w-0 content-start px-3.5 py-3.5 max-[820px]:px-3.5 max-[820px]:py-3.5 max-[640px]:px-3 max-[640px]:py-3"
+              className="hidden"
             >
               <OwnerLogoClient />
             </PanelCard>

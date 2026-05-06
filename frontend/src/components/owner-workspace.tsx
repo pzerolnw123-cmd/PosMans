@@ -8,7 +8,7 @@ import { OwnerLogoProvider, OwnerLogoStatusPreview } from "@/components/owner-se
 import { NoteStack, ThreeUpStats } from "@/components/owner-workspace/shared";
 import { SessionExpiryGuard } from "@/components/session-expiry-guard";
 
-export type OwnerSectionKey = "sales" | "payments" | "receipts" | "reports" | "menu" | "overview" | "calculator" | "settings";
+export type OwnerSectionKey = "sales" | "payments" | "receipts" | "reports" | "menu" | "overview" | "calculator" | "profile" | "settings";
 
 type OwnerWorkspaceProps = {
   session: SessionPayload;
@@ -33,6 +33,7 @@ const sectionMeta: Record<OwnerSectionKey, { label: string; href: string }> = {
   menu: { label: "สินค้า / Product", href: "/owner/menu" },
   overview: { label: "ภาพรวม / Overview", href: "/owner/overview" },
   calculator: { label: "คำนวณ / Calculator", href: "/owner/calculator" },
+  profile: { label: "โปรไฟล์ / Profile", href: "/owner/profile" },
   settings: { label: "ตั้งค่า / Settings", href: "/owner/settings" },
 };
 
@@ -81,6 +82,14 @@ const sectionIcons: Partial<Record<OwnerSectionKey, ReactNode>> = {
     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true">
       <path fill="currentColor" d="M26 4v24H6V4zm0-2H6a2 2 0 0 0-2 2v24a2 2 0 0 0 2 2h20a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2" />
       <path fill="currentColor" d="M9 23h2v2H9zm12 0h2v2h-2zM9 18h2v2H9zm12 0h2v2h-2zM9 13h2v2H9zm6 10h2v2h-2zm0-5h2v2h-2zm0-5h2v2h-2zm6 0h2v2h-2zM9 7h14v3H9z" />
+    </svg>
+  ),
+  profile: (
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
+      <g fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.6">
+        <path d="M15.75 7.5a3.75 3.75 0 1 1-7.5 0a3.75 3.75 0 0 1 7.5 0Z" />
+        <path d="M4.5 20.25a7.5 7.5 0 0 1 15 0" />
+      </g>
     </svg>
   ),
   settings: (
