@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+﻿import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { studioResponsiveClass } from "@/components/product-management-studio/layout-classes";
 import { dangerButtonClass, inputClass, Loader, LoadingState, primaryButtonClass, secondaryButtonClass, selectClass, successButtonClass, whiteButtonClass } from "@/components/ui-primitives";
@@ -41,8 +41,8 @@ export function ProductDetailPanel({
   onDeleteConfirmed,
 }: ProductDetailPanelProps) {
   const ipadAirHideLeadingIconClass =
-    "[@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:hidden [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:hidden";
-  const detailPanelClass = `grid w-[calc(100%+22px)] content-start gap-[10px] overflow-visible ${studioResponsiveClass.panelSurface} ${studioResponsiveClass.densePanelPadding} [@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:w-[calc(100%+10px)] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:w-[calc(100%+10px)] max-[820px]:w-full`;
+    "[@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:hidden [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:hidden [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:hidden";
+  const detailPanelClass = `grid w-[calc(100%+22px)] content-start gap-[10px] overflow-visible ${studioResponsiveClass.panelSurface} ${studioResponsiveClass.densePanelPadding} [@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:w-[calc(100%+10px)] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:w-[calc(100%+10px)] [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:w-[calc(100%+10px)] max-[820px]:w-full`;
   const detailFieldRowClass = selectedProduct?.trackStock
     ? studioResponsiveClass.detailFieldRowWithStock
     : studioResponsiveClass.detailFieldRow;
@@ -455,3 +455,6 @@ export function ProductDetailPanel({
     </section>
   );
 }
+
+
+

@@ -87,6 +87,12 @@ export function ReportsSalesChart() {
   const [report, setReport] = useState<SalesReportResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [selectedTopProduct, setSelectedTopProduct] = useState<{
+    rank: number;
+    name: string;
+    quantity: number;
+    sales: number;
+  } | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -120,6 +126,21 @@ export function ReportsSalesChart() {
       cancelled = true;
     };
   }, [range, selectedDate]);
+
+  useEffect(() => {
+    if (!selectedTopProduct) {
+      return undefined;
+    }
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setSelectedTopProduct(null);
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [selectedTopProduct]);
 
   const chart = useMemo(() => {
     const series = report?.series || [];
@@ -165,7 +186,7 @@ export function ReportsSalesChart() {
 
   return (
     <div
-      className={`grid min-h-0 w-full max-w-full self-stretch grid-cols-[minmax(0,0.65fr)_minmax(260px,0.35fr)] items-start gap-[18px] ${ownerLandscapeClass}:grid-cols-[minmax(0,0.7fr)_248px] ${ownerLandscapeClass}:gap-[14px] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:grid-cols-[minmax(0,1fr)_290px] max-[820px]:grid-cols-1`}
+      className={`grid min-h-0 w-full max-w-full self-stretch grid-cols-[minmax(0,0.65fr)_minmax(260px,0.35fr)] items-start gap-[18px] ${ownerLandscapeClass}:grid-cols-[minmax(0,0.7fr)_248px] ${ownerLandscapeClass}:gap-[14px] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:grid-cols-[minmax(0,1fr)_290px] [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:grid-cols-[minmax(0,1fr)_290px] max-[820px]:grid-cols-1`}
     >
       <div
         className={`grid h-fit min-h-0 min-w-0 w-full max-w-full gap-[18px] overflow-hidden rounded-none border border-[var(--border)] bg-[var(--panel-strong)] px-5 py-[18px] shadow-[var(--shadow-soft)] ${ownerLandscapePanelPaddingClass} ${ownerLandscapeClass}:gap-[14px] max-[820px]:px-4 max-[820px]:py-4`}
@@ -319,7 +340,7 @@ export function ReportsSalesChart() {
                       {index + 1}
                     </span>
                     <div className="min-w-0">
-                      <strong className="block truncate text-[1rem] leading-tight text-[var(--foreground)]">placeholder</strong>
+                      <strong className="block truncate text-[1rem] leading-tight text-[var(--foreground)] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:text-[0.82rem] [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:text-[0.82rem]">placeholder</strong>
                       <span className="mt-1 block text-[0.78rem] font-bold text-[var(--foreground-soft)]">0 ชิ้น</span>
                     </div>
                     <strong className="text-right text-[0.96rem] text-[var(--foreground)] max-[420px]:col-span-2 max-[420px]:text-left">
@@ -337,16 +358,28 @@ export function ReportsSalesChart() {
           ) : report && report.topProducts.length > 0 ? (
             <div className="grid gap-[10px]">
               {report.topProducts.map((product, index) => (
-                <div key={product.name} className="grid grid-cols-[44px_minmax(0,1fr)_auto] items-center gap-3 rounded-none border border-[var(--border)] bg-[var(--surface-muted)] px-3 py-3 max-[420px]:grid-cols-[44px_minmax(0,1fr)]">
+                <button
+                  key={product.name}
+                  type="button"
+                  className="grid grid-cols-[44px_minmax(0,1fr)_auto] items-center gap-3 rounded-none border border-[var(--border)] bg-[var(--surface-muted)] px-3 py-3 text-left transition hover:border-[var(--accent-border)] hover:bg-[var(--accent-surface)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--panel-strong)] max-[420px]:grid-cols-[44px_minmax(0,1fr)]"
+                  onClick={() =>
+                    setSelectedTopProduct({
+                      rank: index + 1,
+                      name: product.name,
+                      quantity: product.quantity,
+                      sales: product.sales,
+                    })
+                  }
+                >
                   <span className="grid h-11 w-11 place-items-center rounded-none border border-[var(--accent-border)] bg-[var(--accent-surface)] text-[1rem] font-black text-[var(--brand-strong)]">
                     {index + 1}
                   </span>
                   <div className="min-w-0">
-                    <strong className="block truncate text-[1rem] leading-tight text-[var(--foreground)]">{product.name}</strong>
+                    <strong className="block truncate text-[1rem] leading-tight text-[var(--foreground)] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:text-[0.82rem] [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:text-[0.82rem]">{product.name}</strong>
                     <span className="mt-1 block text-[0.78rem] font-bold text-[var(--foreground-soft)]">{product.quantity.toLocaleString("th-TH")} ชิ้น</span>
                   </div>
                   <strong className="text-right text-[0.96rem] text-[var(--foreground)] max-[420px]:col-span-2 max-[420px]:text-left">{formatBaht(product.sales)}</strong>
-                </div>
+                </button>
               ))}
             </div>
           ) : (
@@ -414,6 +447,62 @@ export function ReportsSalesChart() {
           ) : null}
         </section>
       </aside>
+
+      {selectedTopProduct ? (
+        <div className="fixed inset-0 z-[320] grid place-items-center bg-[var(--modal-backdrop)] p-4 backdrop-blur-[16px]" role="presentation">
+          <button
+            type="button"
+            className="absolute inset-0 cursor-default [background:var(--modal-brand-glow)]"
+            aria-label="ปิดรายละเอียดสินค้าขายดี"
+            onClick={() => setSelectedTopProduct(null)}
+          />
+          <div
+            className="relative z-[1] grid w-[min(100%,420px)] gap-4 rounded-none border border-[var(--border)] [background:var(--modal-surface)] p-5 text-left shadow-[var(--modal-shadow)] max-[640px]:gap-3 max-[640px]:p-4"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="top-product-popup-title"
+          >
+            <div className="flex items-start justify-between gap-4">
+              <div className="min-w-0">
+                <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[var(--brand-strong)]">Top Product</p>
+                <h3 id="top-product-popup-title" className="mt-2 mb-0 text-[1.28rem] leading-tight tracking-[-0.04em] text-[var(--foreground)]">
+                  {selectedTopProduct.name}
+                </h3>
+              </div>
+              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-none border border-[var(--accent-border)] bg-[var(--accent-surface)] text-[1rem] font-black text-[var(--brand-strong)]">
+                {selectedTopProduct.rank}
+              </span>
+            </div>
+
+            <div className="grid gap-3 rounded-none border border-[var(--border)] bg-[var(--panel-subtle)] p-3.5">
+              <div className="flex items-center justify-between gap-3 text-[0.92rem]">
+                <span className="text-[var(--foreground-soft)]">ชื่อสินค้า</span>
+                <strong className="max-w-[220px] text-right text-[var(--foreground)]">{selectedTopProduct.name}</strong>
+              </div>
+              <div className="flex items-center justify-between gap-3 border-t border-[var(--border-subtle)] pt-3 text-[0.92rem]">
+                <span className="text-[var(--foreground-soft)]">จำนวนขาย</span>
+                <strong className="text-[var(--foreground)]">{selectedTopProduct.quantity.toLocaleString("th-TH")} ชิ้น</strong>
+              </div>
+              <div className="flex items-center justify-between gap-3 border-t border-[var(--border-subtle)] pt-3">
+                <span className="font-bold text-[var(--foreground)]">ยอดขายรวม</span>
+                <strong className="text-[1.2rem] leading-none text-[var(--foreground)]">{formatBaht(selectedTopProduct.sales)}</strong>
+              </div>
+            </div>
+
+            <div className="flex justify-end">
+              <button
+                type="button"
+                className="inline-flex min-h-[42px] items-center justify-center rounded-none border border-[var(--border)] bg-[var(--surface-muted)] px-4 text-[0.92rem] font-bold text-[var(--foreground)] transition hover:border-[var(--accent-border)] hover:text-[var(--foreground)]"
+                onClick={() => setSelectedTopProduct(null)}
+              >
+                ปิด
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
+
+

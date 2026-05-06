@@ -1,4 +1,4 @@
-export type ProductCategory =
+﻿export type ProductCategory =
   | "ทั้งหมด"
   | "อาหาร"
   | "เครื่องดื่ม"

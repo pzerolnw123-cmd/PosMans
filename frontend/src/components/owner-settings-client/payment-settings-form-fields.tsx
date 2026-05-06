@@ -90,18 +90,18 @@ export function PaymentSettingsFormFields({
         <div className="flex items-center justify-between gap-3 rounded-[10px] border border-[var(--border)] bg-[var(--field-bg)] px-3 py-2 max-[640px]:flex-col max-[640px]:items-start">
           <span className="grid min-w-0 gap-1">
             <span className="truncate text-[0.95rem] font-bold leading-[1.45] text-[var(--foreground)]">
-              <span className="[@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:hidden [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:hidden">
+              <span className="[@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:hidden [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:hidden [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:hidden">
                 เปิดใช้ QR / ข้อมูลโอน
               </span>
-              <span className="hidden [@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:inline [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:inline">
-                เปิดใช้ QR
+              <span className="hidden [@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:inline [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:inline [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:inline">
+                เปิด / ปิด ใช้ QR
               </span>
             </span>
             <span className="text-[0.8rem] leading-[1.45] text-[var(--foreground-soft)] max-[640px]:text-[0.78rem]">
-              <span className="[@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:hidden [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:hidden">
+              <span className="[@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:hidden [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:hidden [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:hidden">
                 แสดงใน Payment และเช็กสลิป
               </span>
-              <span className="hidden [@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:inline [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:inline">
+              <span className="hidden [@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:inline [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:inline [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:inline">
                 แสดงใน Payment
               </span>
             </span>
@@ -169,7 +169,7 @@ export function PaymentSettingsFormFields({
 
         <div className="grid gap-2">
           <span className={fieldLabelClass}>ประเภทผู้รับเงิน</span>
-          <span className="text-[0.78rem] leading-[1.2] text-[var(--foreground-soft)] [@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:hidden [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:hidden">
+          <span className="text-[0.78rem] leading-[1.2] text-[var(--foreground-soft)] [@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:hidden [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:hidden [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:hidden">
             คุณสามารถกรอกเบอร์พร้อมเพย์, เลขบัตรประชาชน, เลขผู้เสียภาษี, หรือรูป QR พร้อมกับข้อมูลบัญชีธนาคารได้
           </span>
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
@@ -355,7 +355,7 @@ export function PaymentSettingsFormFields({
         </p>
       </div>
 
-      <div className="mt-3 flex flex-wrap justify-start gap-3 max-[900px]:[&>*]:w-full">
+      <div className="mt-3 flex flex-wrap justify-start gap-3 max-[900px]:[&>*]:w-full [@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)]:grid [@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)]:grid-cols-[minmax(0,1fr)_minmax(72px,1fr)_minmax(0,1fr)] [@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)]:[&>*]:!w-auto [@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)]:[&>*]:whitespace-nowrap [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)]:grid [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)]:grid-cols-[minmax(0,1fr)_minmax(72px,1fr)_minmax(0,1fr)] [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)]:[&>*]:!w-auto [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)]:[&>*]:whitespace-nowrap">
         <button
           type="button"
           className={compactFooterGhostButtonClass}
@@ -414,4 +414,3 @@ export function PaymentSettingsFormFields({
     </>
   );
 }
-

@@ -510,7 +510,7 @@ export function ProfitCalculatorClient() {
           ) : error ? (
             <div className="rounded-none border border-[var(--danger-border)] bg-[var(--danger-soft)] px-4 py-3 text-[var(--danger-bright)]">{error}</div>
           ) : calculation.products.length > 0 ? (
-            <div className="relative h-full min-h-[220px] min-w-0 [@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:pr-5 [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:pr-5">
+            <div className="relative h-full min-h-[220px] min-w-0 [@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:pr-5 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:pr-5 [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:pr-5">
               <div
                 ref={productScrollRef}
                 className={
@@ -559,7 +559,7 @@ export function ProfitCalculatorClient() {
               })}
               </div>
               {productScrollMetric.visible ? (
-                <span className="pointer-events-none absolute bottom-0 right-2 top-0 w-[7px] rounded-full bg-[var(--scroll-track)] [@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:right-0 [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:right-0 max-[780px]:hidden">
+                <span className="pointer-events-none absolute bottom-0 right-2 top-0 w-[7px] rounded-full bg-[var(--scroll-track)] [@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:right-0 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:right-0 [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:right-0 max-[780px]:hidden">
                   <span
                     className="absolute left-0 w-full rounded-full [background:var(--scroll-thumb)] shadow-[var(--brand-shadow)_0_0_14px]"
                     style={{ top: `${productScrollMetric.top}%`, height: `${productScrollMetric.height}%` }}
@@ -647,3 +647,5 @@ export function ProfitCalculatorClient() {
     </div>
   );
 }
+
+

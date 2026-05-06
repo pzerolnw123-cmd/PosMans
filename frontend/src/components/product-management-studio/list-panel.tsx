@@ -42,10 +42,10 @@ export function ProductListPanel({
 }: ProductListPanelProps) {
   const listPanelClass = `grid grid-rows-[auto_auto_auto] self-start overflow-hidden ${studioResponsiveClass.panelSurface} ${studioResponsiveClass.panelPadding}`;
   const ipadAirCardWidthClass =
-    "[@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:!w-[96%] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:!w-[96%]";
+    "[@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:!w-[96%] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:!w-[96%] [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)]:!w-full";
 
   return (
-    <div className="ml-auto grid w-[96%] gap-3 self-start max-[820px]:w-full max-[820px]:gap-4 [@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:ml-[6px] [@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:w-[95%] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:ml-[6px] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:w-[95%]">
+    <div className="ml-auto grid w-[96%] gap-3 self-start max-[820px]:w-full max-[820px]:gap-4 [@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:ml-[6px] [@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:w-[95%] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:ml-[6px] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:w-[95%] [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)]:!ml-0 [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)]:!w-full">
       <section className={listPanelClass}>
         <div className={studioResponsiveClass.stackedHeader}>
           <div>

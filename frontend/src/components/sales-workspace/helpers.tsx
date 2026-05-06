@@ -1,4 +1,4 @@
-import type { ProductCategory, ProductItem } from "@/components/product-management-studio/types";
+﻿import type { ProductCategory, ProductItem } from "@/components/product-management-studio/types";
 
 export const salesCartStorageKey = "pos-mans-sales-cart";
 
@@ -96,7 +96,7 @@ export function stockLabel(product: ProductItem, inCart = 0) {
 
   const remaining = Math.max(0, normalizeStockValue(product.stockQuantity) - inCart);
   if (remaining <= 0) {
-    return "สต๊อกหมด";
+    return "สต็อกหมด";
   }
 
   if (product.lowStockThreshold > 0 && remaining <= product.lowStockThreshold) {
@@ -105,4 +105,3 @@ export function stockLabel(product: ProductItem, inCart = 0) {
 
   return `คงเหลือ ${remaining}`;
 }
-
