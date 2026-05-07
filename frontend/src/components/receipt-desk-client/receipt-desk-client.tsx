@@ -31,20 +31,23 @@ export function ReceiptDeskClient() {
     const ipadMiniLandscapeQuery = window.matchMedia("(min-width: 821px) and (max-width: 1024px) and (orientation: landscape) and (any-pointer: coarse)");
     const ipadAirPortraitQuery = window.matchMedia("(min-width: 768px) and (max-width: 820px) and (orientation: portrait)");
     const ipadAirLandscapeQuery = window.matchMedia("(min-width: 821px) and (max-width: 1180px) and (orientation: landscape)");
+    const largeAndroidLandscapeQuery = window.matchMedia("(min-width: 1181px) and (max-width: 1366px) and (max-height: 999px) and (orientation: landscape) and (any-pointer: coarse)");
     const syncPageSize = () =>
-      setPageSize(ipadMiniPortraitQuery.matches || ipadMiniLandscapeQuery.matches ? 4 : ipadAirPortraitQuery.matches || ipadAirLandscapeQuery.matches ? 4 : ipadMediaQuery.matches ? 5 : 4);
+      setPageSize(ipadMiniPortraitQuery.matches || ipadMiniLandscapeQuery.matches ? 4 : ipadAirPortraitQuery.matches || ipadAirLandscapeQuery.matches ? 4 : largeAndroidLandscapeQuery.matches ? 4 : ipadMediaQuery.matches ? 5 : 4);
     syncPageSize();
     ipadMediaQuery.addEventListener("change", syncPageSize);
     ipadMiniPortraitQuery.addEventListener("change", syncPageSize);
     ipadMiniLandscapeQuery.addEventListener("change", syncPageSize);
     ipadAirPortraitQuery.addEventListener("change", syncPageSize);
     ipadAirLandscapeQuery.addEventListener("change", syncPageSize);
+    largeAndroidLandscapeQuery.addEventListener("change", syncPageSize);
     return () => {
       ipadMediaQuery.removeEventListener("change", syncPageSize);
       ipadMiniPortraitQuery.removeEventListener("change", syncPageSize);
       ipadMiniLandscapeQuery.removeEventListener("change", syncPageSize);
       ipadAirPortraitQuery.removeEventListener("change", syncPageSize);
       ipadAirLandscapeQuery.removeEventListener("change", syncPageSize);
+      largeAndroidLandscapeQuery.removeEventListener("change", syncPageSize);
     };
   }, []);
 
@@ -203,7 +206,7 @@ export function ReceiptDeskClient() {
           </div>
         </div>
 
-        <div className="grid content-start gap-3 [@media(min-width:744px)_and_(max-width:768px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:gap-2.5 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:gap-2.5">
+        <div className="grid content-start gap-3 [@media(min-width:744px)_and_(max-width:768px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:gap-2.5 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:gap-2.5 [@media(min-width:1181px)_and_(max-width:1366px)_and_(max-height:999px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:gap-2.5">
           {loading ? (
             <div className="grid min-h-[180px] place-items-center rounded-none border border-dashed border-[var(--border)]">
               <LoadingState
@@ -224,16 +227,16 @@ export function ReceiptDeskClient() {
                   type="button"
                   className={
                     active
-                      ? "grid gap-2 rounded-none border border-l-[6px] border-[var(--accent-border)] border-l-[var(--brand)] bg-[var(--surface)] px-4 py-3 text-left shadow-[0_0_0_2px_var(--brand-soft),var(--brand-shadow)_0_10px_24px] [@media(min-width:744px)_and_(max-width:768px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:gap-2 [@media(min-width:744px)_and_(max-width:768px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:px-3.5 [@media(min-width:744px)_and_(max-width:768px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:py-3 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:gap-2 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:px-3.5 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:py-3"
-                      : "grid gap-2 rounded-none border border-[var(--border-muted)] bg-[var(--panel-subtle)] px-4 py-3 text-left transition hover:border-[var(--accent-border)] hover:bg-[var(--surface-muted)] [@media(min-width:744px)_and_(max-width:768px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:gap-2 [@media(min-width:744px)_and_(max-width:768px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:px-3.5 [@media(min-width:744px)_and_(max-width:768px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:py-3 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:gap-2 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:px-3.5 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:py-3"
+                      ? "grid gap-2 rounded-none border border-l-[6px] border-[var(--accent-border)] border-l-[var(--brand)] bg-[var(--surface)] px-4 py-3 text-left shadow-[0_0_0_2px_var(--brand-soft),var(--brand-shadow)_0_10px_24px] [@media(min-width:744px)_and_(max-width:768px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:gap-2 [@media(min-width:744px)_and_(max-width:768px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:px-3.5 [@media(min-width:744px)_and_(max-width:768px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:py-3 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:gap-2 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:px-3.5 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:py-3 [@media(min-width:1181px)_and_(max-width:1366px)_and_(max-height:999px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:gap-1.5 [@media(min-width:1181px)_and_(max-width:1366px)_and_(max-height:999px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:px-3.5 [@media(min-width:1181px)_and_(max-width:1366px)_and_(max-height:999px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:py-2.5"
+                      : "grid gap-2 rounded-none border border-[var(--border-muted)] bg-[var(--panel-subtle)] px-4 py-3 text-left transition hover:border-[var(--accent-border)] hover:bg-[var(--surface-muted)] [@media(min-width:744px)_and_(max-width:768px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:gap-2 [@media(min-width:744px)_and_(max-width:768px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:px-3.5 [@media(min-width:744px)_and_(max-width:768px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:py-3 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:gap-2 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:px-3.5 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:py-3 [@media(min-width:1181px)_and_(max-width:1366px)_and_(max-height:999px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:gap-1.5 [@media(min-width:1181px)_and_(max-width:1366px)_and_(max-height:999px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:px-3.5 [@media(min-width:1181px)_and_(max-width:1366px)_and_(max-height:999px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:py-2.5"
                   }
                   onClick={() => void selectReceipt(receipt)}
                 >
                   <span className="flex items-center justify-between gap-3 max-[520px]:flex-col max-[520px]:items-start">
-                    <strong className="text-[1.02rem] text-[var(--foreground)] [@media(min-width:744px)_and_(max-width:768px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:text-[0.9rem] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:text-[0.9rem]">{receipt.code}</strong>
-                    <strong className="text-[var(--foreground)] [@media(min-width:744px)_and_(max-width:768px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:text-[0.9rem] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:text-[0.9rem]">{formatBaht(receipt.total)}</strong>
+                    <strong className="text-[1.02rem] text-[var(--foreground)] [@media(min-width:744px)_and_(max-width:768px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:text-[0.9rem] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:text-[0.9rem] [@media(min-width:1181px)_and_(max-width:1366px)_and_(max-height:999px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:text-[0.95rem]">{receipt.code}</strong>
+                    <strong className="text-[var(--foreground)] [@media(min-width:744px)_and_(max-width:768px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:text-[0.9rem] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:text-[0.9rem] [@media(min-width:1181px)_and_(max-width:1366px)_and_(max-height:999px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:text-[0.95rem]">{formatBaht(receipt.total)}</strong>
                   </span>
-                  <span className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[0.84rem] text-[var(--foreground-soft)] [@media(min-width:744px)_and_(max-width:768px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:gap-x-2 [@media(min-width:744px)_and_(max-width:768px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:text-[0.76rem] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:gap-x-2 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:text-[0.76rem]">
+                  <span className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[0.84rem] text-[var(--foreground-soft)] [@media(min-width:744px)_and_(max-width:768px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:gap-x-2 [@media(min-width:744px)_and_(max-width:768px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:text-[0.76rem] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:gap-x-2 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:text-[0.76rem] [@media(min-width:1181px)_and_(max-width:1366px)_and_(max-height:999px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:gap-x-2.5 [@media(min-width:1181px)_and_(max-width:1366px)_and_(max-height:999px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:text-[0.8rem]">
                     <span>{formatDateTime(receipt.createdAt)}</span>
                     <span>{paymentMethodLabels[receipt.paymentMethod]}</span>
                     <span>{receipt.itemCount} ชิ้น</span>

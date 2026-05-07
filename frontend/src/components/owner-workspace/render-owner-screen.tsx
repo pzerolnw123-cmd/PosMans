@@ -64,7 +64,7 @@ export async function renderOwnerScreen(
             title="ขายหน้าร้าน"
             description="จัดการรายการขายหน้าร้านของคุณ เลือกสินค้า เพิ่มลงตะกร้า และติดตามบิลที่กำลังขาย พร้อมเข้าสู่ขั้นตอนชำระเงินได้อย่างรวดเร็ว"
             actions={<StatusPill tone="success">พร้อมขายแล้ว</StatusPill>}
-            className={`h-[144px] min-h-[144px] max-h-[144px] px-4 py-4 ${miniHeaderClass} max-[820px]:h-auto max-[820px]:min-h-0 max-[820px]:max-h-none max-[640px]:px-3.5 max-[640px]:py-3.5 [@media(max-height:860px)_and_(max-width:820px)]:h-auto [@media(max-height:860px)_and_(max-width:820px)]:min-h-0 [@media(max-height:860px)_and_(max-width:820px)]:max-h-none`}
+            className={`h-[144px] min-h-[144px] max-h-[144px] px-4 py-4 ${ipadAirOnlyHideClass} ${miniHeaderClass} max-[820px]:h-auto max-[820px]:min-h-0 max-[820px]:max-h-none max-[640px]:px-3.5 max-[640px]:py-3.5 [@media(max-height:860px)_and_(max-width:820px)]:h-auto [@media(max-height:860px)_and_(max-width:820px)]:min-h-0 [@media(max-height:860px)_and_(max-width:820px)]:max-h-none`}
           />
 
           <SalesWorkspaceClient />
