@@ -1,7 +1,7 @@
 [
   {
     "route": "/owner/[section]",
-    "firstLoadUncompressedJsBytes": 986524,
+    "firstLoadUncompressedJsBytes": 986434,
     "firstLoadChunkPaths": [
       ".next-build\\static\\chunks\\0sqodqva.qwj4.js",
       ".next-build\\static\\chunks\\0nz2qlxv3r.27.js",
@@ -9,7 +9,7 @@
       ".next-build\\static\\chunks\\14etulrr7u9gq.js",
       ".next-build\\static\\chunks\\0tasc522e74cd.js",
       ".next-build\\static\\chunks\\0i80tqyu1~gb2.js",
-      ".next-build\\static\\chunks\\07sp32cw6~~av.js",
+      ".next-build\\static\\chunks\\0l7~4he48cpee.js",
       ".next-build\\static\\chunks\\121qs1wnvnstp.js",
       ".next-build\\static\\chunks\\12rd5q7ipc-dd.js",
       ".next-build\\static\\chunks\\0f.1dvksnw.u8.js",
