@@ -1,5 +1,6 @@
 import type { ChangeEvent, Dispatch, RefObject, SetStateAction } from "react";
 import { ConfirmDeleteModal } from "@/components/product-management-studio/confirm-delete-modal";
+import { ConfirmStockDisableModal } from "@/components/product-management-studio/confirm-stock-disable-modal";
 import { CropModal } from "@/components/product-management-studio/crop-modal";
 import { ProductDetailPanel } from "@/components/product-management-studio/detail-panel";
 import { studioResponsiveClass } from "@/components/product-management-studio/layout-classes";
@@ -28,6 +29,7 @@ type ProductManagementStudioLayoutProps = {
   cropOffset: { x: number; y: number };
   uploadBusy: boolean;
   isDeleteModalOpen: boolean;
+  isStockDisableModalOpen: boolean;
   onCreateNewProduct: () => void;
   onUpdateProduct: (patch: Partial<ProductItem>) => void;
   onSaveChanges: () => void;
@@ -47,10 +49,12 @@ type ProductManagementStudioLayoutProps = {
   onCropOffsetChange: (nextX: number, nextY: number) => void;
   onCloseDeleteModal: () => void;
   onFinalDelete: () => void;
+  onCloseStockDisableModal: () => void;
+  onConfirmStockDisable: () => void;
 };
 
 export function ProductManagementStudioLayout({
-  compactMode, productsLoading, saveBusy, deleteBusy, isDirty, selectedProduct, activeCategory, currentPage, filteredCount, itemsPerPage, selectionTransitionLocked, selectedId, totalPages, visibleProducts, fileInputRef, cropDraft, cropZoom, cropOffset, uploadBusy, isDeleteModalOpen, onCreateNewProduct, onUpdateProduct, onSaveChanges, onChooseImageClick, onBackToProducts, onToggleSaleStatus, onToggleStock, onResetForm, onDeleteConfirmed, onCategoryChange, onPageChange, onSelectProduct, onFileSelection, onCropClose, onCropConfirm, onCropZoomChange, onCropOffsetChange, onCloseDeleteModal, onFinalDelete,
+  compactMode, productsLoading, saveBusy, deleteBusy, isDirty, selectedProduct, activeCategory, currentPage, filteredCount, itemsPerPage, selectionTransitionLocked, selectedId, totalPages, visibleProducts, fileInputRef, cropDraft, cropZoom, cropOffset, uploadBusy, isDeleteModalOpen, isStockDisableModalOpen, onCreateNewProduct, onUpdateProduct, onSaveChanges, onChooseImageClick, onBackToProducts, onToggleSaleStatus, onToggleStock, onResetForm, onDeleteConfirmed, onCategoryChange, onPageChange, onSelectProduct, onFileSelection, onCropClose, onCropConfirm, onCropZoomChange, onCropOffsetChange, onCloseDeleteModal, onFinalDelete, onCloseStockDisableModal, onConfirmStockDisable,
 }: ProductManagementStudioLayoutProps) {
   return (
     <div
@@ -136,6 +140,15 @@ export function ProductManagementStudioLayout({
           busy={deleteBusy}
           onClose={onCloseDeleteModal}
           onConfirm={onFinalDelete}
+        />
+      ) : null}
+
+      {isStockDisableModalOpen && selectedProduct ? (
+        <ConfirmStockDisableModal
+          product={selectedProduct}
+          busy={saveBusy}
+          onClose={onCloseStockDisableModal}
+          onConfirm={onConfirmStockDisable}
         />
       ) : null}
     </div>

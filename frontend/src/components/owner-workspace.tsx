@@ -161,9 +161,9 @@ export async function OwnerWorkspace({ session, paymentStore, activeSection }: O
       }))}
       sidebarAction={
         <div
-          className={`hidden ${ipadAirOnlyClass} mt-1 border-t border-t-[var(--border)] px-[2px] pb-2 pt-2 [@media(width:1366px)_and_(height:768px)_and_(orientation:landscape)]:mt-0 [@media(width:1366px)_and_(height:768px)_and_(orientation:landscape)]:pb-1 [@media(width:1366px)_and_(height:768px)_and_(orientation:landscape)]:pt-1`}
+          className={`hidden ${ipadAirOnlyClass} mt-1 border-t border-t-[var(--border)] px-[2px] pb-2 pt-2 [@media(width:1366px)_and_(height:768px)_and_(orientation:landscape)]:mt-0 [@media(width:1366px)_and_(height:768px)_and_(orientation:landscape)]:pb-1 [@media(width:1366px)_and_(height:768px)_and_(orientation:landscape)]:pt-1 [@media(width:1280px)_and_(height:720px)_and_(orientation:landscape)]:mt-0 [@media(width:1280px)_and_(height:720px)_and_(orientation:landscape)]:pb-1 [@media(width:1280px)_and_(height:720px)_and_(orientation:landscape)]:pt-1`}
         >
-          <LogoutButton className="w-full justify-center whitespace-nowrap px-3 py-2 text-[0.88rem] min-h-[36px] [@media(width:1366px)_and_(height:768px)_and_(orientation:landscape)]:min-h-[34px] [@media(width:1366px)_and_(height:768px)_and_(orientation:landscape)]:py-1.5" />
+          <LogoutButton className="w-full justify-center whitespace-nowrap px-3 py-2 text-[0.88rem] min-h-[36px] [@media(width:1366px)_and_(height:768px)_and_(orientation:landscape)]:min-h-[34px] [@media(width:1366px)_and_(height:768px)_and_(orientation:landscape)]:py-1.5 [@media(width:1280px)_and_(height:720px)_and_(orientation:landscape)]:min-h-[34px] [@media(width:1280px)_and_(height:720px)_and_(orientation:landscape)]:py-1.5" />
         </div>
       }
       profileName={storeName}

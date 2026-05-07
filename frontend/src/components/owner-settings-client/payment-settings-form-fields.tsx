@@ -23,6 +23,13 @@ import {
 
 type ShellAlert = { message: string; tone: "success" | "danger" | "info" };
 
+const posWideShortRecipientOptionClass =
+  "[@media(min-width:1181px)_and_(max-width:1280px)_and_(max-height:720px)_and_(orientation:landscape)]:!flex [@media(min-width:1181px)_and_(max-width:1280px)_and_(max-height:720px)_and_(orientation:landscape)]:!min-h-[34px] [@media(min-width:1181px)_and_(max-width:1280px)_and_(max-height:720px)_and_(orientation:landscape)]:!items-center [@media(min-width:1181px)_and_(max-width:1280px)_and_(max-height:720px)_and_(orientation:landscape)]:!justify-center [@media(min-width:1181px)_and_(max-width:1280px)_and_(max-height:720px)_and_(orientation:landscape)]:!gap-1.5 [@media(min-width:1181px)_and_(max-width:1280px)_and_(max-height:720px)_and_(orientation:landscape)]:!px-3 [@media(min-width:1181px)_and_(max-width:1280px)_and_(max-height:720px)_and_(orientation:landscape)]:!py-1 [@media(min-width:1181px)_and_(max-width:1280px)_and_(max-height:720px)_and_(orientation:landscape)]:!text-center";
+const posWideShortRecipientLabelClass =
+  "[@media(min-width:1181px)_and_(max-width:1280px)_and_(max-height:720px)_and_(orientation:landscape)]:!whitespace-nowrap [@media(min-width:1181px)_and_(max-width:1280px)_and_(max-height:720px)_and_(orientation:landscape)]:!text-[0.76rem]";
+const posWideShortRecipientHelperClass =
+  "[@media(min-width:1181px)_and_(max-width:1280px)_and_(max-height:720px)_and_(orientation:landscape)]:!hidden";
+
 type PaymentSettingsFormFieldsProps = {
   form: OwnerPaymentSettingsValue;
   setForm: Dispatch<SetStateAction<OwnerPaymentSettingsValue>>;
@@ -179,13 +186,13 @@ export function PaymentSettingsFormFields({
                 type="button"
                 className={
                   editorType === option.value
-                    ? `grid min-h-[46px] content-center gap-0.5 rounded-[10px] border px-3 py-1 text-left text-[var(--foreground)] transition-colors ${option.value === "BANK_ACCOUNT"
+                    ? `grid min-h-[46px] content-center gap-0.5 rounded-[10px] border px-3 py-1 text-left text-[var(--foreground)] transition-colors ${posWideShortRecipientOptionClass} ${option.value === "BANK_ACCOUNT"
                       ? "border-[var(--danger-border)] bg-[var(--danger-soft)] text-[var(--danger-bright)]"
                       : "border-[var(--accent-border)] bg-[var(--accent-surface)]"
                     } ${option.value === "BANK_ACCOUNT" ? "col-span-1 sm:col-span-2 mx-auto w-full sm:max-w-[calc(50%_-_2px)] justify-items-center text-center" : ""}`
                     : option.value === "BANK_ACCOUNT"
-                      ? "col-span-1 sm:col-span-2 mx-auto grid min-h-[46px] w-full sm:max-w-[calc(50%_-_2px)] content-center justify-items-center gap-0.5 rounded-[10px] border border-[var(--danger-border)] bg-[var(--danger-soft)] px-3 py-1 text-center text-[var(--danger-bright)] transition hover:border-[var(--danger-border)] hover:bg-[var(--danger-soft)]"
-                      : "grid min-h-[46px] content-center gap-0.5 rounded-[10px] border border-[var(--border)] bg-[var(--surface-muted)] px-3 py-1 text-left text-[var(--foreground)] transition hover:border-[var(--border-strong)]"
+                      ? `col-span-1 sm:col-span-2 mx-auto grid min-h-[46px] w-full sm:max-w-[calc(50%_-_2px)] content-center justify-items-center gap-0.5 rounded-[10px] border border-[var(--danger-border)] bg-[var(--danger-soft)] px-3 py-1 text-center text-[var(--danger-bright)] transition hover:border-[var(--danger-border)] hover:bg-[var(--danger-soft)] ${posWideShortRecipientOptionClass}`
+                      : `grid min-h-[46px] content-center gap-0.5 rounded-[10px] border border-[var(--border)] bg-[var(--surface-muted)] px-3 py-1 text-left text-[var(--foreground)] transition hover:border-[var(--border-strong)] ${posWideShortRecipientOptionClass}`
                 }
                 onClick={() => {
                   if (option.value === editorType) {
@@ -217,8 +224,8 @@ export function PaymentSettingsFormFields({
                 }}
                 disabled={effectivelyDisabled}
               >
-                <strong className="text-[0.86rem] leading-[1.2] [overflow-wrap:anywhere]">{option.label}</strong>
-                <span className="text-[0.68rem] leading-[1.25] text-[var(--foreground-soft)] [overflow-wrap:anywhere]">{option.helper}</span>
+                <strong className={`text-[0.86rem] leading-[1.2] [overflow-wrap:anywhere] ${posWideShortRecipientLabelClass}`}>{option.label}</strong>
+                <span className={`text-[0.68rem] leading-[1.25] text-[var(--foreground-soft)] [overflow-wrap:anywhere] ${posWideShortRecipientHelperClass}`}>{option.helper}</span>
               </button>
             ))}
           </div>

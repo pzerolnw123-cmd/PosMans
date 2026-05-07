@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { ProfileHeaderInjector } from "@/components/owner-workspace/profile-header-injector";
-import { ipadAirOnlyHideClass } from "@/components/owner-workspace/ipad-air-classes";
+import { ipadAirOnlyHideClass, posWideShortHeaderHideClass } from "@/components/owner-workspace/ipad-air-classes";
 
 export const eyebrowTextClass = "m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[var(--eyebrow)]";
 
@@ -65,7 +65,7 @@ export function PageHeader({
   return (
     <>
       <div
-        className={`flex h-[156px] min-h-[156px] max-h-[156px] items-start justify-between overflow-hidden rounded-none border border-[var(--border)] bg-[var(--surface)] px-5 py-6 shadow-[var(--shadow-soft)] max-[1180px]:h-auto max-[1180px]:min-h-0 max-[1180px]:max-h-none max-[1024px]:px-4 max-[1024px]:py-5 max-[820px]:px-4 max-[820px]:py-5 max-[720px]:flex-col max-[720px]:items-stretch max-[720px]:gap-4 max-[640px]:px-3.5 max-[640px]:py-4 [@media(max-height:860px)_and_(max-width:820px)]:h-auto [@media(max-height:860px)_and_(max-width:820px)]:min-h-0 [@media(max-height:860px)_and_(max-width:820px)]:max-h-none [@media(max-width:1366px)_and_(any-pointer:coarse)]:hidden ${tabletHeaderSwapClass} ${laptop1366HeaderHideClass} ${className}`.trim()}
+        className={`flex h-[156px] min-h-[156px] max-h-[156px] items-start justify-between overflow-hidden rounded-none border border-[var(--border)] bg-[var(--surface)] px-5 py-6 shadow-[var(--shadow-soft)] max-[1180px]:h-auto max-[1180px]:min-h-0 max-[1180px]:max-h-none max-[1024px]:px-4 max-[1024px]:py-5 max-[820px]:px-4 max-[820px]:py-5 max-[720px]:flex-col max-[720px]:items-stretch max-[720px]:gap-4 max-[640px]:px-3.5 max-[640px]:py-4 [@media(max-height:860px)_and_(max-width:820px)]:h-auto [@media(max-height:860px)_and_(max-width:820px)]:min-h-0 [@media(max-height:860px)_and_(max-width:820px)]:max-h-none [@media(max-width:1366px)_and_(any-pointer:coarse)]:hidden ${tabletHeaderSwapClass} ${laptop1366HeaderHideClass} ${posWideShortHeaderHideClass} ${className}`.trim()}
       >
         <div>
           <p className={eyebrowTextClass}>{eyebrow}</p>
@@ -75,7 +75,7 @@ export function PageHeader({
         {actions ? <div className="flex flex-none flex-wrap items-center justify-end gap-3 max-[720px]:w-full max-[720px]:justify-stretch">{actions}</div> : null}
       </div>
 
-      <ProfileHeaderInjector className={`hidden [@media(max-width:1366px)_and_(any-pointer:coarse)]:flex ${tabletInjectedHeaderClass} ${ipadAirOnlyHideClass} ${laptop1366HeaderHideClass} ${className}`.trim()} />
+      <ProfileHeaderInjector className={`hidden [@media(max-width:1366px)_and_(any-pointer:coarse)]:flex ${tabletInjectedHeaderClass} ${ipadAirOnlyHideClass} ${laptop1366HeaderHideClass} ${posWideShortHeaderHideClass} ${className}`.trim()} />
     </>
   );
 }

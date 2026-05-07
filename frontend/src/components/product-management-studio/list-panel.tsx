@@ -3,6 +3,15 @@ import { studioResponsiveClass } from "@/components/product-management-studio/la
 import { ProductImage } from "@/components/product-management-studio/shared";
 import { categoryOptions, formatPrice, type ProductCategory, type ProductItem } from "@/components/product-management-studio/types";
 
+const posWideShortProductCategoryFilterClass =
+  "[@media(min-width:1181px)_and_(max-width:1280px)_and_(max-height:720px)_and_(orientation:landscape)_and_(pointer:fine)]:!grid [@media(min-width:1181px)_and_(max-width:1280px)_and_(max-height:720px)_and_(orientation:landscape)_and_(pointer:fine)]:!grid-cols-2 [@media(min-width:1181px)_and_(max-width:1280px)_and_(max-height:720px)_and_(orientation:landscape)_and_(pointer:fine)]:!gap-2 [@media(min-width:1181px)_and_(max-width:1280px)_and_(max-height:720px)_and_(orientation:landscape)_and_(pointer:fine)]:!pt-2";
+const posWideShortProductCategoryButtonClass =
+  "[@media(min-width:1181px)_and_(max-width:1280px)_and_(max-height:720px)_and_(orientation:landscape)_and_(pointer:fine)]:!min-h-[34px] [@media(min-width:1181px)_and_(max-width:1280px)_and_(max-height:720px)_and_(orientation:landscape)_and_(pointer:fine)]:!w-full [@media(min-width:1181px)_and_(max-width:1280px)_and_(max-height:720px)_and_(orientation:landscape)_and_(pointer:fine)]:!rounded-[9px] [@media(min-width:1181px)_and_(max-width:1280px)_and_(max-height:720px)_and_(orientation:landscape)_and_(pointer:fine)]:!px-3.5 [@media(min-width:1181px)_and_(max-width:1280px)_and_(max-height:720px)_and_(orientation:landscape)_and_(pointer:fine)]:!text-[0.8rem] [@media(min-width:1181px)_and_(max-width:1280px)_and_(max-height:720px)_and_(orientation:landscape)_and_(pointer:fine)]:!whitespace-nowrap";
+const posWideShortProductCategoryContentClass =
+  "[@media(min-width:1181px)_and_(max-width:1280px)_and_(max-height:720px)_and_(orientation:landscape)_and_(pointer:fine)]:!gap-2 [@media(min-width:1181px)_and_(max-width:1280px)_and_(max-height:720px)_and_(orientation:landscape)_and_(pointer:fine)]:!whitespace-nowrap [@media(min-width:1181px)_and_(max-width:1280px)_and_(max-height:720px)_and_(orientation:landscape)_and_(pointer:fine)]:[&_svg]:!h-[15px] [@media(min-width:1181px)_and_(max-width:1280px)_and_(max-height:720px)_and_(orientation:landscape)_and_(pointer:fine)]:[&_svg]:!w-[15px]";
+const posWideShortProductCategoryLabelClass =
+  "[@media(min-width:1181px)_and_(max-width:1280px)_and_(max-height:720px)_and_(orientation:landscape)_and_(pointer:fine)]:!whitespace-nowrap";
+
 type ProductListPanelProps = {
   activeCategory: ProductCategory;
   currentPage: number;
@@ -58,7 +67,7 @@ export function ProductListPanel({
           </div>
         </div>
 
-        <div className={`${studioResponsiveClass.chipGrid} [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:gap-2 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:pt-3`}>
+        <div className={`${studioResponsiveClass.chipGrid} ${posWideShortProductCategoryFilterClass} [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:gap-2 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:pt-3`}>
           {categoryOptions.map((category) => {
             const active = activeCategory === category;
 
@@ -68,12 +77,12 @@ export function ProductListPanel({
                 type="button"
                 className={
                   active
-                    ? "min-h-10 rounded-[10px] border border-[var(--brand)] bg-[var(--brand-soft)] px-[18px] font-bold text-[var(--brand-strong)] shadow-[var(--brand-shadow)] transition hover:-translate-y-px [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:min-h-8 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:rounded-[8px] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:px-3 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:text-[0.82rem]"
-                    : "min-h-10 rounded-[10px] border border-[var(--border)] bg-[var(--surface-muted)] px-[18px] font-bold text-[var(--foreground)] transition hover:-translate-y-px hover:shadow-[var(--shadow-hover-subtle)] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:min-h-8 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:rounded-[8px] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:px-3 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:text-[0.82rem]"
+                    ? `min-h-10 rounded-[10px] border border-[var(--brand)] bg-[var(--brand-soft)] px-[18px] font-bold text-[var(--brand-strong)] shadow-[var(--brand-shadow)] transition hover:-translate-y-px ${posWideShortProductCategoryButtonClass} [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:min-h-8 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:rounded-[8px] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:px-3 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:text-[0.82rem]`
+                    : `min-h-10 rounded-[10px] border border-[var(--border)] bg-[var(--surface-muted)] px-[18px] font-bold text-[var(--foreground)] transition hover:-translate-y-px hover:shadow-[var(--shadow-hover-subtle)] ${posWideShortProductCategoryButtonClass} [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:min-h-8 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:rounded-[8px] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:px-3 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:text-[0.82rem]`
                 }
                 onClick={() => onCategoryChange(category)}
               >
-                <div className="flex items-center gap-[10px] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:gap-1.5 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:[&_svg]:h-[15px] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:[&_svg]:w-[15px]">
+                <div className={`flex items-center justify-center gap-[10px] ${posWideShortProductCategoryContentClass} [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:gap-1.5 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:[&_svg]:h-[15px] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:[&_svg]:w-[15px]`}>
                   {category === "อาหาร" && (
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 20 20">
                       <path
@@ -131,7 +140,7 @@ export function ProductListPanel({
                       />
                     </svg>
                   )}
-                  {category}
+                  <span className={posWideShortProductCategoryLabelClass}>{category}</span>
                 </div>
               </button>
             );

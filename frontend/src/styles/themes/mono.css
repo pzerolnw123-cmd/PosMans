@@ -24,14 +24,14 @@ html[data-store-theme="mono"] {
 
   --surface: #ffffff;
   --surface-strong: #ffffff;
-  --surface-muted: #ffffff;
+  --surface-muted: #f2f2f2;
   --surface-glass: #ffffff;
   --surface-raised: #ffffff;
   --panel-elevated: #ffffff;
-  --panel-subtle: #ffffff;
+  --panel-subtle: #f7f7f7;
   --panel-strong: #ffffff;
 
-  --field-bg: #ffffff;
+  --field-bg: #f9f9f9;
   --field-placeholder: #555555;
 
   --border-hairline: #000000;
@@ -44,23 +44,23 @@ html[data-store-theme="mono"] {
 
   --brand: #000000;
   --brand-strong: #000000;
-  --brand-soft: #ffffff;
+  --brand-soft: #e8e8e8;
   --brand-shadow: transparent;
-  --brand-gradient: #ffffff;
+  --brand-gradient: #000000;
   --brand-text-start: #000000;
   --brand-text-mid: #000000;
   --brand-text-gradient: linear-gradient(#000000, #000000);
   --accent-border: #000000;
-  --accent-surface: #eeeeee;
+  --accent-surface: #e5e5e5;
   --accent-text: #000000;
-  --active-surface: #eeeeee;
-  --button-bg: #ffffff;
-  --button-text: #000000;
+  --active-surface: #dddddd;
+  --button-bg: #000000;
+  --button-text: #ffffff;
 
   --success: #000000;
   --success-bright: #000000;
-  --success-soft: #ffffff;
-  --success-wash: #ffffff;
+  --success-soft: #eeeeee;
+  --success-wash: #f1f1f1;
   --success-border: #000000;
   --status-text-start: #000000;
   --status-text-mid1: #000000;
@@ -70,15 +70,15 @@ html[data-store-theme="mono"] {
   --status-text-shadow: none;
   --danger: #000000;
   --danger-bright: #000000;
-  --danger-soft: #ffffff;
+  --danger-soft: #f1f1f1;
   --danger-border: #000000;
   --warning: #000000;
 
-  --alert-success-bg: #ffffff;
+  --alert-success-bg: #f1f1f1;
   --alert-success-border: #000000;
   --alert-success-text: #000000;
   --alert-success-eyebrow: #000000;
-  --alert-danger-bg: #ffffff;
+  --alert-danger-bg: #f1f1f1;
   --alert-danger-border: #000000;
   --alert-danger-text: #000000;
   --alert-danger-eyebrow: #000000;
@@ -88,13 +88,13 @@ html[data-store-theme="mono"] {
   --cart-glow-bg: #ffffff;
   --cart-panel-border: #000000;
   --cart-panel-bg: #ffffff;
-  --cart-row-bg: #ffffff;
+  --cart-row-bg: #f7f7f7;
   --cart-row-border: #000000;
   --cart-shadow-strong: transparent;
   --cart-shadow-mid: transparent;
   --cart-shadow-soft: transparent;
-  --cart-badge-bg: #ffffff;
-  --cart-badge-text: #000000;
+  --cart-badge-bg: #000000;
+  --cart-badge-text: #ffffff;
   --cart-badge-border: #000000;
 
   --shadow-card: none;
@@ -115,8 +115,8 @@ html[data-store-theme="mono"] {
   --modal-danger-glow: transparent;
 
   --eyebrow: #000000;
-  --toggle-track: #ffffff;
-  --toggle-track-checked: #ffffff;
+  --toggle-track: #eeeeee;
+  --toggle-track-checked: #d8d8d8;
   --toggle-track-shadow:
     0 6px 14px rgba(0, 0, 0, 0.2),
     0 1px 4px rgba(0, 0, 0, 0.18),
@@ -133,11 +133,11 @@ html[data-store-theme="mono"] {
   --scroll-track: #ffffff;
   --scroll-thumb: #888888;
   --scroll-thumb-hover: #000000;
-  --overlay-white-02: #ffffff;
-  --overlay-white-03: #ffffff;
-  --overlay-white-04: #ffffff;
-  --overlay-white-06: #ffffff;
-  --overlay-white-08: #ffffff;
+  --overlay-white-02: #fafafa;
+  --overlay-white-03: #f7f7f7;
+  --overlay-white-04: #f4f4f4;
+  --overlay-white-06: #eeeeee;
+  --overlay-white-08: #e8e8e8;
   --overlay-white-10: #000000;
   --image-placeholder: #ffffff;
   --qr-foreground: #000000;
@@ -146,6 +146,32 @@ html[data-store-theme="mono"] {
 
 html[data-store-theme="mono"] .border-transparent {
   border-color: var(--border) !important;
+}
+
+html[data-store-theme="mono"] button:not(:disabled):not([aria-disabled="true"]):hover {
+  background-color: #eeeeee;
+  color: #000000 !important;
+}
+
+html[data-store-theme="mono"] button[aria-pressed="true"],
+html[data-store-theme="mono"] button[aria-selected="true"],
+html[data-store-theme="mono"] .payment-method-active {
+  border-color: #000000 !important;
+  background: #dcdcdc !important;
+  color: #000000 !important;
+  opacity: 1 !important;
+  box-shadow: inset 0 0 0 1px #000000 !important;
+}
+
+html[data-store-theme="mono"] button:disabled,
+html[data-store-theme="mono"] button[aria-disabled="true"] {
+  border-color: #b8b8b8 !important;
+  background: #f0f0f0 !important;
+  color: #777777 !important;
+  opacity: 1 !important;
+  box-shadow: none !important;
+  cursor: not-allowed !important;
+  transform: none !important;
 }
 
 html[data-store-theme="mono"] .calendar-outside-day {

@@ -33,8 +33,9 @@ export function ReceiptDeskClient() {
     const ipadAirPortraitQuery = window.matchMedia("(min-width: 768px) and (max-width: 820px) and (orientation: portrait)");
     const ipadAirLandscapeQuery = window.matchMedia("(min-width: 821px) and (max-width: 1180px) and (orientation: landscape)");
     const largeAndroidLandscapeQuery = window.matchMedia("(min-width: 1181px) and (max-width: 1366px) and (max-height: 999px) and (orientation: landscape) and (any-pointer: coarse)");
+    const posWideShortQuery = window.matchMedia("(width: 1280px) and (height: 720px) and (orientation: landscape)");
     const syncPageSize = () =>
-      setPageSize(ipadMiniPortraitQuery.matches || ipadMiniLandscapeQuery.matches ? 4 : ipadAirPortraitQuery.matches || ipadAirLandscapeQuery.matches ? 4 : largeAndroidLandscapeQuery.matches ? 4 : ipadMediaQuery.matches ? 5 : 4);
+      setPageSize(posWideShortQuery.matches ? 3 : ipadMiniPortraitQuery.matches || ipadMiniLandscapeQuery.matches ? 4 : ipadAirPortraitQuery.matches || ipadAirLandscapeQuery.matches ? 4 : largeAndroidLandscapeQuery.matches ? 4 : ipadMediaQuery.matches ? 5 : 4);
     syncPageSize();
     ipadMediaQuery.addEventListener("change", syncPageSize);
     ipadMiniPortraitQuery.addEventListener("change", syncPageSize);
@@ -42,6 +43,7 @@ export function ReceiptDeskClient() {
     ipadAirPortraitQuery.addEventListener("change", syncPageSize);
     ipadAirLandscapeQuery.addEventListener("change", syncPageSize);
     largeAndroidLandscapeQuery.addEventListener("change", syncPageSize);
+    posWideShortQuery.addEventListener("change", syncPageSize);
     return () => {
       ipadMediaQuery.removeEventListener("change", syncPageSize);
       ipadMiniPortraitQuery.removeEventListener("change", syncPageSize);
@@ -49,6 +51,7 @@ export function ReceiptDeskClient() {
       ipadAirPortraitQuery.removeEventListener("change", syncPageSize);
       ipadAirLandscapeQuery.removeEventListener("change", syncPageSize);
       largeAndroidLandscapeQuery.removeEventListener("change", syncPageSize);
+      posWideShortQuery.removeEventListener("change", syncPageSize);
     };
   }, []);
 

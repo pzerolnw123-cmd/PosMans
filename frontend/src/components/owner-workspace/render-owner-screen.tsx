@@ -2,7 +2,16 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import { PanelCard } from "@/components/backoffice-shell";
 import type { OwnerPaymentSettingsValue } from "@/components/owner-settings-client/shared";
-import { ipadAirLandscapeClass, ipadAirOnlyFlexClass, ipadAirOnlyGridRowsSingleClass, ipadAirOnlyHideClass, ipadMiniLandscapeClass } from "@/components/owner-workspace/ipad-air-classes";
+import {
+  ipadAirLandscapeClass,
+  ipadAirOnlyFlexClass,
+  ipadAirOnlyGridRowsSingleClass,
+  ipadAirOnlyHideClass,
+  ipadMiniLandscapeClass,
+  posWideShortGridRowsSingleClass,
+  posWideShortHeaderFlexClass,
+  posWideShortHeaderHideClass,
+} from "@/components/owner-workspace/ipad-air-classes";
 import { ProfileHeaderInjector } from "@/components/owner-workspace/profile-header-injector";
 import { ListStack, NoteStack, ThreeUpStats } from "@/components/owner-workspace/shared";
 import { PageHeader, StatusPill } from "@/components/ui-primitives";
@@ -15,10 +24,10 @@ const ownerNamePrompt = "กรอกชื่อของคุณ";
 const miniHeaderClass = `${ipadMiniLandscapeClass}:h-[104px] ${ipadMiniLandscapeClass}:min-h-[104px] ${ipadMiniLandscapeClass}:max-h-[104px] ${ipadMiniLandscapeClass}:overflow-hidden ${ipadMiniLandscapeClass}:px-3 ${ipadMiniLandscapeClass}:py-3 ${ipadMiniLandscapeClass}:[&_h2]:my-[5px] ${ipadMiniLandscapeClass}:[&_h2]:text-[1.5rem] ${ipadMiniLandscapeClass}:[&_p]:leading-[1.35] ${ipadMiniLandscapeClass}:[&_p:not(:first-child)]:text-[0.8rem]`;
 const laptop1366HeaderlessRowsClass =
   "[@media(width:1366px)_and_(height:768px)_and_(orientation:landscape)]:!grid-rows-[minmax(0,1fr)] [@media(width:1366px)_and_(height:768px)_and_(orientation:landscape)]:!gap-0";
-const ownerPageWithHeaderClass = `grid h-full min-h-0 grid-rows-[156px_minmax(0,1fr)] gap-[18px] ${laptop1366HeaderlessRowsClass} ${ipadAirOnlyGridRowsSingleClass} ${ipadMiniLandscapeClass}:gap-[12px] [@media(orientation:portrait)]:h-auto [@media(orientation:portrait)]:grid-rows-[auto_auto] [@media(orientation:portrait)]:gap-4 max-[820px]:h-auto max-[820px]:grid-rows-[auto_auto] [@media(max-height:860px)_and_(max-width:820px)]:h-auto [@media(max-height:860px)_and_(max-width:820px)]:grid-rows-[auto_auto]`;
+const ownerPageWithHeaderClass = `grid h-full min-h-0 grid-rows-[156px_minmax(0,1fr)] gap-[18px] ${laptop1366HeaderlessRowsClass} ${ipadAirOnlyGridRowsSingleClass} ${posWideShortGridRowsSingleClass} ${ipadMiniLandscapeClass}:gap-[12px] [@media(orientation:portrait)]:h-auto [@media(orientation:portrait)]:grid-rows-[auto_auto] [@media(orientation:portrait)]:gap-4 max-[820px]:h-auto max-[820px]:grid-rows-[auto_auto] [@media(max-height:860px)_and_(max-width:820px)]:h-auto [@media(max-height:860px)_and_(max-width:820px)]:grid-rows-[auto_auto]`;
 const ownerPageWithHeaderGapClass = `${ownerPageWithHeaderClass} max-[820px]:gap-4`;
 const profilePageWithStatusCardClass =
-  `grid h-full min-h-0 grid-rows-[156px_minmax(0,1fr)] gap-[18px] ${laptop1366HeaderlessRowsClass} ${ipadMiniLandscapeClass}:gap-[12px] [@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:grid-rows-[auto_minmax(0,1fr)] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:grid-rows-[auto_minmax(0,1fr)] [@media(orientation:portrait)]:h-auto [@media(orientation:portrait)]:grid-rows-[auto_auto] [@media(orientation:portrait)]:gap-4 max-[820px]:h-auto max-[820px]:grid-rows-[auto_auto] [@media(max-height:860px)_and_(max-width:820px)]:h-auto [@media(max-height:860px)_and_(max-width:820px)]:grid-rows-[auto_auto]`;
+  `grid h-full min-h-0 grid-rows-[156px_minmax(0,1fr)] gap-[18px] ${laptop1366HeaderlessRowsClass} ${posWideShortGridRowsSingleClass} ${ipadMiniLandscapeClass}:gap-[12px] [@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:grid-rows-[auto_minmax(0,1fr)] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:grid-rows-[auto_minmax(0,1fr)] [@media(orientation:portrait)]:h-auto [@media(orientation:portrait)]:grid-rows-[auto_auto] [@media(orientation:portrait)]:gap-4 max-[820px]:h-auto max-[820px]:grid-rows-[auto_auto] [@media(max-height:860px)_and_(max-width:820px)]:h-auto [@media(max-height:860px)_and_(max-width:820px)]:grid-rows-[auto_auto]`;
 
 function hasPromptPayValue(settings: OwnerPaymentSettingsValue) {
   return Boolean(
@@ -285,7 +294,7 @@ export async function renderOwnerScreen(
             title="โปรไฟล์ร้าน"
             description="จัดการข้อมูลร้านและโลโก้ร้านที่แสดงในระบบ"
             actions={<StatusPill tone="success">พร้อมแก้ไขแล้ว</StatusPill>}
-            className={`${ipadAirOnlyHideClass} ${miniHeaderClass}`}
+            className={`${ipadAirOnlyHideClass} ${posWideShortHeaderHideClass} ${miniHeaderClass}`}
           />
 
           <div className="grid min-h-0 grid-cols-[minmax(260px,1fr)_minmax(260px,1fr)] items-start gap-[14px] [@media(orientation:portrait)]:grid-cols-1 [@media(orientation:portrait)]:gap-4 max-[820px]:grid-cols-1 max-[820px]:gap-4">
@@ -307,7 +316,7 @@ export async function renderOwnerScreen(
             </PanelCard>
 
             <ProfileHeaderInjector
-              className={`hidden justify-self-start self-start ${ipadAirOnlyFlexClass} [@media(width:1366px)_and_(height:768px)_and_(orientation:landscape)]:!flex`}
+              className={`hidden justify-self-start self-start ${ipadAirOnlyFlexClass} ${posWideShortHeaderFlexClass} [@media(width:1366px)_and_(height:768px)_and_(orientation:landscape)]:!flex`}
               variant="profileCard"
             />
             </div>

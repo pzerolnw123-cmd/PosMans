@@ -45,7 +45,12 @@ const ipadMiniSaleProductStockMiniClass = "[@media(min-width:821px)_and_(max-wid
 const ipadMiniSaleProductHideClass = "[@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:!hidden";
 const ipadMiniSaleProductButtonClass =
   "[@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:!bottom-3.5 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:!left-auto [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:!right-2.5 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:!h-12 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:!min-h-12 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:!w-12 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:!min-w-12 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:!gap-0 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:!rounded-[10px] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:!p-0";
-
+const posWideShortSaleProductGridClass =
+  "[@media(min-width:1181px)_and_(max-width:1280px)_and_(max-height:720px)_and_(orientation:landscape)_and_(pointer:fine)]:!grid-cols-2";
+const posWideShortSaleProductCategoryClass =
+  "[@media(min-width:1181px)_and_(max-width:1280px)_and_(max-height:720px)_and_(orientation:landscape)_and_(pointer:fine)]:!block [@media(min-width:1181px)_and_(max-width:1280px)_and_(max-height:720px)_and_(orientation:landscape)_and_(pointer:fine)]:!max-w-[150px] [@media(min-width:1181px)_and_(max-width:1280px)_and_(max-height:720px)_and_(orientation:landscape)_and_(pointer:fine)]:!overflow-visible [@media(min-width:1181px)_and_(max-width:1280px)_and_(max-height:720px)_and_(orientation:landscape)_and_(pointer:fine)]:!whitespace-nowrap";
+const androidTabletLandscapeSaleProductCategoryClass =
+  "[@media(min-width:1181px)_and_(max-width:1280px)_and_(min-height:721px)_and_(max-height:800px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:!block [@media(min-width:1181px)_and_(max-width:1280px)_and_(min-height:721px)_and_(max-height:800px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:!max-w-[150px] [@media(min-width:1181px)_and_(max-width:1280px)_and_(min-height:721px)_and_(max-height:800px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:!overflow-visible [@media(min-width:1181px)_and_(max-width:1280px)_and_(min-height:721px)_and_(max-height:800px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:!whitespace-nowrap";
 async function loadAllProducts() {
   const pageSize = 50;
   const firstParams = new URLSearchParams({ page: "1", pageSize: String(pageSize) });
@@ -59,6 +64,25 @@ async function loadAllProducts() {
   }
 
   return allProducts;
+}
+
+function compactStockLabel(product: ProductItem, inCart = 0) {
+  if (!product.trackStock) {
+    return null;
+  }
+
+  const remaining = Math.max(0, normalizeStockValue(product.stockQuantity) - inCart);
+  if (remaining <= 0) {
+    return "สต็อกหมด";
+  }
+
+  const displayRemaining = remaining > 999 ? "999+" : String(remaining);
+
+  if (product.lowStockThreshold > 0 && remaining <= product.lowStockThreshold) {
+    return `ใกล้หมด ${displayRemaining}`;
+  }
+
+  return `คงเหลือ ${displayRemaining}`;
 }
 export function SalesWorkspaceClient() {
   const router = useRouter();
@@ -507,8 +531,8 @@ export function SalesWorkspaceClient() {
             onPointerLeave={stopProductDrag}
             className={
               productScrollMetric.visible
-                ? `sales-cart-scroll relative grid h-full min-h-0 touch-auto cursor-grab select-none content-start gap-4 p-1 pb-6 pr-4 active:cursor-grabbing grid-cols-3 [@media(orientation:portrait)]:grid-cols-2 [@media(orientation:portrait)_and_(max-width:640px)]:grid-cols-1 [@media(max-width:1366px)_and_(any-pointer:coarse)]:grid-cols-2 max-[1024px]:grid-cols-2 max-[820px]:grid-cols-2 max-[640px]:grid-cols-1 ${desktopFinePointerClass}:grid-cols-3 ${desktopFinePointerClass}:gap-4 ${ownerLandscapeClass}:gap-3 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:!grid-cols-2 ${ipadMiniLandscapeClass}:!gap-2.5 ${ipadMiniLandscapeClass}:!pb-4 ${ipadMiniLandscapeClass}:!pr-3`
-                : `sales-cart-scroll relative grid h-full min-h-0 touch-auto select-auto content-start gap-4 p-1 pb-6 pr-0 grid-cols-3 [@media(orientation:portrait)]:grid-cols-2 [@media(orientation:portrait)_and_(max-width:640px)]:grid-cols-1 [@media(max-width:1366px)_and_(any-pointer:coarse)]:grid-cols-2 max-[1024px]:grid-cols-2 max-[820px]:grid-cols-2 max-[640px]:grid-cols-1 ${desktopFinePointerClass}:grid-cols-3 ${desktopFinePointerClass}:gap-4 ${ownerLandscapeClass}:gap-3 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:!grid-cols-2 ${ipadMiniLandscapeClass}:!gap-2.5 ${ipadMiniLandscapeClass}:!pb-4`
+                ? `sales-cart-scroll relative grid h-full min-h-0 touch-auto cursor-grab select-none content-start gap-4 p-1 pb-6 pr-4 active:cursor-grabbing grid-cols-3 [@media(orientation:portrait)]:grid-cols-2 [@media(orientation:portrait)_and_(max-width:640px)]:grid-cols-1 [@media(max-width:1366px)_and_(any-pointer:coarse)]:grid-cols-2 max-[1024px]:grid-cols-2 max-[820px]:grid-cols-2 max-[640px]:grid-cols-1 ${desktopFinePointerClass}:grid-cols-3 ${desktopFinePointerClass}:gap-4 ${posWideShortSaleProductGridClass} ${ownerLandscapeClass}:gap-3 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:!grid-cols-2 ${ipadMiniLandscapeClass}:!gap-2.5 ${ipadMiniLandscapeClass}:!pb-4 ${ipadMiniLandscapeClass}:!pr-3`
+                : `sales-cart-scroll relative grid h-full min-h-0 touch-auto select-auto content-start gap-4 p-1 pb-6 pr-0 grid-cols-3 [@media(orientation:portrait)]:grid-cols-2 [@media(orientation:portrait)_and_(max-width:640px)]:grid-cols-1 [@media(max-width:1366px)_and_(any-pointer:coarse)]:grid-cols-2 max-[1024px]:grid-cols-2 max-[820px]:grid-cols-2 max-[640px]:grid-cols-1 ${desktopFinePointerClass}:grid-cols-3 ${desktopFinePointerClass}:gap-4 ${posWideShortSaleProductGridClass} ${ownerLandscapeClass}:gap-3 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:!grid-cols-2 ${ipadMiniLandscapeClass}:!gap-2.5 ${ipadMiniLandscapeClass}:!pb-4`
             }
             aria-label="products"
           >
@@ -524,6 +548,7 @@ export function SalesWorkspaceClient() {
             products.map((product) => {
               const currentCartQuantity = cartItems.find((item) => item.product.id === product.id)?.quantity ?? 0;
               const productStockLabel = stockLabel(product, currentCartQuantity);
+              const compactProductStockLabel = compactStockLabel(product, currentCartQuantity);
               const ready = isProductSellable(product) && currentCartQuantity < stockLimit(product);
               const saleStatusLabel = displaySaleStatus(product);
               const activePulse = pulseProductId === product.id;
@@ -571,7 +596,7 @@ export function SalesWorkspaceClient() {
                       <div className={`sales-product-card-meta grid min-w-0 justify-items-end gap-1 text-right ${ipadMiniSaleProductMetaClass} max-[420px]:w-full max-[420px]:justify-items-start max-[420px]:text-left`}>
                         <b className={`text-base leading-[1.2] text-[var(--foreground)] max-[1366px]:text-[1.25rem] ${ownerLandscapeClass}:text-[1.02rem] [@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:text-[1.05rem] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:text-[1.05rem] [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:text-[1.05rem] ${ipadMiniSaleProductPriceClass}`}>{formatBaht(product.price)}</b>
                         <span className={saleStatusLabel === "พร้อมขาย" ? `text-[0.78rem] font-bold text-[var(--success)] max-[1366px]:text-[0.95rem] [@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:text-[0.82rem] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:text-[0.82rem] [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:text-[0.82rem] ${ipadMiniSaleProductStatusClass}` : `text-[0.78rem] font-bold text-[var(--foreground-soft)] max-[1366px]:text-[0.95rem] [@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:text-[0.82rem] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:text-[0.82rem] [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:text-[0.82rem] ${ipadMiniSaleProductStatusClass}`}>{saleStatusLabel}</span>
-                        <span className={`max-w-[86px] text-[0.62rem] leading-[1.2] text-[var(--foreground-soft)] max-[1366px]:max-w-[120px] max-[1366px]:text-[0.85rem] [@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:text-[0.72rem] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:text-[0.72rem] [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:text-[0.72rem] ${ipadMiniSaleProductDetailClass}`}>{product.category}</span>
+                        <span className={`max-w-[86px] text-[0.62rem] leading-[1.2] text-[var(--foreground-soft)] max-[1366px]:max-w-[120px] max-[1366px]:text-[0.85rem] [@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:text-[0.72rem] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:text-[0.72rem] [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:text-[0.72rem] ${posWideShortSaleProductCategoryClass} ${androidTabletLandscapeSaleProductCategoryClass} ${ipadMiniSaleProductDetailClass}`}>{product.category}</span>
                         <span className={`max-w-[86px] truncate text-[0.6rem] font-bold uppercase tracking-[0.1em] text-[var(--foreground-soft)] max-[1366px]:max-w-[120px] max-[1366px]:text-[0.75rem] [@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:text-[0.66rem] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:text-[0.66rem] [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:text-[0.66rem] ${ipadMiniSaleProductCodeClass}`}>
                           {product.code}
                         </span>
@@ -587,7 +612,7 @@ export function SalesWorkspaceClient() {
                   </div>
                   {productStockLabel ? (
                     <span className={ready ? `sales-product-card-stock absolute bottom-[18px] right-[14px] z-[1] max-w-[92px] truncate text-right text-[0.68rem] font-bold text-[var(--success)] max-[1366px]:max-w-[120px] max-[1366px]:text-[0.85rem] [@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:text-[0.76rem] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:text-[0.76rem] [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:text-[0.76rem] ${ipadMiniSaleProductHideClass}` : `sales-product-card-stock absolute bottom-[18px] right-[14px] z-[1] max-w-[92px] truncate text-right text-[0.68rem] font-bold text-[var(--danger)] max-[1366px]:max-w-[120px] max-[1366px]:text-[0.85rem] [@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:text-[0.76rem] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:text-[0.76rem] [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:text-[0.76rem] ${ipadMiniSaleProductHideClass}`}>
-                      {productStockLabel}
+                      {compactProductStockLabel}
                     </span>
                   ) : null}
                   <button

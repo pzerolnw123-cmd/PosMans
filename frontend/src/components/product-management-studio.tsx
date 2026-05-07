@@ -25,6 +25,7 @@ export function ProductManagementStudio() {
   const [saveBusy, setSaveBusy] = useState(false);
   const [deleteBusy, setDeleteBusy] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isStockDisableModalOpen, setIsStockDisableModalOpen] = useState(false);
   const [pendingUploadBlob, setPendingUploadBlob] = useState<Blob | null>(null);
   const [pagination, setPagination] = useState({
     page: 1,
@@ -169,8 +170,8 @@ export function ProductManagementStudio() {
     const willEnableStock = !selectedProduct.trackStock;
     updateSelectedProduct({
       trackStock: willEnableStock,
-      stockQuantity: selectedProduct.trackStock ? 0 : selectedProduct.stockQuantity,
-      lowStockThreshold: selectedProduct.trackStock ? 0 : selectedProduct.lowStockThreshold,
+      stockQuantity: selectedProduct.stockQuantity,
+      lowStockThreshold: selectedProduct.lowStockThreshold,
     });
     setUploadError(null);
     setShellAlert({
@@ -196,7 +197,7 @@ export function ProductManagementStudio() {
     setUploadError(null);
   }
 
-  async function handleSaveChanges() {
+  async function handleSaveChanges(options: { confirmedStockDisable?: boolean } = {}) {
     if (!selectedProduct) {
       return;
     }
@@ -228,6 +229,12 @@ export function ProductManagementStudio() {
       return;
     }
 
+    if (!options.confirmedStockDisable && !selectedProduct.trackStock && selectedProduct.stockQuantity > 0) {
+      setIsStockDisableModalOpen(true);
+      return;
+    }
+
+    setIsStockDisableModalOpen(false);
     setUploadError(null);
     setSaveBusy(true);
     try {
@@ -506,5 +513,5 @@ export function ProductManagementStudio() {
     }
   }
 
-  return <ProductManagementStudioLayout compactMode={compactMode} productsLoading={productsLoading} saveBusy={saveBusy} deleteBusy={deleteBusy} isDirty={isDirty} selectedProduct={selectedProduct} activeCategory={activeCategory} currentPage={currentPage} filteredCount={pagination.totalItems} itemsPerPage={itemsPerPageLimit} selectionTransitionLocked={Boolean(pendingDraftRef.current)} selectedId={effectiveSelectedId} totalPages={totalPages} visibleProducts={visibleProducts} fileInputRef={fileInputRef} cropDraft={cropDraft} cropZoom={cropZoom} cropOffset={cropOffset} uploadBusy={uploadBusy} isDeleteModalOpen={isDeleteModalOpen} onCreateNewProduct={handleCreateNewProduct} onUpdateProduct={updateSelectedProduct} onSaveChanges={handleSaveChanges} onChooseImageClick={handleChooseImageClick} onBackToProducts={handleBackToProducts} onToggleSaleStatus={handleToggleSaleStatus} onToggleStock={handleToggleStock} onResetForm={handleResetForm} onDeleteConfirmed={handleDeleteRequest} onCategoryChange={handleCategoryChange} onPageChange={setPage} onSelectProduct={setSelectedId} onFileSelection={handleFileSelection} onCropClose={handleCropClose} onCropConfirm={handleCropConfirm} onCropZoomChange={handleCropZoomChange} onCropOffsetChange={handleCropOffsetChange} onCloseDeleteModal={() => setIsDeleteModalOpen(false)} onFinalDelete={handleFinalDelete} />;
+  return <ProductManagementStudioLayout compactMode={compactMode} productsLoading={productsLoading} saveBusy={saveBusy} deleteBusy={deleteBusy} isDirty={isDirty} selectedProduct={selectedProduct} activeCategory={activeCategory} currentPage={currentPage} filteredCount={pagination.totalItems} itemsPerPage={itemsPerPageLimit} selectionTransitionLocked={Boolean(pendingDraftRef.current)} selectedId={effectiveSelectedId} totalPages={totalPages} visibleProducts={visibleProducts} fileInputRef={fileInputRef} cropDraft={cropDraft} cropZoom={cropZoom} cropOffset={cropOffset} uploadBusy={uploadBusy} isDeleteModalOpen={isDeleteModalOpen} isStockDisableModalOpen={isStockDisableModalOpen} onCreateNewProduct={handleCreateNewProduct} onUpdateProduct={updateSelectedProduct} onSaveChanges={handleSaveChanges} onChooseImageClick={handleChooseImageClick} onBackToProducts={handleBackToProducts} onToggleSaleStatus={handleToggleSaleStatus} onToggleStock={handleToggleStock} onResetForm={handleResetForm} onDeleteConfirmed={handleDeleteRequest} onCategoryChange={handleCategoryChange} onPageChange={setPage} onSelectProduct={setSelectedId} onFileSelection={handleFileSelection} onCropClose={handleCropClose} onCropConfirm={handleCropConfirm} onCropZoomChange={handleCropZoomChange} onCropOffsetChange={handleCropOffsetChange} onCloseDeleteModal={() => setIsDeleteModalOpen(false)} onFinalDelete={handleFinalDelete} onCloseStockDisableModal={() => setIsStockDisableModalOpen(false)} onConfirmStockDisable={() => handleSaveChanges({ confirmedStockDisable: true })} />;
 }
