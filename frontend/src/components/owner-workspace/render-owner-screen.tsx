@@ -346,7 +346,7 @@ export async function renderOwnerScreen(
           className={`${ipadAirOnlyHideClass} ${miniHeaderClass}`}
         />
 
-        <div className="grid min-h-0 grid-cols-[minmax(250px,1fr)_minmax(250px,1fr)_minmax(250px,1fr)] items-start gap-[12px] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:!grid-cols-[minmax(250px,1fr)_minmax(300px,1.14fr)] [@media(orientation:portrait)]:grid-cols-1 [@media(orientation:portrait)]:gap-4 max-[980px]:grid-cols-1 max-[820px]:gap-4">
+        <div className="grid min-h-0 grid-cols-[minmax(250px,1fr)_minmax(250px,1fr)_minmax(250px,1fr)] items-start gap-[12px] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:!grid-cols-[minmax(250px,1fr)_minmax(300px,1.14fr)] [@media(orientation:portrait)]:grid-cols-1 [@media(orientation:portrait)]:gap-4 max-[980px]:grid-cols-1 max-[820px]:gap-4">
           <div className="grid gap-[12px] max-[820px]:gap-4">
           <PanelCard
             eyebrow="ความปลอดภัยของบัญชี"
@@ -362,14 +362,14 @@ export async function renderOwnerScreen(
             title="เปลี่ยนธีม"
             actions={<OwnerThemeStatusPill />}
             titleClassName="my-[6px] text-[1.42rem] leading-[1.06] tracking-[-0.035em]"
-            className="hidden [@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:grid [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:grid h-fit min-h-0 min-w-0 content-start overflow-hidden px-4 py-4 max-[820px]:px-4 max-[820px]:py-4 max-[640px]:px-3.5 max-[640px]:py-3.5"
+            className="hidden h-fit min-h-0 min-w-0 content-start overflow-hidden px-4 py-4 [@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:grid [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:grid max-[820px]:px-4 max-[820px]:py-4 max-[640px]:px-3.5 max-[640px]:py-3.5"
           >
             <OwnerThemeClient className="mt-0" serverTheme={ownerTheme} />
           </PanelCard>
 
           </div>
 
-          <div className="grid gap-[12px] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:hidden max-[820px]:gap-4">
+          <div className="grid gap-[12px] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:hidden max-[820px]:gap-4">
             <PanelCard
               eyebrow="โปรไฟล์ร้านค้า"
               title="ข้อมูลทั่วไป"
@@ -401,7 +401,7 @@ export async function renderOwnerScreen(
               title="เปลี่ยนธีม"
               actions={<OwnerThemeStatusPill />}
               titleClassName="my-[8px] text-[clamp(1.5rem,1.9vw,1.8rem)] leading-[1.05] tracking-[-0.04em] max-[520px]:text-[1.68rem]"
-              className={`grid h-fit min-h-0 min-w-0 content-start overflow-hidden px-4 py-4 max-[820px]:px-4 max-[820px]:py-4 max-[640px]:px-3.5 max-[640px]:py-3.5 ${ipadAirOnlyHideClass}`}
+              className="grid h-fit min-h-0 min-w-0 content-start overflow-hidden px-4 py-4 [@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:!hidden [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:!hidden max-[820px]:px-4 max-[820px]:py-4 max-[640px]:px-3.5 max-[640px]:py-3.5"
             >
               <OwnerThemeClient serverTheme={ownerTheme} />
             </PanelCard>
