@@ -1,4 +1,4 @@
-export const ownerThemeIds = ["violet", "light", "dark", "mono"] as const;
+export const ownerThemeIds = ["violet", "light", "dark", "mono", "green_white", "orange_pink"] as const;
 export type OwnerThemeId = (typeof ownerThemeIds)[number];
 
 export const defaultOwnerTheme: OwnerThemeId = "light";

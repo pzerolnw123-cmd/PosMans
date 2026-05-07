@@ -165,6 +165,8 @@
   --theme-preview-light: linear-gradient(135deg, #ffffff 0%, #eef5ff 42%, #2f7ff5 100%);
   --theme-preview-dark: linear-gradient(135deg, #080808 0%, #121212 48%, #f4c430 100%);
   --theme-preview-mono: linear-gradient(135deg, #ffffff 0%, #ffffff 46%, #111111 47%, #111111 100%);
+  --theme-preview-green-white: linear-gradient(135deg, #ffffff 0%, #f0fdf4 48%, #0f8a4b 100%);
+  --theme-preview-orange-pink: linear-gradient(135deg, #fff7ed 0%, #fb7185 52%, #c2410c 100%);
   --scroll-track: color-mix(in srgb, #0f131d 78%, transparent);
   --scroll-thumb: linear-gradient(180deg, var(--brand), var(--brand-strong));
   --scroll-thumb-hover: linear-gradient(180deg, var(--brand-strong), var(--brand));

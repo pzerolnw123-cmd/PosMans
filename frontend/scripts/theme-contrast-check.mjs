@@ -8,6 +8,8 @@ const files = {
   violet: ["light.css", "violet.css"],
   dark: ["light.css", "dark.css"],
   mono: ["light.css", "mono.css"],
+  green_white: ["light.css", "green_white.css"],
+  orange_pink: ["light.css", "orange_pink.css"],
 };
 
 const pairs = [

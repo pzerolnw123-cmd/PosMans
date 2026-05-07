@@ -21,6 +21,8 @@ enum OwnerTheme {
   light
   dark
   mono
+  green_white
+  orange_pink
 }
 
 enum AuditAction {

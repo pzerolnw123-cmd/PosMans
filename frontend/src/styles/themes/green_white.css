@@ -1,0 +1,117 @@
+/*
+ * green_white.css - Green White theme.
+ *
+ * Bright white surfaces with fresh green accents.
+ */
+
+html[data-store-theme="green_white"] {
+  --background: #f3fbf6;
+  --background-start: #ffffff;
+  --background-mid: #f0fdf4;
+  --background-end: #e8f7ee;
+  --background-glow-left: rgba(15, 138, 75, 0.12);
+  --background-glow-right: rgba(34, 197, 94, 0.1);
+
+  --foreground: #102117;
+  --foreground-soft: #45604e;
+  --foreground-muted: #6a8171;
+  --foreground-inverse: #ffffff;
+  --text-on-dark-muted: #45604e;
+  --text-on-dark-soft: #5d7565;
+  --text-highlight: #064e3b;
+
+  --surface: #ffffff;
+  --surface-strong: #ffffff;
+  --surface-muted: #f1f8f4;
+  --surface-glass: rgba(255, 255, 255, 0.88);
+  --surface-raised: #ffffff;
+  --panel-elevated: #ffffff;
+  --panel-subtle: #edf8f1;
+  --panel-strong: #ffffff;
+
+  --field-bg: rgba(251, 255, 252, 0.98);
+  --field-placeholder: #6c8173;
+
+  --border: rgba(56, 120, 81, 0.24);
+  --border-strong: rgba(15, 138, 75, 0.4);
+  --border-field: rgba(43, 108, 68, 0.32);
+
+  --brand: #0f7a43;
+  --brand-strong: #0b6b3b;
+  --brand-soft: rgba(15, 122, 67, 0.12);
+  --brand-shadow: rgba(15, 122, 67, 0.18);
+  --brand-gradient: linear-gradient(135deg, #0f8a4b 0%, #0b6b3b 100%);
+  --brand-text-start: #0b6b3b;
+  --brand-text-mix: #0f7a43;
+  --accent-border: rgba(15, 138, 75, 0.42);
+  --accent-surface: rgba(15, 138, 75, 0.1);
+  --accent-text: #0b6b3b;
+  --active-surface: #e7f6ed;
+  --button-bg: #0f7a43;
+  --button-text: #ffffff;
+
+  --success: #047857;
+  --success-bright: #047857;
+  --success-soft: rgba(4, 120, 87, 0.14);
+  --success-wash: rgba(4, 120, 87, 0.08);
+  --success-border: rgba(4, 120, 87, 0.28);
+  --status-text-start: #047857;
+  --status-text-mid1: #047857;
+  --status-text-mid2: #047857;
+  --status-text-end: #065f46;
+  --status-text-gradient: linear-gradient(135deg, #047857 0%, #065f46 100%);
+  --status-text-shadow: none;
+  --danger: #be123c;
+  --danger-bright: #be123c;
+  --danger-soft: rgba(190, 18, 60, 0.1);
+  --danger-border: rgba(190, 18, 60, 0.28);
+  --warning: #92400e;
+
+  --alert-success-bg: #ffffff;
+  --alert-success-border: #0f8a4b;
+  --alert-success-text: #102117;
+  --alert-success-eyebrow: #0b6b3b;
+  --alert-danger-bg: #ffffff;
+  --alert-danger-border: #be123c;
+  --alert-danger-text: #be123c;
+  --alert-danger-eyebrow: #be123c;
+
+  --cart-glow-border: rgba(15, 138, 75, 0.42);
+  --cart-glow-border-soft: rgba(15, 138, 75, 0.22);
+  --cart-glow-bg: #ffffff;
+  --cart-panel-border: rgba(15, 138, 75, 0.34);
+  --cart-panel-bg: #ffffff;
+  --cart-row-bg: #f1f8f4;
+  --cart-row-border: rgba(15, 138, 75, 0.28);
+  --cart-shadow-strong: rgba(15, 122, 67, 0.2);
+  --cart-shadow-mid: rgba(15, 122, 67, 0.12);
+  --cart-shadow-soft: rgba(15, 122, 67, 0.08);
+  --cart-badge-bg: #0f7a43;
+  --cart-badge-text: #ffffff;
+  --cart-badge-border: rgba(15, 138, 75, 0.34);
+
+  --shadow-card:
+    rgba(38, 92, 59, 0.08) 0 0 0 1px,
+    rgba(38, 92, 59, 0.12) 0 10px 22px,
+    rgba(38, 92, 59, 0.08) 0 18px 40px;
+  --shadow-soft:
+    rgba(38, 92, 59, 0.08) 0 0 0 1px,
+    rgba(38, 92, 59, 0.1) 0 8px 18px;
+
+  --ring: rgba(15, 138, 75, 0.26);
+  --modal-backdrop: rgba(219, 239, 226, 0.78);
+  --modal-surface: #ffffff;
+  --modal-shadow: rgba(38, 92, 59, 0.22) 0 30px 80px;
+  --eyebrow: #45604e;
+  --toggle-track: #ffffff;
+  --toggle-track-checked: linear-gradient(90deg, #dff5e7, #ffffff);
+  --toggle-thumb-bg: #ffffff;
+  --toggle-thumb-bg-checked: #0f7a43;
+  --toggle-mark: #45604e;
+  --toggle-mark-checked: #0b6b3b;
+  --scroll-track: rgba(209, 232, 218, 0.72);
+  --scroll-thumb: linear-gradient(180deg, #22a565, #0f7a43);
+  --scroll-thumb-hover: linear-gradient(180deg, #2dbd78, #0b6b3b);
+  --qr-foreground: #0f7a43;
+  --qr-background: #ffffff;
+}

@@ -51,7 +51,7 @@ const ownerProfileSchema = z
 
 const ownerThemeSchema = z
   .object({
-    theme: z.enum(["violet", "light", "dark", "mono"]),
+    theme: z.enum(["violet", "light", "dark", "mono", "green_white", "orange_pink"]),
   })
   .strict();
 

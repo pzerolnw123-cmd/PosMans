@@ -89,6 +89,18 @@ export const ownerThemeOptions: Array<{
       description: "โทนขาวดำ เส้นกรอบคม เงาน้อย เหมาะกับหน้าร้านที่ต้องการฟีลเรียบจริงจัง",
       preview: "var(--theme-preview-mono)",
     },
+    {
+      id: "green_white",
+      label: "Green White",
+      description: "Clean white workspace with fresh green accents for a bright storefront feel.",
+      preview: "var(--theme-preview-green-white)",
+    },
+    {
+      id: "orange_pink",
+      label: "Orange Pink",
+      description: "Warm orange actions with pink highlights for a lively, friendly storefront.",
+      preview: "var(--theme-preview-orange-pink)",
+    },
   ];
 
 export const promptPayRecipientOptions: Array<{ value: PromptPayRecipientType; label: string; helper: string }> = [

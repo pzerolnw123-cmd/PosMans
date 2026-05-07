@@ -1,0 +1,117 @@
+/*
+ * orange_pink.css - Orange Pink theme.
+ *
+ * Warm white surfaces with orange actions and pink highlights.
+ */
+
+html[data-store-theme="orange_pink"] {
+  --background: #fff7f1;
+  --background-start: #ffffff;
+  --background-mid: #fff4eb;
+  --background-end: #fdebf1;
+  --background-glow-left: rgba(194, 65, 12, 0.12);
+  --background-glow-right: rgba(190, 24, 93, 0.12);
+
+  --foreground: #25140f;
+  --foreground-soft: #694238;
+  --foreground-muted: #8a645b;
+  --foreground-inverse: #ffffff;
+  --text-on-dark-muted: #694238;
+  --text-on-dark-soft: #7c554c;
+  --text-highlight: #9f1239;
+
+  --surface: #ffffff;
+  --surface-strong: #ffffff;
+  --surface-muted: #fff5ee;
+  --surface-glass: rgba(255, 255, 255, 0.88);
+  --surface-raised: #ffffff;
+  --panel-elevated: #ffffff;
+  --panel-subtle: #fff1e8;
+  --panel-strong: #ffffff;
+
+  --field-bg: rgba(255, 251, 248, 0.98);
+  --field-placeholder: #8a645b;
+
+  --border: rgba(194, 65, 12, 0.22);
+  --border-strong: rgba(190, 24, 93, 0.36);
+  --border-field: rgba(194, 65, 12, 0.3);
+
+  --brand: #c2410c;
+  --brand-strong: #be185d;
+  --brand-soft: rgba(194, 65, 12, 0.12);
+  --brand-shadow: rgba(194, 65, 12, 0.18);
+  --brand-gradient: linear-gradient(135deg, #c2410c 0%, #be185d 100%);
+  --brand-text-start: #c2410c;
+  --brand-text-mix: #be185d;
+  --accent-border: rgba(190, 24, 93, 0.38);
+  --accent-surface: rgba(190, 24, 93, 0.1);
+  --accent-text: #be185d;
+  --active-surface: #fdeaf1;
+  --button-bg: #c2410c;
+  --button-text: #ffffff;
+
+  --success: #047857;
+  --success-bright: #047857;
+  --success-soft: rgba(4, 120, 87, 0.12);
+  --success-wash: rgba(4, 120, 87, 0.08);
+  --success-border: rgba(4, 120, 87, 0.28);
+  --status-text-start: #be185d;
+  --status-text-mid1: #be185d;
+  --status-text-mid2: #c2410c;
+  --status-text-end: #9f1239;
+  --status-text-gradient: linear-gradient(135deg, #be185d 0%, #c2410c 100%);
+  --status-text-shadow: none;
+  --danger: #b91c1c;
+  --danger-bright: #b91c1c;
+  --danger-soft: rgba(185, 28, 28, 0.1);
+  --danger-border: rgba(185, 28, 28, 0.28);
+  --warning: #9a3412;
+
+  --alert-success-bg: #ffffff;
+  --alert-success-border: #c2410c;
+  --alert-success-text: #25140f;
+  --alert-success-eyebrow: #be185d;
+  --alert-danger-bg: #ffffff;
+  --alert-danger-border: #b91c1c;
+  --alert-danger-text: #b91c1c;
+  --alert-danger-eyebrow: #b91c1c;
+
+  --cart-glow-border: rgba(190, 24, 93, 0.38);
+  --cart-glow-border-soft: rgba(194, 65, 12, 0.22);
+  --cart-glow-bg: #ffffff;
+  --cart-panel-border: rgba(190, 24, 93, 0.32);
+  --cart-panel-bg: #ffffff;
+  --cart-row-bg: #fff5ee;
+  --cart-row-border: rgba(190, 24, 93, 0.26);
+  --cart-shadow-strong: rgba(194, 65, 12, 0.18);
+  --cart-shadow-mid: rgba(194, 65, 12, 0.11);
+  --cart-shadow-soft: rgba(194, 65, 12, 0.08);
+  --cart-badge-bg: #c2410c;
+  --cart-badge-text: #ffffff;
+  --cart-badge-border: rgba(190, 24, 93, 0.32);
+
+  --shadow-card:
+    rgba(126, 55, 34, 0.08) 0 0 0 1px,
+    rgba(126, 55, 34, 0.12) 0 10px 22px,
+    rgba(126, 55, 34, 0.08) 0 18px 40px;
+  --shadow-soft:
+    rgba(126, 55, 34, 0.08) 0 0 0 1px,
+    rgba(126, 55, 34, 0.1) 0 8px 18px;
+
+  --ring: rgba(190, 24, 93, 0.24);
+  --modal-backdrop: rgba(246, 222, 215, 0.78);
+  --modal-surface: #ffffff;
+  --modal-shadow: rgba(126, 55, 34, 0.22) 0 30px 80px;
+  --eyebrow: #694238;
+  --toggle-track: #ffffff;
+  --toggle-track-checked: linear-gradient(90deg, #ffe5d4, #fdeaf1);
+  --toggle-thumb-bg: #ffffff;
+  --toggle-thumb-bg-checked: #c2410c;
+  --toggle-mark: #694238;
+  --toggle-mark-checked: #be185d;
+  --scroll-track: rgba(241, 213, 205, 0.72);
+  --scroll-thumb: linear-gradient(180deg, #e85d1f, #be185d);
+  --scroll-thumb-hover: linear-gradient(180deg, #f97316, #be185d);
+  --qr-foreground: #c2410c;
+  --qr-background: #ffffff;
+}
