@@ -21,9 +21,13 @@ const ownerNamePrompt = "กรอกชื่อของคุณ";
 const unsetStoreNames = new Set(["", "Main Store", "FastManFoods"]);
 const unsetOwnerNames = new Set(["", "Store Owner"]);
 const ipadAirOnlyClass =
-  "[@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:block [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:block";
+  "[@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:block [@media(min-width:744px)_and_(max-width:1024px)_and_(orientation:portrait)]:block [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:block [@media(min-width:821px)_and_(max-width:1366px)_and_(max-height:1024px)_and_(orientation:landscape)]:block";
 const ipadAirHideClass =
-  "[@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:hidden [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:hidden";
+  "[@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:hidden [@media(min-width:744px)_and_(max-width:1024px)_and_(orientation:portrait)]:hidden [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:hidden [@media(min-width:821px)_and_(max-width:1366px)_and_(max-height:1024px)_and_(orientation:landscape)]:hidden";
+const tabletHeaderHideClass =
+  "[@media(max-width:1366px)_and_(any-pointer:coarse)]:hidden [@media(min-width:744px)_and_(max-width:1024px)_and_(orientation:portrait)]:hidden [@media(min-width:821px)_and_(max-width:1366px)_and_(max-height:1024px)_and_(orientation:landscape)]:hidden";
+const tabletHeaderShowClass =
+  "hidden [@media(max-width:1366px)_and_(any-pointer:coarse)]:flex [@media(min-width:744px)_and_(max-width:1024px)_and_(orientation:portrait)]:flex [@media(min-width:821px)_and_(max-width:1366px)_and_(max-height:1024px)_and_(orientation:landscape)]:flex";
 
 const sectionMeta: Record<OwnerSectionKey, { label: string; href: string }> = {
   sales: { label: "ขาย / Sale", href: "/owner/sales" },
@@ -179,8 +183,8 @@ export async function OwnerWorkspace({ session, paymentStore, activeSection }: O
           title={screen.title}
           description={screen.description}
           actions={screen.actions}
-          headerClassName="[@media(max-width:1366px)_and_(any-pointer:coarse)]:hidden"
-          mobileHeaderClassName="hidden [@media(max-width:1366px)_and_(any-pointer:coarse)]:flex"
+          headerClassName={tabletHeaderHideClass}
+          mobileHeaderClassName={tabletHeaderShowClass}
           mobileEyebrow="STATUS STORE"
           mobileTitle={<span className="[background-image:var(--status-text-gradient)] bg-clip-text font-black tracking-normal text-transparent drop-shadow-[var(--status-text-shadow)] pb-1">{storeName}</span>}
           mobileDescription={`${ownerName} • ${roleLabel}`}
