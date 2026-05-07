@@ -78,6 +78,20 @@ html[data-store-theme="dark"] {
   --alert-danger-text: #ffe08a;
   --alert-danger-eyebrow: rgba(244, 196, 48, 0.78);
 
+  --cart-glow-border: rgba(255, 216, 77, 0.46);
+  --cart-glow-border-soft: rgba(244, 196, 48, 0.26);
+  --cart-glow-bg: linear-gradient(180deg, rgba(244, 196, 48, 0.1), var(--surface) 78%);
+  --cart-panel-border: rgba(255, 216, 77, 0.38);
+  --cart-panel-bg: linear-gradient(180deg, rgba(244, 196, 48, 0.11), var(--panel-strong) 82%);
+  --cart-row-bg: rgba(244, 196, 48, 0.08);
+  --cart-row-border: rgba(255, 216, 77, 0.3);
+  --cart-shadow-strong: rgba(244, 196, 48, 0.24);
+  --cart-shadow-mid: rgba(244, 196, 48, 0.15);
+  --cart-shadow-soft: rgba(244, 196, 48, 0.1);
+  --cart-badge-bg: #3a3115;
+  --cart-badge-text: #ffd84d;
+  --cart-badge-border: rgba(255, 216, 77, 0.3);
+
   --eyebrow: #cccccc;
   --toggle-track: #242014;
   --toggle-track-checked: #3a3115;

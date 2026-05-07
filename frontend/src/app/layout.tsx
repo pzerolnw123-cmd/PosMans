@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import Script from "next/script";
 import { cookies } from "next/headers";
 import "./globals.css";
+import { NetworkErrorRecovery } from "@/components/network-error-recovery";
 import { ThemeSync } from "@/components/theme-sync";
 import { getCurrentSession } from "@/lib/session";
 import { defaultOwnerTheme, isOwnerTheme, ownerThemeCookieKey, ownerThemeIds, ownerThemeStorageKey } from "@/lib/owner-theme";
@@ -98,6 +99,7 @@ export default async function RootLayout({
         <Script id="owner-theme-init" strategy="beforeInteractive" dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>
       <body suppressHydrationWarning>
+        <NetworkErrorRecovery />
         <ThemeSync serverTheme={ownerTheme} source={userThemeSource} />
         {children}
       </body>

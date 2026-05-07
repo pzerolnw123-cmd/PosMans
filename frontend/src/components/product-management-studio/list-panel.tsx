@@ -50,7 +50,7 @@ export function ProductListPanel({
         <div className={studioResponsiveClass.stackedHeader}>
           <div>
             <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[var(--eyebrow)]">รายการสินค้าทั้งหมด</p>
-            <h2 className="mb-0 mt-[8px] text-[clamp(1.45rem,2vw,2rem)] leading-[1.02] tracking-[-0.06em]">เลือกสินค้าเพื่อแก้ไขได้ทันที</h2>
+            <h2 className="mb-0 mt-[8px] text-[clamp(1.45rem,2vw,2rem)] leading-[1.02] tracking-[-0.06em] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:mt-[9px] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:text-[1.12rem] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:leading-[1.08]">เลือกสินค้าเพื่อแก้ไขได้ทันที</h2>
           </div>
           <div className="flex shrink-0 flex-wrap justify-end gap-[10px] max-[720px]:justify-stretch">
             <StatusPill>หน้า {currentPage}/{totalPages}</StatusPill>
@@ -58,7 +58,7 @@ export function ProductListPanel({
           </div>
         </div>
 
-        <div className={studioResponsiveClass.chipGrid}>
+        <div className={`${studioResponsiveClass.chipGrid} [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:gap-2 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:pt-3`}>
           {categoryOptions.map((category) => {
             const active = activeCategory === category;
 
@@ -68,12 +68,12 @@ export function ProductListPanel({
                 type="button"
                 className={
                   active
-                    ? "min-h-10 rounded-[10px] border border-[var(--brand)] bg-[var(--brand-soft)] px-[18px] font-bold text-[var(--brand-strong)] shadow-[var(--brand-shadow)] transition hover:-translate-y-px"
-                    : "min-h-10 rounded-[10px] border border-[var(--border)] bg-[var(--surface-muted)] px-[18px] font-bold text-[var(--foreground)] transition hover:-translate-y-px hover:shadow-[var(--shadow-hover-subtle)]"
+                    ? "min-h-10 rounded-[10px] border border-[var(--brand)] bg-[var(--brand-soft)] px-[18px] font-bold text-[var(--brand-strong)] shadow-[var(--brand-shadow)] transition hover:-translate-y-px [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:min-h-8 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:rounded-[8px] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:px-3 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:text-[0.82rem]"
+                    : "min-h-10 rounded-[10px] border border-[var(--border)] bg-[var(--surface-muted)] px-[18px] font-bold text-[var(--foreground)] transition hover:-translate-y-px hover:shadow-[var(--shadow-hover-subtle)] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:min-h-8 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:rounded-[8px] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:px-3 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:text-[0.82rem]"
                 }
                 onClick={() => onCategoryChange(category)}
               >
-                <div className="flex items-center gap-[10px]">
+                <div className="flex items-center gap-[10px] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:gap-1.5 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:[&_svg]:h-[15px] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:[&_svg]:w-[15px]">
                   {category === "อาหาร" && (
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 20 20">
                       <path
@@ -171,7 +171,7 @@ export function ProductListPanel({
                   />
 
                   <div className="min-w-0 self-center">
-                    <strong className="block text-[1rem] tracking-[-0.03em] text-[var(--foreground)] [overflow-wrap:anywhere] [@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:text-[0.92rem] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:text-[0.92rem]">
+                    <strong className="block truncate text-[1rem] tracking-[-0.03em] text-[var(--foreground)] [@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:text-[0.92rem] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:text-[0.92rem]">
                       {item.name}
                       {stockLabel ? (
                         <span className="ml-2 text-[0.82rem] font-bold text-[var(--foreground)] [@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:hidden [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:hidden">
@@ -217,7 +217,7 @@ export function ProductListPanel({
         </div>
       </section>
 
-      <div className={studioResponsiveClass.stackedFooter}>
+      <div className={`${studioResponsiveClass.stackedFooter} [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:gap-2 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:px-0 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:[&_button]:min-h-[40px] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:[&_button]:px-3 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:[&_button]:text-[0.82rem]`}>
         <button
           type="button"
           className={ghostButtonClass}
@@ -226,7 +226,7 @@ export function ProductListPanel({
         >
           ก่อนหน้า
         </button>
-        <span className="text-[0.92rem] text-[var(--foreground-soft)]">แสดงสูงสุด {itemsPerPage} สินค้าต่อหน้า</span>
+        <span className="whitespace-nowrap text-[0.92rem] text-[var(--foreground-soft)] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:text-[0.78rem]">แสดงสูงสุด {itemsPerPage} สินค้าต่อหน้า</span>
         <button
           type="button"
           className={secondaryButtonClass}

@@ -5,11 +5,50 @@ import { OwnerProfileContext } from "@/components/backoffice-shell";
 import { eyebrowTextClass } from "@/components/ui-primitives";
 import { useOwnerLogo } from "@/components/owner-settings-client/logo-client";
 
-export function ProfileHeaderInjector({ className = "" }: { className?: string }) {
+export function ProfileHeaderInjector({
+  className = "",
+  variant = "default",
+}: {
+  className?: string;
+  variant?: "default" | "profileCard";
+}) {
   const profile = useContext(OwnerProfileContext);
   const { previewUrl } = useOwnerLogo();
 
   if (!profile) return null;
+
+  if (variant === "profileCard") {
+    return (
+      <div
+        className={`w-[228px] min-w-[228px] max-w-[228px] flex-col items-center overflow-hidden rounded-none border border-[var(--border)] bg-[var(--surface)] px-5 pb-8 pt-8 text-center shadow-[var(--shadow-soft)] ${className}`.trim()}
+      >
+        {previewUrl ? (
+          <div className="flex h-[72px] w-[72px] shrink-0 items-center justify-center overflow-hidden rounded-[10px] border border-[var(--border)] bg-[var(--surface-muted)] shadow-[var(--shadow-soft)]">
+            <span
+              className="h-[74%] w-[74%] bg-contain bg-center bg-no-repeat"
+              style={{ backgroundImage: `url(${previewUrl})` }}
+              role="img"
+              aria-label="โลโก้ร้าน"
+            />
+          </div>
+        ) : null}
+
+        <div className="mt-10 min-w-0">
+          <p className={`${eyebrowTextClass} mb-0`}>STATUS STORE</p>
+          <h2 className="mb-0 mt-2 text-[1.42rem] font-bold leading-[0.96] tracking-[-0.035em]">
+            <span className="[background-image:var(--status-text-gradient)] bg-clip-text font-black tracking-normal text-transparent drop-shadow-[var(--status-text-shadow)] pb-1">
+              {profile.profileName}
+            </span>
+          </h2>
+          {profile.profileMeta ? (
+            <p className="m-0 mt-1 text-[0.72rem] leading-[1.25] text-[var(--foreground-soft)]">
+              {profile.profileMeta} • {profile.profileRole}
+            </p>
+          ) : null}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div

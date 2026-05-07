@@ -10,6 +10,8 @@ export type ProfitReportRow = {
 };
 
 export type ProfitReportPdfPayload = {
+  storeName?: string;
+  periodLabel?: string;
   dateLabel: string;
   generatedAt: string;
   sales: number;
@@ -84,6 +86,13 @@ export async function createProfitReportPdfBlob(payload: ProfitReportPdfPayload)
   ctx.textBaseline = "top";
 
   drawText(ctx, "รายงานคำนวณกำไร", left, y, { size: 52, bold: true });
+  const headerPeriodLabel = payload.periodLabel?.trim() || payload.dateLabel;
+  if (payload.storeName?.trim()) {
+    drawText(ctx, payload.storeName.trim(), right, y + 4, { align: "right", size: 30, bold: true, color: "#111827" });
+    drawText(ctx, headerPeriodLabel, right, y + 43, { align: "right", size: 20, color: "#6b7280" });
+  } else {
+    drawText(ctx, headerPeriodLabel, right, y + 22, { align: "right", size: 20, color: "#6b7280" });
+  }
   y += 68;
   drawText(ctx, `สร้างเมื่อ: ${payload.generatedAt}`, left, y, { size: 24, color: "#4b5563" });
   y += 52;

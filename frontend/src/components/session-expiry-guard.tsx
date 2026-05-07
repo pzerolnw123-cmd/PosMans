@@ -18,6 +18,8 @@ type SessionMePayload = {
 
 export function SessionExpiryGuard({ initialExpiresAt }: SessionExpiryGuardProps) {
   const [expiresAt, setExpiresAt] = useState(initialExpiresAt);
+  const [sessionCheckRetryAt, setSessionCheckRetryAt] = useState<number | null>(null);
+  const [sessionCheckRetryCount, setSessionCheckRetryCount] = useState(0);
   const { setShellAlert } = useBackofficeShellAlert();
 
   const forceLogoutForExpiry = useCallback(async () => {
@@ -58,14 +60,21 @@ export function SessionExpiryGuard({ initialExpiresAt }: SessionExpiryGuardProps
       }
 
       setExpiresAt(payload.session.expiresAt);
+      setSessionCheckRetryCount(0);
     } catch {
-      await forceLogoutForExpiry();
-    }
-  }, [forceLogoutForExpiry]);
+      if (sessionCheckRetryCount >= 2) {
+        await forceLogoutForExpiry();
+        return;
+      }
 
-  useEffect(() => {
-    setExpiresAt(initialExpiresAt);
-  }, [initialExpiresAt]);
+      setShellAlert({
+        tone: "info",
+        message: "เช็ก session ไม่สำเร็จ กำลังลองเชื่อมต่ออีกครั้ง...",
+      });
+      setSessionCheckRetryCount((current) => current + 1);
+      setSessionCheckRetryAt(Date.now() + 5000);
+    }
+  }, [forceLogoutForExpiry, sessionCheckRetryCount, setShellAlert]);
 
   useEffect(() => {
     const expiryTime = new Date(expiresAt).getTime();
@@ -82,6 +91,21 @@ export function SessionExpiryGuard({ initialExpiresAt }: SessionExpiryGuardProps
       window.clearTimeout(timeoutId);
     };
   }, [checkSessionExpiry, expiresAt]);
+
+  useEffect(() => {
+    if (!sessionCheckRetryAt) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setSessionCheckRetryAt(null);
+      void checkSessionExpiry();
+    }, Math.max(0, sessionCheckRetryAt - Date.now()));
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [checkSessionExpiry, sessionCheckRetryAt]);
 
   return null;
 }

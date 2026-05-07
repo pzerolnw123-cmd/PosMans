@@ -1,6 +1,7 @@
 "use client";
 
-import type { Dispatch, PointerEvent, ReactNode, RefObject, SetStateAction } from "react";
+import { useRef, useState } from "react";
+import type { Dispatch, KeyboardEvent, MouseEvent, PointerEvent, ReactNode, RefObject, SetStateAction } from "react";
 import {
   ownerLandscapeClass,
   ownerLandscapeCompactPanelPaddingClass,
@@ -77,12 +78,117 @@ type PaymentCheckoutPanelsProps = {
 export function PaymentCheckoutPanels({
   billItems, billScrollMetric, billScrollRef, billSubtotal, billDiscount, billTax, billTotal, completedSale, items, itemCount, paymentMethod, setPaymentMethod, displayedPaymentMethod, paymentMethodLabel, receivedAmount, setReceivedAmount, receivedDraft, setReceivedDraft, discountPercent, setDiscountPercent, discountDraft, setDiscountDraft, taxPercent, setTaxPercent, taxDraft, setTaxDraft, note, setNote, error, busy, discount, subtotal, cashPaymentMissingReceivedAmount, qrPaymentConfigured, transferPaymentConfigured, qrPaymentSelected, transferSelected, paymentSettings, dynamicPromptPayReady, staticQrReady, promptPayQrDataUrl, bankInfoFilled, changeAmount, updateBillScrollbar, handleBillPointerDown, handleBillPointerMove, stopBillDrag, onBackToSales, handleConfirmPayment, customerDisplayControl,
 }: PaymentCheckoutPanelsProps) {
+  const [selectedBillItem, setSelectedBillItem] = useState<BillItem | null>(null);
+  const billItemPressRef = useRef<{ key: string; moved: boolean; startX: number; startY: number } | null>(null);
+  const lastBillItemDragAtRef = useRef(0);
   const billPanelClass = `grid min-h-0 min-w-0 grid-rows-[auto_minmax(0,1fr)_auto] gap-[16px] rounded-none border border-[var(--border)] bg-[var(--panel-strong)] px-5 py-[18px] shadow-[var(--shadow-soft)] ${ownerLandscapePanelPaddingClass} ${ownerLandscapeClass}:gap-[14px] max-[1180px]:grid-rows-[auto_auto_auto] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:h-full [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:h-full [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:!grid-rows-[auto_minmax(0,1fr)_auto] [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:!grid-rows-[auto_minmax(0,1fr)_auto] max-[820px]:px-4 max-[820px]:py-4`;
   const paymentPanelClass = `grid h-fit min-w-0 content-start gap-[16px] rounded-none border border-[var(--border)] bg-[var(--panel-strong)] px-5 py-[18px] shadow-[var(--shadow-soft)] ${ownerLandscapePanelPaddingClass} ${ownerLandscapeClass}:gap-[14px] max-[820px]:px-4 max-[820px]:py-4`;
   const quickPanelClass = `grid h-fit min-w-0 gap-[14px] overflow-hidden rounded-none border border-[var(--border)] bg-[var(--panel-strong)] px-4 py-[18px] shadow-[var(--shadow-soft)] ${ownerLandscapeCompactPanelPaddingClass} max-[820px]:px-4 max-[820px]:py-4 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:h-full [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:h-full [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1.18fr)] [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1.18fr)] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:grid-rows-[auto_auto] [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:grid-rows-[auto_auto] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:items-start [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:items-start [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:gap-x-2 [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:gap-x-2 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:gap-y-2 [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:gap-y-2 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:px-3 [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:px-3 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:py-3 [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:py-3`;
   const quickPanelBodyClass = "grid gap-2.5 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:contents [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:contents";
-  const quickMetricCardClass = "min-w-0 rounded-none border border-[var(--border-subtle)] bg-[var(--panel-subtle)] px-3.5 py-3 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:min-h-[74px] [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:min-h-[74px] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:px-2.5 [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:px-2.5 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:py-2 [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:py-2";
+  const quickMetricCardClass = "min-w-0 overflow-hidden rounded-none border border-[var(--border-subtle)] bg-[var(--panel-subtle)] px-3.5 py-3 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:min-h-[74px] [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:min-h-[74px] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:px-2.5 [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:px-2.5 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:py-2 [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:py-2";
   const hasPendingItems = !completedSale && items.length > 0;
+
+  function openBillItemDetail(item: BillItem) {
+    setSelectedBillItem(item);
+  }
+
+  function handleBillItemClick(event: MouseEvent<HTMLDivElement>, item: BillItem) {
+    if (event.timeStamp - lastBillItemDragAtRef.current < 250) {
+      return;
+    }
+
+    openBillItemDetail(item);
+  }
+
+  function handleBillItemKeyDown(event: KeyboardEvent<HTMLDivElement>, item: BillItem) {
+    if (event.key !== "Enter" && event.key !== " ") {
+      return;
+    }
+
+    event.preventDefault();
+    openBillItemDetail(item);
+  }
+
+  function findPressedBillItem(event: PointerEvent<HTMLDivElement>) {
+    if (!(event.target instanceof HTMLElement)) {
+      return null;
+    }
+
+    const target = event.target.closest<HTMLElement>("[data-bill-item-key]");
+    if (!target || !event.currentTarget.contains(target)) {
+      return null;
+    }
+
+    return billItems.find((item) => item.key === target.dataset.billItemKey) ?? null;
+  }
+
+  function handleBillListPointerDown(event: PointerEvent<HTMLDivElement>) {
+    const item = findPressedBillItem(event);
+    billItemPressRef.current =
+      item && event.button === 0
+        ? {
+            key: item.key,
+            moved: false,
+            startX: event.clientX,
+            startY: event.clientY,
+          }
+        : null;
+
+    handleBillPointerDown(event);
+  }
+
+  function handleBillListPointerMove(event: PointerEvent<HTMLDivElement>) {
+    const press = billItemPressRef.current;
+    if (press) {
+      const distanceX = Math.abs(event.clientX - press.startX);
+      const distanceY = Math.abs(event.clientY - press.startY);
+      if (distanceX > 8 || distanceY > 8) {
+        press.moved = true;
+      }
+    }
+
+    handleBillPointerMove(event);
+  }
+
+  function handleBillListPointerUp(event: PointerEvent<HTMLDivElement>) {
+    const press = billItemPressRef.current;
+    billItemPressRef.current = null;
+    stopBillDrag(event);
+
+    if (press?.moved) {
+      lastBillItemDragAtRef.current = event.timeStamp;
+    }
+  }
+
+  function cancelBillListPointer(event: PointerEvent<HTMLDivElement>) {
+    if (billItemPressRef.current?.moved) {
+      lastBillItemDragAtRef.current = event.timeStamp;
+    }
+    billItemPressRef.current = null;
+    stopBillDrag(event);
+  }
+
+  const billItemCardClass = `grid grid-cols-[52px_minmax(0,1fr)_auto] items-center gap-3 rounded-none border border-[var(--border-subtle)] bg-[var(--panel-subtle)] p-3 text-left ${ownerLandscapeClass}:gap-2.5 ${ownerLandscapeClass}:p-2.5 max-[520px]:grid-cols-[52px_minmax(0,1fr)]`;
+  const interactiveBillItemCardClass = `${billItemCardClass} cursor-pointer transition active:border-[var(--accent-border)]`;
+
+  function renderBillItemContent(item: BillItem) {
+    return (
+      <>
+        {item.imageUrl ? (
+          <span className="h-[52px] w-[52px] rounded-[10px] border border-[var(--border-subtle)] bg-cover bg-center" style={{ backgroundImage: `url(${item.imageUrl})` }} />
+        ) : (
+          <div className="h-[52px] w-[52px] rounded-[10px] border border-[var(--border-subtle)] bg-[var(--surface-muted)]" />
+        )}
+        <div className="grid min-w-0 gap-1">
+          <strong className={`truncate text-base leading-[1.2] text-[var(--foreground)] ${ownerLandscapeClass}:text-[0.95rem] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:!text-[0.78rem]`}>{item.name}</strong>
+          <span className={`text-[0.92rem] text-[var(--foreground-soft)] ${ownerLandscapeClass}:text-[0.84rem]`}>
+            {formatBaht(item.unitPrice)} x {item.quantity}
+          </span>
+        </div>
+        <strong className={`text-base leading-[1.2] text-[var(--foreground)] ${ownerLandscapeClass}:text-[0.95rem] max-[520px]:col-span-2 max-[520px]:justify-self-end`}>{formatBaht(item.lineTotal)}</strong>
+      </>
+    );
+  }
 
   return (
     <>
@@ -108,26 +214,23 @@ export function PaymentCheckoutPanels({
                     : `grid h-full min-h-0 touch-none select-none content-start gap-3 overflow-hidden py-0 pl-0 pr-0 ${ownerLandscapeClass}:max-h-none ${ownerLandscapeClass}:gap-2.5 max-[1180px]:max-h-[360px] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:!h-full [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:!h-full [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:!max-h-none [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:!max-h-none max-[640px]:max-h-none max-[640px]:overflow-visible`
                 }
                 onScroll={updateBillScrollbar}
-                onPointerDown={handleBillPointerDown}
-                onPointerMove={handleBillPointerMove}
-                onPointerUp={stopBillDrag}
-                onPointerCancel={stopBillDrag}
-                onPointerLeave={stopBillDrag}
+                onPointerDown={handleBillListPointerDown}
+                onPointerMove={handleBillListPointerMove}
+                onPointerUp={handleBillListPointerUp}
+                onPointerCancel={cancelBillListPointer}
+                onPointerLeave={cancelBillListPointer}
               >
                 {billItems.map((item) => (
-                  <div key={item.key} className={`grid grid-cols-[52px_minmax(0,1fr)_auto] items-center gap-3 rounded-none border border-[var(--border-subtle)] bg-[var(--panel-subtle)] p-3 ${ownerLandscapeClass}:gap-2.5 ${ownerLandscapeClass}:p-2.5 max-[520px]:grid-cols-[52px_minmax(0,1fr)]`}>
-                    {item.imageUrl ? (
-                      <span className="h-[52px] w-[52px] rounded-[10px] border border-[var(--border-subtle)] bg-cover bg-center" style={{ backgroundImage: `url(${item.imageUrl})` }} />
-                    ) : (
-                      <div className="h-[52px] w-[52px] rounded-[10px] border border-[var(--border-subtle)] bg-[var(--surface-muted)]" />
-                    )}
-                    <div className="grid min-w-0 gap-1">
-                      <strong className={`truncate text-base leading-[1.2] text-[var(--foreground)] ${ownerLandscapeClass}:text-[0.95rem]`}>{item.name}</strong>
-                      <span className={`text-[0.92rem] text-[var(--foreground-soft)] ${ownerLandscapeClass}:text-[0.84rem]`}>
-                        {formatBaht(item.unitPrice)} x {item.quantity}
-                      </span>
-                    </div>
-                    <strong className={`text-base leading-[1.2] text-[var(--foreground)] ${ownerLandscapeClass}:text-[0.95rem] max-[520px]:col-span-2 max-[520px]:justify-self-end`}>{formatBaht(item.lineTotal)}</strong>
+                  <div
+                    key={item.key}
+                    data-bill-item-key={item.key}
+                    role="button"
+                    tabIndex={0}
+                    className={interactiveBillItemCardClass}
+                    onClick={(event) => handleBillItemClick(event, item)}
+                    onKeyDown={(event) => handleBillItemKeyDown(event, item)}
+                  >
+                    {renderBillItemContent(item)}
                   </div>
                 ))}
               </div>
@@ -168,7 +271,7 @@ export function PaymentCheckoutPanels({
           <div className="min-w-0">
           <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[var(--eyebrow)]">Payment Methods</p>
           <strong className={`my-[10px] block text-[1.4rem] leading-none tracking-[-0.04em] text-[var(--foreground)] ${ownerLandscapeClass}:text-[1.28rem]`}>{completedSale ? "วิธีชำระล่าสุด" : "เลือกวิธีชำระ"}</strong>
-          <p className="m-0 text-[0.95rem] leading-[1.65] text-[var(--foreground-soft)]">
+          <p className="m-0 text-[0.95rem] leading-[1.65] text-[var(--foreground-soft)] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:hidden">
             {completedSale ? "บิลนี้ชำระสำเร็จแล้ว" : "เลือกวิธีรับเงินก่อนบันทึกบิลจริง"}
           </p>
           </div>
@@ -194,8 +297,8 @@ export function PaymentCheckoutPanels({
           ))}
         </div>
 
-        <div className={`grid content-start gap-4 ${ownerLandscapeClass}:gap-3`}>
-          <div className={`grid grid-cols-2 gap-3 ${ownerLandscapeClass}:gap-2.5 max-[860px]:grid-cols-1`}>
+        <div className={`grid content-start gap-4 ${ownerLandscapeClass}:gap-3 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:gap-2.5`}>
+          <div className={`grid grid-cols-2 gap-3 ${ownerLandscapeClass}:gap-2.5 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:grid-cols-3 max-[860px]:grid-cols-1 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:!grid-cols-3`}>
             {paymentMethod === "CASH" && !completedSale && (
               <label className="grid gap-2">
                 <span className="text-[0.92rem] font-bold text-[var(--brand-strong)]">รับเงินมา</span>
@@ -238,47 +341,48 @@ export function PaymentCheckoutPanels({
                 disabled={!hasPendingItems || Boolean(completedSale)}
               />
             </label>
+            <label className="grid gap-2 max-[640px]:gap-1.5">
+              <span className="flex items-center gap-2 text-[0.92rem] text-[var(--foreground-soft)]">
+                ภาษี <span className="rounded-[4px] bg-[var(--danger-bright)]/10 px-1.5 py-0.5 text-[0.72rem] font-bold text-[var(--danger-bright)]">%</span>
+              </span>
+              <input
+                className={`${inputClass} [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
+                type="number"
+                min={0}
+                max={100}
+                value={taxDraft ?? String(taxPercent)}
+                placeholder="0"
+                onChange={(event) => {
+                  const val = event.target.value;
+                  setTaxDraft(val);
+                  const parsed = Number(val);
+                  if (!isNaN(parsed)) setTaxPercent(Math.max(0, parsed));
+                }}
+                onBlur={() => setTaxDraft(null)}
+                disabled={!hasPendingItems || Boolean(completedSale)}
+              />
+            </label>
           </div>
-          <label className="grid gap-2 max-[640px]:gap-1.5">
-            <span className="flex items-center gap-2 text-[0.92rem] text-[var(--foreground-soft)]">
-              ภาษี <span className="rounded-[4px] bg-[var(--danger-bright)]/10 px-1.5 py-0.5 text-[0.72rem] font-bold text-[var(--danger-bright)]">%</span>
-            </span>
-            <input
-              className={`${inputClass} [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
-              type="number"
-              min={0}
-              max={100}
-              value={taxDraft ?? String(taxPercent)}
-              placeholder="0"
-              onChange={(event) => {
-                const val = event.target.value;
-                setTaxDraft(val);
-                const parsed = Number(val);
-                if (!isNaN(parsed)) setTaxPercent(Math.max(0, parsed));
-              }}
-              onBlur={() => setTaxDraft(null)}
-              disabled={!hasPendingItems || Boolean(completedSale)}
-            />
-          </label>
-          <label className="grid gap-2">
+          <label className="grid gap-2 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:gap-1.5">
             <span className="text-[0.92rem] text-[var(--foreground-soft)]">หมายเหตุบิล</span>
             <textarea
-              className="min-h-[116px] rounded-none border border-[var(--border-field)] bg-[var(--field-bg)] px-[14px] py-3 text-[var(--foreground)] outline-none transition placeholder:text-[var(--field-placeholder)] focus:border-[var(--brand-strong)] focus:shadow-[inset_0_0_0_1px_var(--ring)] disabled:cursor-not-allowed disabled:opacity-70 flex-shrink-0 resize-none max-[640px]:min-h-[96px] [@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)]:min-h-[90px] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:min-h-[72px] [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:min-h-[72px] [&::-webkit-scrollbar]:w-[6px] [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-[var(--scroll-track)] [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:[background:var(--scroll-thumb)] hover:[&::-webkit-scrollbar-thumb]:[background:var(--scroll-thumb-hover)]"
+              className="min-h-[116px] rounded-none border border-[var(--border-field)] bg-[var(--field-bg)] px-[14px] py-3 text-[var(--foreground)] outline-none transition placeholder:text-[var(--field-placeholder)] focus:border-[var(--brand-strong)] focus:shadow-[inset_0_0_0_1px_var(--ring)] disabled:cursor-not-allowed disabled:opacity-70 flex-shrink-0 resize-none max-[640px]:min-h-[96px] [@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)]:min-h-[90px] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:h-[clamp(112px,19dvh,148px)] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:min-h-[112px] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:max-h-[148px] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:px-3 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:py-2.5 [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:min-h-[72px] [&::-webkit-scrollbar]:w-[6px] [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-[var(--scroll-track)] [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:[background:var(--scroll-thumb)] hover:[&::-webkit-scrollbar-thumb]:[background:var(--scroll-thumb-hover)]"
               value={completedSale ? completedSale.note || "" : note}
               onChange={(event) => setNote(event.target.value)}
+              placeholder="พิมพ์หมายเหตุสำหรับบิลนี้..."
               disabled={!hasPendingItems || Boolean(completedSale)}
             />
           </label>
           {error ? <div className="rounded-none border border-[var(--danger-border)] bg-[var(--danger-soft)] px-3 py-2 text-[0.86rem] font-bold text-[var(--danger-bright)]">{error}</div> : null}
         </div>
 
-        <div className="grid grid-cols-2 gap-3 max-[860px]:grid-cols-1">
-          <button type="button" className={`${secondaryButtonClass} min-h-[52px] rounded-2xl`} onClick={onBackToSales}>
+        <div className="grid grid-cols-2 gap-3 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:gap-2.5 max-[860px]:grid-cols-1 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:!grid-cols-2">
+          <button type="button" className={`${secondaryButtonClass} min-h-[52px] rounded-2xl [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:min-h-[50px]`} onClick={onBackToSales}>
             {completedSale ? "เปิดออเดอร์ใหม่" : "กลับไปขาย"}
           </button>
           <button
             type="button"
-            className={`${primaryButtonClass} min-h-[52px] rounded-2xl`}
+            className={`${primaryButtonClass} min-h-[52px] rounded-2xl [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:min-h-[50px]`}
             disabled={items.length === 0 || busy || discount > subtotal || Boolean(completedSale) || cashPaymentMissingReceivedAmount || (paymentMethod === "QR" && !qrPaymentConfigured) || (paymentMethod === "TRANSFER" && !transferPaymentConfigured)}
             onClick={handleConfirmPayment}
           >
@@ -353,20 +457,20 @@ export function PaymentCheckoutPanels({
                 </div>
               ) : null}
               {paymentMethod === "CASH" && !completedSale && receivedAmount > 0 && (
-                <div className="rounded-none border border-[var(--accent-border)] bg-[var(--accent-surface)] px-3.5 py-3 shadow-[var(--brand-shadow)_0_0_15px] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:col-start-1 [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:col-start-1 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:row-start-2 [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:row-start-2">
-                  <span className="text-[0.82rem] text-[var(--brand-strong)]">เงินทอน</span>
-                  <strong className="mt-1 block text-[1.05rem] leading-[1.1] text-[var(--foreground)]">{formatBaht(changeAmount)}</strong>
+                <div className="overflow-hidden rounded-none border border-[var(--accent-border)] bg-[var(--accent-surface)] px-3.5 py-3 shadow-[var(--brand-shadow)_0_0_15px] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:col-start-1 [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:col-start-1 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:row-start-2 [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:row-start-2 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:min-h-[62px] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:px-1.5 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:py-1.5">
+                  <span className="text-[0.82rem] text-[var(--brand-strong)] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:text-[0.68rem]">เงินทอน</span>
+                  <strong className="mt-1 block text-[1.05rem] leading-[1.1] text-[var(--foreground)] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:mt-0.5 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:text-[0.8rem]">{formatBaht(changeAmount)}</strong>
                 </div>
               )}
               <div className={`${quickMetricCardClass} ${completedSale ? "[@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:col-start-2 [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:col-start-2" : paymentMethod === "CASH" && !completedSale && receivedAmount > 0 ? "[@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:col-start-2 [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:col-start-2" : "[@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:col-start-1 [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:col-start-1"} [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:row-start-2 [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:row-start-2`}>
-                <span className="text-[0.82rem] text-[var(--foreground-soft)] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:text-[0.76rem] [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:text-[0.76rem]">จำนวนรายการ</span>
-                <strong className="mt-1 block text-[1.05rem] leading-[1.1] text-[var(--foreground)] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:text-[0.92rem] [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:text-[0.92rem] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:whitespace-nowrap [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:whitespace-nowrap">
+                <span className="text-[0.82rem] text-[var(--foreground-soft)] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:text-[0.68rem] [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:text-[0.76rem]">จำนวนรายการ</span>
+                <strong className="mt-1 block text-[1.05rem] leading-[1.1] text-[var(--foreground)] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:mt-0.5 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:text-[0.76rem] [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:text-[0.92rem] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:whitespace-nowrap [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:whitespace-nowrap">
                   {billItems.length} รายการ / {itemCount} ชิ้น
                 </strong>
               </div>
               <div className={`${quickMetricCardClass} ${completedSale ? "[@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:col-start-3 [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:col-start-3" : paymentMethod === "CASH" && !completedSale && receivedAmount > 0 ? "[@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:col-start-3 [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:col-start-3" : "[@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:col-start-2 [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:col-start-2"} [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:row-start-2 [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:row-start-2`}>
-                <span className="text-[0.82rem] text-[var(--foreground-soft)] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:text-[0.76rem] [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:text-[0.76rem]">ยอดสุทธิ</span>
-                <strong className="mt-1 block text-[1.05rem] leading-[1.1] text-[var(--foreground)] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:text-[0.94rem] [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:text-[0.94rem]">{formatBaht(billTotal)}</strong>
+                <span className="text-[0.82rem] text-[var(--foreground-soft)] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:text-[0.68rem] [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:text-[0.76rem]">ยอดสุทธิ</span>
+                <strong className="mt-1 block text-[1.05rem] leading-[1.1] text-[var(--foreground)] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:mt-0.5 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:text-[0.8rem] [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:text-[0.94rem]">{formatBaht(billTotal)}</strong>
               </div>
             </>
           )}
@@ -374,6 +478,66 @@ export function PaymentCheckoutPanels({
         </div>
       </section>
       </div>
+      {selectedBillItem ? (
+        <div className="fixed inset-0 z-[340] grid place-items-center overflow-y-auto bg-[var(--modal-backdrop)] p-3 backdrop-blur-[14px] sm:p-4" role="presentation">
+          <button
+            type="button"
+            className="absolute inset-0 cursor-default [background:var(--modal-brand-glow)]"
+            aria-label="ปิดรายละเอียดสินค้าในบิล"
+            onClick={() => setSelectedBillItem(null)}
+          />
+          <div
+            className="relative z-[1] grid max-h-[calc(100dvh-24px)] w-[calc(100vw-24px)] max-w-[460px] gap-4 overflow-y-auto rounded-none border border-[var(--border)] [background:var(--modal-surface)] p-4 text-left shadow-[var(--modal-shadow)] sm:max-h-[calc(100dvh-32px)] sm:w-[82vw] sm:max-w-[480px] sm:p-5"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="bill-item-detail-title"
+          >
+            <div className="grid min-w-0 grid-cols-[88px_minmax(0,1fr)] items-center gap-4 max-[380px]:grid-cols-[78px_minmax(0,1fr)]">
+              {selectedBillItem.imageUrl ? (
+                <span
+                  className="aspect-square w-[88px] rounded-[12px] border border-[var(--border-subtle)] bg-cover bg-center max-[380px]:w-[78px]"
+                  style={{ backgroundImage: `url(${selectedBillItem.imageUrl})` }}
+                  role="img"
+                  aria-label={selectedBillItem.name}
+                />
+              ) : (
+                <span className="aspect-square w-[88px] rounded-[12px] border border-[var(--border-subtle)] bg-[var(--panel-subtle)] max-[380px]:w-[78px]" />
+              )}
+              <div className="min-w-0">
+                <p className="m-0 text-[0.68rem] font-bold uppercase tracking-[0.24em] text-[var(--eyebrow)]">Bill Item</p>
+                <h3 id="bill-item-detail-title" className="mt-2 mb-0 break-words text-[1.24rem] leading-tight text-[var(--foreground)] max-[380px]:text-[1.12rem]">
+                  {selectedBillItem.name}
+                </h3>
+              </div>
+            </div>
+
+            <div className="grid gap-2.5 rounded-none border border-[var(--border)] bg-[var(--panel-subtle)] p-4 max-[380px]:p-3">
+              <div className="flex items-center justify-between gap-3 text-[0.96rem] max-[380px]:text-[0.9rem]">
+                <span className="min-w-0 text-[var(--foreground-soft)]">ราคาต่อชิ้น</span>
+                <strong className="min-w-0 text-right text-[var(--foreground)]">{formatBaht(selectedBillItem.unitPrice)}</strong>
+              </div>
+              <div className="flex items-center justify-between gap-3 border-t border-[var(--border-subtle)] pt-2.5 text-[0.96rem] max-[380px]:text-[0.9rem]">
+                <span className="min-w-0 text-[var(--foreground-soft)]">จำนวน</span>
+                <strong className="min-w-0 text-right text-[var(--foreground)]">{selectedBillItem.quantity.toLocaleString("th-TH")} ชิ้น</strong>
+              </div>
+              <div className="flex items-center justify-between gap-3 border-t border-[var(--border-subtle)] pt-2.5 text-[1rem] max-[380px]:text-[0.94rem]">
+                <span className="min-w-0 font-bold text-[var(--foreground)]">รวมรายการ</span>
+                <strong className="min-w-0 text-right text-[1.18rem] leading-none text-[var(--foreground)] max-[380px]:text-[1.08rem]">{formatBaht(selectedBillItem.lineTotal)}</strong>
+              </div>
+            </div>
+
+            <div className="flex justify-end">
+              <button
+                type="button"
+                className={`${secondaryButtonClass} min-h-[44px] rounded-none px-5`}
+                onClick={() => setSelectedBillItem(null)}
+              >
+                ปิด
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </>
   );
 }

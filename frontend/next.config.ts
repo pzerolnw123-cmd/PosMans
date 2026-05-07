@@ -109,6 +109,7 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  distDir: isDev ? ".next" : ".next-build",
   images: {
     remotePatterns: imageRemotePatterns,
   },

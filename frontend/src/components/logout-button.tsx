@@ -3,11 +3,13 @@
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { revokeStoredCustomerDisplay } from "@/components/customer-display-session";
+import { useBackofficeShellAlert } from "@/components/backoffice-shell";
 import { fetchWithCsrfRetry } from "@/lib/csrf";
 import { clearStoredOwnerTheme } from "@/lib/owner-theme";
 
 export function LogoutButton({ className = "" }: { className?: string }) {
   const router = useRouter();
+  const { setShellAlert } = useBackofficeShellAlert();
   const [pending, startTransition] = useTransition();
 
   return (
@@ -16,9 +18,18 @@ export function LogoutButton({ className = "" }: { className?: string }) {
       disabled={pending}
       onClick={async () => {
         await revokeStoredCustomerDisplay().catch(() => undefined);
-        await fetchWithCsrfRetry("/api/auth/logout", {
-          method: "POST",
-        });
+
+        try {
+          await fetchWithCsrfRetry("/api/auth/logout", {
+            method: "POST",
+          });
+        } catch {
+          setShellAlert({
+            message: "เชื่อมต่อระบบเพื่อออกจากระบบไม่สำเร็จ กรุณาลองอีกครั้ง",
+            tone: "danger",
+          });
+          return;
+        }
 
         clearStoredOwnerTheme();
 

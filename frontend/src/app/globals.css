@@ -488,7 +488,8 @@ html[data-store-theme="mono"] .payment-method-active {
 
   .sales-product-card-image {
     display: block !important;
-    width: 96px !important;
+    width: calc(100% - 54px) !important;
+    max-width: 118px !important;
     height: 64px !important;
     border-radius: 9px !important;
   }
@@ -521,6 +522,7 @@ html[data-store-theme="mono"] .payment-method-active {
     position: absolute !important;
     top: 10px !important;
     right: 10px !important;
+    z-index: 1 !important;
     text-align: right !important;
   }
 

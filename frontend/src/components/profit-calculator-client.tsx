@@ -41,6 +41,25 @@ function parseMoney(value: string) {
   return Number.isFinite(numberValue) && numberValue > 0 ? numberValue : 0;
 }
 
+function formatReportDate(date: Date) {
+  return date.toLocaleDateString("th-TH", { day: "numeric", month: "short", year: "numeric" });
+}
+
+function addDays(date: Date, days: number) {
+  const nextDate = new Date(date);
+  nextDate.setDate(nextDate.getDate() + days);
+  return nextDate;
+}
+
+function dateFromInput(value: string) {
+  const [year, month, day] = value.split("-").map(Number);
+  if (!year || !month || !day) {
+    return null;
+  }
+
+  return new Date(year, month - 1, day);
+}
+
 function productCostKey(product: ProductSummary) {
   return product.productId || product.name;
 }
@@ -86,7 +105,7 @@ function blobToBase64(blob: Blob) {
   });
 }
 
-export function ProfitCalculatorClient() {
+export function ProfitCalculatorClient({ storeName = "" }: { storeName?: string }) {
   const [range, setRange] = useState<ReportRange>("today");
   const [selectedDate, setSelectedDate] = useState("");
   const [report, setReport] = useState<SalesReportResponse | null>(null);
@@ -233,6 +252,29 @@ export function ProfitCalculatorClient() {
     return rangeOptions.find((option) => option.value === range)?.label || "วันนี้";
   }
 
+  function reportPeriodLabel() {
+    if (selectedDate) {
+      const customDate = dateFromInput(selectedDate);
+      return customDate ? formatReportDate(customDate) : selectedDate;
+    }
+
+    const today = new Date();
+    if (range === "yesterday") {
+      return formatReportDate(addDays(today, -1));
+    }
+
+    if (range === "7d") {
+      return `${formatReportDate(addDays(today, -6))} - ${formatReportDate(today)}`;
+    }
+
+    if (range === "month") {
+      const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+      return `${formatReportDate(monthStart)} - ${formatReportDate(today)}`;
+    }
+
+    return formatReportDate(today);
+  }
+
   function reportPdfFileName() {
     const datePart = (selectedDate || new Date().toISOString().slice(0, 10)).replace(/[^0-9-]/g, "");
     const rangePart = selectedDate ? "custom" : range;
@@ -257,7 +299,9 @@ export function ProfitCalculatorClient() {
   function buildReportHtml() {
     const rows = buildExportRows();
     const dateLabel = reportDateLabel();
+    const periodLabel = reportPeriodLabel();
     const generatedAt = new Date().toLocaleString("th-TH", { dateStyle: "medium", timeStyle: "short" });
+    const reportStoreName = storeName.trim();
 
     const productRows = rows
       .map(
@@ -285,6 +329,10 @@ export function ProfitCalculatorClient() {
             table { border-collapse: collapse; }
             .sheet { width: 980px; }
             .brand { background: #0f172a; color: #ffffff; }
+            .brand-header { display: flex; justify-content: space-between; gap: 24px; }
+            .brand-store { text-align: right; white-space: nowrap; }
+            .brand-store-name { display: block; font-size: 15px; font-weight: 700; }
+            .brand-store-date { display: block; margin-top: 3px; color: #bfdbfe; font-size: 11px; font-weight: 400; }
             .brand-title { font-size: 28px; font-weight: 700; padding: 18px 18px 4px; border: 1px solid #0f172a; }
             .brand-meta { font-size: 12px; padding: 0 18px 18px; border: 1px solid #0f172a; border-top: 0; color: #dbeafe; }
             .spacer { height: 12px; font-size: 1px; }
@@ -321,7 +369,7 @@ export function ProfitCalculatorClient() {
               <col style="width: 130px" />
               <col style="width: 130px" />
             </colgroup>
-            <tr><td class="brand brand-title" colspan="6">รายงานคำนวณกำไร</td></tr>
+            <tr><td class="brand brand-title" colspan="6"><div class="brand-header"><span>รายงานคำนวณกำไร</span>${reportStoreName ? `<span class="brand-store"><span class="brand-store-name">${escapeHtml(reportStoreName)}</span><span class="brand-store-date">${escapeHtml(periodLabel)}</span></span>` : ""}</div></td></tr>
             <tr><td class="brand brand-meta" colspan="6">ช่วงเวลา: ${escapeHtml(dateLabel)} &nbsp;&nbsp;|&nbsp;&nbsp; สร้างเมื่อ: ${escapeHtml(generatedAt)}</td></tr>
             <tr><td class="spacer" colspan="6"></td></tr>
             <tr>
@@ -393,6 +441,8 @@ export function ProfitCalculatorClient() {
       const { createProfitReportPdfBlob } = await import("@/components/profit-report-pdf");
       const generatedAt = new Date().toLocaleString("th-TH", { dateStyle: "medium", timeStyle: "short" });
       const pdfBlob = await createProfitReportPdfBlob({
+        storeName: storeName.trim(),
+        periodLabel: reportPeriodLabel(),
         dateLabel: reportDateLabel(),
         generatedAt,
         sales: calculation.sales,
@@ -441,17 +491,19 @@ export function ProfitCalculatorClient() {
   }
 
   return (
-    <div className="grid h-full min-h-0 grid-cols-[minmax(0,0.65fr)_minmax(280px,0.35fr)] items-stretch gap-[18px] [@media(orientation:portrait)]:h-auto [@media(orientation:portrait)]:grid-cols-1 [@media(orientation:portrait)]:gap-4 max-[820px]:h-auto max-[820px]:grid-cols-1">
-      <section className="grid h-full min-h-0 grid-rows-[auto_auto_minmax(0,1fr)] gap-[18px] overflow-hidden rounded-none border border-[var(--border)] bg-[var(--panel-strong)] px-5 py-5 shadow-[var(--shadow-soft)] [@media(orientation:portrait)]:h-fit [@media(orientation:portrait)]:overflow-visible [@media(orientation:portrait)]:px-4 [@media(orientation:portrait)]:py-4 max-[820px]:h-fit max-[820px]:overflow-visible max-[820px]:px-4 max-[820px]:py-4">
-        <div className="grid grid-cols-[minmax(0,1fr)_minmax(280px,auto)] items-start gap-3 [@media(orientation:portrait)]:grid-cols-1 max-[720px]:grid-cols-1">
+    <div className="grid h-full min-h-0 grid-cols-[minmax(0,0.65fr)_minmax(280px,0.35fr)] items-stretch gap-[18px] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:grid-cols-[minmax(0,1fr)_minmax(248px,0.44fr)] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:gap-3 [@media(orientation:portrait)]:h-auto [@media(orientation:portrait)]:grid-cols-1 [@media(orientation:portrait)]:gap-4 max-[820px]:h-auto max-[820px]:grid-cols-1">
+      <section className="grid h-full min-h-0 grid-rows-[auto_auto_minmax(0,1fr)] gap-[18px] overflow-hidden rounded-none border border-[var(--border)] bg-[var(--panel-strong)] px-5 py-5 shadow-[var(--shadow-soft)] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:gap-3 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:px-4 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:py-4 [@media(orientation:portrait)]:h-fit [@media(orientation:portrait)]:overflow-visible [@media(orientation:portrait)]:px-4 [@media(orientation:portrait)]:py-4 max-[820px]:h-fit max-[820px]:overflow-visible max-[820px]:px-4 max-[820px]:py-4">
+        <div className="grid grid-cols-[minmax(0,1fr)_minmax(280px,auto)] items-start gap-3 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:grid-cols-[minmax(0,1fr)_minmax(200px,auto)] [@media(orientation:portrait)]:grid-cols-1 max-[720px]:grid-cols-1">
           <div>
-            <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[var(--eyebrow)]">Real Sales Costing</p>
-            <h2 className="my-[7px] text-[clamp(1.5rem,2.4vw,2.25rem)] leading-none tracking-[-0.055em] text-[var(--foreground)]">คำนวณกำไร</h2>
-            <p className="m-0 text-[0.92rem] text-[var(--foreground-soft)]">เลือกช่วงเวลา แล้วกรอกต้นทุนเองเพื่อประเมินกำไร</p>
+            <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[var(--eyebrow)] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:text-[0.62rem] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:tracking-[0.22em]">Real Sales Costing</p>
+            <h2 className="my-[7px] text-[clamp(1.5rem,2.4vw,2.25rem)] leading-none tracking-[-0.055em] text-[var(--foreground)] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:my-[5px] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:text-[1.42rem]">คำนวณกำไร</h2>
+            <p className="m-0 text-[0.92rem] text-[var(--foreground-soft)] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:max-w-[230px] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:text-[0.82rem] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:leading-[1.45]">เลือกช่วงเวลา แล้วกรอกต้นทุนเองเพื่อประเมินกำไร</p>
           </div>
-          <div className="grid min-w-[280px] justify-items-end gap-2 max-[720px]:w-full max-[720px]:min-w-0 max-[720px]:justify-items-stretch">
-            <CalendarPicker selectedDate={selectedDate} onSelectDate={setSelectedDate} />
-            <div className="flex flex-wrap justify-end gap-2 max-[720px]:justify-start">
+          <div className="grid min-w-[280px] justify-items-end gap-2 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:min-w-0 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:gap-1.5 max-[720px]:w-full max-[720px]:min-w-0 max-[720px]:justify-items-stretch">
+            <div className="w-full [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:[&_>div]:gap-1 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:[&_>div>span]:text-[0.68rem] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:[&_>div>div>button]:h-[36px] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:[&_>div>div>button]:px-3 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:[&_>div>div>button]:pr-8 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:[&_>div>div>button]:text-[0.78rem]">
+              <CalendarPicker selectedDate={selectedDate} onSelectDate={setSelectedDate} />
+            </div>
+            <div className="flex flex-wrap justify-end gap-2 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:gap-1.5 max-[720px]:justify-start">
               {rangeOptions.map((option) => {
                 const active = !selectedDate && option.value === range;
                 return (
@@ -460,8 +512,8 @@ export function ProfitCalculatorClient() {
                     type="button"
                     className={
                       active
-                        ? "min-h-[36px] rounded-none border border-[var(--accent-border)] bg-[var(--accent-surface)] px-3 text-[0.84rem] font-bold text-[var(--foreground)]"
-                        : "min-h-[36px] rounded-none border border-[var(--border)] bg-[var(--field-bg)] px-3 text-[0.84rem] font-bold text-[var(--foreground-soft)] transition hover:border-[var(--accent-border)] hover:text-[var(--foreground)]"
+                        ? "min-h-[36px] rounded-none border border-[var(--accent-border)] bg-[var(--accent-surface)] px-3 text-[0.84rem] font-bold text-[var(--foreground)] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:min-h-[32px] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:px-2.5 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:text-[0.76rem]"
+                        : "min-h-[36px] rounded-none border border-[var(--border)] bg-[var(--field-bg)] px-3 text-[0.84rem] font-bold text-[var(--foreground-soft)] transition hover:border-[var(--accent-border)] hover:text-[var(--foreground)] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:min-h-[32px] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:px-2.5 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:text-[0.76rem]"
                     }
                     onClick={() => {
                       setSelectedDate("");
@@ -476,27 +528,27 @@ export function ProfitCalculatorClient() {
           </div>
         </div>
 
-        <div className="grid grid-cols-[repeat(4,minmax(118px,1fr))] items-start gap-[10px] [@media(orientation:portrait)]:grid-cols-2 [@media(orientation:portrait)_and_(max-width:640px)]:grid-cols-1 max-[820px]:grid-cols-2 max-[640px]:grid-cols-1">
+        <div className="grid grid-cols-[repeat(4,minmax(118px,1fr))] items-start gap-[10px] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:grid-cols-4 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:gap-2 [@media(orientation:portrait)]:grid-cols-2 [@media(orientation:portrait)_and_(max-width:640px)]:grid-cols-1 max-[820px]:grid-cols-2 max-[640px]:grid-cols-1">
           {[
             ["ยอดขายจริง", formatBaht(calculation.sales)],
             ["จำนวนบิล", `${(report?.totals.orders || 0).toLocaleString("th-TH")} บิล`],
             ["จำนวนสินค้า", `${calculation.itemCount.toLocaleString("th-TH")} ชิ้น`],
             ["ต้นทุนที่กรอก", formatBaht(calculation.totalCost)],
           ].map(([label, value]) => (
-            <div key={label} className="grid h-[72px] content-center rounded-none border border-[var(--border)] bg-[var(--surface-muted)] px-3 py-2.5">
-              <span className="truncate text-[0.78rem] text-[var(--foreground-soft)]">{label}</span>
-              <strong className="mt-1 block min-w-[74px] whitespace-nowrap text-[1rem] tabular-nums text-[var(--foreground)]">{value}</strong>
+            <div key={label} className="grid h-[72px] content-center rounded-none border border-[var(--border)] bg-[var(--surface-muted)] px-3 py-2.5 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:h-[62px] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:px-2.5 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:py-2">
+              <span className="truncate text-[0.78rem] text-[var(--foreground-soft)] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:text-[0.68rem]">{label}</span>
+              <strong className="mt-1 block min-w-[74px] whitespace-nowrap text-[1rem] tabular-nums text-[var(--foreground)] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:min-w-0 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:text-[0.86rem]">{value}</strong>
             </div>
           ))}
         </div>
 
-        <div className="grid h-full min-h-0 grid-rows-[auto_minmax(0,1fr)] rounded-none border border-[var(--border)] bg-[var(--panel-subtle)] p-4 max-[820px]:h-auto max-[640px]:p-3">
-          <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+        <div className="grid h-full min-h-0 grid-rows-[auto_minmax(0,1fr)] rounded-none border border-[var(--border)] bg-[var(--panel-subtle)] p-4 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:p-3 max-[820px]:h-auto max-[640px]:p-3">
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-3 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:mb-2 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:gap-2">
             <div>
-              <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.22em] text-[var(--eyebrow)]">Product Cost Inputs</p>
-              <strong className="mt-1 block text-[1.2rem] leading-tight text-[var(--foreground)]">ต้นทุนต่อสินค้าที่ขายจริง</strong>
+              <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.22em] text-[var(--eyebrow)] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:text-[0.62rem] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:tracking-[0.18em]">Product Cost Inputs</p>
+              <strong className="mt-1 block text-[1.2rem] leading-tight text-[var(--foreground)] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:text-[1rem]">ต้นทุนต่อสินค้าที่ขายจริง</strong>
             </div>
-            <button type="button" className={secondaryButtonClass} onClick={resetCosts}>รีเซ็ตต้นทุน</button>
+            <button type="button" className={`${secondaryButtonClass} [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:min-h-[36px] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:px-3 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:text-[0.8rem]`} onClick={resetCosts}>รีเซ็ตต้นทุน</button>
           </div>
 
           {loading && !report ? (
@@ -510,12 +562,12 @@ export function ProfitCalculatorClient() {
           ) : error ? (
             <div className="rounded-none border border-[var(--danger-border)] bg-[var(--danger-soft)] px-4 py-3 text-[var(--danger-bright)]">{error}</div>
           ) : calculation.products.length > 0 ? (
-            <div className="relative h-full min-h-[220px] min-w-0 [@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:pr-5 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:pr-5 [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:pr-5">
+            <div className="relative h-full min-h-[220px] min-w-0 [@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:pr-5 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:pr-2.5 [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:pr-5">
               <div
                 ref={productScrollRef}
                 className={
                   productScrollMetric.visible
-                    ? "sales-cart-scroll grid h-full min-h-0 touch-none cursor-grab select-none content-start gap-2 overflow-y-auto overflow-x-hidden pl-0 pr-10 active:cursor-grabbing max-[820px]:max-h-[420px] max-[820px]:min-h-[220px] max-[780px]:max-h-none max-[780px]:touch-auto max-[780px]:select-auto max-[780px]:overflow-visible max-[780px]:pr-0"
+                    ? "sales-cart-scroll grid h-full min-h-0 touch-none cursor-grab select-none content-start gap-2 overflow-y-auto overflow-x-hidden pl-0 pr-10 active:cursor-grabbing [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:pr-2.5 max-[820px]:max-h-[420px] max-[820px]:min-h-[220px] max-[780px]:max-h-none max-[780px]:touch-auto max-[780px]:select-auto max-[780px]:overflow-visible max-[780px]:pr-0"
                     : "grid h-full min-h-0 touch-none select-none content-start gap-2 overflow-hidden pl-0 pr-0 max-[820px]:max-h-[420px] max-[820px]:min-h-[220px] max-[780px]:max-h-none max-[780px]:touch-auto max-[780px]:select-auto max-[780px]:overflow-visible"
                 }
                 onScroll={updateProductScrollbar}
@@ -531,28 +583,28 @@ export function ProfitCalculatorClient() {
                 const totalCost = unitCost * product.quantity;
                 const profit = product.sales - totalCost;
                 return (
-                  <div key={product.name} className="grid w-[calc(100%-32px)] justify-self-start grid-cols-[minmax(180px,1.35fr)_minmax(118px,0.72fr)_minmax(104px,0.56fr)_minmax(104px,0.56fr)] items-center gap-x-6 gap-y-3 rounded-none border border-[var(--border)] bg-[var(--surface)] px-4 py-3 max-[1180px]:w-full max-[1180px]:grid-cols-[minmax(180px,1fr)_minmax(118px,180px)] max-[780px]:grid-cols-1 max-[780px]:px-3">
+                  <div key={product.name} className="grid w-[calc(100%-32px)] justify-self-start grid-cols-[minmax(180px,1.35fr)_minmax(118px,0.72fr)_minmax(104px,0.56fr)_minmax(104px,0.56fr)] items-center gap-x-6 gap-y-3 rounded-none border border-[var(--border)] bg-[var(--surface)] px-4 py-3 max-[1180px]:w-full max-[1180px]:grid-cols-[minmax(180px,1fr)_minmax(118px,180px)] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:!w-full [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:!grid-cols-[minmax(112px,1fr)_minmax(92px,104px)_minmax(54px,64px)_minmax(54px,64px)] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:gap-x-2 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:gap-y-1.5 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:px-2 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:py-2 max-[780px]:grid-cols-1 max-[780px]:px-3">
                     <div className="min-w-0">
-                      <strong className="block truncate text-[var(--foreground)]">{product.name}</strong>
-                      <span className="mt-1 block text-[0.78rem] font-bold text-[var(--foreground-soft)]">{product.quantity.toLocaleString("th-TH")} ชิ้น / ยอดขาย {formatBaht(product.sales)}</span>
+                      <strong className="block truncate text-[var(--foreground)] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:text-[0.78rem] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:leading-tight">{product.name}</strong>
+                      <span className="mt-1 block text-[0.78rem] font-bold text-[var(--foreground-soft)] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:mt-0.5 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:text-[0.68rem]">{product.quantity.toLocaleString("th-TH")} ชิ้น / ยอดขาย {formatBaht(product.sales)}</span>
                     </div>
-                    <label className="grid gap-1">
-                      <span className="text-[0.72rem] font-bold text-[var(--foreground-soft)]">ต้นทุน/ชิ้น</span>
+                    <label className="grid gap-1 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:gap-0.5">
+                      <span className="text-[0.72rem] font-bold text-[var(--foreground-soft)] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:text-[0.66rem]">ต้นทุน/ชิ้น</span>
                       <input
-                        className={`${inputClass} h-[40px]`}
+                        className={`${inputClass} h-[40px] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:h-[34px] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:px-2 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:text-[0.8rem]`}
                         inputMode="decimal"
                         value={unitCosts[costKey] ?? "0"}
                         onChange={(event) => setUnitCosts((current) => ({ ...current, [costKey]: event.target.value }))}
                         placeholder="0"
                       />
                     </label>
-                    <div>
-                      <span className="text-[0.72rem] font-bold text-[var(--foreground-soft)]">ต้นทุนรวม</span>
-                      <strong className="mt-1 block text-[var(--foreground)]">{formatBaht(totalCost)}</strong>
+                    <div className="min-w-0">
+                      <span className="text-[0.72rem] font-bold text-[var(--foreground-soft)] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:text-[0.66rem]">ต้นทุนรวม</span>
+                      <strong className="mt-1 block text-[var(--foreground)] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:mt-0.5 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:text-[0.82rem]">{formatBaht(totalCost)}</strong>
                     </div>
-                    <div>
-                      <span className="text-[0.72rem] font-bold text-[var(--foreground-soft)]">กำไร</span>
-                      <strong className={profit < 0 ? "mt-1 block text-[var(--danger)]" : "mt-1 block text-[var(--foreground)]"}>{formatBaht(profit)}</strong>
+                    <div className="min-w-0">
+                      <span className="text-[0.72rem] font-bold text-[var(--foreground-soft)] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:text-[0.66rem]">กำไร</span>
+                      <strong className={profit < 0 ? "mt-1 block text-[var(--danger)] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:mt-0.5 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:text-[0.82rem]" : "mt-1 block text-[var(--foreground)] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:mt-0.5 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:text-[0.82rem]"}>{formatBaht(profit)}</strong>
                     </div>
                   </div>
                 );

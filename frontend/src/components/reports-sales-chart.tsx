@@ -186,18 +186,18 @@ export function ReportsSalesChart() {
 
   return (
     <div
-      className={`grid min-h-0 w-full max-w-full self-stretch grid-cols-[minmax(0,0.65fr)_minmax(260px,0.35fr)] items-start gap-[18px] ${ownerLandscapeClass}:grid-cols-[minmax(0,0.7fr)_248px] ${ownerLandscapeClass}:gap-[14px] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:grid-cols-[minmax(0,1fr)_290px] [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:grid-cols-[minmax(0,1fr)_290px] max-[820px]:grid-cols-1`}
+      className={`grid min-h-0 w-full max-w-full self-stretch grid-cols-[minmax(0,0.65fr)_minmax(260px,0.35fr)] items-start gap-[18px] ${ownerLandscapeClass}:grid-cols-[minmax(0,0.7fr)_248px] ${ownerLandscapeClass}:gap-[14px] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:grid-cols-[minmax(0,1fr)_260px] [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:grid-cols-[minmax(0,1fr)_290px] max-[820px]:grid-cols-1`}
     >
       <div
-        className={`grid h-fit min-h-0 min-w-0 w-full max-w-full gap-[18px] overflow-hidden rounded-none border border-[var(--border)] bg-[var(--panel-strong)] px-5 py-[18px] shadow-[var(--shadow-soft)] ${ownerLandscapePanelPaddingClass} ${ownerLandscapeClass}:gap-[14px] max-[820px]:px-4 max-[820px]:py-4`}
+        className={`grid h-fit min-h-0 min-w-0 w-full max-w-full gap-[18px] overflow-hidden rounded-none border border-[var(--border)] bg-[var(--panel-strong)] px-5 py-[18px] shadow-[var(--shadow-soft)] ${ownerLandscapePanelPaddingClass} ${ownerLandscapeClass}:gap-[14px] [@media(min-width:744px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:gap-[10px] [@media(min-width:744px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:px-3 [@media(min-width:744px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:py-3 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:gap-[10px] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:px-3 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:py-3 max-[820px]:px-4 max-[820px]:py-4`}
       >
-        <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="flex flex-wrap items-start justify-between gap-3 [@media(min-width:744px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:gap-2 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:gap-2">
           <div className="min-w-0">
             <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[var(--eyebrow)]">Sales Trend</p>
-            <h2 className="my-[7px] text-[clamp(1.5rem,2.4vw,2.25rem)] leading-none tracking-[-0.055em] text-[var(--foreground)]">กราฟยอดขาย</h2>
+            <h2 className="my-[7px] text-[clamp(1.5rem,2.4vw,2.25rem)] leading-none tracking-[-0.055em] text-[var(--foreground)] [@media(min-width:744px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:my-1 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:my-1">กราฟยอดขาย</h2>
             <p className="m-0 text-[0.92rem] text-[var(--foreground-soft)]">แสดงยอดขายจริงตามช่วงเวลาที่เลือก</p>
           </div>
-          <div className="grid min-w-[280px] justify-items-end gap-2 max-[720px]:w-full max-[720px]:min-w-0 max-[720px]:justify-items-stretch">
+          <div className="grid min-w-[280px] justify-items-end gap-2 [@media(min-width:744px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:min-w-0 [@media(min-width:744px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:justify-items-start [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:min-w-0 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:justify-items-start max-[720px]:w-full max-[720px]:min-w-0 max-[720px]:justify-items-stretch">
             <CalendarPicker selectedDate={selectedDate} onSelectDate={setSelectedDate} />
             <div className="flex flex-wrap justify-end gap-2 max-[720px]:justify-start">
               {rangeOptions.map((option) => {
@@ -224,19 +224,19 @@ export function ReportsSalesChart() {
           </div>
         </div>
 
-        <div className={`grid grid-cols-4 gap-[10px] max-[1180px]:grid-cols-2 max-[640px]:grid-cols-1 ${ownerLandscapeClass}:grid-cols-4`}>
+        <div className={`grid grid-cols-4 gap-[10px] max-[1180px]:grid-cols-2 max-[640px]:grid-cols-1 ${ownerLandscapeClass}:grid-cols-4 [@media(min-width:744px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:gap-2 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:gap-2`}>
           {summaryItems.map(([label, value]) => (
-            <div key={label} className="rounded-none border border-[var(--border)] bg-[var(--surface-muted)] px-4 py-3">
+            <div key={label} className="rounded-none border border-[var(--border)] bg-[var(--surface-muted)] px-4 py-3 [@media(min-width:744px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:px-3 [@media(min-width:744px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:py-2.5 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:px-3 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:py-2.5">
               <span className="text-[0.8rem] text-[var(--foreground-soft)]">{label}</span>
               <strong className="mt-1 block text-[1.08rem] text-[var(--foreground)]">{value}</strong>
             </div>
           ))}
         </div>
 
-        <div className="relative min-h-[380px] overflow-hidden rounded-none border border-[var(--border)] bg-[var(--panel-subtle)] p-4 max-[640px]:min-h-[300px] max-[640px]:p-3">
+        <div className="relative min-h-[380px] overflow-hidden rounded-none border border-[var(--border)] bg-[var(--panel-subtle)] p-4 [@media(min-width:744px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:min-h-[300px] [@media(min-width:744px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:p-3 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:min-h-[300px] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:p-3 max-[640px]:min-h-[300px] max-[640px]:p-3">
           {initialLoading ? (
             <>
-              <svg className="block h-[348px] w-full opacity-0 max-[640px]:h-[268px]" viewBox="0 0 760 360" preserveAspectRatio="none" aria-hidden="true">
+              <svg className="block h-[348px] w-full opacity-0 [@media(min-width:744px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:h-[274px] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:h-[274px] max-[640px]:h-[268px]" viewBox="0 0 760 360" preserveAspectRatio="none" aria-hidden="true">
                 <rect x="0" y="0" width="760" height="360" fill="transparent" />
               </svg>
               <div className="absolute inset-4 grid place-items-center rounded-none border border-[var(--border)] bg-[color:color-mix(in_srgb,var(--surface)_88%,transparent)] px-4 text-center backdrop-blur-[1px]">
@@ -248,12 +248,12 @@ export function ReportsSalesChart() {
               </div>
             </>
           ) : error ? (
-            <div className="grid min-h-[348px] place-items-center text-center">
+            <div className="grid min-h-[348px] place-items-center text-center [@media(min-width:744px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:min-h-[274px] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:min-h-[274px]">
               <div className="rounded-none border border-[var(--danger-border)] bg-[var(--danger-soft)] px-4 py-3 text-[var(--danger-bright)]">{error}</div>
             </div>
           ) : report ? (
             <>
-              <svg className="block h-[348px] w-full max-[640px]:h-[268px]" viewBox={`0 0 ${chart.width} ${chart.height}`} preserveAspectRatio="none" role="img" aria-label="กราฟเส้นยอดขาย">
+              <svg className="block h-[348px] w-full [@media(min-width:744px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:h-[274px] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:h-[274px] max-[640px]:h-[268px]" viewBox={`0 0 ${chart.width} ${chart.height}`} preserveAspectRatio="none" role="img" aria-label="กราฟเส้นยอดขาย">
                 <defs>
                   <linearGradient id="sales-line-gradient" x1="0" x2="1" y1="0" y2="0">
                     <stop offset="0%" stopColor="var(--brand)" />
@@ -322,7 +322,7 @@ export function ReportsSalesChart() {
               <h2 className="my-[7px] text-[clamp(1.35rem,2vw,1.9rem)] leading-none tracking-[-0.045em] text-[var(--foreground)]">สินค้าขายดี</h2>
               <p className="m-0 text-[0.88rem] text-[var(--foreground-soft)]">3 อันดับจากบิลที่ชำระแล้ว</p>
             </div>
-            <span className="rounded-full border border-[var(--border)] bg-[var(--surface-muted)] px-3 py-1 text-[0.76rem] font-bold text-[var(--foreground-soft)]">
+            <span className="rounded-full border border-[var(--border)] bg-[var(--surface-muted)] px-3 py-1 text-[0.76rem] font-bold text-[var(--foreground-soft)] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:hidden">
               {report?.topProducts.length || 0} รายการ
             </span>
           </div>
@@ -349,38 +349,45 @@ export function ReportsSalesChart() {
                   </div>
                 ))}
               </div>
-              <div className="absolute inset-0 grid place-items-center rounded-none border border-[var(--border)] bg-[color:color-mix(in_srgb,var(--surface)_88%,transparent)] px-4 text-center backdrop-blur-[1px]">
+              <div className="absolute inset-0 grid place-items-center rounded-none bg-[color:color-mix(in_srgb,var(--surface)_88%,transparent)] px-4 text-center backdrop-blur-[1px]">
                 <LoadingState size={42} label="กำลังโหลดอันดับสินค้า..." />
               </div>
             </div>
           ) : error ? (
             <div className="rounded-none border border-[var(--danger-border)] bg-[var(--danger-soft)] px-4 py-3 text-[0.88rem] font-bold text-[var(--danger-bright)]">โหลดอันดับสินค้าไม่สำเร็จ</div>
           ) : report && report.topProducts.length > 0 ? (
-            <div className="grid gap-[10px]">
-              {report.topProducts.map((product, index) => (
-                <button
-                  key={product.name}
-                  type="button"
-                  className="grid grid-cols-[44px_minmax(0,1fr)_auto] items-center gap-3 rounded-none border border-[var(--border)] bg-[var(--surface-muted)] px-3 py-3 text-left transition hover:border-[var(--accent-border)] hover:bg-[var(--accent-surface)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--panel-strong)] max-[420px]:grid-cols-[44px_minmax(0,1fr)]"
-                  onClick={() =>
-                    setSelectedTopProduct({
-                      rank: index + 1,
-                      name: product.name,
-                      quantity: product.quantity,
-                      sales: product.sales,
-                    })
-                  }
-                >
-                  <span className="grid h-11 w-11 place-items-center rounded-none border border-[var(--accent-border)] bg-[var(--accent-surface)] text-[1rem] font-black text-[var(--brand-strong)]">
-                    {index + 1}
-                  </span>
-                  <div className="min-w-0">
-                    <strong className="block truncate text-[1rem] leading-tight text-[var(--foreground)] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:text-[0.82rem] [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:text-[0.82rem]">{product.name}</strong>
-                    <span className="mt-1 block text-[0.78rem] font-bold text-[var(--foreground-soft)]">{product.quantity.toLocaleString("th-TH")} ชิ้น</span>
-                  </div>
-                  <strong className="text-right text-[0.96rem] text-[var(--foreground)] max-[420px]:col-span-2 max-[420px]:text-left">{formatBaht(product.sales)}</strong>
-                </button>
-              ))}
+            <div className="relative min-h-[220px]">
+              <div className="grid gap-[10px]">
+                {report.topProducts.map((product, index) => (
+                  <button
+                    key={product.name}
+                    type="button"
+                    className="grid grid-cols-[44px_minmax(0,1fr)_auto] items-center gap-3 rounded-none border border-[var(--border)] bg-[var(--surface-muted)] px-3 py-3 text-left transition hover:border-[var(--accent-border)] hover:bg-[var(--accent-surface)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--panel-strong)] max-[420px]:grid-cols-[44px_minmax(0,1fr)]"
+                    onClick={() =>
+                      setSelectedTopProduct({
+                        rank: index + 1,
+                        name: product.name,
+                        quantity: product.quantity,
+                        sales: product.sales,
+                      })
+                    }
+                  >
+                    <span className="grid h-11 w-11 place-items-center rounded-none border border-[var(--accent-border)] bg-[var(--accent-surface)] text-[1rem] font-black text-[var(--brand-strong)]">
+                      {index + 1}
+                    </span>
+                    <div className="min-w-0">
+                      <strong className="block truncate text-[1rem] leading-tight text-[var(--foreground)] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:text-[0.82rem] [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:text-[0.82rem]">{product.name}</strong>
+                      <span className="mt-1 block text-[0.78rem] font-bold text-[var(--foreground-soft)]">{product.quantity.toLocaleString("th-TH")} ชิ้น</span>
+                    </div>
+                    <strong className="text-right text-[0.96rem] text-[var(--foreground)] max-[420px]:col-span-2 max-[420px]:text-left">{formatBaht(product.sales)}</strong>
+                  </button>
+                ))}
+              </div>
+              {loading ? (
+                <div className="absolute inset-0 grid place-items-center rounded-none bg-[color:color-mix(in_srgb,var(--surface)_88%,transparent)] px-4 text-center backdrop-blur-[1px]">
+                  <LoadingState size={42} label="กำลังโหลดอันดับสินค้า..." />
+                </div>
+              ) : null}
             </div>
           ) : (
             <div className="grid min-h-[220px] place-items-center rounded-none border border-dashed border-[var(--border)] bg-[var(--panel-subtle)] px-4 text-center">
@@ -390,11 +397,6 @@ export function ReportsSalesChart() {
               </div>
             </div>
           )}
-          {loading && report ? (
-            <div className="absolute inset-x-0 top-[92px] bottom-0 grid place-items-center rounded-none border border-[var(--border)] bg-[color:color-mix(in_srgb,var(--surface)_88%,transparent)] px-4 text-center backdrop-blur-[1px]">
-                <LoadingState size={42} label="กำลังโหลดอันดับสินค้า..." />
-            </div>
-          ) : null}
         </section>
 
         <section className="relative grid gap-[12px] border-t border-[var(--border-muted)] pt-[14px]">
@@ -421,28 +423,30 @@ export function ReportsSalesChart() {
                   </div>
                 ))}
               </div>
-              <div className="absolute inset-0 grid place-items-center rounded-none border border-[var(--border)] bg-[color:color-mix(in_srgb,var(--surface)_88%,transparent)] px-4 text-center backdrop-blur-[1px]">
+              <div className="absolute inset-0 grid place-items-center rounded-none bg-[color:color-mix(in_srgb,var(--surface)_88%,transparent)] px-4 text-center backdrop-blur-[1px]">
                 <LoadingState size={38} label="กำลังโหลดวิธีชำระเงิน..." />
               </div>
             </div>
           ) : error ? (
             <div className="rounded-none border border-[var(--danger-border)] bg-[var(--danger-soft)] px-4 py-3 text-[0.88rem] font-bold text-[var(--danger-bright)]">โหลดสรุปวิธีชำระเงินไม่สำเร็จ</div>
           ) : report ? (
-            <div className="grid gap-2">
-              {report.paymentSummary.map((payment) => (
-                <div key={payment.method} className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 rounded-none border border-[var(--border)] bg-[var(--surface-muted)] px-3 py-2.5">
-                  <div className="min-w-0">
-                    <strong className="block truncate text-[0.94rem] text-[var(--foreground)]">{paymentMethodLabels[payment.method]}</strong>
-                    <span className="mt-1 block text-[0.76rem] font-bold text-[var(--foreground-soft)]">{payment.orders.toLocaleString("th-TH")} บิล</span>
+            <div className="relative min-h-[146px]">
+              <div className="grid gap-2">
+                {report.paymentSummary.map((payment) => (
+                  <div key={payment.method} className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 rounded-none border border-[var(--border)] bg-[var(--surface-muted)] px-3 py-2.5">
+                    <div className="min-w-0">
+                      <strong className="block truncate text-[0.94rem] text-[var(--foreground)]">{paymentMethodLabels[payment.method]}</strong>
+                      <span className="mt-1 block text-[0.76rem] font-bold text-[var(--foreground-soft)]">{payment.orders.toLocaleString("th-TH")} บิล</span>
+                    </div>
+                    <strong className="text-right text-[0.94rem] text-[var(--foreground)]">{formatBaht(payment.sales)}</strong>
                   </div>
-                  <strong className="text-right text-[0.94rem] text-[var(--foreground)]">{formatBaht(payment.sales)}</strong>
+                ))}
+              </div>
+              {loading ? (
+                <div className="absolute inset-0 grid place-items-center rounded-none bg-[color:color-mix(in_srgb,var(--surface)_88%,transparent)] px-4 text-center backdrop-blur-[1px]">
+                  <LoadingState size={38} label="กำลังโหลดวิธีชำระเงิน..." />
                 </div>
-              ))}
-            </div>
-          ) : null}
-          {loading && report ? (
-            <div className="absolute inset-x-0 top-[86px] bottom-0 grid place-items-center rounded-none border border-[var(--border)] bg-[color:color-mix(in_srgb,var(--surface)_88%,transparent)] px-4 text-center backdrop-blur-[1px]">
-                <LoadingState size={38} label="กำลังโหลดวิธีชำระเงิน..." />
+              ) : null}
             </div>
           ) : null}
         </section>
@@ -504,5 +508,3 @@ export function ReportsSalesChart() {
     </div>
   );
 }
-
-

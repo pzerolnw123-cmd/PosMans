@@ -15,6 +15,8 @@ const ownerNamePrompt = "กรอกชื่อของคุณ";
 const miniHeaderClass = `${ipadMiniLandscapeClass}:h-[104px] ${ipadMiniLandscapeClass}:min-h-[104px] ${ipadMiniLandscapeClass}:max-h-[104px] ${ipadMiniLandscapeClass}:overflow-hidden ${ipadMiniLandscapeClass}:px-3 ${ipadMiniLandscapeClass}:py-3 ${ipadMiniLandscapeClass}:[&_h2]:my-[5px] ${ipadMiniLandscapeClass}:[&_h2]:text-[1.5rem] ${ipadMiniLandscapeClass}:[&_p]:leading-[1.35] ${ipadMiniLandscapeClass}:[&_p:not(:first-child)]:text-[0.8rem]`;
 const ownerPageWithHeaderClass = `grid h-full min-h-0 grid-rows-[156px_minmax(0,1fr)] gap-[18px] ${ipadAirOnlyGridRowsSingleClass} ${ipadMiniLandscapeClass}:gap-[12px] [@media(orientation:portrait)]:h-auto [@media(orientation:portrait)]:grid-rows-[auto_auto] [@media(orientation:portrait)]:gap-4 max-[820px]:h-auto max-[820px]:grid-rows-[auto_auto] [@media(max-height:860px)_and_(max-width:820px)]:h-auto [@media(max-height:860px)_and_(max-width:820px)]:grid-rows-[auto_auto]`;
 const ownerPageWithHeaderGapClass = `${ownerPageWithHeaderClass} max-[820px]:gap-4`;
+const profilePageWithStatusCardClass =
+  `grid h-full min-h-0 grid-rows-[156px_minmax(0,1fr)] gap-[18px] ${ipadMiniLandscapeClass}:gap-[12px] [@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:grid-rows-[auto_minmax(0,1fr)] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:grid-rows-[auto_minmax(0,1fr)] [@media(orientation:portrait)]:h-auto [@media(orientation:portrait)]:grid-rows-[auto_auto] [@media(orientation:portrait)]:gap-4 max-[820px]:h-auto max-[820px]:grid-rows-[auto_auto] [@media(max-height:860px)_and_(max-width:820px)]:h-auto [@media(max-height:860px)_and_(max-width:820px)]:grid-rows-[auto_auto]`;
 
 function hasPromptPayValue(settings: OwnerPaymentSettingsValue) {
   return Boolean(
@@ -255,7 +257,7 @@ export async function renderOwnerScreen(
             className={miniHeaderClass}
           />
 
-          <ProfitCalculatorClient />
+          <ProfitCalculatorClient storeName={storeName} />
         </section>
       ),
       standalone: true,
@@ -275,7 +277,7 @@ export async function renderOwnerScreen(
       description: "จัดการชื่อร้าน ชื่อเจ้าของร้าน และโลโก้ร้านที่ใช้ในระบบ",
       actions: <StatusPill tone="success">พร้อมแก้ไขแล้ว</StatusPill>,
       body: (
-        <section className={`${ownerPageWithHeaderClass} ${ipadAirLandscapeClass}:h-full`}>
+        <section className={`${profilePageWithStatusCardClass} ${ipadAirLandscapeClass}:h-full`}>
           <PageHeader
             eyebrow="Store Profile"
             title="โปรไฟล์ร้าน"
@@ -310,6 +312,8 @@ export async function renderOwnerScreen(
             >
               <OwnerLogoClient />
             </PanelCard>
+
+            <ProfileHeaderInjector className={`hidden justify-self-start self-start ${ipadAirOnlyFlexClass}`} variant="profileCard" />
           </div>
         </section>
       ),
@@ -342,7 +346,7 @@ export async function renderOwnerScreen(
           className={`${ipadAirOnlyHideClass} ${miniHeaderClass}`}
         />
 
-        <div className="grid min-h-0 grid-cols-[minmax(250px,1fr)_minmax(250px,1fr)_minmax(250px,1fr)] items-start gap-[12px] [@media(orientation:portrait)]:grid-cols-1 [@media(orientation:portrait)]:gap-4 max-[980px]:grid-cols-1 max-[820px]:gap-4">
+        <div className="grid min-h-0 grid-cols-[minmax(250px,1fr)_minmax(250px,1fr)_minmax(250px,1fr)] items-start gap-[12px] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:!grid-cols-[minmax(250px,1fr)_minmax(300px,1.14fr)] [@media(orientation:portrait)]:grid-cols-1 [@media(orientation:portrait)]:gap-4 max-[980px]:grid-cols-1 max-[820px]:gap-4">
           <div className="grid gap-[12px] max-[820px]:gap-4">
           <PanelCard
             eyebrow="ความปลอดภัยของบัญชี"
@@ -352,8 +356,6 @@ export async function renderOwnerScreen(
           >
             <OwnerPasswordClient />
           </PanelCard>
-
-          <ProfileHeaderInjector className={`hidden ${ipadAirOnlyFlexClass}`} />
 
           <PanelCard
             eyebrow="ธีม"
@@ -367,7 +369,7 @@ export async function renderOwnerScreen(
 
           </div>
 
-          <div className="grid gap-[12px] max-[820px]:gap-4">
+          <div className="grid gap-[12px] [@media(min-width:821px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:hidden max-[820px]:gap-4">
             <PanelCard
               eyebrow="โปรไฟล์ร้านค้า"
               title="ข้อมูลทั่วไป"

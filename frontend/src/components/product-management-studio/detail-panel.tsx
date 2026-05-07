@@ -42,7 +42,9 @@ export function ProductDetailPanel({
 }: ProductDetailPanelProps) {
   const ipadAirHideLeadingIconClass =
     "[@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:hidden [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:hidden [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:hidden";
-  const detailPanelClass = `workspace-main-scroll grid w-[calc(100%+22px)] content-start gap-[10px] overflow-visible ${studioResponsiveClass.panelSurface} ${studioResponsiveClass.densePanelPadding} [@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:w-[calc(100%+10px)] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:max-h-full [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:w-full [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:overflow-y-auto [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:overflow-x-hidden [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:pr-3 [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:w-[calc(100%+10px)] max-[820px]:w-full`;
+  const ipadMiniProductFormClass =
+    "[@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:h-fit [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:max-h-full [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:content-start [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:gap-3 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:px-3 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:py-3 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:text-[0.84rem] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:[&_label]:gap-2 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:[&_label>span]:text-[0.78rem] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:[&_input]:h-[38px] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:[&_input]:px-3 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:[&_input]:text-[0.84rem] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:[&_button:not(.stock-toggle-button)]:min-h-[36px] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:[&_button:not(.stock-toggle-button)]:gap-1.5 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:[&_button:not(.stock-toggle-button)]:px-3 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:[&_button:not(.stock-toggle-button)]:text-[0.8rem]";
+  const detailPanelClass = `workspace-main-scroll grid w-[calc(100%+22px)] content-start gap-[10px] overflow-visible ${studioResponsiveClass.panelSurface} ${studioResponsiveClass.densePanelPadding} ${ipadMiniProductFormClass} [@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:w-[calc(100%+10px)] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:w-full [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:overflow-y-auto [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:overflow-x-hidden [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:pr-3 [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:w-[calc(100%+10px)] max-[820px]:w-full`;
   const detailFieldRowClass = selectedProduct?.trackStock
     ? studioResponsiveClass.detailFieldRowWithStock
     : studioResponsiveClass.detailFieldRow;
@@ -90,17 +92,17 @@ export function ProductDetailPanel({
 
   return (
     <section className={detailPanelClass}>
-      <div className="grid gap-[10px]">
+      <div className="grid gap-[10px] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:gap-3">
         <div className={studioResponsiveClass.stackedHeader}>
           <div>
-            <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[var(--eyebrow)]">รายละเอียดสินค้า</p>
-            <h2 className="my-[8px] text-[clamp(1.45rem,2.2vw,2rem)] leading-[0.98] tracking-[-0.06em]">
+            <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[var(--eyebrow)] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:text-[0.62rem] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:tracking-[0.24em]">รายละเอียดสินค้า</p>
+            <h2 className="my-[8px] text-[clamp(1.45rem,2.2vw,2rem)] leading-[0.98] tracking-[-0.06em] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:my-[5px] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:text-[1.32rem]">
               {selectedProduct && selectedProduct.code === "DRAFT-NEW" ? "เพิ่มสินค้าใหม่" : "แก้ไขสินค้า"}
             </h2>
           </div>
           {selectedProduct ? (
-            <div className={studioResponsiveClass.detailToggleDock}>
-              <span className={selectedProduct.trackStock ? "inline-flex min-h-[40px] w-full whitespace-nowrap items-center justify-center gap-2 rounded-none border border-[var(--accent-border)] bg-[var(--accent-surface)] px-3 py-2 text-[0.78rem] font-bold text-[var(--accent-text)]" : "inline-flex min-h-[40px] w-full whitespace-nowrap items-center justify-center gap-2 rounded-none border border-[var(--border-strong)] bg-[var(--surface-muted)] px-3 py-2 text-[0.78rem] font-bold text-[var(--foreground-soft)]"}>
+            <div className={`${studioResponsiveClass.detailToggleDock} [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:translate-y-0`}>
+              <span className={selectedProduct.trackStock ? "inline-flex min-h-[40px] w-full whitespace-nowrap items-center justify-center gap-2 rounded-none border border-[var(--accent-border)] bg-[var(--accent-surface)] px-3 py-2 text-[0.78rem] font-bold text-[var(--accent-text)] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:min-h-[34px] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:gap-1.5 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:px-2 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:py-1.5 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:text-[0.68rem]" : "inline-flex min-h-[40px] w-full whitespace-nowrap items-center justify-center gap-2 rounded-none border border-[var(--border-strong)] bg-[var(--surface-muted)] px-3 py-2 text-[0.78rem] font-bold text-[var(--foreground-soft)] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:min-h-[34px] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:gap-1.5 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:px-2 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:py-1.5 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:text-[0.68rem]"}>
                 {selectedProduct.trackStock ? "ทำการเปิดสต๊อก" : "ทำการปิดสต๊อก"}
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
                   <path fill="none" stroke="currentColor" strokeLinejoin="round" d="M1.583 4.5L8 1.583L14.417 4.5m-12.834 0L8 7.417M1.583 4.5v6.417L8 14.417m0-7L14.417 4.5M8 7.417v7M14.417 4.5v6.417L8 14.417M10.5 13V9.5m2 2.5V8.5" />
@@ -120,9 +122,9 @@ export function ProductDetailPanel({
           ) : null}
         </div>
         {selectedProduct ? (
-          <div className={studioResponsiveClass.detailHeroGrid}>
+          <div className={`${studioResponsiveClass.detailHeroGrid} [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:mt-0 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:grid-cols-[minmax(0,150px)_180px] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:gap-3`}>
             <div className="min-w-0 max-[720px]:w-full">
-              <div className={studioResponsiveClass.detailImageFrame}>
+              <div className={`${studioResponsiveClass.detailImageFrame} [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:h-[132px]`}>
                 {selectedProduct.imageUrl && canUseNextImage(selectedProduct.imageUrl) ? (
                   <Image
                     src={selectedProduct.imageUrl}
@@ -141,8 +143,8 @@ export function ProductDetailPanel({
               </div>
             </div>
 
-            <div className={studioResponsiveClass.detailSidebar}>
-              <div className="grid w-full justify-items-center pt-5 max-[720px]:pt-0">
+            <div className={`${studioResponsiveClass.detailSidebar} [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:h-[132px] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:pt-3`}>
+              <div className="grid w-full justify-items-center pt-5 max-[720px]:pt-0 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:pt-0">
                 <div
                   className={
                     selectedProduct.trackStock
@@ -152,7 +154,7 @@ export function ProductDetailPanel({
                 >
                   <button
                     type="button"
-                    className={`${primaryButtonClass} min-h-[40px] w-full rounded-none px-4 text-[0.95rem] disabled:cursor-not-allowed disabled:opacity-50`}
+                    className={`${primaryButtonClass} min-h-[40px] w-full rounded-none px-4 text-[0.95rem] disabled:cursor-not-allowed disabled:opacity-50 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:min-h-[34px] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:text-[0.78rem]`}
                     onClick={onCreateNewProduct}
                     disabled={saveBusy || deleteBusy || selectedProduct?.code === "DRAFT-NEW"}
                   >
@@ -186,10 +188,10 @@ export function ProductDetailPanel({
       </div>
 
       {selectedProduct ? (
-        <div className="-mt-3 pr-1 max-[720px]:mt-0 max-[720px]:pr-0">
+        <div className="-mt-3 pr-1 max-[720px]:mt-0 max-[720px]:pr-0 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:mt-0 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:grid [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:content-start [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:gap-3 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:pr-0">
 
-          <div className="mt-3 grid gap-[10px]">
-            <div className={detailFieldRowClass}>
+          <div className="mt-3 grid gap-[10px] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:mt-0 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:content-start [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:gap-4">
+            <div className={`${detailFieldRowClass} [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:gap-x-3 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:gap-y-3`}>
               <Field label="ชื่อสินค้า" className="max-w-full">
                 <input className={inputClass} value={selectedProduct.name} onChange={(event) => onUpdateProduct({ name: event.target.value })} />
               </Field>
@@ -216,12 +218,12 @@ export function ProductDetailPanel({
               ) : null}
             </div>
 
-            <div className={detailFieldRowClass}>
+            <div className={`${detailFieldRowClass} [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:gap-x-3 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:gap-y-3`}>
               <Field label="ประเภทสินค้า">
                 <div className="relative" ref={categoryRef}>
                   <button
                     type="button"
-                    className={`${selectClass} text-left w-full pr-10`}
+                    className={`${selectClass} text-left w-full pr-10 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:!text-[0.72rem]`}
                     onClick={() => setIsCategoryOpen(!isCategoryOpen)}
                   >
                     <span className="block truncate">{selectedProduct.category}</span>
@@ -276,8 +278,8 @@ export function ProductDetailPanel({
               ) : null}
             </div>
 
-            <div className="grid items-stretch gap-[10px] md:grid-cols-2">
-              <div className="flex h-full min-w-0 flex-col gap-2">
+            <div className="grid items-stretch gap-[10px] md:grid-cols-2 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:gap-4">
+              <div className="flex h-full min-w-0 flex-col gap-2 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:gap-3">
                 <Field label="ราคา">
                   <input
                     type="number"
@@ -294,14 +296,14 @@ export function ProductDetailPanel({
                     onBlur={() => {
                       setPriceDraft(null);
                     }}
-                    className="w-full rounded-xl border border-[var(--border)] bg-[var(--field-bg)] px-4 py-3 text-[0.96rem] text-[var(--foreground)] outline-none transition-all focus:border-[var(--brand)] focus:bg-[var(--surface-muted)] focus:shadow-[0_0_0_4px_var(--brand-soft)] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    className="w-full rounded-xl border border-[var(--border)] bg-[var(--field-bg)] px-4 py-3 text-[0.96rem] text-[var(--foreground)] outline-none transition-all focus:border-[var(--brand)] focus:bg-[var(--surface-muted)] focus:shadow-[0_0_0_4px_var(--brand-soft)] [appearance:textfield] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:h-[38px] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:px-3 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:py-2 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:text-[0.84rem] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                   />
                 </Field>
 
                 <div className="mt-auto">
                   <button
                     type="button"
-                    className={`${primaryButtonClass} whitespace-nowrap mb-3 min-h-[40px] w-full px-3 text-[0.95rem] shadow-none max-[1180px]:text-[0.86rem] disabled:opacity-50 disabled:cursor-not-allowed`}
+                    className={`${primaryButtonClass} whitespace-nowrap mb-3 min-h-[40px] w-full px-3 text-[0.95rem] shadow-none max-[1180px]:text-[0.86rem] disabled:opacity-50 disabled:cursor-not-allowed [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:mb-2 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:!min-h-[40px] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:text-[0.78rem]`}
                     onClick={onSaveChanges}
                     disabled={isSaveDisabled}
                   >
@@ -320,14 +322,14 @@ export function ProductDetailPanel({
                 </div>
               </div>
 
-              <div className="flex h-full flex-col gap-3 rounded-[14px] border border-[var(--border)] [background:var(--panel-elevated)] p-3">
-                <span className="text-[0.92rem] font-semibold text-[var(--eyebrow)]">รูปภาพสินค้า</span>
-                <p className="m-0 text-[0.88rem] leading-[1.5] text-[var(--foreground-soft)]">
+              <div className="flex h-full flex-col gap-3 rounded-[14px] border border-[var(--border)] [background:var(--panel-elevated)] p-3 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:gap-3 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:p-2.5">
+                <span className="text-[0.92rem] font-semibold text-[var(--eyebrow)] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:text-[0.78rem]">รูปภาพสินค้า</span>
+                <p className="m-0 text-[0.88rem] leading-[1.5] text-[var(--foreground-soft)] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:text-[0.72rem] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:leading-[1.35]">
                   {compactMode ? "JPG, PNG, WEBP ไม่เกิน 5 MB" : "อัปโหลด JPG, PNG หรือ WEBP แล้วครอปเป็นรูปสี่เหลี่ยมจัตุรัส"}
                 </p>
 
                 <div className="mt-auto grid">
-                  <button type="button" className={`${successButtonClass} whitespace-nowrap mt-auto`} onClick={onChooseImageClick}>
+                  <button type="button" className={`${successButtonClass} whitespace-nowrap mt-auto [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:!min-h-[40px]`} onClick={onChooseImageClick}>
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" className={`opacity-80 ${ipadAirHideLeadingIconClass}`}>
                       <g fill="none" stroke="currentColor" strokeWidth="2">
                         <rect width="14" height="14" x="5" y="5" rx="4" />
@@ -345,7 +347,7 @@ export function ProductDetailPanel({
             </div>
           </div>
 
-          <div className={studioResponsiveClass.detailActionGrid}>
+          <div className={`${studioResponsiveClass.detailActionGrid} [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:mt-1 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:gap-3 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:[&_button]:!min-h-[40px]`}>
             <button
               type="button"
               className={`${secondaryButtonClass} disabled:opacity-40`}

@@ -538,13 +538,13 @@ export function SalesWorkspaceClient() {
                   <div className={`sales-product-card-media flex items-start justify-between gap-3 ${ipadMiniLandscapeClass}:!block max-[420px]:flex-col`}>
                     {product.imageUrl ? (
                       <span
-                        className={`sales-product-card-image block h-[96px] w-[118px] shrink-0 rounded-xl border border-[var(--border-subtle)] bg-cover bg-center ${ownerLandscapeClass}:h-[82px] ${ownerLandscapeClass}:w-[102px] ${ipadMiniLandscapeClass}:!h-[92px] ${ipadMiniLandscapeClass}:!w-full ${ipadMiniLandscapeClass}:!rounded-[9px] max-[420px]:w-full`}
+                        className={`sales-product-card-image block h-[96px] w-[118px] shrink-0 rounded-xl border border-[var(--border-subtle)] bg-cover bg-center ${ownerLandscapeClass}:h-[82px] ${ownerLandscapeClass}:w-[102px] ${ipadMiniLandscapeClass}:!h-[64px] ${ipadMiniLandscapeClass}:!w-[calc(100%-54px)] ${ipadMiniLandscapeClass}:!max-w-[118px] ${ipadMiniLandscapeClass}:!rounded-[9px] max-[420px]:w-full`}
                         style={{ backgroundImage: `url(${product.imageUrl})` }}
                         role="img"
                         aria-label={product.name}
                       />
                     ) : (
-                      <div className={`sales-product-card-image block h-[96px] w-[118px] shrink-0 rounded-xl border border-[var(--border-subtle)] bg-[var(--panel-subtle)] ${ownerLandscapeClass}:h-[82px] ${ownerLandscapeClass}:w-[102px] ${ipadMiniLandscapeClass}:!h-[92px] ${ipadMiniLandscapeClass}:!w-full ${ipadMiniLandscapeClass}:!rounded-[9px] max-[420px]:w-full`} />
+                      <div className={`sales-product-card-image block h-[96px] w-[118px] shrink-0 rounded-xl border border-[var(--border-subtle)] bg-[var(--panel-subtle)] ${ownerLandscapeClass}:h-[82px] ${ownerLandscapeClass}:w-[102px] ${ipadMiniLandscapeClass}:!h-[64px] ${ipadMiniLandscapeClass}:!w-[calc(100%-54px)] ${ipadMiniLandscapeClass}:!max-w-[118px] ${ipadMiniLandscapeClass}:!rounded-[9px] max-[420px]:w-full`} />
                     )}
                       <div className="sales-product-card-name-mini hidden">
                         <strong className="block max-w-full truncate text-[0.86rem] font-bold leading-[1.35] text-[var(--foreground)]">
