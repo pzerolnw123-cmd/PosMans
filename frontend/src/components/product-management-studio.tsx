@@ -44,7 +44,7 @@ export function ProductManagementStudio() {
     const ipadMiniLandscapeMediaQuery = window.matchMedia("(min-width: 821px) and (max-width: 1024px) and (orientation: landscape) and (any-pointer: coarse)");
     const ipadAirPortraitMediaQuery = window.matchMedia("(min-width: 768px) and (max-width: 820px) and (orientation: portrait) and (any-pointer: coarse)");
     const ipadAirLandscapeMediaQuery = window.matchMedia("(min-width: 821px) and (max-width: 1180px) and (orientation: landscape) and (any-pointer: coarse)");
-    const largeTabletLandscapeMediaQuery = window.matchMedia("(min-width: 1181px) and (max-width: 1366px) and (orientation: landscape) and (any-pointer: coarse)");
+    const largeTabletLandscapeMediaQuery = window.matchMedia("(min-width: 1181px) and (max-width: 1366px) and (max-height: 999px) and (orientation: landscape) and (any-pointer: coarse)");
     const ipadMediaQuery = window.matchMedia("(max-width: 1366px) and (any-pointer: coarse)");
     const syncCompactMode = () => setCompactMode(compactMediaQuery.matches || ipadMiniLandscapeMediaQuery.matches);
     const syncItemsPerPage = () =>
