@@ -1,0 +1,3 @@
+{
+  "/api/auth/owner-payment-settings/route": "app/api/auth/owner-payment-settings/route.js"
+}

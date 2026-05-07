@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { createContext, useContext, useEffect, useState } from "react";
 import type { ReactNode } from "react";
@@ -36,9 +36,9 @@ export function useOwnerLogo() {
     previewUrl: "",
     savedLogoUrl: "",
     saved: false,
-    setPreviewUrl: () => {},
-    setSaved: () => {},
-    setSavedLogo: () => {}
+    setPreviewUrl: () => { },
+    setSaved: () => { },
+    setSavedLogo: () => { }
   };
 }
 

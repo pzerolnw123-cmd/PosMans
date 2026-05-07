@@ -287,6 +287,7 @@ export async function renderOwnerScreen(
           />
 
           <div className="grid min-h-0 grid-cols-[minmax(260px,1fr)_minmax(260px,1fr)] items-start gap-[14px] [@media(orientation:portrait)]:grid-cols-1 [@media(orientation:portrait)]:gap-4 max-[820px]:grid-cols-1 max-[820px]:gap-4">
+            <div className="grid min-w-0 content-start gap-[14px]">
             <PanelCard
               eyebrow="โปรไฟล์ร้านค้า"
               title="ข้อมูลทั่วไป"
@@ -303,6 +304,9 @@ export async function renderOwnerScreen(
               </div>
             </PanelCard>
 
+            <ProfileHeaderInjector className={`hidden justify-self-start self-start ${ipadAirOnlyFlexClass}`} variant="profileCard" />
+            </div>
+
             <PanelCard
               eyebrow="สัญลักษณ์"
               title="โลโก้ร้าน"
@@ -313,7 +317,6 @@ export async function renderOwnerScreen(
               <OwnerLogoClient />
             </PanelCard>
 
-            <ProfileHeaderInjector className={`hidden justify-self-start self-start ${ipadAirOnlyFlexClass}`} variant="profileCard" />
           </div>
         </section>
       ),

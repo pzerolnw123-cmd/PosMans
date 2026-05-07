@@ -1,0 +1,3 @@
+{
+  "/api/customer-displays/[displayId]/revoke/route": "app/api/customer-displays/[displayId]/revoke/route.js"
+}

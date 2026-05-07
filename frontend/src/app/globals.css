@@ -209,7 +209,7 @@ html[data-store-theme="mono"] .payment-method-active {
   transform: translateX(calc(1.17 * var(--size)));
 }
 
-.stock-toggle-uiverse .check input[type="checkbox"]:checked + label {
+.stock-toggle-uiverse .check input[type="checkbox"]:checked+label {
   background: var(--toggle-track-checked);
 }
 
@@ -220,7 +220,7 @@ html[data-store-theme="mono"] .payment-method-active {
 }
 
 .stock-toggle-uiverse .check input[type="checkbox"]:disabled,
-.stock-toggle-uiverse .check input[type="checkbox"]:disabled + label {
+.stock-toggle-uiverse .check input[type="checkbox"]:disabled+label {
   cursor: not-allowed;
   opacity: 0.58;
 }
@@ -247,7 +247,7 @@ html[data-store-theme="mono"] .payment-method-active {
   border-radius: 999px;
 }
 
-.stock-toggle-button > span {
+.stock-toggle-button>span {
   position: absolute;
   top: calc(0.165 * var(--size));
   left: calc(0.165 * var(--size));
@@ -269,7 +269,7 @@ html[data-store-theme="mono"] .payment-method-active {
   background: var(--toggle-track-checked);
 }
 
-.stock-toggle-button[aria-checked="true"] > span {
+.stock-toggle-button[aria-checked="true"]>span {
   border-color: var(--toggle-thumb-border-checked, var(--toggle-thumb-border, var(--border-strong)));
   background: var(--toggle-thumb-bg-checked, var(--toggle-thumb-bg));
   transform: translateX(calc(1.17 * var(--size)));
@@ -462,12 +462,12 @@ html[data-store-theme="mono"] .payment-method-active {
     pointer-events: auto !important;
   }
 
-  .shell-alert-toast > p:first-child {
+  .shell-alert-toast>p:first-child {
     font-size: 0.62rem !important;
     letter-spacing: 0.18em !important;
   }
 
-  .shell-alert-toast > p + p {
+  .shell-alert-toast>p+p {
     margin-top: 4px !important;
     font-size: 0.82rem !important;
     line-height: 1.35 !important;
@@ -518,7 +518,7 @@ html[data-store-theme="mono"] .payment-method-active {
     white-space: nowrap !important;
   }
 
-  .sales-product-card-meta > b:first-child {
+  .sales-product-card-meta>b:first-child {
     position: absolute !important;
     top: 10px !important;
     right: 10px !important;
@@ -526,7 +526,7 @@ html[data-store-theme="mono"] .payment-method-active {
     text-align: right !important;
   }
 
-  .sales-product-card-meta > * {
+  .sales-product-card-meta>* {
     max-width: 100% !important;
     text-align: left !important;
   }
@@ -550,7 +550,7 @@ html[data-store-theme="mono"] .payment-method-active {
     display: none !important;
   }
 
-  .sales-product-card > button[aria-label="เพิ่มตะกร้า"] {
+  .sales-product-card>button[aria-label="เพิ่มตะกร้า"] {
     right: 10px !important;
     bottom: 14px !important;
     left: auto !important;
