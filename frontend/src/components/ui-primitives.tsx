@@ -56,7 +56,8 @@ export function PageHeader({
   actions?: ReactNode;
   className?: string;
 }) {
-  const laptop1366HeaderHideClass = "[@media(width:1366px)_and_(height:768px)_and_(orientation:landscape)]:!hidden";
+  const laptop1366HeaderHideClass =
+    "[@media(width:1366px)_and_(height:768px)_and_(orientation:landscape)]:!hidden [@media(width:1366px)_and_(height:720px)_and_(orientation:landscape)]:!hidden";
   const tabletHeaderSwapClass =
     "[@media(min-width:744px)_and_(max-width:1024px)_and_(orientation:portrait)]:hidden [@media(min-width:821px)_and_(max-width:1366px)_and_(max-height:1024px)_and_(orientation:landscape)]:hidden";
   const tabletInjectedHeaderClass =

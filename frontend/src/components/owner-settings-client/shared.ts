@@ -91,14 +91,14 @@ export const ownerThemeOptions: Array<{
     },
     {
       id: "green_white",
-      label: "Green White",
-      description: "Clean white workspace with fresh green accents for a bright storefront feel.",
+      label: "เขียวขาว",
+      description: "พื้นหลังสีขาวสะอาด ตัดด้วยสีเขียวสด ให้หน้าร้านดูสว่างและเป็นมิตร",
       preview: "var(--theme-preview-green-white)",
     },
     {
       id: "orange_pink",
-      label: "Orange Pink",
-      description: "Warm orange actions with pink highlights for a lively, friendly storefront.",
+      label: "ส้มชมพู",
+      description: "ปุ่มโทนส้มอบอุ่น พร้อมไฮไลต์สีชมพู ให้หน้าร้านดูสดใสและเข้าถึงง่าย",
       preview: "var(--theme-preview-orange-pink)",
     },
   ];

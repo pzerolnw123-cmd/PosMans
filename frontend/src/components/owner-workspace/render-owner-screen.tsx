@@ -23,7 +23,7 @@ const ownerNamePrompt = "กรอกชื่อของคุณ";
 
 const miniHeaderClass = `${ipadMiniLandscapeClass}:h-[104px] ${ipadMiniLandscapeClass}:min-h-[104px] ${ipadMiniLandscapeClass}:max-h-[104px] ${ipadMiniLandscapeClass}:overflow-hidden ${ipadMiniLandscapeClass}:px-3 ${ipadMiniLandscapeClass}:py-3 ${ipadMiniLandscapeClass}:[&_h2]:my-[5px] ${ipadMiniLandscapeClass}:[&_h2]:text-[1.5rem] ${ipadMiniLandscapeClass}:[&_p]:leading-[1.35] ${ipadMiniLandscapeClass}:[&_p:not(:first-child)]:text-[0.8rem]`;
 const laptop1366HeaderlessRowsClass =
-  "[@media(width:1366px)_and_(height:768px)_and_(orientation:landscape)]:!grid-rows-[minmax(0,1fr)] [@media(width:1366px)_and_(height:768px)_and_(orientation:landscape)]:!gap-0";
+  "[@media(width:1366px)_and_(height:768px)_and_(orientation:landscape)]:!grid-rows-[minmax(0,1fr)] [@media(width:1366px)_and_(height:768px)_and_(orientation:landscape)]:!gap-0 [@media(width:1366px)_and_(height:720px)_and_(orientation:landscape)]:!grid-rows-[minmax(0,1fr)] [@media(width:1366px)_and_(height:720px)_and_(orientation:landscape)]:!gap-0";
 const ownerPageWithHeaderClass = `grid h-full min-h-0 grid-rows-[156px_minmax(0,1fr)] gap-[18px] ${laptop1366HeaderlessRowsClass} ${ipadAirOnlyGridRowsSingleClass} ${posWideShortGridRowsSingleClass} ${ipadMiniLandscapeClass}:gap-[12px] [@media(orientation:portrait)]:h-auto [@media(orientation:portrait)]:grid-rows-[auto_auto] [@media(orientation:portrait)]:gap-4 max-[820px]:h-auto max-[820px]:grid-rows-[auto_auto] [@media(max-height:860px)_and_(max-width:820px)]:h-auto [@media(max-height:860px)_and_(max-width:820px)]:grid-rows-[auto_auto]`;
 const ownerPageWithHeaderGapClass = `${ownerPageWithHeaderClass} max-[820px]:gap-4`;
 const profilePageWithStatusCardClass =
@@ -316,7 +316,7 @@ export async function renderOwnerScreen(
             </PanelCard>
 
             <ProfileHeaderInjector
-              className={`hidden justify-self-start self-start ${ipadAirOnlyFlexClass} ${posWideShortHeaderFlexClass} [@media(width:1366px)_and_(height:768px)_and_(orientation:landscape)]:!flex`}
+              className={`hidden justify-self-start self-start ${ipadAirOnlyFlexClass} ${posWideShortHeaderFlexClass} [@media(width:1366px)_and_(height:768px)_and_(orientation:landscape)]:!flex [@media(width:1366px)_and_(height:720px)_and_(orientation:landscape)]:!flex`}
               variant="profileCard"
             />
             </div>
