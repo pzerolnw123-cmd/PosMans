@@ -113,12 +113,14 @@ export function SalesWorkspaceClient() {
     pointerId: 0,
     startY: 0,
     scrollTop: 0,
+    dragged: false,
   });
   const productDragScrollRef = useRef({
     active: false,
     pointerId: 0,
     startY: 0,
     scrollTop: 0,
+    dragged: false,
   });
 
   const itemCount = useMemo(() => cartItems.reduce((total, item) => total + item.quantity, 0), [cartItems]);
@@ -428,8 +430,8 @@ export function SalesWorkspaceClient() {
       pointerId: event.pointerId,
       startY: event.clientY,
       scrollTop: target.scrollTop,
+      dragged: false,
     };
-    target.setPointerCapture(event.pointerId);
     target.dataset.dragging = "true";
   }
 
@@ -440,6 +442,12 @@ export function SalesWorkspaceClient() {
     }
 
     event.preventDefault();
+    if (Math.abs(event.clientY - drag.startY) > 5) {
+      drag.dragged = true;
+      if (!event.currentTarget.hasPointerCapture(event.pointerId)) {
+        event.currentTarget.setPointerCapture(event.pointerId);
+      }
+    }
     event.currentTarget.scrollTop = drag.scrollTop - (event.clientY - drag.startY);
     updateCartScrollbar();
   }
@@ -455,10 +463,13 @@ export function SalesWorkspaceClient() {
     if (event.currentTarget.hasPointerCapture(event.pointerId)) {
       event.currentTarget.releasePointerCapture(event.pointerId);
     }
+    setTimeout(() => {
+      dragScrollRef.current.dragged = false;
+    }, 50);
   }
 
   function handleProductPointerDown(event: PointerEvent<HTMLDivElement>) {
-    if (event.button !== 0 || (event.target instanceof HTMLElement && event.target.closest("button, [data-product-card='true']"))) {
+    if (event.button !== 0 || (event.target instanceof HTMLElement && event.target.closest("button"))) {
       return;
     }
 
@@ -468,8 +479,8 @@ export function SalesWorkspaceClient() {
       pointerId: event.pointerId,
       startY: event.clientY,
       scrollTop: target.scrollTop,
+      dragged: false,
     };
-    target.setPointerCapture(event.pointerId);
     target.dataset.dragging = "true";
   }
 
@@ -480,6 +491,12 @@ export function SalesWorkspaceClient() {
     }
 
     event.preventDefault();
+    if (Math.abs(event.clientY - drag.startY) > 5) {
+      drag.dragged = true;
+      if (!event.currentTarget.hasPointerCapture(event.pointerId)) {
+        event.currentTarget.setPointerCapture(event.pointerId);
+      }
+    }
     event.currentTarget.scrollTop = drag.scrollTop - (event.clientY - drag.startY);
     updateProductScrollbar();
   }
@@ -495,6 +512,9 @@ export function SalesWorkspaceClient() {
     if (event.currentTarget.hasPointerCapture(event.pointerId)) {
       event.currentTarget.releasePointerCapture(event.pointerId);
     }
+    setTimeout(() => {
+      productDragScrollRef.current.dragged = false;
+    }, 50);
   }
 
   return (
@@ -533,6 +553,12 @@ export function SalesWorkspaceClient() {
             onPointerUp={stopProductDrag}
             onPointerCancel={stopProductDrag}
             onPointerLeave={stopProductDrag}
+            onClickCapture={(e) => {
+              if (productDragScrollRef.current.dragged) {
+                e.stopPropagation();
+                e.preventDefault();
+              }
+            }}
             className={
               productScrollMetric.visible
                 ? `sales-cart-scroll relative grid h-full min-h-0 touch-auto cursor-grab select-none content-start gap-4 p-1 pb-6 pr-4 active:cursor-grabbing grid-cols-3 [@media(orientation:portrait)]:grid-cols-2 [@media(orientation:portrait)_and_(max-width:640px)]:grid-cols-1 [@media(max-width:1366px)_and_(any-pointer:coarse)]:grid-cols-2 max-[1024px]:grid-cols-2 max-[820px]:grid-cols-2 max-[640px]:grid-cols-1 ${desktopFinePointerClass}:grid-cols-3 ${desktopFinePointerClass}:gap-4 ${posWideShortSaleProductGridClass} ${ownerLandscapeClass}:gap-3 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:!grid-cols-2 ${ipadMiniLandscapeClass}:!gap-2.5 ${ipadMiniLandscapeClass}:!pb-4 ${ipadMiniLandscapeClass}:!pr-3`
