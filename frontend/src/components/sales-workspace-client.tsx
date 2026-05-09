@@ -442,14 +442,19 @@ export function SalesWorkspaceClient() {
     }
 
     event.preventDefault();
-    if (Math.abs(event.clientY - drag.startY) > 5) {
-      drag.dragged = true;
-      if (!event.currentTarget.hasPointerCapture(event.pointerId)) {
-        event.currentTarget.setPointerCapture(event.pointerId);
+    if (!drag.dragged) {
+      if (Math.abs(event.clientY - drag.startY) > 8) {
+        drag.dragged = true;
+        if (!event.currentTarget.hasPointerCapture(event.pointerId)) {
+          event.currentTarget.setPointerCapture(event.pointerId);
+        }
       }
     }
-    event.currentTarget.scrollTop = drag.scrollTop - (event.clientY - drag.startY);
-    updateCartScrollbar();
+    
+    if (drag.dragged) {
+      event.currentTarget.scrollTop = drag.scrollTop - (event.clientY - drag.startY);
+      updateCartScrollbar();
+    }
   }
 
   function stopCartDrag(event: PointerEvent<HTMLDivElement>) {
@@ -491,14 +496,19 @@ export function SalesWorkspaceClient() {
     }
 
     event.preventDefault();
-    if (Math.abs(event.clientY - drag.startY) > 5) {
-      drag.dragged = true;
-      if (!event.currentTarget.hasPointerCapture(event.pointerId)) {
-        event.currentTarget.setPointerCapture(event.pointerId);
+    if (!drag.dragged) {
+      if (Math.abs(event.clientY - drag.startY) > 8) {
+        drag.dragged = true;
+        if (!event.currentTarget.hasPointerCapture(event.pointerId)) {
+          event.currentTarget.setPointerCapture(event.pointerId);
+        }
       }
     }
-    event.currentTarget.scrollTop = drag.scrollTop - (event.clientY - drag.startY);
-    updateProductScrollbar();
+    
+    if (drag.dragged) {
+      event.currentTarget.scrollTop = drag.scrollTop - (event.clientY - drag.startY);
+      updateProductScrollbar();
+    }
   }
 
   function stopProductDrag(event: PointerEvent<HTMLDivElement>) {
