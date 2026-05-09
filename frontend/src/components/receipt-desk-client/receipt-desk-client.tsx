@@ -35,9 +35,10 @@ export function ReceiptDeskClient() {
     const largeAndroidLandscapeQuery = window.matchMedia("(min-width: 1181px) and (max-width: 1366px) and (max-height: 999px) and (orientation: landscape) and (any-pointer: coarse)");
     const posWideShortQuery = window.matchMedia("(width: 1280px) and (height: 720px) and (orientation: landscape)");
     const oldPos1366x720Query = window.matchMedia("(width: 1366px) and (height: 720px) and (orientation: landscape)");
+    const laptop1440x900Query = window.matchMedia("(width: 1440px) and (height: 900px) and (orientation: landscape)");
     
     const syncPageSize = () =>
-      setPageSize(oldPos1366x720Query.matches ? 3 : posWideShortQuery.matches ? 3 : ipadMiniPortraitQuery.matches || ipadMiniLandscapeQuery.matches ? 4 : ipadAirPortraitQuery.matches || ipadAirLandscapeQuery.matches ? 4 : largeAndroidLandscapeQuery.matches ? 4 : ipadMediaQuery.matches ? 5 : 4);
+      setPageSize(laptop1440x900Query.matches ? 3 : oldPos1366x720Query.matches ? 3 : posWideShortQuery.matches ? 3 : ipadMiniPortraitQuery.matches || ipadMiniLandscapeQuery.matches ? 4 : ipadAirPortraitQuery.matches || ipadAirLandscapeQuery.matches ? 4 : largeAndroidLandscapeQuery.matches ? 4 : ipadMediaQuery.matches ? 5 : 4);
     
     syncPageSize();
     ipadMediaQuery.addEventListener("change", syncPageSize);
@@ -48,6 +49,7 @@ export function ReceiptDeskClient() {
     largeAndroidLandscapeQuery.addEventListener("change", syncPageSize);
     posWideShortQuery.addEventListener("change", syncPageSize);
     oldPos1366x720Query.addEventListener("change", syncPageSize);
+    laptop1440x900Query.addEventListener("change", syncPageSize);
     
     return () => {
       ipadMediaQuery.removeEventListener("change", syncPageSize);
@@ -58,6 +60,7 @@ export function ReceiptDeskClient() {
       largeAndroidLandscapeQuery.removeEventListener("change", syncPageSize);
       posWideShortQuery.removeEventListener("change", syncPageSize);
       oldPos1366x720Query.removeEventListener("change", syncPageSize);
+      laptop1440x900Query.removeEventListener("change", syncPageSize);
     };
   }, []);
 

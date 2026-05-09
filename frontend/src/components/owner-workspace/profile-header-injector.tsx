@@ -45,6 +45,18 @@ export function ProfileHeaderInjector({
               {profile.profileMeta} • {profile.profileRole}
             </p>
           ) : null}
+
+          {profile.profileStatus ? (
+            <span className="mt-3 inline-flex items-center whitespace-nowrap rounded-[8px] border border-[var(--success-border)] bg-[var(--success-soft)] px-[8px] py-[4px] text-[0.7rem] font-bold text-[var(--success)]">
+              {profile.profileStatus}
+            </span>
+          ) : null}
+
+          {profile.profileAction ? (
+            <div className="mt-6 w-full flex justify-center [&>*]:w-full">
+              {profile.profileAction}
+            </div>
+          ) : null}
         </div>
       </div>
     );

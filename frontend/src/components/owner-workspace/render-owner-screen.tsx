@@ -316,7 +316,7 @@ export async function renderOwnerScreen(
             </PanelCard>
 
             <ProfileHeaderInjector
-              className={`hidden justify-self-start self-start ${ipadAirOnlyFlexClass} ${posWideShortHeaderFlexClass} [@media(width:1366px)_and_(height:768px)_and_(orientation:landscape)]:!flex [@media(width:1366px)_and_(height:720px)_and_(orientation:landscape)]:!flex`}
+              className={`hidden justify-self-start self-start ${ipadAirOnlyFlexClass} ${posWideShortHeaderFlexClass} [@media(width:1366px)_and_(height:768px)_and_(orientation:landscape)]:!flex [@media(width:1366px)_and_(height:720px)_and_(orientation:landscape)]:!flex [@media(width:1440px)_and_(height:900px)_and_(orientation:landscape)]:!flex`}
               variant="profileCard"
             />
             </div>
