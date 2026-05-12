@@ -68,6 +68,8 @@ export function ProductManagementStudioLayout({
         <PageHeader
           eyebrow="Product Studio"
           title="สินค้า"
+          className="[@media(width:1440px)_and_(height:900px)_and_(orientation:landscape)]:!h-auto [@media(width:1440px)_and_(height:900px)_and_(orientation:landscape)]:!min-h-0 [@media(width:1440px)_and_(height:900px)_and_(orientation:landscape)]:!max-h-none [@media(width:1600px)_and_(height:900px)_and_(orientation:landscape)]:!hidden"
+          descriptionClassName="[@media(width:1440px)_and_(height:900px)_and_(orientation:landscape)]:hidden"
           description={
             <>
               จัดการรายการสินค้าของคุณ ทั้งการแก้ไขราคา หมวดหมู่ และสถานะการขาย <br /> พร้อมระบบอัปโหลดรูปภาพที่รวดเร็ว

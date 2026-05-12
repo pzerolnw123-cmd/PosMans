@@ -53,7 +53,7 @@ export function ProfileHeaderInjector({
           ) : null}
 
           {profile.profileAction ? (
-            <div className="mt-6 w-full flex justify-center [&>*]:w-full">
+            <div className="mt-6 w-full flex justify-center [&>*]:w-full [@media(width:1440px)_and_(height:900px)_and_(orientation:landscape)]:hidden">
               {profile.profileAction}
             </div>
           ) : null}
@@ -93,7 +93,7 @@ export function ProfileHeaderInjector({
         </div>
 
         {profile.profileAction ? (
-          <div className="w-fit justify-self-end self-end [&>*]:mt-0 [&>*]:w-auto [&>*]:min-h-[28px] [&>*]:px-2.5 [&>*]:text-[0.72rem] [&>*]:leading-none [&>*]:whitespace-nowrap">
+          <div className="w-fit justify-self-end self-end [&>*]:mt-0 [&>*]:w-auto [&>*]:min-h-[28px] [&>*]:px-2.5 [&>*]:text-[0.72rem] [&>*]:leading-none [&>*]:whitespace-nowrap [@media(width:1440px)_and_(height:900px)_and_(orientation:landscape)]:hidden">
             {profile.profileAction}
           </div>
         ) : null}
@@ -125,12 +125,11 @@ export function ProfileHeaderInjector({
         </div>
       </div>
       {profile.profileAction ? (
-        <div className="[@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:hidden [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:hidden flex self-end flex-wrap items-center gap-3 max-[720px]:self-auto max-[720px]:justify-end">
+        <div className="[@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:hidden [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:hidden [@media(width:1440px)_and_(height:900px)_and_(orientation:landscape)]:hidden flex self-end flex-wrap items-center gap-3 max-[720px]:self-auto max-[720px]:justify-end">
           {profile.profileAction}
         </div>
       ) : null}
     </div>
   );
 }
-
 

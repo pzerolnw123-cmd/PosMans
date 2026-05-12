@@ -28,7 +28,7 @@ const posWideShortRecipientOptionClass =
 const posWideShortRecipientLabelClass =
   "[@media(min-width:1181px)_and_(max-width:1280px)_and_(max-height:720px)_and_(orientation:landscape)]:!whitespace-nowrap [@media(min-width:1181px)_and_(max-width:1280px)_and_(max-height:720px)_and_(orientation:landscape)]:!text-[0.76rem] [@media(width:1366px)_and_(height:720px)_and_(orientation:landscape)]:!whitespace-nowrap [@media(width:1366px)_and_(height:720px)_and_(orientation:landscape)]:!text-[0.76rem]";
 const posWideShortRecipientHelperClass =
-  "[@media(min-width:1181px)_and_(max-width:1280px)_and_(max-height:720px)_and_(orientation:landscape)]:!hidden [@media(width:1366px)_and_(height:720px)_and_(orientation:landscape)]:!hidden";
+  "[@media(min-width:1181px)_and_(max-width:1280px)_and_(max-height:720px)_and_(orientation:landscape)]:!hidden [@media(width:1366px)_and_(height:720px)_and_(orientation:landscape)]:!hidden [@media(width:1440px)_and_(height:900px)_and_(orientation:landscape)]:!hidden";
 
 type PaymentSettingsFormFieldsProps = {
   form: OwnerPaymentSettingsValue;
@@ -176,7 +176,7 @@ export function PaymentSettingsFormFields({
 
         <div className="grid gap-2">
           <span className={fieldLabelClass}>ประเภทผู้รับเงิน</span>
-          <span className="text-[0.78rem] leading-[1.2] text-[var(--foreground-soft)] [@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:hidden [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:hidden [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:hidden">
+          <span className="text-[0.78rem] leading-[1.2] text-[var(--foreground-soft)] [@media(min-width:768px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:hidden [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:hidden [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:hidden [@media(width:1440px)_and_(height:900px)_and_(orientation:landscape)]:hidden">
             คุณสามารถกรอกเบอร์พร้อมเพย์, เลขบัตรประชาชน, เลขผู้เสียภาษี, หรือรูป QR พร้อมกับข้อมูลบัญชีธนาคารได้
           </span>
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">

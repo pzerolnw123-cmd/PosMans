@@ -49,15 +49,19 @@ export function PageHeader({
   description,
   actions,
   className = "",
+  descriptionClassName = "",
 }: {
   eyebrow: string;
   title: string;
   description?: ReactNode;
   actions?: ReactNode;
   className?: string;
+  descriptionClassName?: string;
 }) {
   const laptop1366HeaderHideClass =
     "[@media(width:1366px)_and_(height:768px)_and_(orientation:landscape)]:!hidden [@media(width:1366px)_and_(height:720px)_and_(orientation:landscape)]:!hidden";
+  const desktopHDHeaderHideClass =
+    "[@media(width:1600px)_and_(height:900px)_and_(orientation:landscape)]:!hidden";
   const tabletHeaderSwapClass =
     "[@media(min-width:744px)_and_(max-width:1024px)_and_(orientation:portrait)]:hidden [@media(min-width:821px)_and_(max-width:1366px)_and_(max-height:1024px)_and_(orientation:landscape)]:hidden";
   const tabletInjectedHeaderClass =
@@ -66,17 +70,17 @@ export function PageHeader({
   return (
     <>
       <div
-        className={`flex h-[156px] min-h-[156px] max-h-[156px] items-start justify-between overflow-hidden rounded-none border border-[var(--border)] bg-[var(--surface)] px-5 py-6 shadow-[var(--shadow-soft)] max-[1180px]:h-auto max-[1180px]:min-h-0 max-[1180px]:max-h-none max-[1024px]:px-4 max-[1024px]:py-5 max-[820px]:px-4 max-[820px]:py-5 max-[720px]:flex-col max-[720px]:items-stretch max-[720px]:gap-4 max-[640px]:px-3.5 max-[640px]:py-4 [@media(max-height:860px)_and_(max-width:820px)]:h-auto [@media(max-height:860px)_and_(max-width:820px)]:min-h-0 [@media(max-height:860px)_and_(max-width:820px)]:max-h-none [@media(max-width:1366px)_and_(any-pointer:coarse)]:hidden ${tabletHeaderSwapClass} ${laptop1366HeaderHideClass} ${posWideShortHeaderHideClass} ${className}`.trim()}
+        className={`flex h-[156px] min-h-[156px] max-h-[156px] items-start justify-between overflow-hidden rounded-none border border-[var(--border)] bg-[var(--surface)] px-5 py-6 shadow-[var(--shadow-soft)] max-[1180px]:h-auto max-[1180px]:min-h-0 max-[1180px]:max-h-none max-[1024px]:px-4 max-[1024px]:py-5 max-[820px]:px-4 max-[820px]:py-5 max-[720px]:flex-col max-[720px]:items-stretch max-[720px]:gap-4 max-[640px]:px-3.5 max-[640px]:py-4 [@media(max-height:860px)_and_(max-width:820px)]:h-auto [@media(max-height:860px)_and_(max-width:820px)]:min-h-0 [@media(max-height:860px)_and_(max-width:820px)]:max-h-none [@media(max-width:1366px)_and_(any-pointer:coarse)]:hidden ${tabletHeaderSwapClass} ${laptop1366HeaderHideClass} ${desktopHDHeaderHideClass} ${posWideShortHeaderHideClass} ${className}`.trim()}
       >
         <div>
           <p className={eyebrowTextClass}>{eyebrow}</p>
           <strong className="mt-2 block text-[clamp(1.8rem,3vw,2.4rem)] leading-none tracking-[-0.06em] text-[var(--foreground)] max-[1024px]:text-[1.7rem] max-[640px]:text-[1.55rem]">{title}</strong>
-          {description ? <p className="mt-3 m-0 text-[0.95rem] leading-[1.6] text-[var(--foreground-soft)] max-w-[600px] max-[640px]:text-[0.9rem]">{description}</p> : null}
+          {description ? <p className={`mt-3 m-0 text-[0.95rem] leading-[1.6] text-[var(--foreground-soft)] max-w-[600px] max-[640px]:text-[0.9rem] ${descriptionClassName}`.trim()}>{description}</p> : null}
         </div>
         {actions ? <div className="flex flex-none flex-wrap items-center justify-end gap-3 max-[720px]:w-full max-[720px]:justify-stretch">{actions}</div> : null}
       </div>
 
-      <ProfileHeaderInjector className={`hidden [@media(max-width:1366px)_and_(any-pointer:coarse)]:flex ${tabletInjectedHeaderClass} ${ipadAirOnlyHideClass} ${laptop1366HeaderHideClass} ${posWideShortHeaderHideClass} ${className}`.trim()} />
+      <ProfileHeaderInjector className={`hidden [@media(max-width:1366px)_and_(any-pointer:coarse)]:flex ${tabletInjectedHeaderClass} ${ipadAirOnlyHideClass} ${laptop1366HeaderHideClass} ${desktopHDHeaderHideClass} ${posWideShortHeaderHideClass} ${className}`.trim()} />
     </>
   );
 }
