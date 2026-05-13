@@ -1,11 +1,10 @@
 import type { Metadata, Viewport } from "next";
 import Script from "next/script";
-import { cookies } from "next/headers";
 import "./globals.css";
 import { NetworkErrorRecovery } from "@/components/network-error-recovery";
 import { ThemeSync } from "@/components/theme-sync";
 import { getCurrentSession } from "@/lib/session";
-import { defaultOwnerTheme, isOwnerTheme, ownerThemeCookieKey, ownerThemeIds, ownerThemeStorageKey } from "@/lib/owner-theme";
+import { defaultOwnerTheme, ownerThemeIds, ownerThemeStorageKey } from "@/lib/owner-theme";
 
 const themeInitScript = `(() => {
   const validThemes = new Set(${JSON.stringify(ownerThemeIds)});
@@ -80,11 +79,8 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const session = await getCurrentSession();
-  const cookieStore = await cookies();
-  const cookieThemeValue = cookieStore.get(ownerThemeCookieKey)?.value;
-  const cookieTheme = isOwnerTheme(cookieThemeValue) ? cookieThemeValue : null;
-  const ownerTheme = session?.user.storeRole === "OWNER" && session.user.ownerTheme ? session.user.ownerTheme : cookieTheme || "light";
-  const userThemeSource = session?.user.storeRole === "OWNER" && session.user.ownerTheme ? "server" : cookieTheme ? "server" : "local";
+  const ownerTheme = session?.user.storeRole === "OWNER" && session.user.ownerTheme ? session.user.ownerTheme : defaultOwnerTheme;
+  const userThemeSource = session?.user.storeRole === "OWNER" && session.user.ownerTheme ? "server" : "local";
 
   return (
     <html
