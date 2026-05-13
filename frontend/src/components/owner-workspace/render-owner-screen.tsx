@@ -61,6 +61,7 @@ export async function renderOwnerScreen(
   formStoreName: string,
   formOwnerName: string,
   paymentSettings: OwnerPaymentSettingsValue,
+  storeId: string,
   storeLogoUrl = "",
   ownerTheme: OwnerThemeId = "light",
   ownerPlan: OwnerPlanPayload["plan"] | null = null,
@@ -82,7 +83,7 @@ export async function renderOwnerScreen(
             className={`h-[144px] min-h-[144px] max-h-[144px] px-4 py-4 ${ipadAirOnlyHideClass} ${miniHeaderClass} max-[820px]:h-auto max-[820px]:min-h-0 max-[820px]:max-h-none max-[640px]:px-3.5 max-[640px]:py-3.5 [@media(max-height:860px)_and_(max-width:820px)]:h-auto [@media(max-height:860px)_and_(max-width:820px)]:min-h-0 [@media(max-height:860px)_and_(max-width:820px)]:max-h-none`}
           />
 
-          <SalesWorkspaceClient />
+          <SalesWorkspaceClient storeId={storeId} />
         </section>
       ),
       standalone: true,
@@ -106,7 +107,7 @@ export async function renderOwnerScreen(
             className={miniHeaderClass}
           />
 
-          <PaymentCheckoutClient paymentSettings={paymentSettings} />
+          <PaymentCheckoutClient paymentSettings={paymentSettings} storeId={storeId} />
         </section>
       ),
       standalone: true,
@@ -208,6 +209,7 @@ export async function renderOwnerScreen(
             storeProfileComplete={Boolean(formStoreName.trim() && formOwnerName.trim())}
             hasStoreLogo={Boolean(storeLogoUrl)}
             paymentSettings={paymentSettings}
+            storeId={storeId}
           />
 
           <div className="hidden">

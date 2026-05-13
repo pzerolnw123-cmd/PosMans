@@ -1,6 +1,10 @@
 ﻿import type { ProductCategory, ProductItem } from "@/components/product-management-studio/types";
 
-export const salesCartStorageKey = "pos-mans-sales-cart";
+export const legacySalesCartStorageKey = "pos-mans-sales-cart";
+
+export function salesCartStorageKey(storeId: string) {
+  return `${legacySalesCartStorageKey}:${storeId}`;
+}
 
 export function CategoryIcon({ category }: { category: ProductCategory }) {
   if (category === "อาหาร") {

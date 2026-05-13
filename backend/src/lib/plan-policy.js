@@ -29,14 +29,18 @@ function getBangkokPeriodKey(date = new Date()) {
 
 function normalizePlan(plan) {
   if (!plan || plan.status !== "ACTIVE") {
-    return { tier: "START", status: plan?.status || "ACTIVE" };
+    return { tier: "START", status: plan?.status || "ACTIVE", expiresAt: plan?.expiresAt || null };
+  }
+
+  if (plan.expiresAt && plan.expiresAt.getTime() <= Date.now()) {
+    return { tier: "START", status: plan.status, expiresAt: plan.expiresAt };
   }
 
   if (plan.tier === "PLUS") {
-    return { tier: "PLUS", status: plan.status };
+    return { tier: "PLUS", status: plan.status, expiresAt: plan.expiresAt || null };
   }
 
-  return { tier: "START", status: plan.status };
+  return { tier: "START", status: plan.status, expiresAt: plan.expiresAt || null };
 }
 
 async function ensureStorePlan(db, storeId) {
@@ -205,6 +209,8 @@ async function getStorePlanSummary(db, storeId) {
   return {
     plan: plan.tier,
     status: plan.status,
+    expiresAt: plan.expiresAt ? plan.expiresAt.toISOString() : null,
+    remainingDays: plan.expiresAt ? Math.max(0, Math.ceil((plan.expiresAt.getTime() - Date.now()) / (24 * 60 * 60 * 1000))) : null,
     period,
     limits: PLAN_LIMITS[plan.tier],
     usage: {

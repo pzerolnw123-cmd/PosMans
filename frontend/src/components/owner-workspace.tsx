@@ -130,6 +130,22 @@ function formatRoleLabel(session: SessionPayload) {
   return "Owner";
 }
 
+function renderPlanProfileContent(ownerPlan: OwnerPlanPayload["plan"] | null) {
+  const planName = ownerPlan?.plan || "START";
+
+  const remainingText =
+    planName === "PLUS" && typeof ownerPlan?.remainingDays === "number"
+      ? `ระยะเวลาการใช้งานคงเหลือ ${ownerPlan.remainingDays.toLocaleString("th-TH")} วัน`
+      : "ระยะเวลาการใช้งานคงเหลือ ไม่มีกำหนด";
+
+  return (
+    <div className="grid gap-1 text-[0.82rem] leading-[1.35]">
+      <span className="font-black uppercase tracking-[0.12em] text-[var(--success)]">PLAN {planName}</span>
+      <span className="text-[var(--foreground-soft)]">{remainingText}</span>
+    </div>
+  );
+}
+
 
 export async function OwnerWorkspace({ session, paymentStore, ownerPlan = null, activeSection }: OwnerWorkspaceProps) {
   const rawStoreName = session.user.store?.name?.trim() || "";
@@ -139,6 +155,8 @@ export async function OwnerWorkspace({ session, paymentStore, ownerPlan = null, 
   const storeName = formStoreName || storeNamePrompt;
   const ownerName = formOwnerName || ownerNamePrompt;
   const roleLabel = formatRoleLabel(session);
+  const profilePlanContent = renderPlanProfileContent(ownerPlan);
+  const storeId = session.user.store?.id || session.user.storeId || "";
   const paymentSettings: OwnerPaymentSettingsValue = {
     promptPayEnabled: Boolean(paymentStore?.promptPayEnabled),
     promptPayRecipientType: paymentStore?.promptPayRecipientType || "MOBILE",
@@ -159,6 +177,7 @@ export async function OwnerWorkspace({ session, paymentStore, ownerPlan = null, 
     formStoreName,
     formOwnerName,
     paymentSettings,
+    storeId,
     session.user.store?.logoUrl || "",
     session.user.ownerTheme || "light",
     ownerPlan,
@@ -187,6 +206,7 @@ export async function OwnerWorkspace({ session, paymentStore, ownerPlan = null, 
       profileSubtitle="เจ้าของร้าน"
       profileMeta={ownerName}
       profileRole={roleLabel}
+      profilePlanContent={profilePlanContent}
       profileStatus="ออนไลน์"
       profileAction={<LogoutButton className={`mt-0 w-auto whitespace-nowrap px-3 py-2 text-[0.88rem] min-h-[34px] ${ipadAirHideClass} [@media(width:1440px)_and_(height:900px)_and_(orientation:landscape)]:hidden [@media(width:1600px)_and_(height:900px)_and_(orientation:landscape)]:hidden`} />}
       statusStoreContent={<OwnerLogoStatusPreview />}

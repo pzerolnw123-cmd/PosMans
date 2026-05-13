@@ -31,6 +31,7 @@ type BackofficeShellProps = {
   profileStatus: string;
   profileMeta: string;
   profileRole: string;
+  profilePlanContent?: ReactNode;
   profileAction?: ReactNode;
   sidebarAction?: ReactNode;
   statusStoreContent?: ReactNode;
@@ -80,10 +81,11 @@ function ProfileSummaryCard({
   profileStatus,
   profileMeta,
   profileRole,
+  profilePlanContent,
   profileAction,
 }: Pick<
   BackofficeShellProps,
-  "profileName" | "profileSubtitle" | "profileStatus" | "profileMeta" | "profileRole" | "profileAction"
+  "profileName" | "profileSubtitle" | "profileStatus" | "profileMeta" | "profileRole" | "profilePlanContent" | "profileAction"
 >) {
   return (
     <div className="border-t border-t-[var(--border)] px-1 py-3">
@@ -100,6 +102,7 @@ function ProfileSummaryCard({
         <span>{profileMeta}</span>
         <span className="whitespace-nowrap text-right">{profileRole}</span>
       </div>
+      {profilePlanContent ? <div className="mt-2">{profilePlanContent}</div> : null}
       {profileAction ? <div key="profile-action">{profileAction}</div> : null}
     </div>
   );
@@ -125,6 +128,7 @@ export const OwnerProfileContext = createContext<{
   profileStatus?: string;
   profileMeta?: string;
   profileRole?: string;
+  profilePlanContent?: ReactNode;
   profileAction?: ReactNode;
   profileLogo?: ReactNode;
 } | null>(null);
@@ -140,6 +144,7 @@ export function BackofficeShell({
   profileStatus,
   profileMeta,
   profileRole,
+  profilePlanContent,
   profileAction,
   sidebarAction,
   statusStoreContent,
@@ -260,6 +265,7 @@ export function BackofficeShell({
                 profileStatus={profileStatus}
                 profileMeta={profileMeta}
                 profileRole={profileRole}
+                profilePlanContent={profilePlanContent}
                 profileAction={profileAction}
               />
             </div>
@@ -267,7 +273,7 @@ export function BackofficeShell({
         </div>
 
         <div className={mainScrollClass}>
-          <OwnerProfileContext.Provider value={{ profileName, profileSubtitle, profileStatus, profileMeta, profileRole, profileAction, profileLogo: statusStoreContent }}>
+          <OwnerProfileContext.Provider value={{ profileName, profileSubtitle, profileStatus, profileMeta, profileRole, profilePlanContent, profileAction, profileLogo: statusStoreContent }}>
             {children}
           </OwnerProfileContext.Provider>
         </div>
@@ -282,6 +288,7 @@ export function BackofficeShell({
                 profileStatus={profileStatus}
                 profileMeta={profileMeta}
                 profileRole={profileRole}
+                profilePlanContent={profilePlanContent}
                 profileAction={profileAction}
               />
             </div>

@@ -49,6 +49,8 @@ enum AuditAction {
   CUSTOMER_DISPLAY_CREATED
   CUSTOMER_DISPLAY_UPDATED
   CUSTOMER_DISPLAY_REVOKED
+  SUPERADMIN_USER_UPDATED
+  SUPERADMIN_PLAN_UPDATED
 }
 
 enum InventoryMovementType {
@@ -139,6 +141,7 @@ model StorePlan {
   storeId     String          @unique
   tier        StorePlanTier   @default(START)
   status      StorePlanStatus @default(ACTIVE)
+  expiresAt   DateTime?
   lockVersion Int             @default(0)
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt

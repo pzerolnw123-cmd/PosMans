@@ -22,6 +22,7 @@ type OwnerOverviewClientProps = {
   storeProfileComplete: boolean;
   hasStoreLogo: boolean;
   paymentSettings: OwnerPaymentSettingsValue;
+  storeId: string;
 };
 
 type StoredCart = {
@@ -60,18 +61,23 @@ function hasBankTransfer(settings: OwnerPaymentSettingsValue) {
   return Boolean(settings.bankName.trim() && settings.bankAccountName.trim() && settings.bankAccountNumber.trim());
 }
 
-function readCartState() {
+function readCartState(storeId: string) {
   if (typeof window === "undefined") {
     return { count: 0, total: 0 };
   }
 
-  const raw = sessionStorage.getItem(salesCartStorageKey);
+  const storageKey = salesCartStorageKey(storeId);
+  const raw = sessionStorage.getItem(storageKey);
   if (!raw) {
     return { count: 0, total: 0 };
   }
 
   try {
-    const parsed = JSON.parse(raw) as StoredCart;
+    const parsed = JSON.parse(raw) as StoredCart & { storeId?: string };
+    if (parsed.storeId !== storeId) {
+      sessionStorage.removeItem(storageKey);
+      return { count: 0, total: 0 };
+    }
     const items = Array.isArray(parsed.items) ? parsed.items : [];
     return items.reduce(
       (summary, item) => {
@@ -84,7 +90,7 @@ function readCartState() {
       { count: 0, total: 0 },
     );
   } catch {
-    sessionStorage.removeItem(salesCartStorageKey);
+    sessionStorage.removeItem(storageKey);
     return { count: 0, total: 0 };
   }
 }
@@ -93,6 +99,7 @@ export function OwnerOverviewClient({
   storeProfileComplete,
   hasStoreLogo,
   paymentSettings,
+  storeId,
 }: OwnerOverviewClientProps) {
   const [products, setProducts] = useState<ProductItem[]>([]);
   const [latestReceipt, setLatestReceipt] = useState<Receipt | null>(null);
@@ -116,13 +123,13 @@ export function OwnerOverviewClient({
         if (cancelled) return;
         setProducts(productResponse);
         setLatestReceipt(receiptResponse.receipts[0] || null);
-        setCartState(readCartState());
+        setCartState(readCartState(storeId));
       } catch (loadError) {
         if (!cancelled) {
           setError(loadError instanceof Error ? loadError.message : "โหลดภาพรวมร้านไม่สำเร็จ");
           setProducts([]);
           setLatestReceipt(null);
-          setCartState(readCartState());
+          setCartState(readCartState(storeId));
         }
       } finally {
         if (!cancelled) {
@@ -132,13 +139,13 @@ export function OwnerOverviewClient({
     }
 
     loadOverview();
-    const handleStorage = () => setCartState(readCartState());
+    const handleStorage = () => setCartState(readCartState(storeId));
     window.addEventListener("storage", handleStorage);
     return () => {
       cancelled = true;
       window.removeEventListener("storage", handleStorage);
     };
-  }, []);
+  }, [storeId]);
 
   const qrReady = paymentSettings.promptPayEnabled && hasPromptPayValue(paymentSettings);
   const transferReady = hasBankTransfer(paymentSettings);

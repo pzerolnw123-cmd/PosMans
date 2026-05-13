@@ -56,8 +56,16 @@ export const paymentMethods: Array<{ value: PaymentMethod; label: string }> = [
   { value: "CARD", label: "บัตร" },
   { value: "TRANSFER", label: "โอนเงิน" },
 ];
-export const salesCartStorageKey = "pos-mans-sales-cart";
-export const latestSaleStorageKey = "pos-mans-latest-sale";
+export const legacySalesCartStorageKey = "pos-mans-sales-cart";
+export const legacyLatestSaleStorageKey = "pos-mans-latest-sale";
+
+export function salesCartStorageKey(storeId: string) {
+  return `${legacySalesCartStorageKey}:${storeId}`;
+}
+
+export function latestSaleStorageKey(storeId: string) {
+  return `${legacyLatestSaleStorageKey}:${storeId}`;
+}
 
 export function formatBaht(value: number) {
   return `฿${value.toLocaleString("th-TH")}`;
@@ -134,8 +142,9 @@ export function createPromptPayPayload(settings: OwnerPaymentSettingsValue, amou
   return `${payloadWithoutCrc}${crc16Ccitt(payloadWithoutCrc)}`;
 }
 
-export function readLatestSale() {
-  const latestSaleRaw = sessionStorage.getItem(latestSaleStorageKey);
+export function readLatestSale(storeId: string) {
+  const storageKey = latestSaleStorageKey(storeId);
+  const latestSaleRaw = sessionStorage.getItem(storageKey);
   if (!latestSaleRaw) {
     return null;
   }
@@ -143,7 +152,7 @@ export function readLatestSale() {
   try {
     return JSON.parse(latestSaleRaw) as CompletedSale;
   } catch {
-    sessionStorage.removeItem(latestSaleStorageKey);
+    sessionStorage.removeItem(storageKey);
     return null;
   }
 }

@@ -2,17 +2,18 @@ import { useEffect, useState } from "react";
 
 import { readLatestSale, salesCartStorageKey, type CompletedSale, type StoredCartItem } from "./shared";
 
-export function useCheckoutCartState() {
+export function useCheckoutCartState(storeId: string) {
   const [items, setItems] = useState<StoredCartItem[]>([]);
   const [completedSale, setCompletedSale] = useState<CompletedSale | null>(null);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     async function initCart() {
+      const storageKey = salesCartStorageKey(storeId);
       try {
-        const raw = sessionStorage.getItem(salesCartStorageKey);
+        const raw = sessionStorage.getItem(storageKey);
         if (!raw) {
-          setCompletedSale(readLatestSale());
+          setCompletedSale(readLatestSale(storeId));
           return;
         }
 
@@ -22,18 +23,19 @@ export function useCheckoutCartState() {
         if (cartItems.length > 0) {
           setCompletedSale(null);
         } else {
-          setCompletedSale(readLatestSale());
+          setCompletedSale(readLatestSale(storeId));
         }
       } catch {
         setItems([]);
-        setCompletedSale(readLatestSale());
+        sessionStorage.removeItem(storageKey);
+        setCompletedSale(readLatestSale(storeId));
       } finally {
         setMounted(true);
       }
     }
 
     initCart();
-  }, []);
+  }, [storeId]);
 
   return {
     items,

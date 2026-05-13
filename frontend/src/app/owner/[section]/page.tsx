@@ -18,8 +18,10 @@ export default async function OwnerSectionPage({
 
   const activeSection = section as OwnerSectionKey;
   const session = await requireOwnerSession();
-  const paymentSettings = sectionsNeedingPaymentSettings.has(activeSection) ? await getOwnerPaymentSettings() : null;
-  const ownerPlan = activeSection === "plan" ? await getOwnerPlan() : null;
+  const [paymentSettings, ownerPlan] = await Promise.all([
+    sectionsNeedingPaymentSettings.has(activeSection) ? getOwnerPaymentSettings() : Promise.resolve(null),
+    getOwnerPlan(),
+  ]);
 
   return <OwnerWorkspace session={session} paymentStore={paymentSettings?.store || null} ownerPlan={ownerPlan?.plan || null} activeSection={activeSection} />;
 }

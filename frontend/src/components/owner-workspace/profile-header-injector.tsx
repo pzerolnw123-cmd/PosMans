@@ -52,6 +52,8 @@ export function ProfileHeaderInjector({
             </span>
           ) : null}
 
+          {profile.profilePlanContent ? <div className="mt-3">{profile.profilePlanContent}</div> : null}
+
           {profile.profileAction ? (
             <div className="mt-6 w-full flex justify-center [&>*]:w-full [@media(width:1440px)_and_(height:900px)_and_(orientation:landscape)]:hidden">
               {profile.profileAction}
@@ -132,4 +134,3 @@ export function ProfileHeaderInjector({
     </div>
   );
 }
-

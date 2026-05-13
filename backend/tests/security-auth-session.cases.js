@@ -24,6 +24,17 @@ describe("backend security hardening - auth and sessions", () => {
     expect(response.headers["set-cookie"][0]).toContain("pos_mans_session_csrf");
   });
 
+  test("rejects owner sessions from superadmin endpoints", async () => {
+    const app = createApp();
+    mockOwnerSession();
+
+    const response = await request(app).get("/api/superadmin/overview").set("Cookie", ["pos_mans_session=session-token"]);
+
+    expect(response.status).toBe(403);
+    expect(prisma.store.findUnique).not.toHaveBeenCalled();
+    expect(prisma.saleOrder.findMany).not.toHaveBeenCalled();
+  });
+
   test("rejects tampered signed csrf tokens", async () => {
     const app = createApp();
     const csrfResponse = await request(app).get("/api/auth/csrf").set("Origin", "http://localhost:3000");

@@ -45,6 +45,8 @@ export type OwnerPlanPayload = {
   plan: {
     plan: "START" | "PLUS";
     status: "ACTIVE" | "PAST_DUE" | "CANCELED";
+    expiresAt: string | null;
+    remainingDays: number | null;
     period: string;
     limits: {
       paymentConfirmationsPerMonth: number | null;

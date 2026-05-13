@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useMemo, useRef, useState, type KeyboardEvent, type PointerEvent } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type KeyboardEvent, type PointerEvent } from "react";
 import { useRouter } from "next/navigation";
 import { setStoredCustomerDisplayIdle } from "@/components/customer-display-session";
 import { loadAllProducts, requestProductList } from "@/components/product-management-studio/lib";
@@ -13,6 +13,7 @@ type CartItem = {
 };
 
 type StoredSalesCart = {
+  storeId?: string;
   items?: Array<{
     productId: string;
     quantity: number;
@@ -47,8 +48,9 @@ import {
 import { ipadMiniLandscapeClass } from "@/components/owner-workspace/ipad-air-classes";
 import { ownerLandscapeClass, ownerLandscapePanelPaddingClass, ownerLandscapeTightGapClass } from "@/components/owner-workspace/landscape-preset";
 import { LoadingState } from "@/components/ui-primitives";
-export function SalesWorkspaceClient() {
+export function SalesWorkspaceClient({ storeId }: { storeId: string }) {
   const router = useRouter();
+  const cartStorageKey = useMemo(() => salesCartStorageKey(storeId), [storeId]);
   const [products, setProducts] = useState<ProductItem[]>([]);
   const [activeCategory, setActiveCategory] = useState<ProductCategory>("ทั้งหมด");
   const [pageIndex, setPageIndex] = useState(0);
@@ -85,8 +87,9 @@ export function SalesWorkspaceClient() {
   const itemCount = useMemo(() => cartItems.reduce((total, item) => total + item.quantity, 0), [cartItems]);
   const subtotal = useMemo(() => cartItems.reduce((total, item) => total + item.product.price * item.quantity, 0), [cartItems]);
 
-  function buildStoredCart(items: CartItem[]): StoredSalesCart {
+  const buildStoredCart = useCallback((items: CartItem[]): StoredSalesCart => {
     return {
+      storeId,
       items: items.map((item) => ({
         productId: item.product.id,
         quantity: item.quantity,
@@ -107,7 +110,7 @@ export function SalesWorkspaceClient() {
       })),
       savedAt: new Date().toISOString(),
     };
-  }
+  }, [storeId]);
 
   const [pageSize, setPageSize] = useState(6);
 
@@ -131,7 +134,7 @@ export function SalesWorkspaceClient() {
           pageSize: String(pageSize),
           category: activeCategory,
         });
-        const response = await requestProductList(params);
+        const response = await requestProductList(params, { force: true });
 
         if (cancelled) {
           return;
@@ -166,7 +169,7 @@ export function SalesWorkspaceClient() {
   }, []);
 
   useEffect(() => {
-    const raw = sessionStorage.getItem(salesCartStorageKey);
+    const raw = sessionStorage.getItem(cartStorageKey);
     if (!raw) {
       setCartHydrated(true);
       return;
@@ -174,6 +177,11 @@ export function SalesWorkspaceClient() {
 
     try {
       const parsed = JSON.parse(raw) as StoredSalesCart;
+      if (parsed.storeId !== storeId) {
+        sessionStorage.removeItem(cartStorageKey);
+        setCartHydrated(true);
+        return;
+      }
       const restoredItems = Array.isArray(parsed.items)
         ? parsed.items
             .filter((item) => item.product && item.productId && item.quantity > 0)
@@ -184,11 +192,11 @@ export function SalesWorkspaceClient() {
         : [];
       setCartItems(restoredItems);
     } catch {
-      sessionStorage.removeItem(salesCartStorageKey);
+      sessionStorage.removeItem(cartStorageKey);
     } finally {
       setCartHydrated(true);
     }
-  }, []);
+  }, [cartStorageKey, storeId]);
 
   useEffect(() => {
     if (!cartHydrated) {
@@ -214,12 +222,12 @@ export function SalesWorkspaceClient() {
     }
 
     if (cartItems.length === 0) {
-      sessionStorage.removeItem(salesCartStorageKey);
+      sessionStorage.removeItem(cartStorageKey);
       return;
     }
 
-    sessionStorage.setItem(salesCartStorageKey, JSON.stringify(buildStoredCart(cartItems)));
-  }, [cartHydrated, cartItems]);
+    sessionStorage.setItem(cartStorageKey, JSON.stringify(buildStoredCart(cartItems)));
+  }, [buildStoredCart, cartHydrated, cartItems, cartStorageKey]);
 
   useLayoutEffect(() => {
     updateCartScrollbar();
@@ -346,7 +354,7 @@ export function SalesWorkspaceClient() {
       return;
     }
 
-    sessionStorage.setItem(salesCartStorageKey, JSON.stringify(buildStoredCart(cartItems)));
+    sessionStorage.setItem(cartStorageKey, JSON.stringify(buildStoredCart(cartItems)));
     router.push("/owner/payments");
   }
 

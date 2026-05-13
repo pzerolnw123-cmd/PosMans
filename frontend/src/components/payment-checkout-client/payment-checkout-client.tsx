@@ -15,10 +15,12 @@ import { useCheckoutCartState } from "./use-checkout-cart-state";
 import { useCustomerDisplaySync } from "./use-customer-display-sync";
 import { usePromptPayQrDataUrl } from "./use-promptpay-qr";
 
-export function PaymentCheckoutClient({ paymentSettings }: { paymentSettings: OwnerPaymentSettingsValue }) {
+export function PaymentCheckoutClient({ paymentSettings, storeId }: { paymentSettings: OwnerPaymentSettingsValue; storeId: string }) {
   const router = useRouter();
   const { setShellAlert } = useBackofficeShellAlert();
-  const { items, completedSale, setCompletedSale, mounted } = useCheckoutCartState();
+  const { items, completedSale, setCompletedSale, mounted } = useCheckoutCartState(storeId);
+  const cartStorageKey = salesCartStorageKey(storeId);
+  const saleStorageKey = latestSaleStorageKey(storeId);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("CASH");
   const [discountPercent, setDiscountPercent] = useState(0);
   const [taxPercent, setTaxPercent] = useState(0);
@@ -224,8 +226,8 @@ export function PaymentCheckoutClient({ paymentSettings }: { paymentSettings: Ow
         })),
       };
 
-      sessionStorage.removeItem(salesCartStorageKey);
-      sessionStorage.setItem(latestSaleStorageKey, JSON.stringify(completedSaleWithImages));
+      sessionStorage.removeItem(cartStorageKey);
+      sessionStorage.setItem(saleStorageKey, JSON.stringify(completedSaleWithImages));
       invalidateProductListCache();
       setCompletedSale(completedSaleWithImages);
       setReceivedAmount(0);
