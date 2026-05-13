@@ -8,7 +8,7 @@ import { OwnerLogoProvider, OwnerLogoStatusPreview } from "@/components/owner-se
 import { NoteStack, ThreeUpStats } from "@/components/owner-workspace/shared";
 import { SessionExpiryGuard } from "@/components/session-expiry-guard";
 
-export type OwnerSectionKey = "sales" | "payments" | "receipts" | "reports" | "menu" | "overview" | "calculator" | "profile" | "settings";
+export type OwnerSectionKey = "sales" | "payments" | "receipts" | "reports" | "menu" | "overview" | "calculator" | "profile" | "line" | "settings";
 
 type OwnerWorkspaceProps = {
   session: SessionPayload;
@@ -38,6 +38,7 @@ const sectionMeta: Record<OwnerSectionKey, { label: string; href: string }> = {
   overview: { label: "ภาพรวม / Overview", href: "/owner/overview" },
   calculator: { label: "คำนวณ / Calculator", href: "/owner/calculator" },
   profile: { label: "โปรไฟล์ / Profile", href: "/owner/profile" },
+  line: { label: "LINE OA", href: "/owner/line" },
   settings: { label: "ตั้งค่า / Settings", href: "/owner/settings" },
 };
 
@@ -94,6 +95,11 @@ const sectionIcons: Partial<Record<OwnerSectionKey, ReactNode>> = {
         <path d="M15.75 7.5a3.75 3.75 0 1 1-7.5 0a3.75 3.75 0 0 1 7.5 0Z" />
         <path d="M4.5 20.25a7.5 7.5 0 0 1 15 0" />
       </g>
+    </svg>
+  ),
+  line: (
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
+      <path fill="currentColor" d="M12 3.5c-5 0-9 3.08-9 6.88c0 3.4 3.2 6.25 7.52 6.8c.29.06.69.19.79.43c.09.22.06.56.03.78l-.13.74c-.04.22-.18.86.78.47c.96-.4 5.18-3.05 7.07-5.22A6.05 6.05 0 0 0 21 10.38C21 6.58 17 3.5 12 3.5Zm-3.48 8.74H6.73a.48.48 0 0 1-.48-.48V8.98a.48.48 0 1 1 .96 0v2.3h1.31a.48.48 0 0 1 0 .96Zm1.85-.48a.48.48 0 1 1-.96 0V8.98a.48.48 0 1 1 .96 0Zm3.56 0a.48.48 0 0 1-.86.29l-1.42-1.93v1.64a.48.48 0 1 1-.96 0V8.98a.48.48 0 0 1 .86-.29l1.42 1.93V8.98a.48.48 0 1 1 .96 0Zm2.93-1.39a.48.48 0 1 1 0 .96h-1.31v.43h1.31a.48.48 0 1 1 0 .96h-1.79a.48.48 0 0 1-.48-.48V8.98a.48.48 0 0 1 .48-.48h1.79a.48.48 0 1 1 0 .96h-1.31v.43Z" />
     </svg>
   ),
   settings: (

@@ -340,6 +340,103 @@ describe("backend security hardening - auth and sessions", () => {
     });
   });
 
+  test("returns LINE settings without exposing the channel token", async () => {
+    const app = createApp();
+    mockOwnerSession();
+    prisma.storeLineIntegration.findUnique.mockResolvedValue({
+      id: "line-1",
+      storeId: "store-1",
+      enabled: true,
+      notifyOnSalePaid: true,
+      recipientType: "USER",
+      recipientId: "U1234567890abcdef1234567890abcdef",
+      channelAccessTokenEncrypted: "encrypted-token",
+      channelAccessTokenHint: "••••abcd",
+      lastTestedAt: null,
+      lastSuccessAt: null,
+      lastError: null,
+    });
+
+    const response = await request(app).get("/api/auth/owner-line-settings").set("Cookie", ["pos_mans_session=session-token"]);
+
+    expect(response.status).toBe(200);
+    expect(response.body.line.hasChannelAccessToken).toBe(true);
+    expect(response.body.line.channelAccessTokenHint).toBe("••••abcd");
+    expect(response.body.line.channelAccessTokenEncrypted).toBeUndefined();
+  });
+
+  test("requires a LINE token before enabling sale notifications", async () => {
+    const app = createApp();
+    mockOwnerSession();
+    prisma.storeLineIntegration.findUnique.mockResolvedValue(null);
+
+    const response = await request(app)
+      .patch("/api/auth/owner-line-settings")
+      .set("Origin", "http://localhost:3000")
+      .set("Cookie", ["pos_mans_session=session-token", "pos_mans_session_csrf=csrf-token"])
+      .set("x-csrf-token", "csrf-token")
+      .send({
+        enabled: true,
+        notifyOnSalePaid: true,
+        recipientType: "USER",
+        recipientId: "U1234567890abcdef1234567890abcdef",
+      });
+
+    expect(response.status).toBe(400);
+    expect(prisma.storeLineIntegration.upsert).not.toHaveBeenCalled();
+  });
+
+  test("rejects LINE recipient IDs that do not match the selected recipient type", async () => {
+    const app = createApp();
+    mockOwnerSession();
+    prisma.storeLineIntegration.findUnique.mockResolvedValue({
+      id: "line-1",
+      storeId: "store-1",
+      channelAccessTokenEncrypted: "encrypted-token",
+    });
+
+    const response = await request(app)
+      .patch("/api/auth/owner-line-settings")
+      .set("Origin", "http://localhost:3000")
+      .set("Cookie", ["pos_mans_session=session-token", "pos_mans_session_csrf=csrf-token"])
+      .set("x-csrf-token", "csrf-token")
+      .send({
+        enabled: true,
+        notifyOnSalePaid: true,
+        recipientType: "USER",
+        recipientId: "C1234567890abcdef1234567890abcdef",
+      });
+
+    expect(response.status).toBe(400);
+    expect(prisma.storeLineIntegration.upsert).not.toHaveBeenCalled();
+  });
+
+  test("does not allow LINE notifications to stay enabled while clearing the token", async () => {
+    const app = createApp();
+    mockOwnerSession();
+    prisma.storeLineIntegration.findUnique.mockResolvedValue({
+      id: "line-1",
+      storeId: "store-1",
+      channelAccessTokenEncrypted: "encrypted-token",
+    });
+
+    const response = await request(app)
+      .patch("/api/auth/owner-line-settings")
+      .set("Origin", "http://localhost:3000")
+      .set("Cookie", ["pos_mans_session=session-token", "pos_mans_session_csrf=csrf-token"])
+      .set("x-csrf-token", "csrf-token")
+      .send({
+        enabled: true,
+        notifyOnSalePaid: true,
+        recipientType: "USER",
+        recipientId: "U1234567890abcdef1234567890abcdef",
+        clearChannelAccessToken: true,
+      });
+
+    expect(response.status).toBe(400);
+    expect(prisma.storeLineIntegration.upsert).not.toHaveBeenCalled();
+  });
+
   test("lets an authenticated user change password with the current password", async () => {
     const app = createApp();
     mockOwnerSession();

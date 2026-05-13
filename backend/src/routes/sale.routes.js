@@ -3,6 +3,7 @@ const { prisma } = require("../lib/db");
 const { getRequiredOwnerStoreId, requireStoreRole } = require("../middleware/auth");
 const { requireTrustedOrigin, requireCsrf } = require("../middleware/security");
 const { saleCheckoutLimiter } = require("../middleware/rate-limiters");
+const { buildSaleLineMessage, pushLineTextMessage } = require("../lib/line");
 const { AppError } = require("../utils/app-error");
 const { writeAuditLog } = require("../utils/audit");
 const {
@@ -22,6 +23,44 @@ const {
 } = require("./sale.route-helpers");
 
 const router = express.Router();
+
+async function notifyLineSaleCreated({ order, storeId, userId, ipAddress, userAgent }) {
+  const integration = await prisma.storeLineIntegration.findUnique({ where: { storeId } });
+  if (!integration?.enabled || !integration.notifyOnSalePaid || !integration.channelAccessTokenEncrypted || !integration.recipientId) {
+    return;
+  }
+
+  try {
+    await pushLineTextMessage(integration, buildSaleLineMessage(order));
+    await prisma.storeLineIntegration.update({
+      where: { storeId },
+      data: { lastSuccessAt: new Date(), lastError: null },
+    });
+    await writeAuditLog({
+      action: "STORE_LINE_NOTIFICATION_SENT",
+      actorUserId: userId,
+      status: "success",
+      ipAddress,
+      userAgent,
+      targetType: "saleOrder",
+      targetId: order.id,
+      metadata: { storeId, lineRecipientType: integration.recipientType },
+    });
+  } catch (error) {
+    const message = error?.message ? String(error.message).slice(0, 500) : "LINE sale notification failed";
+    await prisma.storeLineIntegration.update({ where: { storeId }, data: { lastError: message } }).catch(() => undefined);
+    await writeAuditLog({
+      action: "STORE_LINE_NOTIFICATION_FAILED",
+      actorUserId: userId,
+      status: "denied",
+      ipAddress,
+      userAgent,
+      targetType: "saleOrder",
+      targetId: order.id,
+      metadata: { storeId, reason: message },
+    });
+  }
+}
 
 router.get("/", requireStoreRole(["OWNER"]), async (req, res, next) => {
   try {
@@ -225,6 +264,14 @@ router.post("/", saleCheckoutLimiter, requireTrustedOrigin, requireCsrf, require
         total: order.total,
         itemCount: order.items.reduce((count, item) => count + item.quantity, 0),
       },
+    });
+
+    await notifyLineSaleCreated({
+      order,
+      storeId,
+      userId: req.session.user.id,
+      ipAddress: req.ip,
+      userAgent: req.get("user-agent") || null,
     });
 
     res.status(201).json({ sale: serializeSale(order) });

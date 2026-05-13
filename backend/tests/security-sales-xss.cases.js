@@ -163,6 +163,45 @@ describe("backend security hardening - sales and xss", () => {
     expect(response.body.sale.total).toBe(175);
   });
 
+  test("does not fail sale checkout when LINE notification fails", async () => {
+    const app = createApp();
+    mockOwnerSession();
+    prisma.product.findMany.mockResolvedValue([buildProduct({ id: "product-1", price: 65, status: "à¸žà¸£à¹‰à¸­à¸¡à¸‚à¸²à¸¢" })]);
+    prisma.storeLineIntegration.findUnique.mockResolvedValue({
+      id: "line-1",
+      storeId: "store-1",
+      enabled: true,
+      notifyOnSalePaid: true,
+      recipientType: "USER",
+      recipientId: "U1234567890abcdef1234567890abcdef",
+      channelAccessTokenEncrypted: "not-readable",
+    });
+    prisma.saleOrder.create.mockResolvedValue(buildSaleOrder({ total: 65, subtotal: 65 }));
+
+    const response = await request(app)
+      .post("/api/sales")
+      .set("Origin", "http://localhost:3000")
+      .set("Cookie", ["pos_mans_session=session-token", "pos_mans_session_csrf=csrf-token"])
+      .set("x-csrf-token", "csrf-token")
+      .send({
+        paymentMethod: "CASH",
+        items: [{ productId: "product-1", quantity: 1 }],
+      });
+
+    expect(response.status).toBe(201);
+    expect(response.body.sale.id).toBe("sale-1");
+    expect(prisma.storeLineIntegration.update).toHaveBeenCalledWith({
+      where: { storeId: "store-1" },
+      data: expect.objectContaining({ lastError: expect.any(String) }),
+    });
+    expect(prisma.auditLog.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        action: "STORE_LINE_NOTIFICATION_FAILED",
+        targetId: "sale-1",
+      }),
+    });
+  });
+
   test("deducts tracked stock and records inventory movement on sale checkout", async () => {
     const app = createApp();
     mockOwnerSession();

@@ -17,4 +17,6 @@ export { OwnerProfileClient } from "./profile-client";
 
 export { OwnerThemeClient, OwnerThemeStatusPill } from "./theme-client";
 
+export { OwnerLineSettingsClient } from "./line-client";
+
 export { OwnerPaymentSettingsClient } from "./payment-settings-client";

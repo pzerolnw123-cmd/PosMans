@@ -340,6 +340,54 @@ export async function renderOwnerScreen(
     } satisfies OwnerScreen;
   }
 
+  if (activeSection === "line") {
+    const { OwnerLineSettingsClient } = await import("@/components/owner-settings-client");
+
+    return {
+      eyebrow: "LINE OA",
+      title: "แจ้งเตือนยอดขาย",
+      description: "เชื่อม LINE OA ของร้านนี้เพื่อส่งแจ้งเตือนเมื่อชำระเงินสำเร็จ โควต้านับกับ OA ของแต่ละร้านแยกกัน",
+      actions: <StatusPill tone="success">ต่อร้านแยกกัน</StatusPill>,
+      body: (
+        <section className={ownerPageWithHeaderGapClass}>
+          <PageHeader
+            eyebrow="LINE OA"
+            title="แจ้งเตือนยอดขาย"
+            description="ตั้งค่า Channel access token และปลายทาง LINE สำหรับแจ้งเตือนหลังปิดบิลสำเร็จ"
+            actions={<StatusPill tone="success">Best effort</StatusPill>}
+            className={miniHeaderClass}
+          />
+
+          <div className="grid min-h-0 grid-cols-[minmax(320px,520px)_minmax(280px,1fr)] items-start gap-[14px] [@media(orientation:portrait)]:grid-cols-1 max-[980px]:grid-cols-1">
+            <PanelCard
+              eyebrow="Connection"
+              title="LINE OA ของร้าน"
+              titleClassName="my-[8px] text-[clamp(1.42rem,1.9vw,1.9rem)] leading-[1.05] tracking-[-0.04em]"
+              className="grid h-fit min-h-0 min-w-0 content-start px-4 py-4 max-[640px]:px-3.5 max-[640px]:py-3.5"
+            >
+              <OwnerLineSettingsClient startExpanded />
+            </PanelCard>
+
+            <PanelCard
+              eyebrow="How it works"
+              title="ส่งหลังบิลสำเร็จ"
+              description="ถ้า LINE API ล้ม ระบบจะบันทึก error ไว้ แต่ไม่ทำให้บิลขายที่สำเร็จแล้วล้มตาม"
+              titleClassName="my-[8px] text-[clamp(1.28rem,1.7vw,1.62rem)] leading-[1.05] tracking-[-0.04em]"
+              className="grid h-fit min-h-0 min-w-0 content-start px-4 py-4 max-[640px]:px-3.5 max-[640px]:py-3.5"
+            >
+              <div className="grid gap-2 text-[0.88rem] leading-[1.55] text-[var(--foreground-soft)]">
+                <p className="m-0">ใช้ Channel access token ของ LINE OA ร้านนี้เท่านั้น ระบบไม่ใช้ OA กลางร่วมกัน</p>
+                <p className="m-0">Recipient ID ต้องเป็น userId, groupId หรือ roomId ที่ LINE ออกให้ ไม่ใช่ชื่อ LINE ID ที่ค้นหาได้</p>
+                <p className="m-0">Token ถูกเก็บแบบเข้ารหัส และแสดงกลับมาเป็นตัวบอกใบ้ท้าย token เท่านั้น</p>
+              </div>
+            </PanelCard>
+          </div>
+        </section>
+      ),
+      standalone: true,
+    } satisfies OwnerScreen;
+  }
+
   const {
     OwnerLogoClient,
     OwnerLogoStatusPill,
@@ -424,6 +472,7 @@ export async function renderOwnerScreen(
             >
               <OwnerThemeClient serverTheme={ownerTheme} />
             </PanelCard>
+
           </div>
 
           <div className="grid h-fit min-w-0 gap-[14px] max-[820px]:gap-4">

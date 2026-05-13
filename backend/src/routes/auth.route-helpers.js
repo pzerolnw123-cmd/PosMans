@@ -55,6 +55,61 @@ const ownerThemeSchema = z
   })
   .strict();
 
+const lineRecipientTypes = ["USER", "GROUP", "ROOM"];
+const lineRecipientPattern = /^(U[0-9a-f]{32}|C[0-9a-f]{32}|R[0-9a-f]{32})$/i;
+const lineRecipientPrefixByType = {
+  USER: "U",
+  GROUP: "C",
+  ROOM: "R",
+};
+const ownerLineSettingsSchema = z
+  .object({
+    enabled: z.boolean(),
+    notifyOnSalePaid: z.boolean().default(true),
+    recipientType: z.enum(lineRecipientTypes).default("USER"),
+    recipientId: z
+      .string()
+      .trim()
+      .max(80)
+      .transform((value) => value || null)
+      .nullable()
+      .optional(),
+    channelAccessToken: z
+      .string()
+      .trim()
+      .max(600)
+      .transform((value) => value || null)
+      .nullable()
+      .optional(),
+    clearChannelAccessToken: z.boolean().optional().default(false),
+  })
+  .strict()
+  .superRefine((value, context) => {
+    if (value.recipientId && !lineRecipientPattern.test(value.recipientId)) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["recipientId"],
+        message: "LINE recipient ID ต้องเป็น userId, groupId หรือ roomId ที่ LINE ออกให้",
+      });
+    }
+
+    if (value.recipientId && value.recipientType && value.recipientId[0]?.toUpperCase() !== lineRecipientPrefixByType[value.recipientType]) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["recipientId"],
+        message: "LINE recipient ID ต้องตรงกับประเภทปลายทางที่เลือก",
+      });
+    }
+
+    if (!value.enabled) {
+      return;
+    }
+
+    if (!value.recipientId) {
+      context.addIssue({ code: z.ZodIssueCode.custom, path: ["recipientId"], message: "กรอก LINE recipient ID ก่อนเปิดแจ้งเตือน" });
+    }
+  });
+
 const promptPayRecipientTypes = ["MOBILE", "NATIONAL_ID", "TAX_ID", "STATIC_QR", "BANK_ACCOUNT"];
 const nullablePlainText = (fieldName, max = 120) =>
   z
@@ -393,6 +448,7 @@ module.exports = {
   passwordChangeSchema,
   ownerProfileSchema,
   ownerThemeSchema,
+  ownerLineSettingsSchema,
   ownerPaymentSettingsSchema,
   ownerLogoSchema,
   storePaymentSelect,

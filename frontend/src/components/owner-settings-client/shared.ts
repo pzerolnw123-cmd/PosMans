@@ -30,6 +30,20 @@ export type OwnerPaymentSettingsValue = {
   paymentQrUploadedKey: string;
 };
 
+export type LineRecipientType = "USER" | "GROUP" | "ROOM";
+
+export type OwnerLineSettingsValue = {
+  enabled: boolean;
+  notifyOnSalePaid: boolean;
+  recipientType: LineRecipientType;
+  recipientId: string;
+  hasChannelAccessToken: boolean;
+  channelAccessTokenHint: string | null;
+  lastTestedAt: string | null;
+  lastSuccessAt: string | null;
+  lastError: string | null;
+};
+
 export type ConfirmPaymentSettingsModalProps = {
   busy: boolean;
   enabled: boolean;

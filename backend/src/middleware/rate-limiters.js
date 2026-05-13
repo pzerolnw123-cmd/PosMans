@@ -17,7 +17,16 @@ const uploadSigningLimiter = rateLimit({
   message: { error: "อัปโหลดถี่เกินไป กรุณารอสักครู่แล้วลองใหม่" },
 });
 
+const lineTestLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 6,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "ทดสอบส่ง LINE ถี่เกินไป กรุณารอสักครู่แล้วลองใหม่" },
+});
+
 module.exports = {
+  lineTestLimiter,
   saleCheckoutLimiter,
   uploadSigningLimiter,
 };

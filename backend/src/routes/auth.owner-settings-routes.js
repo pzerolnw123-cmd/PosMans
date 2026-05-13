@@ -2,9 +2,13 @@ const { prisma } = require("../lib/db");
 const { writeAuditLog } = require("../utils/audit");
 const { requireStoreRole } = require("../middleware/auth");
 const { requireTrustedOrigin, requireCsrf } = require("../middleware/security");
+const { lineTestLimiter } = require("../middleware/rate-limiters");
+const { pushLineTextMessage } = require("../lib/line");
 const { deleteR2Object } = require("../lib/r2");
 const { publishStoreEvent } = require("../utils/customer-display-events");
+const { encryptSecret, secretHint } = require("../utils/secret-box");
 const {
+  ownerLineSettingsSchema,
   ownerProfileSchema,
   ownerThemeSchema,
   ownerPaymentSettingsSchema,
@@ -22,7 +26,35 @@ async function broadcastStoreThemeToCustomerDisplays(storeId, ownerTheme) {
   await publishStoreEvent(storeId, "store", { ownerTheme });
 }
 
+function serializeLineIntegration(integration) {
+  return {
+    enabled: Boolean(integration?.enabled),
+    notifyOnSalePaid: integration?.notifyOnSalePaid ?? true,
+    recipientType: integration?.recipientType || "USER",
+    recipientId: integration?.recipientId || "",
+    hasChannelAccessToken: Boolean(integration?.channelAccessTokenEncrypted),
+    channelAccessTokenHint: integration?.channelAccessTokenHint || null,
+    lastTestedAt: integration?.lastTestedAt || null,
+    lastSuccessAt: integration?.lastSuccessAt || null,
+    lastError: integration?.lastError || null,
+  };
+}
+
+async function findOwnerLineIntegration(storeId) {
+  return prisma.storeLineIntegration.findUnique({ where: { storeId } });
+}
+
 function registerOwnerSettingsRoutes(router) {
+router.get("/owner-line-settings", requireStoreRole(["OWNER"]), async (req, res, next) => {
+  try {
+    const integration = await findOwnerLineIntegration(req.session.user.storeId);
+    res.set("Cache-Control", "no-store");
+    res.json({ line: serializeLineIntegration(integration) });
+  } catch (error) {
+    next(error);
+  }
+});
+
 router.get("/owner-payment-settings", requireStoreRole(["OWNER"]), async (req, res, next) => {
   try {
     const storeId = req.session.user.storeId;
@@ -38,6 +70,122 @@ router.get("/owner-payment-settings", requireStoreRole(["OWNER"]), async (req, r
     res.set("Cache-Control", "no-store");
     res.json({ store });
   } catch (error) {
+    next(error);
+  }
+});
+
+router.patch("/owner-line-settings", requireTrustedOrigin, requireCsrf, requireStoreRole(["OWNER"]), async (req, res, next) => {
+  try {
+    const parsed = ownerLineSettingsSchema.parse(req.body);
+    const storeId = req.session.user.storeId;
+    const existingIntegration = await findOwnerLineIntegration(storeId);
+
+    const hasUsableTokenAfterSave = !parsed.clearChannelAccessToken && Boolean(parsed.channelAccessToken || existingIntegration?.channelAccessTokenEncrypted);
+    if (parsed.enabled && !hasUsableTokenAfterSave) {
+      return res.status(400).json({ error: "กรอก Channel access token ก่อนเปิดแจ้งเตือน LINE OA" });
+    }
+
+    const tokenUpdate = parsed.clearChannelAccessToken
+      ? {
+          channelAccessTokenEncrypted: null,
+          channelAccessTokenHint: null,
+        }
+      : parsed.channelAccessToken
+        ? {
+            channelAccessTokenEncrypted: encryptSecret(parsed.channelAccessToken),
+            channelAccessTokenHint: secretHint(parsed.channelAccessToken),
+          }
+        : {};
+
+    const integration = await prisma.storeLineIntegration.upsert({
+      where: { storeId },
+      create: {
+        storeId,
+        enabled: parsed.enabled,
+        notifyOnSalePaid: parsed.notifyOnSalePaid,
+        recipientType: parsed.recipientType,
+        recipientId: parsed.recipientId || null,
+        ...tokenUpdate,
+      },
+      update: {
+        enabled: parsed.enabled,
+        notifyOnSalePaid: parsed.notifyOnSalePaid,
+        recipientType: parsed.recipientType,
+        recipientId: parsed.recipientId || null,
+        lastError: null,
+        ...tokenUpdate,
+      },
+    });
+
+    await writeAuditLog({
+      action: "STORE_LINE_SETTINGS_UPDATED",
+      actorUserId: req.session.user.id,
+      status: "success",
+      ipAddress: req.ip,
+      userAgent: req.get("user-agent") || null,
+      targetType: "storeLineIntegration",
+      targetId: integration.id,
+      metadata: {
+        storeId,
+        enabled: integration.enabled,
+        notifyOnSalePaid: integration.notifyOnSalePaid,
+        recipientType: integration.recipientType,
+        hasRecipientId: Boolean(integration.recipientId),
+        tokenChanged: Boolean(parsed.channelAccessToken || parsed.clearChannelAccessToken),
+      },
+    });
+
+    res.set("Cache-Control", "no-store");
+    res.json({ success: true, line: serializeLineIntegration(integration) });
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.post("/owner-line-settings/test", lineTestLimiter, requireTrustedOrigin, requireCsrf, requireStoreRole(["OWNER"]), async (req, res, next) => {
+  try {
+    const storeId = req.session.user.storeId;
+    const integration = await findOwnerLineIntegration(storeId);
+    if (!integration?.channelAccessTokenEncrypted || !integration.recipientId) {
+      return res.status(400).json({ error: "ตั้งค่า LINE OA ให้ครบก่อนส่งข้อความทดสอบ" });
+    }
+
+    await pushLineTextMessage(integration, "ทดสอบแจ้งเตือนจาก POS MANS\nLINE OA ของร้านเชื่อมต่อสำเร็จแล้ว");
+    const updatedIntegration = await prisma.storeLineIntegration.update({
+      where: { storeId },
+      data: {
+        lastTestedAt: new Date(),
+        lastSuccessAt: new Date(),
+        lastError: null,
+      },
+    });
+
+    await writeAuditLog({
+      action: "STORE_LINE_TEST_SENT",
+      actorUserId: req.session.user.id,
+      status: "success",
+      ipAddress: req.ip,
+      userAgent: req.get("user-agent") || null,
+      targetType: "storeLineIntegration",
+      targetId: updatedIntegration.id,
+      metadata: { storeId, recipientType: updatedIntegration.recipientType },
+    });
+
+    res.set("Cache-Control", "no-store");
+    res.json({ success: true, line: serializeLineIntegration(updatedIntegration) });
+  } catch (error) {
+    const storeId = req.session?.user?.storeId;
+    if (storeId) {
+      await prisma.storeLineIntegration
+        .update({
+          where: { storeId },
+          data: {
+            lastTestedAt: new Date(),
+            lastError: error?.message ? String(error.message).slice(0, 500) : "LINE test failed",
+          },
+        })
+        .catch(() => undefined);
+    }
     next(error);
   }
 });

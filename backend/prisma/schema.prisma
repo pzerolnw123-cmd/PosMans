@@ -39,6 +39,10 @@ enum AuditAction {
   STORE_PROFILE_UPDATED
   STORE_LOGO_UPDATED
   STORE_PAYMENT_SETTINGS_UPDATED
+  STORE_LINE_SETTINGS_UPDATED
+  STORE_LINE_TEST_SENT
+  STORE_LINE_NOTIFICATION_SENT
+  STORE_LINE_NOTIFICATION_FAILED
   SALE_CREATED
   SALE_CANCELLED
   CUSTOMER_DISPLAY_CREATED
@@ -82,6 +86,12 @@ enum StorePromptPayRecipientType {
   BANK_ACCOUNT
 }
 
+enum LineRecipientType {
+  USER
+  GROUP
+  ROOM
+}
+
 model Store {
   id              String    @id @default(cuid())
   slug            String    @unique
@@ -107,6 +117,26 @@ model Store {
   saleOrders      SaleOrder[]
   inventoryMovements InventoryMovement[]
   customerDisplaySessions CustomerDisplaySession[]
+  lineIntegration StoreLineIntegration?
+}
+
+model StoreLineIntegration {
+  id                          String            @id @default(cuid())
+  storeId                     String            @unique
+  enabled                     Boolean           @default(false)
+  notifyOnSalePaid            Boolean           @default(true)
+  recipientType               LineRecipientType @default(USER)
+  recipientId                 String?
+  channelAccessTokenEncrypted String?
+  channelAccessTokenHint      String?
+  lastTestedAt                DateTime?
+  lastSuccessAt               DateTime?
+  lastError                   String?
+  createdAt                   DateTime          @default(now())
+  updatedAt                   DateTime          @updatedAt
+  store                       Store             @relation(fields: [storeId], references: [id], onDelete: Cascade)
+
+  @@index([enabled, notifyOnSalePaid])
 }
 
 model Product {

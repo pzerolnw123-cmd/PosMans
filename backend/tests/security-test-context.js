@@ -10,6 +10,11 @@ jest.mock("../src/lib/db", () => ({
       findUnique: jest.fn(),
       update: jest.fn(),
     },
+    storeLineIntegration: {
+      findUnique: jest.fn(),
+      upsert: jest.fn(),
+      update: jest.fn(),
+    },
     session: {
       create: jest.fn(),
       deleteMany: jest.fn(),
@@ -259,6 +264,33 @@ function installSecurityTestLifecycle() {
     prisma.customerDisplaySession.updateMany.mockResolvedValue({ count: 1 });
     prisma.store.findUnique.mockResolvedValue({ id: "store-1", logoUploadedKey: null });
     prisma.store.update.mockResolvedValue({ id: "store-1", name: "Demo Store", slug: "demo-store" });
+    prisma.storeLineIntegration.findUnique.mockResolvedValue(null);
+    prisma.storeLineIntegration.upsert.mockResolvedValue({
+      id: "line-1",
+      storeId: "store-1",
+      enabled: false,
+      notifyOnSalePaid: true,
+      recipientType: "USER",
+      recipientId: null,
+      channelAccessTokenEncrypted: null,
+      channelAccessTokenHint: null,
+      lastTestedAt: null,
+      lastSuccessAt: null,
+      lastError: null,
+    });
+    prisma.storeLineIntegration.update.mockResolvedValue({
+      id: "line-1",
+      storeId: "store-1",
+      enabled: false,
+      notifyOnSalePaid: true,
+      recipientType: "USER",
+      recipientId: null,
+      channelAccessTokenEncrypted: null,
+      channelAccessTokenHint: null,
+      lastTestedAt: new Date("2026-04-22T00:00:00.000Z"),
+      lastSuccessAt: null,
+      lastError: null,
+    });
     prisma.$queryRaw.mockResolvedValue([{ maxCode: 0 }]);
     prisma.$transaction.mockImplementation((operations) => (typeof operations === "function" ? operations(prisma) : Promise.all(operations)));
     prisma.session.update.mockResolvedValue({
