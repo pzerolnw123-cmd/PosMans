@@ -1,7 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
-import type { Dispatch, KeyboardEvent, MouseEvent, PointerEvent, ReactNode, RefObject, SetStateAction } from "react";
+import type { Dispatch, PointerEvent, ReactNode, RefObject, SetStateAction } from "react";
 import { ownerLandscapeClass } from "@/components/owner-workspace/landscape-preset";
 import { inputClass, primaryButtonClass, secondaryButtonClass } from "@/components/ui-primitives";
 import type { OwnerPaymentSettingsValue } from "@/components/owner-settings-client";
@@ -9,15 +8,7 @@ import type { CompletedSale, PaymentMethod } from "./shared";
 import { formatBaht, paymentMethods } from "./shared";
 import { QrPaymentInstructions, TransferInstructions } from "./payment-instructions";
 import { billPanelClass, paymentPanelClass, quickMetricCardClass, quickPanelBodyClass, quickPanelClass } from "./panel-classes";
-
-type BillItem = {
-  key: string;
-  name: string;
-  unitPrice: number;
-  quantity: number;
-  lineTotal: number;
-  imageUrl: string | null;
-};
+import { type BillItem, useBillItemSelection } from "./bill-item-selection";
 
 type PaymentCheckoutPanelsProps = {
   billItems: BillItem[];
@@ -75,103 +66,17 @@ type PaymentCheckoutPanelsProps = {
 export function PaymentCheckoutPanels({
   billItems, billScrollMetric, billScrollRef, billSubtotal, billDiscount, billTax, billTotal, completedSale, items, itemCount, paymentMethod, setPaymentMethod, displayedPaymentMethod, paymentMethodLabel, receivedAmount, setReceivedAmount, receivedDraft, setReceivedDraft, discountPercent, setDiscountPercent, discountDraft, setDiscountDraft, taxPercent, setTaxPercent, taxDraft, setTaxDraft, note, setNote, error, busy, discount, subtotal, cashPaymentMissingReceivedAmount, qrPaymentConfigured, transferPaymentConfigured, qrPaymentSelected, transferSelected, paymentSettings, dynamicPromptPayReady, staticQrReady, promptPayQrDataUrl, bankInfoFilled, changeAmount, updateBillScrollbar, handleBillPointerDown, handleBillPointerMove, stopBillDrag, onBackToSales, handleConfirmPayment, customerDisplayControl,
 }: PaymentCheckoutPanelsProps) {
-  const [selectedBillItem, setSelectedBillItem] = useState<BillItem | null>(null);
-  const billItemPressRef = useRef<{ key: string; moved: boolean; startX: number; startY: number } | null>(null);
-  const lastBillItemDragAtRef = useRef(0);
-  const lastBillItemOpenAtRef = useRef(0);
   const hasPendingItems = !completedSale && items.length > 0;
-
-  function openBillItemDetail(item: BillItem) {
-    setSelectedBillItem(item);
-  }
-
-  function handleBillItemClick(event: MouseEvent<HTMLDivElement>, item: BillItem) {
-    if (event.timeStamp - lastBillItemDragAtRef.current < 180 || event.timeStamp - lastBillItemOpenAtRef.current < 250) {
-      return;
-    }
-
-    lastBillItemOpenAtRef.current = event.timeStamp;
-    openBillItemDetail(item);
-  }
-
-  function handleBillItemKeyDown(event: KeyboardEvent<HTMLDivElement>, item: BillItem) {
-    if (event.key !== "Enter" && event.key !== " ") {
-      return;
-    }
-
-    event.preventDefault();
-    openBillItemDetail(item);
-  }
-
-  function findPressedBillItem(event: PointerEvent<HTMLDivElement>) {
-    if (!(event.target instanceof HTMLElement)) {
-      return null;
-    }
-
-    const target = event.target.closest<HTMLElement>("[data-bill-item-key]");
-    if (!target || !event.currentTarget.contains(target)) {
-      return null;
-    }
-
-    return billItems.find((item) => item.key === target.dataset.billItemKey) ?? null;
-  }
-
-  function handleBillListPointerDown(event: PointerEvent<HTMLDivElement>) {
-    const item = findPressedBillItem(event);
-    billItemPressRef.current =
-      item && event.button === 0
-        ? {
-            key: item.key,
-            moved: false,
-            startX: event.clientX,
-            startY: event.clientY,
-          }
-        : null;
-
-    handleBillPointerDown(event);
-  }
-
-  function handleBillListPointerMove(event: PointerEvent<HTMLDivElement>) {
-    const press = billItemPressRef.current;
-    if (press) {
-      const distanceX = Math.abs(event.clientX - press.startX);
-      const distanceY = Math.abs(event.clientY - press.startY);
-      if (distanceX > 8 || distanceY > 8) {
-        press.moved = true;
-      }
-    }
-
-    handleBillPointerMove(event);
-  }
-
-  function handleBillListPointerUp(event: PointerEvent<HTMLDivElement>) {
-    const press = billItemPressRef.current;
-    billItemPressRef.current = null;
-    stopBillDrag(event);
-
-    if (press?.moved) {
-      lastBillItemDragAtRef.current = event.timeStamp;
-      return;
-    }
-
-    if (event.pointerType !== "mouse") {
-      return;
-    }
-
-    const item = press ? billItems.find((billItem) => billItem.key === press.key) : null;
-    if (item) {
-      lastBillItemOpenAtRef.current = event.timeStamp;
-      openBillItemDetail(item);
-    }
-  }
-
-  function cancelBillListPointer(event: PointerEvent<HTMLDivElement>) {
-    if (billItemPressRef.current?.moved) {
-      lastBillItemDragAtRef.current = event.timeStamp;
-    }
-    billItemPressRef.current = null;
-    stopBillDrag(event);
-  }
+  const {
+    cancelBillListPointer,
+    handleBillItemClick,
+    handleBillItemKeyDown,
+    handleBillListPointerDown,
+    handleBillListPointerMove,
+    handleBillListPointerUp,
+    selectedBillItem,
+    setSelectedBillItem,
+  } = useBillItemSelection({ billItems, handleBillPointerDown, handleBillPointerMove, stopBillDrag });
 
   const billItemCardClass = `grid grid-cols-[52px_minmax(0,1fr)_auto] items-center gap-3 rounded-none border border-[var(--border-subtle)] bg-[var(--panel-subtle)] p-3 text-left ${ownerLandscapeClass}:gap-2.5 ${ownerLandscapeClass}:p-2.5 max-[520px]:grid-cols-[52px_minmax(0,1fr)]`;
   const interactiveBillItemCardClass = `${billItemCardClass} cursor-pointer transition active:border-[var(--accent-border)]`;

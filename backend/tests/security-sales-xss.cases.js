@@ -410,6 +410,45 @@ describe("backend security hardening - sales and xss", () => {
     expect(prisma.saleOrder.findMany).not.toHaveBeenCalled();
   });
 
+  test("keeps all payment methods and deleted-product rows in sales reports", async () => {
+    const app = createApp();
+    mockOwnerSession();
+    prisma.$queryRaw
+      .mockResolvedValueOnce([{ key: "2026-04-22", sales: 750n, orders: 5n }])
+      .mockResolvedValueOnce([
+        { productId: null, name: "Deleted item", quantity: 2n, sales: 140n, costPerUnit: 0n },
+        { productId: "product-1", name: "Pad Kra Pao", quantity: 4n, sales: 260n, costPerUnit: 30n },
+      ]);
+    prisma.saleOrder.groupBy.mockResolvedValue([
+      { paymentMethod: "CASH", _sum: { total: 100 }, _count: { _all: 1 } },
+      { paymentMethod: "QR", _sum: { total: 150 }, _count: { _all: 1 } },
+      { paymentMethod: "CARD", _sum: { total: 200 }, _count: { _all: 1 } },
+      { paymentMethod: "TRANSFER", _sum: { total: 250 }, _count: { _all: 1 } },
+      { paymentMethod: "OTHER", _sum: { total: 50 }, _count: { _all: 1 } },
+    ]);
+
+    const response = await request(app)
+      .get("/api/reports/sales?range=7d")
+      .set("Cookie", ["pos_mans_session=session-token"]);
+
+    expect(response.status).toBe(200);
+    expect(response.body.paymentSummary).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ method: "CASH", orders: 1, sales: 100 }),
+        expect.objectContaining({ method: "QR", orders: 1, sales: 150 }),
+        expect.objectContaining({ method: "CARD", orders: 1, sales: 200 }),
+        expect.objectContaining({ method: "TRANSFER", orders: 1, sales: 250 }),
+        expect.objectContaining({ method: "OTHER", orders: 1, sales: 50 }),
+      ]),
+    );
+    expect(response.body.productSummary).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ productId: null, name: "Deleted item", quantity: 2, sales: 140, costPerUnit: 0 }),
+        expect.objectContaining({ productId: "product-1", name: "Pad Kra Pao", quantity: 4, sales: 260, costPerUnit: 30 }),
+      ]),
+    );
+  });
+
   test("rejects javascript urls", () => {
     expect(() => assertSafeHttpUrl("javascript:alert(1)", "link")).toThrow();
   });
