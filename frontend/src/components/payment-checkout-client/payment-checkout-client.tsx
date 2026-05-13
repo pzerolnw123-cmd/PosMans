@@ -1,41 +1,31 @@
 "use client";
 
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type PointerEvent } from "react";
+import { useCallback, useLayoutEffect, useMemo, useRef, useState, type PointerEvent } from "react";
 import { useRouter } from "next/navigation";
 import { useBackofficeShellAlert } from "@/components/backoffice-shell";
-import { openCustomerDisplayWindow, readStoredCustomerDisplay, storeCustomerDisplay, type CustomerDisplayLink } from "@/components/customer-display-session";
 import { invalidateProductListCache, requestJson } from "@/components/product-management-studio/lib";
 import { LoadingState } from "@/components/ui-primitives";
 import type { OwnerPaymentSettingsValue } from "@/components/owner-settings-client";
-import { readActiveOwnerTheme, subscribeOwnerTheme } from "@/lib/owner-theme";
 
-import type { CompletedSale, PaymentMethod, SaleResponse, StoredCartItem } from "./shared";
-import {
-  createPromptPayPayload,
-  latestSaleStorageKey,
-  paymentMethods,
-  readLatestSale,
-  salesCartStorageKey,
-} from "./shared";
+import type { CompletedSale, PaymentMethod, SaleResponse } from "./shared";
+import { latestSaleStorageKey, paymentMethods, salesCartStorageKey } from "./shared";
 import { PaymentCheckoutPanels } from "./payment-checkout-panels";
 import { ConfirmPaymentModal, CustomerDisplayControl } from "./payment-checkout-dialogs";
+import { useCheckoutCartState } from "./use-checkout-cart-state";
+import { useCustomerDisplaySync } from "./use-customer-display-sync";
+import { usePromptPayQrDataUrl } from "./use-promptpay-qr";
 
 export function PaymentCheckoutClient({ paymentSettings }: { paymentSettings: OwnerPaymentSettingsValue }) {
   const router = useRouter();
   const { setShellAlert } = useBackofficeShellAlert();
-  const [items, setItems] = useState<StoredCartItem[]>([]);
+  const { items, completedSale, setCompletedSale, mounted } = useCheckoutCartState();
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("CASH");
   const [discountPercent, setDiscountPercent] = useState(0);
   const [taxPercent, setTaxPercent] = useState(0);
   const [note, setNote] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  const [completedSale, setCompletedSale] = useState<CompletedSale | null>(null);
   const [confirmPaymentOpen, setConfirmPaymentOpen] = useState(false);
-  const [customerDisplay, setCustomerDisplay] = useState<CustomerDisplayLink | null>(null);
-  const [customerDisplayBusy, setCustomerDisplayBusy] = useState(false);
-  const [promptPayQrDataUrl, setPromptPayQrDataUrl] = useState("");
-  const [activeTheme, setActiveTheme] = useState(() => readActiveOwnerTheme());
   const [billScrollMetric, setBillScrollMetric] = useState({ top: 0, height: 100, visible: false });
   const billScrollRef = useRef<HTMLDivElement | null>(null);
   const dragScrollRef = useRef({
@@ -44,7 +34,6 @@ export function PaymentCheckoutClient({ paymentSettings }: { paymentSettings: Ow
     startY: 0,
     scrollTop: 0,
   });
-  const [mounted, setMounted] = useState(false);
   const [receivedAmount, setReceivedAmount] = useState<number>(0);
 
   const [receivedDraft, setReceivedDraft] = useState<string | null>(null);
@@ -80,6 +69,13 @@ export function PaymentCheckoutClient({ paymentSettings }: { paymentSettings: Ow
     );
   const staticQrReady = paymentSettings.promptPayEnabled && paymentSettings.promptPayRecipientType === "STATIC_QR" && Boolean(paymentSettings.paymentQrImageUrl);
   const qrPaymentConfigured = dynamicPromptPayReady || staticQrReady;
+  const promptPayQrDataUrl = usePromptPayQrDataUrl({
+    billTotal,
+    completedSale,
+    dynamicPromptPayReady,
+    paymentSettings,
+    qrPaymentSelected,
+  });
   const selectedQrDataUrl =
     paymentMethod === "QR"
       ? promptPayQrDataUrl || (staticQrReady ? paymentSettings.paymentQrImageUrl : "")
@@ -108,37 +104,23 @@ export function PaymentCheckoutClient({ paymentSettings }: { paymentSettings: Ow
         imageUrl: item.product?.imageUrl || null,
       }));
 
-  useEffect(() => {
-    async function initCart() {
-      try {
-        const storedDisplay = readStoredCustomerDisplay();
-        if (storedDisplay) {
-          setCustomerDisplay(storedDisplay);
-        }
+  const showCustomerDisplayError = useCallback(
+    (message: string) => {
+      setShellAlert({ tone: "danger", message });
+    },
+    [setShellAlert],
+  );
 
-        const raw = sessionStorage.getItem(salesCartStorageKey);
-        if (!raw) {
-          setCompletedSale(readLatestSale());
-          return;
-        }
-
-        const parsed = JSON.parse(raw) as { items?: StoredCartItem[] };
-        const cartItems = Array.isArray(parsed.items) ? parsed.items : [];
-        setItems(cartItems);
-        if (cartItems.length > 0) {
-          setCompletedSale(null);
-        } else {
-          setCompletedSale(readLatestSale());
-        }
-      } catch {
-        setItems([]);
-        setCompletedSale(readLatestSale());
-      } finally {
-        setMounted(true);
-      }
-    }
-    initCart();
-  }, []);
+  const { customerDisplay, customerDisplayBusy, handleOpenCustomerDisplay, updateCustomerDisplay } = useCustomerDisplaySync({
+    amount: billTotal,
+    completedSale,
+    hasPendingItems,
+    onError: showCustomerDisplayError,
+    paymentMethod,
+    qrPaymentConfigured,
+    selectedQrDataUrl,
+    transferPaymentConfigured,
+  });
 
   useLayoutEffect(() => {
     const frameId = window.requestAnimationFrame(() => {
@@ -147,61 +129,6 @@ export function PaymentCheckoutClient({ paymentSettings }: { paymentSettings: Ow
 
     return () => window.cancelAnimationFrame(frameId);
   }, [billItems.length]);
-
-  useEffect(() => {
-    function syncActiveTheme() {
-      setActiveTheme(readActiveOwnerTheme());
-    }
-
-    syncActiveTheme();
-    return subscribeOwnerTheme(syncActiveTheme);
-  }, []);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    async function generatePromptPayQr() {
-      if (!qrPaymentSelected || !dynamicPromptPayReady || completedSale) {
-        setPromptPayQrDataUrl("");
-        return;
-      }
-
-      const payload = createPromptPayPayload(paymentSettings, billTotal);
-      if (!payload) {
-        setPromptPayQrDataUrl("");
-        return;
-      }
-
-      try {
-        const rootStyle = getComputedStyle(document.documentElement);
-        const qrForeground = rootStyle.getPropertyValue("--qr-foreground").trim() || rootStyle.getPropertyValue("--brand").trim();
-        const qrBackground = rootStyle.getPropertyValue("--qr-background").trim() || rootStyle.getPropertyValue("--foreground-inverse").trim();
-        const { toDataURL } = await import("qrcode");
-        const dataUrl = await toDataURL(payload, {
-          errorCorrectionLevel: "M",
-          margin: 2,
-          scale: 7,
-          color: {
-            dark: qrForeground,
-            light: qrBackground,
-          },
-        });
-        if (!cancelled) {
-          setPromptPayQrDataUrl(dataUrl);
-        }
-      } catch {
-        if (!cancelled) {
-          setPromptPayQrDataUrl("");
-        }
-      }
-    }
-
-    generatePromptPayQr();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [activeTheme, billTotal, completedSale, dynamicPromptPayReady, paymentSettings, qrPaymentSelected]);
 
   function updateBillScrollbar() {
     const node = billScrollRef.current;
@@ -257,59 +184,6 @@ export function PaymentCheckoutClient({ paymentSettings }: { paymentSettings: Ow
     event.currentTarget.dataset.dragging = "false";
     if (event.currentTarget.hasPointerCapture(event.pointerId)) {
       event.currentTarget.releasePointerCapture(event.pointerId);
-    }
-  }
-
-  const updateCustomerDisplay = useCallback(
-    async (payload: CustomerDisplayStateUpdate) => {
-      if (!customerDisplay) {
-        return;
-      }
-
-      try {
-        const response = await requestJson<CustomerDisplayStateResponse>(`/api/customer-displays/${encodeURIComponent(customerDisplay.id)}/state`, {
-          method: "PATCH",
-          body: JSON.stringify(payload),
-        });
-        if (response.controlToken) {
-          const updatedDisplay = { ...customerDisplay, controlToken: response.controlToken };
-          setCustomerDisplay(updatedDisplay);
-          storeCustomerDisplay(updatedDisplay);
-        }
-      } catch {
-        setShellAlert({
-          tone: "danger",
-          message: "ซิงก์จอลูกค้าไม่สำเร็จ กรุณาลองอีกครั้ง",
-        });
-      }
-    },
-    [customerDisplay, setShellAlert],
-  );
-
-  async function handleOpenCustomerDisplay() {
-    if (customerDisplay) {
-      openCustomerDisplayWindow(customerDisplay.url);
-      return;
-    }
-
-    setCustomerDisplayBusy(true);
-    try {
-      const response = await requestJson<CustomerDisplayCreateResponse>("/api/customer-displays", {
-        method: "POST",
-        body: JSON.stringify({ name: "จอลูกค้า" }),
-      });
-      const url = `${window.location.origin}/display/${encodeURIComponent(response.display.id)}?token=${encodeURIComponent(response.token)}`;
-      const displayLink = { id: response.display.id, token: response.token, controlToken: response.controlToken, url };
-      setCustomerDisplay(displayLink);
-      storeCustomerDisplay(displayLink);
-      openCustomerDisplayWindow(url);
-    } catch (displayError) {
-      setShellAlert({
-        tone: "danger",
-        message: displayError instanceof Error ? displayError.message : "เปิดจอลูกค้าไม่สำเร็จ",
-      });
-    } finally {
-      setCustomerDisplayBusy(false);
     }
   }
 
@@ -378,39 +252,6 @@ export function PaymentCheckoutClient({ paymentSettings }: { paymentSettings: Ow
       setBusy(false);
     }
   }
-
-  useEffect(() => {
-    if (!customerDisplay || completedSale) {
-      return;
-    }
-
-    if (!hasPendingItems) {
-      const timeoutId = window.setTimeout(() => {
-        void updateCustomerDisplay({ status: "IDLE" });
-      }, 150);
-
-      return () => window.clearTimeout(timeoutId);
-    }
-
-    const shouldShowPayment = (paymentMethod === "QR" && qrPaymentConfigured && Boolean(selectedQrDataUrl)) || (paymentMethod === "TRANSFER" && transferPaymentConfigured);
-
-    const timeoutId = window.setTimeout(() => {
-      if (!shouldShowPayment) {
-        void updateCustomerDisplay({ status: "IDLE" });
-        return;
-      }
-
-      void updateCustomerDisplay({
-        status: "PAYMENT",
-        amount: billTotal,
-        paymentMethod,
-        qrDataUrl: selectedQrDataUrl || null,
-        message: paymentMethod === "TRANSFER" ? "โอนเงินตามยอด แล้วแจ้งพนักงานหลังโอนสำเร็จ" : "สแกนเพื่อชำระเงิน แล้วแจ้งพนักงานหลังโอนสำเร็จ",
-      });
-    }, 350);
-
-    return () => window.clearTimeout(timeoutId);
-  }, [billTotal, completedSale, customerDisplay, hasPendingItems, paymentMethod, selectedQrDataUrl, qrPaymentConfigured, staticQrReady, transferPaymentConfigured, updateCustomerDisplay]);
 
   function handleConfirmPaymentRequest() {
     if (items.length === 0 || busy || cashPaymentMissingReceivedAmount) {
@@ -517,29 +358,3 @@ export function PaymentCheckoutClient({ paymentSettings }: { paymentSettings: Ow
     </>
   );
 }
-
-type CustomerDisplayCreateResponse = {
-  display: {
-    id: string;
-    name: string;
-    status: "IDLE" | "PAYMENT" | "SUCCESS";
-  };
-  token: string;
-  controlToken: string;
-};
-
-type CustomerDisplayStateUpdate = {
-  status: "IDLE" | "PAYMENT" | "SUCCESS";
-  amount?: number;
-  paymentMethod?: PaymentMethod;
-  qrDataUrl?: string | null;
-  message?: string | null;
-  saleCode?: string | null;
-};
-
-type CustomerDisplayStateResponse = {
-  display: {
-    id: string;
-  };
-  controlToken?: string;
-};
