@@ -47,10 +47,11 @@ export function ProductManagementStudio() {
     const ipadAirPortraitMediaQuery = window.matchMedia("(min-width: 768px) and (max-width: 820px) and (orientation: portrait) and (any-pointer: coarse)");
     const ipadAirLandscapeMediaQuery = window.matchMedia("(min-width: 821px) and (max-width: 1180px) and (orientation: landscape) and (any-pointer: coarse)");
     const largeTabletLandscapeMediaQuery = window.matchMedia("(min-width: 1181px) and (max-width: 1366px) and (max-height: 999px) and (orientation: landscape) and (any-pointer: coarse)");
+    const desktopHDLandscapeMediaQuery = window.matchMedia("(width: 1600px) and (height: 900px) and (orientation: landscape)");
     const ipadMediaQuery = window.matchMedia("(max-width: 1366px) and (any-pointer: coarse)");
     const syncCompactMode = () => setCompactMode(compactMediaQuery.matches || ipadMiniLandscapeMediaQuery.matches || androidTabletLandscapeMediaQuery.matches);
     const syncItemsPerPage = () =>
-      setItemsPerPageLimit(ipadAirPortraitMediaQuery.matches || ipadAirLandscapeMediaQuery.matches || largeTabletLandscapeMediaQuery.matches ? 3 : ipadMediaQuery.matches ? 4 : 3);
+      setItemsPerPageLimit(desktopHDLandscapeMediaQuery.matches ? 4 : ipadAirPortraitMediaQuery.matches || ipadAirLandscapeMediaQuery.matches || largeTabletLandscapeMediaQuery.matches ? 3 : ipadMediaQuery.matches ? 4 : 3);
 
     syncCompactMode();
     syncItemsPerPage();
@@ -61,6 +62,7 @@ export function ProductManagementStudio() {
     ipadAirPortraitMediaQuery.addEventListener("change", syncItemsPerPage);
     ipadAirLandscapeMediaQuery.addEventListener("change", syncItemsPerPage);
     largeTabletLandscapeMediaQuery.addEventListener("change", syncItemsPerPage);
+    desktopHDLandscapeMediaQuery.addEventListener("change", syncItemsPerPage);
     ipadMediaQuery.addEventListener("change", syncItemsPerPage);
 
     return () => {
@@ -70,6 +72,7 @@ export function ProductManagementStudio() {
       ipadAirPortraitMediaQuery.removeEventListener("change", syncItemsPerPage);
       ipadAirLandscapeMediaQuery.removeEventListener("change", syncItemsPerPage);
       largeTabletLandscapeMediaQuery.removeEventListener("change", syncItemsPerPage);
+      desktopHDLandscapeMediaQuery.removeEventListener("change", syncItemsPerPage);
       ipadMediaQuery.removeEventListener("change", syncItemsPerPage);
     };
   }, []);
