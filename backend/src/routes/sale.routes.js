@@ -107,27 +107,28 @@ router.post("/", saleCheckoutLimiter, requireTrustedOrigin, requireCsrf, require
     const parsed = createSaleSchema.parse(req.body);
     const mergedItems = mergeItems(parsed.items);
     const productIds = mergedItems.map((item) => item.productId);
-    const products = await prisma.product.findMany({
-      where: {
-        id: { in: productIds },
-        storeId,
-      },
-      select: {
-        id: true,
-        code: true,
-        name: true,
-        category: true,
-        price: true,
-        status: true,
-        trackStock: true,
-        stockQuantity: true,
-        lowStockThreshold: true,
-      },
-    });
-    const orderItems = buildOrderItems(mergedItems, products);
-    const { subtotal, total } = assertSaleTotals(parsed, orderItems);
 
     const order = await prisma.$transaction(async (tx) => {
+      const products = await tx.product.findMany({
+        where: {
+          id: { in: productIds },
+          storeId,
+        },
+        select: {
+          id: true,
+          code: true,
+          name: true,
+          category: true,
+          price: true,
+          status: true,
+          trackStock: true,
+          stockQuantity: true,
+          lowStockThreshold: true,
+        },
+      });
+      const orderItems = buildOrderItems(mergedItems, products);
+      const { subtotal, total } = assertSaleTotals(parsed, orderItems);
+
       for (let attempt = 0; attempt < 5; attempt += 1) {
         try {
           const createdOrder = await tx.saleOrder.create({

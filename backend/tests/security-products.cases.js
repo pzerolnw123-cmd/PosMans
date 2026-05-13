@@ -265,7 +265,7 @@ describe("backend security hardening - products", () => {
   test("deletes only products owned by the current store", async () => {
     const app = createApp();
     mockOwnerSession();
-    prisma.product.findFirst.mockResolvedValue({ id: "product-1" });
+    prisma.product.findFirst.mockResolvedValue({ id: "product-1", uploadedKey: "stores/store-1/uploads/old.webp" });
     prisma.product.delete.mockResolvedValue(buildProduct());
 
     const response = await request(app)
@@ -280,6 +280,8 @@ describe("backend security hardening - products", () => {
       select: { id: true, uploadedKey: true },
     });
     expect(prisma.product.delete).toHaveBeenCalledWith({ where: { id: "product-1" } });
+    expect(deleteR2Object).toHaveBeenCalledWith("stores/store-1/uploads/old.webp");
+    expect(prisma.product.delete.mock.invocationCallOrder[0]).toBeLessThan(deleteR2Object.mock.invocationCallOrder[0]);
   });
 
 });

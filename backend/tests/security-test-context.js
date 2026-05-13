@@ -46,6 +46,10 @@ jest.mock("../src/lib/db", () => ({
       findMany: jest.fn(),
       findFirst: jest.fn(),
       create: jest.fn(),
+      groupBy: jest.fn(),
+    },
+    saleOrderItem: {
+      groupBy: jest.fn(),
     },
     customerDisplaySession: {
       create: jest.fn(),
@@ -53,6 +57,7 @@ jest.mock("../src/lib/db", () => ({
       findFirst: jest.fn(),
       findUnique: jest.fn(),
       update: jest.fn(),
+      updateMany: jest.fn(),
     },
     $queryRaw: jest.fn(),
     $transaction: jest.fn(),
@@ -199,6 +204,8 @@ function installSecurityTestLifecycle() {
     prisma.saleOrder.count.mockResolvedValue(0);
     prisma.saleOrder.findMany.mockResolvedValue([]);
     prisma.saleOrder.findFirst.mockResolvedValue(null);
+    prisma.saleOrder.groupBy.mockResolvedValue([]);
+    prisma.saleOrderItem.groupBy.mockResolvedValue([]);
     prisma.saleOrder.create.mockResolvedValue({
       id: "sale-1",
       code: "SALE-20260422-RE-ABC12",
@@ -249,6 +256,7 @@ function installSecurityTestLifecycle() {
       saleCode: null,
       updatedAt: new Date("2026-04-22T00:00:00.000Z"),
     });
+    prisma.customerDisplaySession.updateMany.mockResolvedValue({ count: 1 });
     prisma.store.findUnique.mockResolvedValue({ id: "store-1", logoUploadedKey: null });
     prisma.store.update.mockResolvedValue({ id: "store-1", name: "Demo Store", slug: "demo-store" });
     prisma.$queryRaw.mockResolvedValue([{ maxCode: 0 }]);

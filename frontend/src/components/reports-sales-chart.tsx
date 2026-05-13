@@ -15,6 +15,8 @@ type SalesReportPoint = {
   orders: number;
 };
 
+type PaymentMethod = "CASH" | "QR" | "CARD" | "TRANSFER" | "OTHER";
+
 type SalesReportResponse = {
   range: ReportRange;
   bucket: "hour" | "day";
@@ -32,7 +34,7 @@ type SalesReportResponse = {
     sales: number;
   }>;
   paymentSummary: Array<{
-    method: "CASH" | "QR" | "TRANSFER";
+    method: PaymentMethod;
     orders: number;
     sales: number;
   }>;
@@ -46,10 +48,14 @@ const rangeOptions: Array<{ value: ReportRange; label: string }> = [
   { value: "month", label: "เดือนนี้" },
 ];
 
-const paymentMethodLabels: Record<SalesReportResponse["paymentSummary"][number]["method"], string> = {
+const alwaysVisiblePaymentMethods = new Set<PaymentMethod>(["CASH", "QR", "TRANSFER"]);
+
+const paymentMethodLabels: Record<PaymentMethod, string> = {
   CASH: "เงินสด",
   QR: "QR PromptPay",
+  CARD: "บัตร",
   TRANSFER: "โอนเงิน",
+  OTHER: "อื่น ๆ",
 };
 
 function formatBaht(value: number) {
@@ -168,6 +174,11 @@ export function ReportsSalesChart() {
 
     return { width, height, padding, chartHeight, points, linePath, areaPath, yTicks, xTickStep };
   }, [report]);
+
+  const visiblePaymentSummary = useMemo(
+    () => report?.paymentSummary.filter((payment) => alwaysVisiblePaymentMethods.has(payment.method) || payment.orders > 0 || payment.sales > 0) || [],
+    [report],
+  );
 
   const summaryItems = report
     ? [
@@ -432,7 +443,7 @@ export function ReportsSalesChart() {
           ) : report ? (
             <div className="relative min-h-[146px]">
               <div className="grid gap-2">
-                {report.paymentSummary.map((payment) => (
+                {visiblePaymentSummary.map((payment) => (
                   <div key={payment.method} className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 rounded-none border border-[var(--border)] bg-[var(--surface-muted)] px-3 py-2.5">
                     <div className="min-w-0">
                       <strong className="block truncate text-[0.94rem] text-[var(--foreground)]">{paymentMethodLabels[payment.method]}</strong>

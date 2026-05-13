@@ -2,9 +2,9 @@ import { expect, test } from "@playwright/test";
 import { hasOwnerCredentials, signInOwner } from "./helpers/owner-auth";
 
 const ownerVisualRoutes = [
-  { path: "/owner/menu", heading: "แก้ไขสินค้า" },
-  { path: "/owner/sales", heading: "ขายหน้าร้าน" },
-  { path: "/owner/payments", heading: "ชำระเงิน" },
+  { path: "/owner/menu", visibleAnchor: () => ({ role: "heading" as const, name: "แก้ไขสินค้า" }) },
+  { path: "/owner/sales", visibleAnchor: () => ({ role: "region" as const, name: "sales layout" }) },
+  { path: "/owner/payments", visibleAnchor: () => ({ role: "region" as const, name: "payment layout" }) },
 ];
 
 test.describe("owner visual regression contracts", () => {
@@ -21,7 +21,8 @@ test.describe("owner visual regression contracts", () => {
   for (const route of ownerVisualRoutes) {
     test(`${route.path} stays inside the Desktop HD+ viewport`, async ({ page }) => {
       await page.goto(route.path, { waitUntil: "networkidle" });
-      await expect(page.getByRole("heading", { name: route.heading })).toBeVisible();
+      const anchor = route.visibleAnchor();
+      await expect(page.getByRole(anchor.role, { name: anchor.name })).toBeVisible();
 
       const metrics = await page.evaluate(() => {
         const main = document.querySelector("main") || document.body;

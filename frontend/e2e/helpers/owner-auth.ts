@@ -43,7 +43,8 @@ export async function signInOwner(page: Page) {
   await unlockButton.click();
 
   await Promise.race([
-    page.waitForURL(/\/owner\/sales/),
+    expect(page).toHaveURL(/\/owner\/sales/),
+    page.getByRole("region", { name: "sales layout" }).waitFor({ state: "visible" }),
     page.getByText("Invalid PIN").waitFor({ state: "visible" }).then(() => {
       throw new Error("E2E_OWNER_PIN does not match the stored PIN for E2E_OWNER_USERNAME.");
     }),

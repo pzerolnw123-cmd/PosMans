@@ -11,7 +11,7 @@ test.describe("owner critical sales flow", () => {
     await signInOwner(page);
 
     await page.goto("/owner/sales", { waitUntil: "networkidle" });
-    await expect(page.getByRole("heading", { name: "ขายหน้าร้าน" })).toBeVisible();
+    await expect(page.getByRole("region", { name: "sales layout" })).toBeVisible();
 
     const availableAddButtons = page.locator('button[aria-label="เพิ่มตะกร้า"]:not([disabled])');
     await expect(page.locator('body')).toContainText(/ขายหน้าร้าน|โหลดรายการสินค้าไม่สำเร็จ|ยังไม่มีสินค้า|เพิ่มตะกร้า/);
@@ -26,7 +26,7 @@ test.describe("owner critical sales flow", () => {
 
     await page.getByRole("button", { name: "ไปชำระเงิน" }).click();
     await expect(page).toHaveURL(/\/owner\/payments$/);
-    await expect(page.getByRole("heading", { name: "ชำระเงิน" })).toBeVisible();
+    await expect(page.getByRole("region", { name: "payment layout" })).toBeVisible();
     await expect(page.getByText("รายการรอชำระ")).toBeVisible();
     await expect(page.getByRole("button", { name: "ยืนยันการชำระ" })).toBeDisabled();
   });

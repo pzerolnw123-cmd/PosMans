@@ -369,11 +369,18 @@ const accountLoginLimiter = rateLimit({
   message: { error: "พยายามเข้าสู่ระบบบ่อยเกินไป กรุณารอสักครู่แล้วลองใหม่" },
 });
 
+function pinRateLimitKey(req) {
+  const challengeToken = req.cookies?.[LOGIN_CHALLENGE_COOKIE_NAME] || "no-challenge";
+  const ipKey = rateLimit.ipKeyGenerator ? rateLimit.ipKeyGenerator(req.ip) : req.ip || "unknown";
+  return `${challengeToken}:${ipKey}`;
+}
+
 const pinLimiter = rateLimit({
   windowMs: 10 * 60 * 1000,
   max: 5,
   standardHeaders: true,
   legacyHeaders: false,
+  keyGenerator: pinRateLimitKey,
   message: { error: "พยายามกรอก PIN บ่อยเกินไป กรุณาเข้าสู่ระบบใหม่" },
 });
 

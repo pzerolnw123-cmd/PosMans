@@ -385,6 +385,31 @@ describe("backend security hardening - sales and xss", () => {
     );
   });
 
+  test("builds sales reports from aggregated backend data", async () => {
+    const app = createApp();
+    mockOwnerSession();
+    prisma.$queryRaw
+      .mockResolvedValueOnce([{ key: "10", sales: 200n, orders: 2n }])
+      .mockResolvedValueOnce([{ productId: "product-1", name: "Pad Kra Pao", quantity: 3n, sales: 200n, costPerUnit: 30n }]);
+    prisma.saleOrder.groupBy.mockResolvedValue([{ paymentMethod: "CARD", _sum: { total: 200 }, _count: { _all: 2 } }]);
+
+    const response = await request(app)
+      .get("/api/reports/sales?date=2026-04-22")
+      .set("Cookie", ["pos_mans_session=session-token"]);
+
+    expect(response.status).toBe(200);
+    expect(response.body.totals).toEqual(expect.objectContaining({ sales: 200, orders: 2, averageOrder: 100 }));
+    expect(response.body.series[10]).toEqual(expect.objectContaining({ label: "10:00", sales: 200, orders: 2 }));
+    expect(response.body.paymentSummary).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ method: "CARD", orders: 2, sales: 200 }),
+        expect.objectContaining({ method: "OTHER", orders: 0, sales: 0 }),
+      ]),
+    );
+    expect(response.body.productSummary[0]).toEqual(expect.objectContaining({ productId: "product-1", name: "Pad Kra Pao", quantity: 3, sales: 200, costPerUnit: 30 }));
+    expect(prisma.saleOrder.findMany).not.toHaveBeenCalled();
+  });
+
   test("rejects javascript urls", () => {
     expect(() => assertSafeHttpUrl("javascript:alert(1)", "link")).toThrow();
   });

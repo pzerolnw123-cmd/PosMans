@@ -14,6 +14,11 @@ const displayTokenByteLength = 32;
 const displaySessionDays = 30;
 const maxQrDataUrlLength = 350_000;
 const defaultOwnerTheme = "light";
+const LAST_SEEN_THROTTLE_MS = 45_000;
+const MAX_SSE_CONNECTIONS_PER_DISPLAY = 20;
+const MAX_SSE_CONNECTIONS_PER_IP = 10;
+const activeSseConnectionsByDisplay = new Map();
+const activeSseConnectionsByIp = new Map();
 
 const displayCreateSchema = z.object({
   name: z
@@ -93,6 +98,55 @@ function broadcastDisplay(display) {
 
 function resolveDisplayTheme(display) {
   return display.store?.users?.[0]?.ownerTheme || defaultOwnerTheme;
+}
+
+function incrementConnectionCount(map, key) {
+  const count = (map.get(key) || 0) + 1;
+  map.set(key, count);
+  return count;
+}
+
+function decrementConnectionCount(map, key) {
+  const count = (map.get(key) || 0) - 1;
+  if (count > 0) {
+    map.set(key, count);
+    return;
+  }
+  map.delete(key);
+}
+
+function assertSseConnectionAllowed(displayId, ipAddress) {
+  const displayConnections = activeSseConnectionsByDisplay.get(displayId) || 0;
+  const ipConnections = activeSseConnectionsByIp.get(ipAddress) || 0;
+
+  if (displayConnections >= MAX_SSE_CONNECTIONS_PER_DISPLAY || ipConnections >= MAX_SSE_CONNECTIONS_PER_IP) {
+    throw new AppError("Too many customer display connections. Please try again.", 429, { code: "DISPLAY_CONNECTION_LIMIT" });
+  }
+}
+
+function registerSseConnection(displayId, ipAddress) {
+  incrementConnectionCount(activeSseConnectionsByDisplay, displayId);
+  incrementConnectionCount(activeSseConnectionsByIp, ipAddress);
+
+  return () => {
+    decrementConnectionCount(activeSseConnectionsByDisplay, displayId);
+    decrementConnectionCount(activeSseConnectionsByIp, ipAddress);
+  };
+}
+
+async function touchDisplayLastSeen(display) {
+  const lastSeenAt = display.lastSeenAt ? new Date(display.lastSeenAt) : null;
+  if (lastSeenAt && Date.now() - lastSeenAt.getTime() < LAST_SEEN_THROTTLE_MS) {
+    return;
+  }
+
+  await prisma.customerDisplaySession.updateMany({
+    where: {
+      id: display.id,
+      OR: [{ lastSeenAt: null }, { lastSeenAt: { lt: new Date(Date.now() - LAST_SEEN_THROTTLE_MS) } }],
+    },
+    data: { lastSeenAt: new Date() },
+  });
 }
 
 async function findOwnedDisplay(req, displayId) {
@@ -307,10 +361,7 @@ router.post("/:displayId/revoke", requireTrustedOrigin, async (req, res, next) =
 router.get("/:displayId/state", async (req, res, next) => {
   try {
     const display = await findPublicDisplay(req.params.displayId, String(req.query.token || ""));
-    await prisma.customerDisplaySession.update({
-      where: { id: display.id },
-      data: { lastSeenAt: new Date() },
-    });
+    await touchDisplayLastSeen(display);
     res.json({
       store: {
         name: display.store.name,
@@ -343,10 +394,10 @@ router.get("/:displayId/store", async (req, res, next) => {
 router.get("/:displayId/events", async (req, res, next) => {
   try {
     const display = await findPublicDisplay(req.params.displayId, String(req.query.token || ""));
-    await prisma.customerDisplaySession.update({
-      where: { id: display.id },
-      data: { lastSeenAt: new Date() },
-    });
+    const ipAddress = req.ip || "unknown";
+    assertSseConnectionAllowed(display.id, ipAddress);
+    await touchDisplayLastSeen(display);
+    const unregisterConnection = registerSseConnection(display.id, ipAddress);
 
     res.set({
       "Content-Type": "text/event-stream",
@@ -365,11 +416,17 @@ router.get("/:displayId/events", async (req, res, next) => {
     const unsubscribe = subscribeDisplay(display.id, res);
     const unsubscribeStore = subscribeStore(display.store.id, res);
     const heartbeat = setInterval(() => sendSse(res, "ping", { at: Date.now() }), 15_000);
+    let closed = false;
 
     req.on("close", () => {
+      if (closed) {
+        return;
+      }
+      closed = true;
       clearInterval(heartbeat);
       unsubscribe();
       unsubscribeStore();
+      unregisterConnection();
     });
   } catch (error) {
     next(error);

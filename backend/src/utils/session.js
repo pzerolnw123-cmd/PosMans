@@ -4,6 +4,8 @@ const { env } = require("../config/env");
 const { revokeDisplaysForSessionIds } = require("./customer-display");
 
 const EXPIRED_SESSION_CLEANUP_INTERVAL_MS = 60 * 1000;
+const EXPIRED_SESSION_CLEANUP_BATCH_SIZE = 250;
+const EXPIRED_SESSION_CLEANUP_MAX_BATCHES = 10;
 const SESSION_REFRESH_THRESHOLD_MS = Math.min(5 * 60 * 1000, Math.floor(env.SESSION_IDLE_TIMEOUT_MS / 2));
 
 let lastExpiredSessionCleanupAt = 0;
@@ -56,22 +58,36 @@ async function cleanupExpiredSessions() {
 
   lastExpiredSessionCleanupAt = now;
   expiredSessionCleanupPromise = (async () => {
-    const expiredSessions = await prisma.session.findMany({
-      where: { expiresAt: { lte: new Date() } },
-      select: { id: true },
-    });
+    let deletedCount = 0;
 
-    if (expiredSessions.length === 0) {
-      return { count: 0 };
+    for (let batch = 0; batch < EXPIRED_SESSION_CLEANUP_MAX_BATCHES; batch += 1) {
+      const expiredSessions = await prisma.session.findMany({
+        where: { expiresAt: { lte: new Date() } },
+        select: { id: true },
+        orderBy: { expiresAt: "asc" },
+        take: EXPIRED_SESSION_CLEANUP_BATCH_SIZE,
+      });
+
+      if (expiredSessions.length === 0) {
+        break;
+      }
+
+      const sessionIds = expiredSessions.map((session) => session.id);
+      await revokeDisplaysForSessionIds(sessionIds);
+
+      const result = await prisma.session.deleteMany({
+        where: {
+          id: { in: sessionIds },
+        },
+      });
+      deletedCount += result.count || 0;
+
+      if (expiredSessions.length < EXPIRED_SESSION_CLEANUP_BATCH_SIZE) {
+        break;
+      }
     }
 
-    await revokeDisplaysForSessionIds(expiredSessions.map((session) => session.id));
-
-    return prisma.session.deleteMany({
-      where: {
-        id: { in: expiredSessions.map((session) => session.id) },
-      },
-    });
+    return { count: deletedCount };
   })().finally(() => {
     expiredSessionCleanupPromise = null;
   });

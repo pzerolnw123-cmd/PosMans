@@ -33,6 +33,8 @@ describe("session cleanup", () => {
     expect(prisma.session.findMany).toHaveBeenCalledWith({
       where: { expiresAt: { lte: expect.any(Date) } },
       select: { id: true },
+      orderBy: { expiresAt: "asc" },
+      take: 250,
     });
     expect(revokeDisplaysForSessionIds).toHaveBeenCalledWith(["session-1", "session-2"]);
     expect(prisma.session.deleteMany).toHaveBeenCalledWith({

@@ -1,13 +1,14 @@
 const express = require("express");
 const { z } = require("zod");
 const { prisma } = require("../lib/db");
+const { Prisma } = require("../generated/prisma");
 const { getRequiredOwnerStoreId, requireStoreRole } = require("../middleware/auth");
 const { bangkokDateRange } = require("./sale.route-helpers");
 
 const router = express.Router();
 const DAY_MS = 24 * 60 * 60 * 1000;
 const BANGKOK_OFFSET_MS = 7 * 60 * 60 * 1000;
-const paymentMethods = ["CASH", "QR", "TRANSFER"];
+const paymentMethods = ["CASH", "QR", "CARD", "TRANSFER", "OTHER"];
 
 const reportQuerySchema = z.object({
   range: z.enum(["today", "yesterday", "7d", "month"]).optional().default("today"),
@@ -97,12 +98,48 @@ function buildBuckets(rangeInfo) {
   return buckets;
 }
 
-function bucketKeyFor(date, bucket) {
-  const bangkokDate = new Date(date.getTime() + BANGKOK_OFFSET_MS);
-  if (bucket === "hour") {
-    return String(bangkokDate.getUTCHours());
-  }
-  return bangkokDate.toISOString().slice(0, 10);
+function asNumber(value) {
+  return Number(value || 0);
+}
+
+async function fetchBucketRows(storeId, rangeInfo) {
+  const bucketExpression =
+    rangeInfo.bucket === "hour"
+      ? Prisma.sql`EXTRACT(HOUR FROM ("createdAt" AT TIME ZONE 'Asia/Bangkok'))::text`
+      : Prisma.sql`to_char("createdAt" AT TIME ZONE 'Asia/Bangkok', 'YYYY-MM-DD')`;
+
+  return prisma.$queryRaw`
+    SELECT
+      ${bucketExpression} AS key,
+      COALESCE(SUM("total"), 0)::bigint AS sales,
+      COUNT(*)::bigint AS orders
+    FROM "SaleOrder"
+    WHERE "storeId" = ${storeId}
+      AND "status" = 'PAID'::"SaleStatus"
+      AND "createdAt" >= ${rangeInfo.createdAt.gte}
+      AND "createdAt" < ${rangeInfo.createdAt.lt}
+    GROUP BY key
+  `;
+}
+
+async function fetchProductRows(storeId, rangeInfo) {
+  return prisma.$queryRaw`
+    SELECT
+      COALESCE(item."productId", item."productName") AS key,
+      MAX(item."productId") AS "productId",
+      (ARRAY_AGG(item."productName" ORDER BY sale."createdAt" ASC, item."id" ASC))[1] AS name,
+      COALESCE(SUM(item."quantity"), 0)::bigint AS quantity,
+      COALESCE(SUM(item."lineTotal"), 0)::bigint AS sales,
+      COALESCE(MAX(product."costPerUnit"), 0)::bigint AS "costPerUnit"
+    FROM "SaleOrderItem" item
+    INNER JOIN "SaleOrder" sale ON sale."id" = item."orderId"
+    LEFT JOIN "Product" product ON product."id" = item."productId" AND product."storeId" = ${storeId}
+    WHERE sale."storeId" = ${storeId}
+      AND sale."status" = 'PAID'::"SaleStatus"
+      AND sale."createdAt" >= ${rangeInfo.createdAt.gte}
+      AND sale."createdAt" < ${rangeInfo.createdAt.lt}
+    GROUP BY COALESCE(item."productId", item."productName")
+  `;
 }
 
 router.get("/sales", requireStoreRole(["OWNER"]), async (req, res, next) => {
@@ -112,71 +149,54 @@ router.get("/sales", requireStoreRole(["OWNER"]), async (req, res, next) => {
     const rangeInfo = getReportRange(query.range, query.date);
     const buckets = buildBuckets(rangeInfo);
     const bucketMap = new Map(buckets.map((bucket) => [bucket.key, bucket]));
-    const productTotals = new Map();
     const paymentTotals = new Map(paymentMethods.map((method) => [method, { method, orders: 0, sales: 0 }]));
-    const orders = await prisma.saleOrder.findMany({
-      where: {
-        storeId,
-        status: "PAID",
-        createdAt: rangeInfo.createdAt,
-      },
-      select: {
-        id: true,
-        createdAt: true,
-        paymentMethod: true,
-        total: true,
-        items: {
-          select: {
-            productId: true,
-            productName: true,
-            quantity: true,
-            lineTotal: true,
-            product: {
-              select: {
-                costPerUnit: true,
-              },
-            },
-          },
-        },
-      },
-      orderBy: [{ createdAt: "asc" }, { id: "asc" }],
-    });
+    const saleWhere = {
+      storeId,
+      status: "PAID",
+      createdAt: rangeInfo.createdAt,
+    };
+    const [bucketRows, paymentRows, productRows] = await Promise.all([
+      fetchBucketRows(storeId, rangeInfo),
+      prisma.saleOrder.groupBy({
+        by: ["paymentMethod"],
+        where: saleWhere,
+        _sum: { total: true },
+        _count: { _all: true },
+      }),
+      fetchProductRows(storeId, rangeInfo),
+    ]);
 
-    for (const order of orders) {
-      const bucket = bucketMap.get(bucketKeyFor(order.createdAt, rangeInfo.bucket));
+    for (const row of bucketRows) {
+      const bucket = bucketMap.get(String(row.key));
       if (bucket) {
-        bucket.sales += order.total;
-        bucket.orders += 1;
-      }
-
-      const paymentTotal = paymentTotals.get(order.paymentMethod);
-      if (paymentTotal) {
-        paymentTotal.orders += 1;
-        paymentTotal.sales += order.total;
-      }
-
-      for (const item of order.items) {
-        const productKey = item.productId || item.productName;
-        const current = productTotals.get(productKey) || {
-          productId: item.productId,
-          name: item.productName,
-          quantity: 0,
-          sales: 0,
-          costPerUnit: item.product?.costPerUnit || 0,
-        };
-        current.quantity += item.quantity;
-        current.sales += item.lineTotal;
-        productTotals.set(productKey, current);
+        bucket.sales = asNumber(row.sales);
+        bucket.orders = asNumber(row.orders);
       }
     }
 
+    for (const row of paymentRows) {
+      const paymentTotal = paymentTotals.get(row.paymentMethod);
+      if (paymentTotal) {
+        paymentTotal.orders = row._count?._all || 0;
+        paymentTotal.sales = row._sum?.total || 0;
+      }
+    }
+
+    const productSummary = productRows
+      .map((row) => ({
+        productId: row.productId,
+        name: row.name,
+        quantity: asNumber(row.quantity),
+        sales: asNumber(row.sales),
+        costPerUnit: asNumber(row.costPerUnit),
+      }))
+      .sort((a, b) => b.sales - a.sales || b.quantity - a.quantity || a.name.localeCompare(b.name, "th"));
     const totalSales = buckets.reduce((sum, bucket) => sum + bucket.sales, 0);
     const orderCount = buckets.reduce((sum, bucket) => sum + bucket.orders, 0);
     const peakBucket = buckets.reduce((peak, bucket) => (bucket.sales > peak.sales ? bucket : peak), buckets[0]);
-    const topProducts = Array.from(productTotals.values())
+    const topProducts = [...productSummary]
       .sort((a, b) => b.quantity - a.quantity || b.sales - a.sales || a.name.localeCompare(b.name, "th"))
       .slice(0, 3);
-    const productSummary = Array.from(productTotals.values()).sort((a, b) => b.sales - a.sales || b.quantity - a.quantity || a.name.localeCompare(b.name, "th"));
     const paymentSummary = Array.from(paymentTotals.values()).sort((a, b) => b.sales - a.sales || b.orders - a.orders || paymentMethods.indexOf(a.method) - paymentMethods.indexOf(b.method));
 
     res.set("Cache-Control", "no-store");

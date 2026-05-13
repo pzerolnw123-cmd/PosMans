@@ -194,6 +194,7 @@ Frontend:
 - `npm --prefix frontend run build`
 - `npm --prefix frontend run build:smoke`
 - `npm --prefix frontend run theme:contrast`
+- `npm --prefix frontend run e2e:visual`
 
 Backend:
 - `npm --prefix backend test`
@@ -201,6 +202,23 @@ Backend:
 Security and readiness:
 - `node scripts/security-secrets.mjs`
 - `node scripts/production-readiness.mjs`
+- `npm --prefix backend audit --audit-level=high`
+- `npm --prefix frontend audit --audit-level=high`
+
+Full local validation:
+- `npm run verify`
+
+Authenticated owner e2e:
+- Requires a local database reachable by `backend/.env` or the current shell `DATABASE_URL`.
+- Seed non-production e2e data with `npm --prefix backend run seed:e2e`.
+- Run with:
+  - `E2E_RUN_OWNER_FLOWS=1`
+  - `E2E_OWNER_USERNAME=e2e.owner`
+  - `E2E_OWNER_PASSWORD=E2eOwnerPassword123!`
+  - `E2E_OWNER_PIN=123456`
+  - `npm --prefix frontend run e2e:owner`
+- These credentials are for local/CI e2e seed data only. Never reuse them for real stores.
+- Owner e2e intentionally runs with one worker because login and PIN flows share account-level rate limits.
 
 ## 13. Generated Build Output
 

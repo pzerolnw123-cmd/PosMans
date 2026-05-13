@@ -212,13 +212,13 @@ router.delete("/:productId", requireTrustedOrigin, requireCsrf, requireStoreRole
       throw new AppError("ไม่พบสินค้าที่ต้องการ", 404, { code: "PRODUCT_NOT_FOUND" });
     }
 
-    if (existingProduct.uploadedKey) {
-      await deleteR2Object(existingProduct.uploadedKey);
-    }
-
     await prisma.product.delete({
       where: { id: existingProduct.id },
     });
+
+    if (existingProduct.uploadedKey) {
+      await deleteReplacedUploadBestEffort(existingProduct.uploadedKey);
+    }
 
     await writeAuditLog({
       action: "PRODUCT_DELETED",
