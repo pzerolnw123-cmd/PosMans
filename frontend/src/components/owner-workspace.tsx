@@ -8,7 +8,7 @@ import { OwnerLogoProvider, OwnerLogoStatusPreview } from "@/components/owner-se
 import { NoteStack, ThreeUpStats } from "@/components/owner-workspace/shared";
 import { SessionExpiryGuard } from "@/components/session-expiry-guard";
 
-export type OwnerSectionKey = "sales" | "payments" | "receipts" | "reports" | "menu" | "overview" | "calculator" | "profile" | "line" | "settings";
+export type OwnerSectionKey = "sales" | "payments" | "receipts" | "reports" | "menu" | "overview" | "calculator" | "profile" | "plan" | "line" | "settings";
 
 type OwnerWorkspaceProps = {
   session: SessionPayload;
@@ -38,6 +38,7 @@ const sectionMeta: Record<OwnerSectionKey, { label: string; href: string }> = {
   overview: { label: "ภาพรวม / Overview", href: "/owner/overview" },
   calculator: { label: "คำนวณ / Calculator", href: "/owner/calculator" },
   profile: { label: "โปรไฟล์ / Profile", href: "/owner/profile" },
+  plan: { label: "แผน / Plan", href: "/owner/plan" },
   line: { label: "LINE OA", href: "/owner/line" },
   settings: { label: "ตั้งค่า / Settings", href: "/owner/settings" },
 };
@@ -94,6 +95,14 @@ const sectionIcons: Partial<Record<OwnerSectionKey, ReactNode>> = {
       <g fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.6">
         <path d="M15.75 7.5a3.75 3.75 0 1 1-7.5 0a3.75 3.75 0 0 1 7.5 0Z" />
         <path d="M4.5 20.25a7.5 7.5 0 0 1 15 0" />
+      </g>
+    </svg>
+  ),
+  plan: (
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
+      <g fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.6">
+        <path d="M4.5 6.5h15m-13 4h11m-9 4h7" />
+        <path d="M5.5 3.5h13a1 1 0 0 1 1 1v15a1 1 0 0 1-1 1h-13a1 1 0 0 1-1-1v-15a1 1 0 0 1 1-1Z" />
       </g>
     </svg>
   ),
