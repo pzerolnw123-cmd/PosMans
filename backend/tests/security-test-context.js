@@ -3,10 +3,12 @@
 jest.mock("../src/lib/db", () => ({
   prisma: {
     user: {
+      create: jest.fn(),
       findUnique: jest.fn(),
       update: jest.fn(),
     },
     store: {
+      create: jest.fn(),
       findUnique: jest.fn(),
       update: jest.fn(),
     },
@@ -273,7 +275,34 @@ function installSecurityTestLifecycle() {
     });
     prisma.customerDisplaySession.updateMany.mockResolvedValue({ count: 1 });
     prisma.store.findUnique.mockResolvedValue({ id: "store-1", logoUploadedKey: null });
+    prisma.store.create.mockResolvedValue({ id: "store-new", name: "New Store", slug: "new-store" });
     prisma.store.update.mockResolvedValue({ id: "store-1", name: "Demo Store", slug: "demo-store" });
+    prisma.user.findUnique.mockResolvedValue(null);
+    prisma.user.create.mockResolvedValue(buildSessionUser({
+      id: "user-new",
+      username: "newowner",
+      displayName: "New Owner",
+      storeId: "store-new",
+      store: {
+        id: "store-new",
+        name: "New Store",
+        slug: "new-store",
+        isActive: true,
+        logoUrl: null,
+        logoUploadedKey: null,
+        promptPayEnabled: false,
+        promptPayRecipientType: "MOBILE",
+        promptPayId: null,
+        promptPayMobileId: null,
+        promptPayNationalId: null,
+        promptPayTaxId: null,
+        bankName: null,
+        bankAccountName: null,
+        bankAccountNumber: null,
+        paymentQrImageUrl: null,
+        paymentQrUploadedKey: null,
+      },
+    }));
     prisma.storeLineIntegration.findUnique.mockResolvedValue(null);
     prisma.storeLineIntegration.upsert.mockResolvedValue({
       id: "line-1",

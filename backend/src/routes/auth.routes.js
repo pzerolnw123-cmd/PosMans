@@ -16,6 +16,7 @@ const { requireTrustedOrigin, requireCsrf } = require("../middleware/security");
 const {
   LOGIN_CHALLENGE_COOKIE_NAME,
   passwordLoginSchema,
+  ownerRegistrationSchema,
   pinVerifySchema,
   pinSetupSchema,
   passwordChangeSchema,
@@ -28,12 +29,41 @@ const {
   buildSessionUserResponse,
   ipLoginLimiter,
   accountLoginLimiter,
+  registrationLimiter,
   pinLimiter,
 } = require("./auth.route-helpers");
 const { registerOwnerSettingsRoutes } = require("./auth.owner-settings-routes");
 const { env } = require("../config/env");
 
 const router = express.Router();
+
+function normalizeStoreSlug(value) {
+  const slug = String(value || "")
+    .trim()
+    .toLowerCase()
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 42);
+
+  return slug || "store";
+}
+
+async function createUniqueStoreSlug(baseName, tx) {
+  const baseSlug = normalizeStoreSlug(baseName);
+
+  for (let attempt = 0; attempt < 20; attempt += 1) {
+    const suffix = attempt === 0 ? "" : `-${attempt + 1}`;
+    const candidate = `${baseSlug}${suffix}`.slice(0, 48);
+    const existing = await tx.store.findUnique({ where: { slug: candidate }, select: { id: true } });
+    if (!existing) {
+      return candidate;
+    }
+  }
+
+  return `${baseSlug}-${Date.now().toString(36)}`.slice(0, 56);
+}
 
 router.get("/csrf", requireTrustedOrigin, async (req, res, next) => {
   try {
@@ -123,6 +153,100 @@ router.post("/login", requireTrustedOrigin, requireCsrf, ipLoginLimiter, account
       },
     });
   } catch (error) {
+    next(error);
+  }
+});
+
+router.post("/register", requireTrustedOrigin, requireCsrf, registrationLimiter, async (req, res, next) => {
+  try {
+    const parsed = ownerRegistrationSchema.parse(req.body);
+    const normalizedUsername = parsed.username;
+
+    const existingUser = await prisma.user.findUnique({
+      where: { username: normalizedUsername },
+      select: { id: true },
+    });
+
+    if (existingUser) {
+      return res.status(409).json({ error: "Username นี้ถูกใช้แล้ว", code: "USERNAME_TAKEN" });
+    }
+
+    const passwordHash = await hashPassword(parsed.password);
+
+    const user = await prisma.$transaction(async (tx) => {
+      const slug = await createUniqueStoreSlug(parsed.storeName, tx);
+      const store = await tx.store.create({
+        data: {
+          name: parsed.storeName,
+          slug,
+          plan: {
+            create: {
+              tier: "START",
+              status: "ACTIVE",
+              lockVersion: 0,
+            },
+          },
+        },
+      });
+
+      return tx.user.create({
+        data: {
+          username: normalizedUsername,
+          displayName: parsed.ownerName,
+          passwordHash,
+          pinHash: null,
+          platformRole: "NONE",
+          storeRole: "OWNER",
+          storeId: store.id,
+          ownerTheme: "light",
+          isActive: true,
+        },
+        include: {
+          store: {
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+              logoUrl: true,
+              logoUploadedKey: true,
+              promptPayEnabled: true,
+              promptPayRecipientType: true,
+              promptPayId: true,
+              promptPayMobileId: true,
+              promptPayNationalId: true,
+              promptPayTaxId: true,
+              bankName: true,
+              bankAccountName: true,
+              bankAccountNumber: true,
+              paymentQrImageUrl: true,
+              paymentQrUploadedKey: true,
+              isActive: true,
+            },
+          },
+        },
+      });
+    });
+
+    res.set("Cache-Control", "no-store");
+    res.status(201).json({
+      success: true,
+      loginRequired: true,
+      user: {
+        id: user.id,
+        username: user.username,
+        displayName: user.displayName,
+      },
+    });
+  } catch (error) {
+    if (error?.code === "P2002") {
+      const target = Array.isArray(error.meta?.target) ? error.meta.target.join(",") : String(error.meta?.target || "");
+      const isUsernameConflict = target.includes("username");
+      return res.status(409).json({
+        error: isUsernameConflict ? "Username นี้ถูกใช้แล้ว" : "ชื่อร้านนี้ถูกใช้แล้ว กรุณาลองชื่อร้านอื่น",
+        code: isUsernameConflict ? "USERNAME_TAKEN" : "STORE_SLUG_TAKEN",
+      });
+    }
+
     next(error);
   }
 });

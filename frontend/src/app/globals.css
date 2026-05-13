@@ -282,6 +282,20 @@ html[data-store-theme="mono"] .payment-method-active {
   outline-offset: 3px;
 }
 
+.auth-hero-slide {
+  opacity: 0;
+  animation: auth-hero-slide 20s ease-in-out infinite;
+  transform-origin: center;
+  will-change: opacity;
+}
+
+.auth-hero-dot {
+  width: 0.5rem;
+  background: rgba(35, 136, 255, 0.3);
+  animation: auth-hero-dot 20s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+  will-change: width, background-color;
+}
+
 @media (min-width: 1181px) and (max-width: 1280px) and (max-height: 720px) and (orientation: landscape) {
   .product-stock-toggle-button {
     --size: 28px;
@@ -458,6 +472,45 @@ html[data-store-theme="mono"] .payment-method-active {
   .sales-category-filter-button svg {
     width: 12px !important;
     height: 12px !important;
+  }
+}
+
+@keyframes auth-hero-slide {
+  0% {
+    opacity: 0;
+  }
+
+  5%,
+  21% {
+    opacity: 1;
+  }
+
+  26% {
+    opacity: 0;
+  }
+
+  27%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes auth-hero-dot {
+  0% {
+    width: 0.5rem;
+    background: rgba(35, 136, 255, 0.3);
+  }
+
+  5%,
+  21% {
+    width: 2rem;
+    background: rgba(35, 136, 255, 0.95);
+  }
+
+  26%,
+  100% {
+    width: 0.5rem;
+    background: rgba(35, 136, 255, 0.3);
   }
 }
 

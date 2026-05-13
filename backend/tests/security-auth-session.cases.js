@@ -92,6 +92,31 @@ describe("backend security hardening - auth and sessions", () => {
     expect(prisma.loginChallenge.create).toHaveBeenCalled();
   });
 
+  test("returns the normal credential error when a short login password is wrong", async () => {
+    const app = createApp();
+    prisma.user.findUnique.mockResolvedValue({
+      ...buildSessionUser(),
+      passwordHash: "password-hash",
+      pinHash: "pin-hash",
+    });
+    verifyPassword.mockResolvedValue(false);
+
+    const csrfResponse = await request(app).get("/api/auth/csrf").set("Origin", "http://localhost:3000");
+    const csrfCookie = csrfResponse.headers["set-cookie"][0].split(";")[0];
+    const csrfToken = csrfResponse.body.csrfToken;
+
+    const response = await request(app)
+      .post("/api/auth/login")
+      .set("Origin", "http://localhost:3000")
+      .set("Cookie", [csrfCookie])
+      .set("x-csrf-token", csrfToken)
+      .send({ username: "demoowner", password: "x" });
+
+    expect(response.status).toBe(401);
+    expect(response.body.error).toBe("ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง");
+    expect(prisma.loginChallenge.create).not.toHaveBeenCalled();
+  });
+
   test("marks first login flow as requiring PIN setup when account has no PIN", async () => {
     const app = createApp();
     prisma.user.findUnique.mockResolvedValue({
@@ -148,6 +173,103 @@ describe("backend security hardening - auth and sessions", () => {
     expect(response.body.pinSetupRequired).toBe(true);
     expect(response.body.pinRequired).toBe(false);
     expect(prisma.loginChallenge.create).toHaveBeenCalled();
+  });
+
+  test("registers a new owner store with csrf and leaves PIN setup to login", async () => {
+    const app = createApp();
+    prisma.store.findUnique.mockResolvedValue(null);
+    prisma.store.create.mockResolvedValue({ id: "store-new", name: "New Cafe", slug: "new-cafe" });
+    prisma.user.create.mockResolvedValue(buildSessionUser({
+      id: "user-new",
+      username: "newowner",
+      displayName: "New Owner",
+      storeId: "store-new",
+      store: {
+        id: "store-new",
+        name: "New Cafe",
+        slug: "new-cafe",
+        isActive: true,
+        logoUrl: null,
+        logoUploadedKey: null,
+        promptPayEnabled: false,
+        promptPayRecipientType: "MOBILE",
+        promptPayId: null,
+        promptPayMobileId: null,
+        promptPayNationalId: null,
+        promptPayTaxId: null,
+        bankName: null,
+        bankAccountName: null,
+        bankAccountNumber: null,
+        paymentQrImageUrl: null,
+        paymentQrUploadedKey: null,
+      },
+    }));
+
+    const csrfResponse = await request(app).get("/api/auth/csrf").set("Origin", "http://localhost:3000");
+    const csrfCookie = csrfResponse.headers["set-cookie"][0].split(";")[0];
+    const csrfToken = csrfResponse.body.csrfToken;
+
+    const response = await request(app)
+      .post("/api/auth/register")
+      .set("Origin", "http://localhost:3000")
+      .set("Cookie", [csrfCookie])
+      .set("x-csrf-token", csrfToken)
+      .send({
+        storeName: "New Cafe",
+        ownerName: "New Owner",
+        username: "NewOwner",
+        password: "Password123!",
+        confirmPassword: "Password123!",
+      });
+
+    expect(response.status).toBe(201);
+    expect(hashPassword).toHaveBeenCalledWith("Password123!");
+    expect(prisma.store.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        name: "New Cafe",
+        slug: "new-cafe",
+        plan: { create: { tier: "START", status: "ACTIVE", lockVersion: 0 } },
+      }),
+    });
+    expect(prisma.user.create).toHaveBeenCalledWith(expect.objectContaining({
+      data: expect.objectContaining({
+        username: "newowner",
+        displayName: "New Owner",
+        pinHash: null,
+        storeRole: "OWNER",
+        storeId: "store-new",
+      }),
+    }));
+    expect(prisma.session.create).not.toHaveBeenCalled();
+    expect(response.body.loginRequired).toBe(true);
+    expect(response.body.user.username).toBe("newowner");
+  });
+
+  test("rejects registration when username already exists", async () => {
+    const app = createApp();
+    prisma.user.findUnique.mockResolvedValue({ id: "existing-user" });
+
+    const csrfResponse = await request(app).get("/api/auth/csrf").set("Origin", "http://localhost:3000");
+    const csrfCookie = csrfResponse.headers["set-cookie"][0].split(";")[0];
+    const csrfToken = csrfResponse.body.csrfToken;
+
+    const response = await request(app)
+      .post("/api/auth/register")
+      .set("Origin", "http://localhost:3000")
+      .set("Cookie", [csrfCookie])
+      .set("x-csrf-token", csrfToken)
+      .send({
+        storeName: "New Cafe",
+        ownerName: "New Owner",
+        username: "demoowner",
+        password: "Password123!",
+        confirmPassword: "Password123!",
+      });
+
+    expect(response.status).toBe(409);
+    expect(response.body.code).toBe("USERNAME_TAKEN");
+    expect(prisma.store.create).not.toHaveBeenCalled();
+    expect(prisma.user.create).not.toHaveBeenCalled();
   });
 
   test("verifies PIN and creates a real session", async () => {

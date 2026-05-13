@@ -11,9 +11,44 @@ const LOGIN_CHALLENGE_COOKIE_NAME = `${env.SESSION_COOKIE_NAME}_login_challenge`
 const LOGIN_CHALLENGE_TTL_MS = 5 * 60 * 1000;
 
 const passwordLoginSchema = z.object({
-  username: z.string().min(3).max(32),
-  password: z.string().min(8).max(128),
+  username: z.string().trim().min(1).max(32),
+  password: z.string().min(1).max(128),
 });
+
+const ownerRegistrationSchema = z
+  .object({
+    storeName: z
+      .string()
+      .trim()
+      .min(2)
+      .max(80)
+      .transform((value) => assertSafePlainText(value, "storeName")),
+    ownerName: z
+      .string()
+      .trim()
+      .min(2)
+      .max(80)
+      .transform((value) => assertSafePlainText(value, "ownerName")),
+    username: z
+      .string()
+      .trim()
+      .min(3)
+      .max(32)
+      .regex(/^[a-zA-Z0-9._-]+$/)
+      .transform((value) => normalizeUsername(value)),
+    password: z.string().min(8).max(128),
+    confirmPassword: z.string().min(8).max(128),
+  })
+  .strict()
+  .superRefine((value, context) => {
+    if (value.password !== value.confirmPassword) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["confirmPassword"],
+        message: "รหัสผ่านทั้งสองช่องไม่ตรงกัน",
+      });
+    }
+  });
 
 const pinVerifySchema = z.object({
   pin: z.string().regex(/^\d{6}$/),
@@ -424,6 +459,14 @@ const accountLoginLimiter = rateLimit({
   message: { error: "พยายามเข้าสู่ระบบบ่อยเกินไป กรุณารอสักครู่แล้วลองใหม่" },
 });
 
+const registrationLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "สมัครสมาชิกบ่อยเกินไป กรุณารอสักครู่แล้วลองใหม่" },
+});
+
 function pinRateLimitKey(req) {
   // ผูก rate limit กับ login challenge เพื่อลดผลกระทบผู้ใช้ที่แชร์ IP เดียวกัน
   const challengeToken = req.cookies?.[LOGIN_CHALLENGE_COOKIE_NAME] || "no-challenge";
@@ -443,6 +486,7 @@ const pinLimiter = rateLimit({
 module.exports = {
   LOGIN_CHALLENGE_COOKIE_NAME,
   passwordLoginSchema,
+  ownerRegistrationSchema,
   pinVerifySchema,
   pinSetupSchema,
   passwordChangeSchema,
@@ -463,5 +507,6 @@ module.exports = {
   buildSessionUserResponse,
   ipLoginLimiter,
   accountLoginLimiter,
+  registrationLimiter,
   pinLimiter,
 };
