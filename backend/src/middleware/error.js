@@ -35,8 +35,12 @@ function errorHandler(err, _req, res, _next) {
       error: err.expose ? err.message : "ไม่สามารถดำเนินการตามคำขอได้",
     };
 
-    if (err.code === "CSRF_MISMATCH") {
+    if (err.code === "CSRF_MISMATCH" || err.code === "PLAN_LIMIT_REACHED") {
       payload.code = err.code;
+    }
+
+    if (err.code === "PLAN_LIMIT_REACHED" && err.details) {
+      payload.details = err.details;
     }
 
     return res.status(err.statusCode).json(payload);

@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import type { SessionPayload } from "@/lib/session";
+import type { OwnerPlanPayload, SessionPayload } from "@/lib/session";
 import { BackofficeShell, PanelCard } from "@/components/backoffice-shell";
 import { renderOwnerScreen } from "@/components/owner-workspace/render-owner-screen";
 import { LogoutButton } from "@/components/logout-button";
@@ -13,6 +13,7 @@ export type OwnerSectionKey = "sales" | "payments" | "receipts" | "reports" | "m
 type OwnerWorkspaceProps = {
   session: SessionPayload;
   paymentStore: NonNullable<SessionPayload["user"]["store"]> | null;
+  ownerPlan?: OwnerPlanPayload["plan"] | null;
   activeSection: OwnerSectionKey;
 };
 
@@ -130,7 +131,7 @@ function formatRoleLabel(session: SessionPayload) {
 }
 
 
-export async function OwnerWorkspace({ session, paymentStore, activeSection }: OwnerWorkspaceProps) {
+export async function OwnerWorkspace({ session, paymentStore, ownerPlan = null, activeSection }: OwnerWorkspaceProps) {
   const rawStoreName = session.user.store?.name?.trim() || "";
   const rawOwnerName = session.user.displayName.trim();
   const formStoreName = unsetStoreNames.has(rawStoreName) ? "" : rawStoreName;
@@ -160,6 +161,7 @@ export async function OwnerWorkspace({ session, paymentStore, activeSection }: O
     paymentSettings,
     session.user.store?.logoUrl || "",
     session.user.ownerTheme || "light",
+    ownerPlan,
   );
   const showFooterCards = !screen.standalone;
   const shell = (

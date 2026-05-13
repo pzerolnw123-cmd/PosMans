@@ -5,6 +5,7 @@ const { requireTrustedOrigin, requireCsrf } = require("../middleware/security");
 const { lineTestLimiter } = require("../middleware/rate-limiters");
 const { pushLineTextMessage } = require("../lib/line");
 const { deleteR2Object } = require("../lib/r2");
+const { getStorePlanSummary } = require("../lib/plan-policy");
 const { publishStoreEvent } = require("../utils/customer-display-events");
 const { encryptSecret, secretHint } = require("../utils/secret-box");
 const {
@@ -45,6 +46,17 @@ async function findOwnerLineIntegration(storeId) {
 }
 
 function registerOwnerSettingsRoutes(router) {
+router.get("/owner-plan", requireStoreRole(["OWNER"]), async (req, res, next) => {
+  try {
+    const storeId = req.session.user.storeId;
+    const plan = await getStorePlanSummary(prisma, storeId);
+    res.set("Cache-Control", "no-store");
+    res.json({ plan });
+  } catch (error) {
+    next(error);
+  }
+});
+
 router.get("/owner-line-settings", requireStoreRole(["OWNER"]), async (req, res, next) => {
   try {
     const integration = await findOwnerLineIntegration(req.session.user.storeId);

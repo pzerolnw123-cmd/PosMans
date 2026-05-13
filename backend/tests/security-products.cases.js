@@ -94,6 +94,87 @@ describe("backend security hardening - products", () => {
     expect(response.body.product.code).toBe("DRINK-003");
   });
 
+  test("blocks Start plan product creation after the product limit", async () => {
+    const app = createApp();
+    mockOwnerSession();
+    prisma.product.count.mockResolvedValue(7);
+
+    const response = await request(app)
+      .post("/api/products")
+      .set("Origin", "http://localhost:3000")
+      .set("Cookie", ["pos_mans_session=session-token", "pos_mans_session_csrf=csrf-token"])
+      .set("x-csrf-token", "csrf-token")
+      .send({
+        name: "สินค้าเกินแผน",
+        category: "อาหาร",
+        price: 99,
+        status: "พร้อมขาย",
+      });
+
+    expect(response.status).toBe(409);
+    expect(response.body.code).toBe("PLAN_LIMIT_REACHED");
+    expect(prisma.product.create).not.toHaveBeenCalled();
+    expect(prisma.auditLog.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        action: "PLAN_LIMIT_DENIED",
+        targetType: "product",
+      }),
+    });
+  });
+
+  test("allows Plus plan product creation without the Start product limit", async () => {
+    const app = createApp();
+    mockOwnerSession();
+    prisma.storePlan.update.mockResolvedValue({
+      id: "plan-1",
+      storeId: "store-1",
+      tier: "PLUS",
+      status: "ACTIVE",
+      lockVersion: 1,
+    });
+    prisma.product.count.mockResolvedValue(99);
+    prisma.product.create.mockResolvedValue(buildProduct({ id: "product-plus", name: "สินค้า Plus" }));
+
+    const response = await request(app)
+      .post("/api/products")
+      .set("Origin", "http://localhost:3000")
+      .set("Cookie", ["pos_mans_session=session-token", "pos_mans_session_csrf=csrf-token"])
+      .set("x-csrf-token", "csrf-token")
+      .send({
+        name: "สินค้า Plus",
+        category: "อาหาร",
+        price: 99,
+        status: "พร้อมขาย",
+      });
+
+    expect(response.status).toBe(201);
+    expect(prisma.product.create).toHaveBeenCalled();
+  });
+
+  test("blocks Start plan stock totals over the limit", async () => {
+    const app = createApp();
+    mockOwnerSession();
+    prisma.product.aggregate.mockResolvedValue({ _sum: { stockQuantity: 290 } });
+
+    const response = await request(app)
+      .post("/api/products")
+      .set("Origin", "http://localhost:3000")
+      .set("Cookie", ["pos_mans_session=session-token", "pos_mans_session_csrf=csrf-token"])
+      .set("x-csrf-token", "csrf-token")
+      .send({
+        name: "สต๊อกเกินแผน",
+        category: "อาหาร",
+        price: 99,
+        status: "พร้อมขาย",
+        trackStock: true,
+        stockQuantity: 11,
+      });
+
+    expect(response.status).toBe(409);
+    expect(response.body.code).toBe("PLAN_LIMIT_REACHED");
+    expect(prisma.product.create).not.toHaveBeenCalled();
+  });
+
   test("rejects product image uploads outside the current store scope", async () => {
     const app = createApp();
     mockOwnerSession();
@@ -204,6 +285,58 @@ describe("backend security hardening - products", () => {
         data: expect.objectContaining({ name: "ข้าวกะเพราพิเศษ", price: 75 }),
       }),
     );
+  });
+
+  test("allows Start plan stock reductions even when the store remains over the stock limit", async () => {
+    const app = createApp();
+    mockOwnerSession();
+    prisma.product.findFirst.mockResolvedValue({ id: "product-1", uploadedKey: null, trackStock: true, stockQuantity: 50911, lowStockThreshold: 0 });
+    prisma.product.aggregate.mockResolvedValue({ _sum: { stockQuantity: 0 } });
+    prisma.product.count.mockResolvedValue(7);
+    prisma.product.update.mockResolvedValue(buildProduct({ trackStock: true, stockQuantity: 50000 }));
+
+    const response = await request(app)
+      .patch("/api/products/product-1")
+      .set("Origin", "http://localhost:3000")
+      .set("Cookie", ["pos_mans_session=session-token", "pos_mans_session_csrf=csrf-token"])
+      .set("x-csrf-token", "csrf-token")
+      .send({
+        trackStock: true,
+        stockQuantity: 50000,
+      });
+
+    expect(response.status).toBe(200);
+    expect(prisma.product.update).toHaveBeenCalled();
+  });
+
+  test("blocks Start plan stock increases while the store is over the stock limit", async () => {
+    const app = createApp();
+    mockOwnerSession();
+    prisma.product.findFirst.mockResolvedValue({ id: "product-1", uploadedKey: null, trackStock: true, stockQuantity: 50911, lowStockThreshold: 0 });
+    prisma.product.aggregate.mockResolvedValue({ _sum: { stockQuantity: 0 } });
+    prisma.product.count.mockResolvedValue(7);
+
+    const response = await request(app)
+      .patch("/api/products/product-1")
+      .set("Origin", "http://localhost:3000")
+      .set("Cookie", ["pos_mans_session=session-token", "pos_mans_session_csrf=csrf-token"])
+      .set("x-csrf-token", "csrf-token")
+      .send({
+        trackStock: true,
+        stockQuantity: 51000,
+      });
+
+    expect(response.status).toBe(409);
+    expect(response.body.code).toBe("PLAN_LIMIT_REACHED");
+    expect(response.body.details).toEqual(
+      expect.objectContaining({
+        productCount: 7,
+        productLimit: 7,
+        stockTotal: 50911,
+        stockLimit: 300,
+      }),
+    );
+    expect(prisma.product.update).not.toHaveBeenCalled();
   });
 
   test("keeps product update successful when replaced upload cleanup fails", async () => {

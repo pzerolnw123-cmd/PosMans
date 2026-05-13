@@ -163,6 +163,75 @@ describe("backend security hardening - sales and xss", () => {
     expect(response.body.sale.total).toBe(175);
   });
 
+  test("blocks Start plan sale checkout after the monthly payment confirmation limit", async () => {
+    const app = createApp();
+    mockOwnerSession();
+    prisma.product.findMany.mockResolvedValue([buildProduct({ id: "product-1", price: 65, status: "พร้อมขาย" })]);
+    prisma.storePlanUsage.upsert.mockResolvedValue({
+      id: "usage-1",
+      storeId: "store-1",
+      period: "2026-05",
+      paymentConfirmCount: 30,
+    });
+    prisma.storePlanUsage.updateMany.mockResolvedValue({ count: 0 });
+
+    const response = await request(app)
+      .post("/api/sales")
+      .set("Origin", "http://localhost:3000")
+      .set("Cookie", ["pos_mans_session=session-token", "pos_mans_session_csrf=csrf-token"])
+      .set("x-csrf-token", "csrf-token")
+      .send({
+        paymentMethod: "CASH",
+        items: [{ productId: "product-1", quantity: 1 }],
+      });
+
+    expect(response.status).toBe(409);
+    expect(response.body.code).toBe("PLAN_LIMIT_REACHED");
+    expect(prisma.storePlanUsage.updateMany).toHaveBeenCalledWith({
+      where: { id: "usage-1", paymentConfirmCount: { lt: 30 } },
+      data: { paymentConfirmCount: { increment: 1 } },
+    });
+    expect(prisma.auditLog.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        action: "PLAN_LIMIT_DENIED",
+        targetType: "saleOrder",
+      }),
+    });
+  });
+
+  test("allows Plus plan sale checkout without the Start monthly limit", async () => {
+    const app = createApp();
+    mockOwnerSession();
+    prisma.storePlan.update.mockResolvedValue({
+      id: "plan-1",
+      storeId: "store-1",
+      tier: "PLUS",
+      status: "ACTIVE",
+      lockVersion: 1,
+    });
+    prisma.product.findMany.mockResolvedValue([buildProduct({ id: "product-1", price: 65, status: "พร้อมขาย" })]);
+    prisma.storePlanUsage.upsert.mockResolvedValue({
+      id: "usage-1",
+      storeId: "store-1",
+      period: "2026-05",
+      paymentConfirmCount: 30,
+    });
+    prisma.saleOrder.create.mockResolvedValue(buildSaleOrder({ subtotal: 65, total: 65 }));
+
+    const response = await request(app)
+      .post("/api/sales")
+      .set("Origin", "http://localhost:3000")
+      .set("Cookie", ["pos_mans_session=session-token", "pos_mans_session_csrf=csrf-token"])
+      .set("x-csrf-token", "csrf-token")
+      .send({
+        paymentMethod: "CASH",
+        items: [{ productId: "product-1", quantity: 1 }],
+      });
+
+    expect(response.status).toBe(201);
+    expect(prisma.storePlanUsage.updateMany).not.toHaveBeenCalled();
+  });
+
   test("does not fail sale checkout when LINE notification fails", async () => {
     const app = createApp();
     mockOwnerSession();

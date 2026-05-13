@@ -13,8 +13,8 @@ const password = process.argv[3] || process.env.PLATFORM_ADMIN_SEED_PASSWORD;
 const pin = process.argv[4] || process.env.PLATFORM_ADMIN_SEED_PIN;
 const displayName = process.argv[5] || "POS MANS Platform Admin";
 
-if (!username || !password || !pin) {
-  console.error("Usage: npm run create:admin -- <username> <password> <pin> [displayName]");
+if (!username || !password) {
+  console.error("Usage: npm run create:admin -- <username> <password> [pin] [displayName]");
   process.exit(1);
 }
 
@@ -24,7 +24,7 @@ if (!isValidUsername(normalizedUsername)) {
   process.exit(1);
 }
 
-if (!isValidPin(pin)) {
+if (pin && !isValidPin(pin)) {
   console.error("PIN must be exactly 6 digits.");
   process.exit(1);
 }
@@ -35,7 +35,7 @@ if (password.length < 8) {
 }
 
 const passwordHash = await hashPassword(password);
-const pinHash = await hashPin(pin);
+const pinHash = pin ? await hashPin(pin) : null;
 
 await prisma.user.upsert({
   where: { username: normalizedUsername },

@@ -4,6 +4,7 @@ const { getRequiredOwnerStoreId, requireStoreRole } = require("../middleware/aut
 const { requireTrustedOrigin, requireCsrf } = require("../middleware/security");
 const { saleCheckoutLimiter } = require("../middleware/rate-limiters");
 const { buildSaleLineMessage, pushLineTextMessage } = require("../lib/line");
+const { PLAN_LIMIT_CODE, consumePaymentConfirmation } = require("../lib/plan-policy");
 const { AppError } = require("../utils/app-error");
 const { writeAuditLog } = require("../utils/audit");
 const {
@@ -60,6 +61,22 @@ async function notifyLineSaleCreated({ order, storeId, userId, ipAddress, userAg
       metadata: { storeId, reason: message },
     });
   }
+}
+
+async function auditPlanLimitDenied(req, storeId, error) {
+  if (error?.code !== PLAN_LIMIT_CODE) {
+    return;
+  }
+
+  await writeAuditLog({
+    action: "PLAN_LIMIT_DENIED",
+    actorUserId: req.session?.user?.id || null,
+    status: "denied",
+    ipAddress: req.ip,
+    userAgent: req.get("user-agent") || null,
+    targetType: "saleOrder",
+    metadata: { storeId, ...error.details },
+  });
 }
 
 router.get("/", requireStoreRole(["OWNER"]), async (req, res, next) => {
@@ -189,6 +206,8 @@ router.post("/", saleCheckoutLimiter, requireTrustedOrigin, requireCsrf, require
             select: saleSelect,
           });
 
+          await consumePaymentConfirmation(tx, storeId);
+
           const stockTrackedItems = orderItems.filter((entry) => entry.trackStock);
           const stockUpdates = await Promise.all(
             stockTrackedItems.map(async (item) => {
@@ -276,6 +295,10 @@ router.post("/", saleCheckoutLimiter, requireTrustedOrigin, requireCsrf, require
 
     res.status(201).json({ sale: serializeSale(order) });
   } catch (error) {
+    const storeId = req.session?.user?.storeId;
+    if (storeId) {
+      await auditPlanLimitDenied(req, storeId, error);
+    }
     next(error);
   }
 });

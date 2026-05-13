@@ -41,11 +41,18 @@ export async function requestJson<T>(path: string, init?: RequestInit) {
   }
 
   const payload = (await response.json().catch(() => null)) as
-    | { error?: string; product?: T; products?: T; pagination?: unknown }
+    | { error?: string; code?: string; details?: unknown; product?: T; products?: T; pagination?: unknown }
     | null;
 
   if (!response.ok) {
-    throw new Error(payload?.error || "เกิดข้อผิดพลาดในการเชื่อมต่อสินค้า");
+    const error = new Error(payload?.error || "เกิดข้อผิดพลาดในการเชื่อมต่อสินค้า");
+    if (payload?.code) {
+      (error as Error & { code?: string }).code = payload.code;
+    }
+    if (payload?.details) {
+      (error as Error & { details?: unknown }).details = payload.details;
+    }
+    throw error;
   }
 
   if (payload?.pagination) {

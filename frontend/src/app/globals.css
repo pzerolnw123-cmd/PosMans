@@ -461,6 +461,17 @@ html[data-store-theme="mono"] .payment-method-active {
   }
 }
 
+.shell-alert-toast.shell-alert-top-right {
+  position: fixed !important;
+  top: 16px !important;
+  right: 16px !important;
+  left: auto !important;
+  z-index: 80 !important;
+  width: min(420px, calc(100vw - 32px)) !important;
+  margin: 0 !important;
+  pointer-events: auto !important;
+}
+
 @media (min-width: 821px) and (max-width: 1024px) and (orientation: landscape) {
   .workspace-screen-shell {
     height: 100dvh !important;

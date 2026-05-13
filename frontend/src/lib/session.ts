@@ -41,6 +41,24 @@ export type OwnerPaymentSettingsPayload = {
   store: NonNullable<SessionUser["store"]>;
 };
 
+export type OwnerPlanPayload = {
+  plan: {
+    plan: "START" | "PLUS";
+    status: "ACTIVE" | "PAST_DUE" | "CANCELED";
+    period: string;
+    limits: {
+      paymentConfirmationsPerMonth: number | null;
+      products: number | null;
+      stockQuantityTotal: number | null;
+    };
+    usage: {
+      paymentConfirmationsThisMonth: number;
+      products: number;
+      stockQuantityTotal: number;
+    };
+  };
+};
+
 const sessionCookieName = process.env.NEXT_PUBLIC_SESSION_COOKIE_NAME || "pos_mans_session";
 
 async function fetchBackendJson<T>(url: string, init: RequestInit) {
@@ -103,6 +121,27 @@ export const getOwnerPaymentSettings = cache(async () => {
     .join("; ");
 
   return fetchBackendJson<OwnerPaymentSettingsPayload>(`${backendUrl}/api/auth/owner-payment-settings`, {
+    headers: {
+      cookie: cookieHeader,
+    },
+    cache: "no-store",
+  });
+});
+
+export const getOwnerPlan = cache(async () => {
+  const cookieStore = await cookies();
+  const sessionCookie = cookieStore.get(sessionCookieName);
+
+  if (!sessionCookie?.value) {
+    return null;
+  }
+
+  const cookieHeader = cookieStore
+    .getAll()
+    .map((cookie) => `${cookie.name}=${cookie.value}`)
+    .join("; ");
+
+  return fetchBackendJson<OwnerPlanPayload>(`${backendUrl}/api/auth/owner-plan`, {
     headers: {
       cookie: cookieHeader,
     },

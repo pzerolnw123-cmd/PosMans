@@ -4,6 +4,7 @@ const { getRequiredOwnerStoreId, requireStoreRole } = require("../middleware/aut
 const { requireTrustedOrigin, requireCsrf } = require("../middleware/security");
 const { AppError } = require("../utils/app-error");
 const { deleteR2Object } = require("../lib/r2");
+const { PLAN_LIMIT_CODE, assertProductCreateAllowed, assertProductUpdateAllowed } = require("../lib/plan-policy");
 const { writeAuditLog } = require("../utils/audit");
 const {
   productCreateSchema,
@@ -26,6 +27,22 @@ async function deleteReplacedUploadBestEffort(uploadedKey) {
       error,
     });
   }
+}
+
+async function auditPlanLimitDenied(req, storeId, error) {
+  if (error?.code !== PLAN_LIMIT_CODE) {
+    return;
+  }
+
+  await writeAuditLog({
+    action: "PLAN_LIMIT_DENIED",
+    actorUserId: req.session?.user?.id || null,
+    status: "denied",
+    ipAddress: req.ip,
+    userAgent: req.get("user-agent") || null,
+    targetType: "product",
+    metadata: { storeId, ...error.details },
+  });
 }
 
 router.get("/", requireStoreRole(["OWNER"]), async (req, res, next) => {
@@ -82,6 +99,7 @@ router.post("/", requireTrustedOrigin, requireCsrf, requireStoreRole(["OWNER"]),
     assertUploadPairAndScope(storeId, parsed);
 
     const product = await prisma.$transaction(async (tx) => {
+      await assertProductCreateAllowed(tx, storeId, parsed.trackStock ? parsed.stockQuantity : 0);
       const createdProduct = await createProductWithUniqueCode(tx, storeId, parsed);
 
       if (createdProduct.trackStock && createdProduct.stockQuantity > 0) {
@@ -117,6 +135,10 @@ router.post("/", requireTrustedOrigin, requireCsrf, requireStoreRole(["OWNER"]),
 
     res.status(201).json({ product: serializeProduct(product) });
   } catch (error) {
+    const storeId = req.session?.user?.storeId;
+    if (storeId) {
+      await auditPlanLimitDenied(req, storeId, error);
+    }
     next(error);
   }
 });
@@ -142,6 +164,7 @@ router.patch("/:productId", requireTrustedOrigin, requireCsrf, requireStoreRole(
     const stockChanged = nextStockQuantity !== existingProduct.stockQuantity;
 
     const product = await prisma.$transaction(async (tx) => {
+      await assertProductUpdateAllowed(tx, storeId, existingProduct.id, existingProduct.trackStock ? existingProduct.stockQuantity : 0, nextTrackStock ? nextStockQuantity : 0);
       const updatedProduct = await tx.product.update({
         where: { id: existingProduct.id },
         data: {
@@ -196,6 +219,10 @@ router.patch("/:productId", requireTrustedOrigin, requireCsrf, requireStoreRole(
 
     res.json({ product: serializeProduct(product) });
   } catch (error) {
+    const storeId = req.session?.user?.storeId;
+    if (storeId) {
+      await auditPlanLimitDenied(req, storeId, error);
+    }
     next(error);
   }
 });

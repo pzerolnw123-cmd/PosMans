@@ -42,6 +42,7 @@ type BackofficeShellProps = {
 type ShellAlert = {
   message: string;
   tone?: "danger" | "success" | "info";
+  placement?: "default" | "top-right";
 };
 
 type BackofficeShellAlertContextValue = {
@@ -224,7 +225,7 @@ export function BackofficeShell({
 
           {shellAlert ? (
             <section
-              className={`shell-alert-toast rounded-none border px-4 py-3 shadow-[var(--shadow-pop)] [@media(min-width:821px)_and_(max-width:1240px)_and_(orientation:landscape)]:pointer-events-none [@media(min-width:821px)_and_(max-width:1240px)_and_(orientation:landscape)]:absolute [@media(min-width:821px)_and_(max-width:1240px)_and_(orientation:landscape)]:left-0 [@media(min-width:821px)_and_(max-width:1240px)_and_(orientation:landscape)]:top-full [@media(min-width:821px)_and_(max-width:1240px)_and_(orientation:landscape)]:z-30 [@media(min-width:821px)_and_(max-width:1240px)_and_(orientation:landscape)]:mt-[14px] [@media(min-width:821px)_and_(max-width:1240px)_and_(orientation:landscape)]:w-full [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:!static [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:!mt-0 [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:!w-full ${shellAlert.tone === "success"
+              className={`shell-alert-toast rounded-none border px-4 py-3 shadow-[var(--shadow-pop)] ${shellAlert.placement === "top-right" ? "shell-alert-top-right fixed right-4 top-4 z-[80] w-[min(420px,calc(100vw-32px))]" : "[@media(min-width:821px)_and_(max-width:1240px)_and_(orientation:landscape)]:pointer-events-none [@media(min-width:821px)_and_(max-width:1240px)_and_(orientation:landscape)]:absolute [@media(min-width:821px)_and_(max-width:1240px)_and_(orientation:landscape)]:left-0 [@media(min-width:821px)_and_(max-width:1240px)_and_(orientation:landscape)]:top-full [@media(min-width:821px)_and_(max-width:1240px)_and_(orientation:landscape)]:z-30 [@media(min-width:821px)_and_(max-width:1240px)_and_(orientation:landscape)]:mt-[14px] [@media(min-width:821px)_and_(max-width:1240px)_and_(orientation:landscape)]:w-full [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:!static [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:!mt-0 [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:!w-full"} ${shellAlert.tone === "success"
                 ? successAlertClass
                 : shellAlert.tone === "info"
                   ? "border-[var(--accent-border)] [background:var(--active-surface)]"
@@ -242,7 +243,7 @@ export function BackofficeShell({
                 {shellAlert.tone === "success" ? "Success" : shellAlert.tone === "info" ? "Information" : "System Alert"}
               </p>
               <p
-                className={`mt-2 text-[0.95rem] leading-[1.55] [@media(width:1366px)_and_(height:768px)_and_(orientation:landscape)]:mt-1.5 [@media(width:1366px)_and_(height:768px)_and_(orientation:landscape)]:text-[0.82rem] [@media(width:1366px)_and_(height:768px)_and_(orientation:landscape)]:leading-[1.35] [@media(width:1280px)_and_(height:720px)_and_(orientation:landscape)]:mt-1 [@media(width:1280px)_and_(height:720px)_and_(orientation:landscape)]:text-[0.78rem] [@media(width:1280px)_and_(height:720px)_and_(orientation:landscape)]:leading-[1.3] [@media(width:1366px)_and_(height:720px)_and_(orientation:landscape)]:mt-1 [@media(width:1366px)_and_(height:720px)_and_(orientation:landscape)]:text-[0.78rem] [@media(width:1366px)_and_(height:720px)_and_(orientation:landscape)]:leading-[1.3] ${shellAlert.tone === "success" ? successAlertMessageClass : shellAlert.tone === "info" ? "text-[var(--foreground)]" : dangerAlertMessageClass
+                className={`mt-2 whitespace-pre-line text-[0.95rem] leading-[1.55] [@media(width:1366px)_and_(height:768px)_and_(orientation:landscape)]:mt-1.5 [@media(width:1366px)_and_(height:768px)_and_(orientation:landscape)]:text-[0.82rem] [@media(width:1366px)_and_(height:768px)_and_(orientation:landscape)]:leading-[1.35] [@media(width:1280px)_and_(height:720px)_and_(orientation:landscape)]:mt-1 [@media(width:1280px)_and_(height:720px)_and_(orientation:landscape)]:text-[0.78rem] [@media(width:1280px)_and_(height:720px)_and_(orientation:landscape)]:leading-[1.3] [@media(width:1366px)_and_(height:720px)_and_(orientation:landscape)]:mt-1 [@media(width:1366px)_and_(height:720px)_and_(orientation:landscape)]:text-[0.78rem] [@media(width:1366px)_and_(height:720px)_and_(orientation:landscape)]:leading-[1.3] ${shellAlert.tone === "success" ? successAlertMessageClass : shellAlert.tone === "info" ? "text-[var(--foreground)]" : dangerAlertMessageClass
                   }`}
               >
                 {shellAlert.message}

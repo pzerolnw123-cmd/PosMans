@@ -8,6 +8,47 @@ import { ACCEPTED_IMAGE_TYPES, clampOffset, createCroppedBlob, CROP_VIEWPORT_SIZ
 import { useProductListLoader } from "@/components/product-management-studio/use-product-list-loader";
 import { categoryOptions, isDraftProduct, makeNewProduct, type CropDraft, type ProductCategory, type ProductItem } from "@/components/product-management-studio/types";
 
+type PlanLimitErrorDetails = {
+  productCount?: number;
+  productLimit?: number | null;
+  stockTotal?: number;
+  stockLimit?: number | null;
+};
+
+type RequestError = Error & {
+  code?: string;
+  details?: unknown;
+};
+
+function isPlanLimitError(error: unknown): error is RequestError {
+  return error instanceof Error && (error as RequestError).code === "PLAN_LIMIT_REACHED";
+}
+
+function formatPlanLimitAlert(error: RequestError) {
+  const details = (error.details || {}) as PlanLimitErrorDetails;
+  const productCount = typeof details.productCount === "number" ? details.productCount : null;
+  const productLimit = typeof details.productLimit === "number" ? details.productLimit : null;
+  const stockTotal = typeof details.stockTotal === "number" ? details.stockTotal : null;
+  const stockLimit = typeof details.stockLimit === "number" ? details.stockLimit : null;
+  const productLine =
+    productCount !== null && productLimit !== null
+      ? `สินค้า: ${productCount.toLocaleString("th-TH")} / ${productLimit.toLocaleString("th-TH")} รายการ`
+      : null;
+  const stockLine =
+    stockTotal !== null && stockLimit !== null
+      ? `สต๊อกรวม: ${stockTotal.toLocaleString("th-TH")} / ${stockLimit.toLocaleString("th-TH")} ชิ้น`
+      : null;
+
+  return [
+    "ร้านนี้เกินขอบเขตแผน Start",
+    productLine,
+    stockLine,
+    "คุณยังขายและแก้ไขข้อมูลเดิมได้ แต่จะเพิ่มสินค้า/เพิ่มสต๊อกไม่ได้จนกว่าจะลดให้อยู่ในขอบเขต หรืออัปเกรดเป็น Plus",
+  ]
+    .filter(Boolean)
+    .join("\n");
+}
+
 export function ProductManagementStudio() {
   const { setShellAlert } = useBackofficeShellAlert();
   const [products, setProducts] = useState<ProductItem[]>([]);
@@ -84,7 +125,15 @@ export function ProductManagementStudio() {
   }, []);
 
   useEffect(() => {
-    setShellAlert(uploadError ? { message: uploadError } : null);
+    setShellAlert(
+      uploadError
+        ? {
+          message: uploadError,
+          tone: "danger",
+          ...(uploadError.startsWith("ร้านนี้เกินขอบเขตแผน Start") ? { placement: "top-right" as const } : {}),
+        }
+        : null,
+    );
 
     return () => {
       setShellAlert(null);
@@ -319,6 +368,11 @@ export function ProductManagementStudio() {
 
       setShellAlert({ message: "บันทึกการเปลี่ยนแปลงสินค้าเรียบร้อยแล้ว", tone: "success" });
     } catch (error) {
+      if (isPlanLimitError(error)) {
+        setUploadError(formatPlanLimitAlert(error));
+        return;
+      }
+
       setUploadError(error instanceof Error ? error.message : "บันทึกสินค้าไม่สำเร็จ");
     } finally {
       setSaveBusy(false);

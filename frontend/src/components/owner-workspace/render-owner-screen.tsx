@@ -17,6 +17,7 @@ import { ListStack, NoteStack, ThreeUpStats } from "@/components/owner-workspace
 import { PageHeader, StatusPill } from "@/components/ui-primitives";
 import type { OwnerThemeId } from "@/lib/owner-theme";
 import type { OwnerSectionKey } from "@/components/owner-workspace";
+import type { OwnerPlanPayload } from "@/lib/session";
 
 const storeNamePrompt = "กรอกชื่อร้าน";
 const ownerNamePrompt = "กรอกชื่อของคุณ";
@@ -62,6 +63,7 @@ export async function renderOwnerScreen(
   paymentSettings: OwnerPaymentSettingsValue,
   storeLogoUrl = "",
   ownerTheme: OwnerThemeId = "light",
+  ownerPlan: OwnerPlanPayload["plan"] | null = null,
 ) {
   if (activeSection === "sales") {
     const { SalesWorkspaceClient } = await import("@/components/sales-workspace-client");
@@ -341,83 +343,24 @@ export async function renderOwnerScreen(
   }
 
   if (activeSection === "plan") {
-    const planCards = [
-      {
-        id: "start",
-        name: "Start",
-        price: "ฟรี",
-        badge: "แผนปัจจุบัน",
-        tone: "success",
-        description: "เหมาะกับร้านที่เริ่มทดลองระบบและต้องการคุมขอบเขตการใช้งานรายเดือน",
-        limits: ["ยืนยันชำระเงิน 30 ครั้ง / เดือน", "เพิ่มสินค้าได้ 7 รายการ", "จำนวนสต๊อกรวมสูงสุด 300 ชิ้น"],
-      },
-      {
-        id: "plus",
-        name: "Plus",
-        price: "$15 / เดือน",
-        badge: "เตรียมเปิดใช้งาน",
-        tone: "default",
-        description: "สำหรับร้านที่ใช้งานจริงทุกวันและไม่ต้องการชนเพดานการขายหรือจำนวนสินค้า",
-        limits: ["ยืนยันชำระเงินไม่จำกัด", "เพิ่มสินค้าได้ไม่จำกัด", "จำนวนสต๊อกสินค้าไม่จำกัด"],
-      },
-      {
-        id: "pro",
-        name: "Pro",
-        price: "เร็ว ๆ นี้",
-        badge: "ยังไม่เปิด",
-        tone: "default",
-        description: "แผนสำหรับ automation เพิ่มเติม เช่น flow ยืนยันชำระเงินอัตโนมัติในอนาคต",
-        limits: ["รวมทุกอย่างใน Plus", "เตรียมรองรับยืนยันชำระอัตโนมัติ", "ยังไม่เปิด subscription ในรอบนี้"],
-      },
-    ];
+    const { OwnerPlanClient } = await import("@/components/owner-plan-client");
 
     return {
       eyebrow: "Plan",
       title: "แผนการใช้งาน",
-      description: "แสดงแผนปัจจุบันและข้อจำกัดของแต่ละแพ็กเกจ โดยยังไม่เปิดระบบ subscription",
-      actions: <StatusPill tone="success">Start active</StatusPill>,
+      description: "แสดงแผนปัจจุบันและข้อจำกัดของแต่ละแพ็กเกจจากข้อมูลระบบจริง",
+      actions: <StatusPill tone="success">Backend enforced</StatusPill>,
       body: (
         <section className={ownerPageWithHeaderGapClass}>
           <PageHeader
             eyebrow="Plan"
             title="แผนการใช้งาน"
-            description="ดูว่าแผนปัจจุบันของร้านคืออะไร และแต่ละแผนมีขอบเขตการใช้งานต่างกันอย่างไร"
-            actions={<StatusPill tone="success">Start active</StatusPill>}
+            description="ดูว่าแผนปัจจุบันของร้านคืออะไร ใช้โควต้าไปเท่าไหร่ และแต่ละแผนมีขอบเขตการใช้งานต่างกันอย่างไร"
+            actions={<StatusPill tone="success">Backend enforced</StatusPill>}
             className={miniHeaderClass}
           />
 
-          <div className="grid min-h-0 grid-cols-3 items-start gap-[12px] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:!grid-cols-3 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:gap-[8px] [@media(orientation:portrait)]:grid-cols-1 max-[1180px]:grid-cols-1">
-              {planCards.map((plan) => (
-                <article
-                  key={plan.id}
-                  className={`grid min-h-[360px] content-start rounded-none border px-4 py-4 shadow-[var(--shadow-soft)] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:min-h-[310px] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:px-3 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:py-3 ${
-                    plan.id === "start"
-                      ? "border-[var(--accent-border)] bg-[var(--active-surface)]"
-                      : "border-[var(--border)] bg-[var(--surface)]"
-                  }`}
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.22em] text-[var(--eyebrow)]">Plan</p>
-                      <h3 className="my-2 text-[1.36rem] leading-tight text-[var(--foreground)] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:text-[1.08rem]">{plan.name}</h3>
-                    </div>
-                    <StatusPill tone={plan.tone === "success" ? "success" : undefined}>{plan.badge}</StatusPill>
-                  </div>
-
-                  <strong className="mt-1 block text-[1.22rem] leading-tight text-[var(--foreground)] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:text-[1rem]">{plan.price}</strong>
-                  <p className="m-0 mt-2 min-h-[66px] text-[0.82rem] leading-[1.45] text-[var(--foreground-soft)] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:min-h-[78px] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:text-[0.72rem]">{plan.description}</p>
-
-                  <div className="mt-4 grid gap-2">
-                    {plan.limits.map((limit) => (
-                      <div key={limit} className="flex items-start gap-2 rounded-[10px] border border-[var(--border-subtle)] bg-[var(--panel-subtle)] px-3 py-2 text-[0.82rem] leading-[1.4] text-[var(--foreground)] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:px-2 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:py-1.5 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:text-[0.7rem]">
-                        <span className="mt-[0.16rem] grid h-4 w-4 shrink-0 place-items-center rounded-full border border-[var(--accent-border)] text-[0.68rem] text-[var(--accent-text)]">✓</span>
-                        <span>{limit}</span>
-                      </div>
-                    ))}
-                  </div>
-                </article>
-              ))}
-          </div>
+          <OwnerPlanClient initialSummary={ownerPlan} />
         </section>
       ),
       standalone: true,

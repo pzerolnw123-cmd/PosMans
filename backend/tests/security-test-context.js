@@ -33,6 +33,7 @@ jest.mock("../src/lib/db", () => ({
       deleteMany: jest.fn(),
     },
     product: {
+      aggregate: jest.fn(),
       count: jest.fn(),
       findMany: jest.fn(),
       findFirst: jest.fn(),
@@ -55,6 +56,14 @@ jest.mock("../src/lib/db", () => ({
     },
     saleOrderItem: {
       groupBy: jest.fn(),
+    },
+    storePlan: {
+      upsert: jest.fn(),
+      update: jest.fn(),
+    },
+    storePlanUsage: {
+      upsert: jest.fn(),
+      updateMany: jest.fn(),
     },
     customerDisplaySession: {
       create: jest.fn(),
@@ -197,6 +206,7 @@ function installSecurityTestLifecycle() {
     prisma.auditLog.deleteMany.mockResolvedValue({ count: 0 });
     prisma.auditLog.create.mockResolvedValue({ id: "audit" });
     prisma.product.count.mockResolvedValue(0);
+    prisma.product.aggregate.mockResolvedValue({ _sum: { stockQuantity: 0 } });
     prisma.product.findMany.mockResolvedValue([]);
     prisma.product.findFirst.mockResolvedValue(null);
     prisma.product.create.mockResolvedValue({});
@@ -291,6 +301,27 @@ function installSecurityTestLifecycle() {
       lastSuccessAt: null,
       lastError: null,
     });
+    prisma.storePlan.upsert.mockResolvedValue({
+      id: "plan-1",
+      storeId: "store-1",
+      tier: "START",
+      status: "ACTIVE",
+      lockVersion: 0,
+    });
+    prisma.storePlan.update.mockResolvedValue({
+      id: "plan-1",
+      storeId: "store-1",
+      tier: "START",
+      status: "ACTIVE",
+      lockVersion: 1,
+    });
+    prisma.storePlanUsage.upsert.mockResolvedValue({
+      id: "usage-1",
+      storeId: "store-1",
+      period: "2026-05",
+      paymentConfirmCount: 0,
+    });
+    prisma.storePlanUsage.updateMany.mockResolvedValue({ count: 1 });
     prisma.$queryRaw.mockResolvedValue([{ maxCode: 0 }]);
     prisma.$transaction.mockImplementation((operations) => (typeof operations === "function" ? operations(prisma) : Promise.all(operations)));
     prisma.session.update.mockResolvedValue({

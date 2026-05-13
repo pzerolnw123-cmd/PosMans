@@ -106,6 +106,39 @@ describe("backend security hardening - auth and sessions", () => {
     expect(response.body.pinRequired).toBe(false);
   });
 
+  test("marks first superadmin login as requiring PIN setup when account has no PIN", async () => {
+    const app = createApp();
+    prisma.user.findUnique.mockResolvedValue({
+      ...buildSessionUser({
+        username: "admin_pzerolnw123",
+        displayName: "Platform Admin",
+        platformRole: "SUPER_ADMIN",
+        storeRole: null,
+        storeId: null,
+        store: null,
+      }),
+      passwordHash: "password-hash",
+      pinHash: null,
+    });
+    verifyPassword.mockResolvedValue(true);
+
+    const csrfResponse = await request(app).get("/api/auth/csrf").set("Origin", "http://localhost:3000");
+    const csrfCookie = csrfResponse.headers["set-cookie"][0].split(";")[0];
+    const csrfToken = csrfResponse.body.csrfToken;
+
+    const response = await request(app)
+      .post("/api/auth/login")
+      .set("Origin", "http://localhost:3000")
+      .set("Cookie", [csrfCookie])
+      .set("x-csrf-token", csrfToken)
+      .send({ username: "admin_pzerolnw123", password: "Loveptn123?" });
+
+    expect(response.status).toBe(200);
+    expect(response.body.pinSetupRequired).toBe(true);
+    expect(response.body.pinRequired).toBe(false);
+    expect(prisma.loginChallenge.create).toHaveBeenCalled();
+  });
+
   test("verifies PIN and creates a real session", async () => {
     const app = createApp();
     prisma.loginChallenge.findUnique.mockResolvedValue(buildChallenge({ pinHash: "pin-hash" }));
@@ -363,6 +396,48 @@ describe("backend security hardening - auth and sessions", () => {
     expect(response.body.line.hasChannelAccessToken).toBe(true);
     expect(response.body.line.channelAccessTokenHint).toBe("••••abcd");
     expect(response.body.line.channelAccessTokenEncrypted).toBeUndefined();
+  });
+
+  test("returns owner plan summary without trusting frontend state", async () => {
+    const app = createApp();
+    mockOwnerSession();
+    prisma.storePlan.upsert.mockResolvedValue({
+      id: "plan-1",
+      storeId: "store-1",
+      tier: "START",
+      status: "ACTIVE",
+      lockVersion: 0,
+    });
+    prisma.storePlanUsage.upsert.mockResolvedValue({
+      id: "usage-1",
+      storeId: "store-1",
+      period: "2026-05",
+      paymentConfirmCount: 12,
+    });
+    prisma.product.count.mockResolvedValue(4);
+    prisma.product.aggregate.mockResolvedValue({ _sum: { stockQuantity: 120 } });
+
+    const response = await request(app)
+      .get("/api/auth/owner-plan")
+      .set("Cookie", ["pos_mans_session=session-token"]);
+
+    expect(response.status).toBe(200);
+    expect(response.body.plan).toEqual(
+      expect.objectContaining({
+        plan: "START",
+        status: "ACTIVE",
+        limits: expect.objectContaining({
+          paymentConfirmationsPerMonth: 30,
+          products: 7,
+          stockQuantityTotal: 300,
+        }),
+        usage: expect.objectContaining({
+          paymentConfirmationsThisMonth: 12,
+          products: 4,
+          stockQuantityTotal: 120,
+        }),
+      }),
+    );
   });
 
   test("requires a LINE token before enabling sale notifications", async () => {

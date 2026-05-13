@@ -43,6 +43,7 @@ enum AuditAction {
   STORE_LINE_TEST_SENT
   STORE_LINE_NOTIFICATION_SENT
   STORE_LINE_NOTIFICATION_FAILED
+  PLAN_LIMIT_DENIED
   SALE_CREATED
   SALE_CANCELLED
   CUSTOMER_DISPLAY_CREATED
@@ -92,6 +93,17 @@ enum LineRecipientType {
   ROOM
 }
 
+enum StorePlanTier {
+  START
+  PLUS
+}
+
+enum StorePlanStatus {
+  ACTIVE
+  PAST_DUE
+  CANCELED
+}
+
 model Store {
   id              String    @id @default(cuid())
   slug            String    @unique
@@ -118,6 +130,34 @@ model Store {
   inventoryMovements InventoryMovement[]
   customerDisplaySessions CustomerDisplaySession[]
   lineIntegration StoreLineIntegration?
+  plan            StorePlan?
+  planUsages      StorePlanUsage[]
+}
+
+model StorePlan {
+  id          String          @id @default(cuid())
+  storeId     String          @unique
+  tier        StorePlanTier   @default(START)
+  status      StorePlanStatus @default(ACTIVE)
+  lockVersion Int             @default(0)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  store       Store           @relation(fields: [storeId], references: [id], onDelete: Cascade)
+
+  @@index([tier, status])
+}
+
+model StorePlanUsage {
+  id                  String   @id @default(cuid())
+  storeId             String
+  period              String
+  paymentConfirmCount Int      @default(0)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  store               Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
+
+  @@unique([storeId, period])
+  @@index([storeId, period])
 }
 
 model StoreLineIntegration {
