@@ -1,4 +1,5 @@
 import { fetchWithCsrfRetry } from "@/lib/csrf";
+import { enforceMaxEntries, pruneExpiredEntries } from "@/lib/cache-limits";
 import type { CropDraft, ProductListResponse, SignedUploadPayload } from "@/components/product-management-studio/types";
 
 export const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
@@ -62,24 +63,19 @@ function cloneProductListResponse(payload: ProductListResponse): ProductListResp
 }
 
 function pruneProductListCache() {
-  const now = Date.now();
-  for (const [cacheKey, entry] of productListCache) {
-    if (entry.expiresAt <= now) {
-      productListCache.delete(cacheKey);
-    }
-  }
-
-  while (productListCache.size > PRODUCT_LIST_CACHE_MAX_ENTRIES) {
-    const oldestKey = productListCache.keys().next().value;
-    if (!oldestKey) {
-      return;
-    }
-    productListCache.delete(oldestKey);
-  }
+  pruneExpiredEntries(productListCache);
+  enforceMaxEntries(productListCache, PRODUCT_LIST_CACHE_MAX_ENTRIES);
 }
 
 export function invalidateProductListCache() {
   productListCache.clear();
+}
+
+export function getProductListCacheStats() {
+  pruneProductListCache();
+  return {
+    entries: productListCache.size,
+  };
 }
 
 export async function requestProductList(params: URLSearchParams, { force = false }: { force?: boolean } = {}) {

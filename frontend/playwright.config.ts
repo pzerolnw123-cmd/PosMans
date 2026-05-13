@@ -18,8 +18,10 @@ if (fs.existsSync(envPath)) {
 const baseURL = process.env.PLAYWRIGHT_BASE_URL || "http://localhost:3000";
 const backendURL = process.env.PLAYWRIGHT_BACKEND_URL || "http://127.0.0.1:4000";
 const skipWebServer = process.env.PLAYWRIGHT_SKIP_WEB_SERVER === "1";
+const skipBackendServer = process.env.PLAYWRIGHT_SKIP_BACKEND_SERVER === "1";
 const smokeOnly = process.env.PLAYWRIGHT_SMOKE_ONLY === "1";
 const hasOwnerCredentials =
+  process.env.E2E_RUN_OWNER_FLOWS === "1" &&
   Boolean(process.env.E2E_OWNER_USERNAME) && Boolean(process.env.E2E_OWNER_PASSWORD) && Boolean(process.env.E2E_OWNER_PIN);
 const frontendUrl = new URL(baseURL);
 const frontendHost = ["127.0.0.1", "localhost"].includes(frontendUrl.hostname) ? frontendUrl.hostname : "127.0.0.1";
@@ -78,5 +80,7 @@ export default defineConfig({
   ],
   webServer: skipWebServer || (!hasOwnerCredentials && !smokeOnly)
     ? undefined
-    : [backendServer, frontendServer],
+    : skipBackendServer
+      ? [frontendServer]
+      : [backendServer, frontendServer],
 });

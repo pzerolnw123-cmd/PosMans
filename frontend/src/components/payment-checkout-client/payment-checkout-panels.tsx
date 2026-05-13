@@ -2,16 +2,13 @@
 
 import { useRef, useState } from "react";
 import type { Dispatch, KeyboardEvent, MouseEvent, PointerEvent, ReactNode, RefObject, SetStateAction } from "react";
-import {
-  ownerLandscapeClass,
-  ownerLandscapeCompactPanelPaddingClass,
-  ownerLandscapePanelPaddingClass,
-} from "@/components/owner-workspace/landscape-preset";
+import { ownerLandscapeClass } from "@/components/owner-workspace/landscape-preset";
 import { inputClass, primaryButtonClass, secondaryButtonClass } from "@/components/ui-primitives";
 import type { OwnerPaymentSettingsValue } from "@/components/owner-settings-client";
 import type { CompletedSale, PaymentMethod } from "./shared";
 import { formatBaht, paymentMethods } from "./shared";
 import { QrPaymentInstructions, TransferInstructions } from "./payment-instructions";
+import { billPanelClass, paymentPanelClass, quickMetricCardClass, quickPanelBodyClass, quickPanelClass } from "./panel-classes";
 
 type BillItem = {
   key: string;
@@ -82,11 +79,6 @@ export function PaymentCheckoutPanels({
   const billItemPressRef = useRef<{ key: string; moved: boolean; startX: number; startY: number } | null>(null);
   const lastBillItemDragAtRef = useRef(0);
   const lastBillItemOpenAtRef = useRef(0);
-  const billPanelClass = `grid min-h-0 min-w-0 grid-rows-[auto_minmax(0,1fr)_auto] gap-[16px] rounded-none border border-[var(--border)] bg-[var(--panel-strong)] px-5 py-[18px] shadow-[var(--shadow-soft)] ${ownerLandscapePanelPaddingClass} ${ownerLandscapeClass}:gap-[14px] max-[1180px]:grid-rows-[auto_auto_auto] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:h-full [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:h-full [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:!grid-rows-[auto_minmax(0,1fr)_auto] [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:!grid-rows-[auto_minmax(0,1fr)_auto] max-[820px]:px-4 max-[820px]:py-4`;
-  const paymentPanelClass = `grid h-fit min-w-0 content-start gap-[16px] rounded-none border border-[var(--border)] bg-[var(--panel-strong)] px-5 py-[18px] shadow-[var(--shadow-soft)] ${ownerLandscapePanelPaddingClass} ${ownerLandscapeClass}:gap-[14px] max-[820px]:px-4 max-[820px]:py-4`;
-  const quickPanelClass = `grid h-fit min-w-0 gap-[14px] overflow-hidden rounded-none border border-[var(--border)] bg-[var(--panel-strong)] px-4 py-[18px] shadow-[var(--shadow-soft)] ${ownerLandscapeCompactPanelPaddingClass} max-[820px]:px-4 max-[820px]:py-4 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:h-full [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:h-full [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:grid-cols-[repeat(3,minmax(0,1fr))] [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1.18fr)] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:grid-rows-[auto_auto] [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:grid-rows-[auto_auto] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:items-start [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:items-start [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:justify-items-stretch [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:justify-items-stretch [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:gap-x-2 [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:gap-x-2 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:gap-y-2 [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:gap-y-2 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:px-3 [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:px-3 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:py-3 [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:py-3`;
-  const quickPanelBodyClass = "grid gap-2.5 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:contents [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:contents";
-  const quickMetricCardClass = "min-w-0 overflow-hidden rounded-none border border-[var(--border-subtle)] bg-[var(--panel-subtle)] px-3.5 py-3 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:w-full [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:w-full [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:min-h-[74px] [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:min-h-[74px] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:px-2.5 [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:px-2.5 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:py-2 [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:py-2";
   const hasPendingItems = !completedSale && items.length > 0;
 
   function openBillItemDetail(item: BillItem) {

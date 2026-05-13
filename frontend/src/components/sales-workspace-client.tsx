@@ -21,61 +21,32 @@ type StoredSalesCart = {
   savedAt?: string;
 };
 
-import { BasketIcon, CategoryIcon, displaySaleStatus, formatBaht, isProductSellable, normalizeStockValue, salesCartStorageKey, stockLabel, stockLimit } from "@/components/sales-workspace/helpers";
+import { BasketIcon, CategoryIcon, compactStockLabel, displaySaleStatus, formatBaht, isProductSellable, salesCartStorageKey, stockLabel, stockLimit } from "@/components/sales-workspace/helpers";
 import { SalesCartPanel } from "@/components/sales-workspace/cart-panel";
+import {
+  androidTabletLandscapeSaleProductCategoryClass,
+  desktopFinePointerClass,
+  desktopHDSaleProductGridClass,
+  ipadMiniSaleProductButtonClass,
+  ipadMiniSaleProductCardClass,
+  ipadMiniSaleProductCodeClass,
+  ipadMiniSaleProductDetailClass,
+  ipadMiniSaleProductHideClass,
+  ipadMiniSaleProductImageClass,
+  ipadMiniSaleProductMediaClass,
+  ipadMiniSaleProductMetaClass,
+  ipadMiniSaleProductNameMiniClass,
+  ipadMiniSaleProductPriceClass,
+  ipadMiniSaleProductStatusClass,
+  ipadMiniSaleProductStockMiniClass,
+  oldPosLowHeightSaleProductButtonClass,
+  oldPosLowHeightSaleProductHideClass,
+  posWideShortSaleProductCategoryClass,
+  posWideShortSaleProductGridClass,
+} from "@/components/sales-workspace/classes";
 import { ipadMiniLandscapeClass } from "@/components/owner-workspace/ipad-air-classes";
 import { ownerLandscapeClass, ownerLandscapePanelPaddingClass, ownerLandscapeTightGapClass } from "@/components/owner-workspace/landscape-preset";
 import { LoadingState } from "@/components/ui-primitives";
-
-const desktopFinePointerClass = "[@media(min-width:1181px)_and_(pointer:fine)]";
-const ipadMiniSaleProductCardClass =
-  "[@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:!min-h-[194px] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:!gap-[5px] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:!p-2.5 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:!pb-9";
-const ipadMiniSaleProductMediaClass = "[@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:!block";
-const ipadMiniSaleProductImageClass =
-  "[@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:!h-16 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:!w-[calc(100%-54px)] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:!max-w-[118px] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:!rounded-[9px]";
-const ipadMiniSaleProductNameMiniClass =
-  "[@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:!grid [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:!justify-items-start [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:!text-left [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:!mt-1.5";
-const ipadMiniSaleProductMetaClass =
-  "[@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:!mt-[3px] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:!justify-items-start [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:!gap-px [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:!text-left";
-const ipadMiniSaleProductPriceClass =
-  "[@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:!absolute [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:!right-2.5 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:!top-2.5 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:!z-[1] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:!text-right [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:!text-[0.92rem] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:!leading-[1.05]";
-const ipadMiniSaleProductStatusClass = "[@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:!block [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:!text-left [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:!text-[0.68rem] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:!leading-[1.15]";
-const ipadMiniSaleProductDetailClass = "[@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:!block [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:!max-w-full [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:!text-left [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:!text-[0.58rem] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:!leading-[1.15]";
-const ipadMiniSaleProductCodeClass = "[@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:!block [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:!max-w-full [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:!text-left [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:!text-[0.56rem] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:!leading-[1.15] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:!tracking-[0.08em]";
-const ipadMiniSaleProductStockMiniClass = "[@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:!block [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:!mt-[3px] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:!max-w-[106px] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:!text-left [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:!text-[0.62rem] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:!leading-[1.15]";
-const ipadMiniSaleProductHideClass = "[@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:!hidden";
-const ipadMiniSaleProductButtonClass =
-  "[@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:!bottom-3.5 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:!left-auto [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:!right-2.5 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:!h-12 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:!min-h-12 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:!w-12 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:!min-w-12 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:!gap-0 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:!rounded-[10px] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:!p-0";
-const posWideShortSaleProductGridClass =
-  "[@media(min-width:1181px)_and_(max-width:1280px)_and_(max-height:720px)_and_(orientation:landscape)_and_(pointer:fine)]:!grid-cols-2";
-const desktopHDSaleProductGridClass =
-  "[@media(width:1600px)_and_(height:900px)_and_(orientation:landscape)]:!grid-cols-2";
-const posWideShortSaleProductCategoryClass =
-  "[@media(min-width:1181px)_and_(max-width:1280px)_and_(max-height:720px)_and_(orientation:landscape)_and_(pointer:fine)]:!block [@media(min-width:1181px)_and_(max-width:1280px)_and_(max-height:720px)_and_(orientation:landscape)_and_(pointer:fine)]:!max-w-[150px] [@media(min-width:1181px)_and_(max-width:1280px)_and_(max-height:720px)_and_(orientation:landscape)_and_(pointer:fine)]:!overflow-visible [@media(min-width:1181px)_and_(max-width:1280px)_and_(max-height:720px)_and_(orientation:landscape)_and_(pointer:fine)]:!whitespace-nowrap";
-const androidTabletLandscapeSaleProductCategoryClass =
-  "[@media(min-width:1181px)_and_(max-width:1280px)_and_(min-height:721px)_and_(max-height:800px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:!block [@media(min-width:1181px)_and_(max-width:1280px)_and_(min-height:721px)_and_(max-height:800px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:!max-w-[150px] [@media(min-width:1181px)_and_(max-width:1280px)_and_(min-height:721px)_and_(max-height:800px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:!overflow-visible [@media(min-width:1181px)_and_(max-width:1280px)_and_(min-height:721px)_and_(max-height:800px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:!whitespace-nowrap";
-const oldPosLowHeightSaleProductButtonClass =
-  "[@media(width:1366px)_and_(height:720px)_and_(orientation:landscape)]:!h-[48px] [@media(width:1366px)_and_(height:720px)_and_(orientation:landscape)]:!w-[48px] [@media(width:1366px)_and_(height:720px)_and_(orientation:landscape)]:!min-w-[48px] [@media(width:1366px)_and_(height:720px)_and_(orientation:landscape)]:!gap-0 [@media(width:1366px)_and_(height:720px)_and_(orientation:landscape)]:!px-0";
-const oldPosLowHeightSaleProductHideClass =
-  "[@media(width:1366px)_and_(height:720px)_and_(orientation:landscape)]:hidden";
-function compactStockLabel(product: ProductItem, inCart = 0) {
-  if (!product.trackStock) {
-    return null;
-  }
-
-  const remaining = Math.max(0, normalizeStockValue(product.stockQuantity) - inCart);
-  if (remaining <= 0) {
-    return "สต็อกหมด";
-  }
-
-  const displayRemaining = remaining > 999 ? "999+" : String(remaining);
-
-  if (product.lowStockThreshold > 0 && remaining <= product.lowStockThreshold) {
-    return `ใกล้หมด ${displayRemaining}`;
-  }
-
-  return `คงเหลือ ${displayRemaining}`;
-}
 export function SalesWorkspaceClient() {
   const router = useRouter();
   const [products, setProducts] = useState<ProductItem[]>([]);

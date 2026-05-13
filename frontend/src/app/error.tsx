@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { buildClientErrorReport, reportClientError } from "@/lib/client-error-reporting";
 import { isRecoverableDevNetworkError } from "@/lib/dev-network-recovery";
 
 const networkRecoveryStorageKey = "pos-mans-network-error-hard-reload-at";
@@ -16,6 +17,8 @@ export default function AppError({
   const shouldAutoRecover = isRecoverableDevNetworkError(error);
 
   useEffect(() => {
+    reportClientError(buildClientErrorReport("app-error-boundary", error, { recoverable: shouldAutoRecover }));
+
     if (!shouldAutoRecover) {
       console.error(error);
       return;

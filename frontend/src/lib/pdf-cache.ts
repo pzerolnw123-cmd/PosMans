@@ -1,5 +1,6 @@
 import { randomUUID } from "crypto";
 import { getCurrentSession } from "@/lib/session";
+import { enforceMaxEntries, pruneExpiredEntries, sumByteLengths } from "@/lib/cache-limits";
 
 export type CachedPdf = {
   bytes: Uint8Array;
@@ -15,23 +16,15 @@ const maxCachedPdfBytes = 20 * 1024 * 1024;
 const pdfCache = new Map<string, CachedPdf>();
 
 export function cleanupExpiredPdfCache() {
-  const now = Date.now();
-  for (const [token, entry] of pdfCache) {
-    if (entry.expiresAt <= now) {
-      pdfCache.delete(token);
-    }
-  }
+  pruneExpiredEntries(pdfCache);
 }
 
 function cachedPdfByteTotal() {
-  let total = 0;
-  for (const entry of pdfCache.values()) {
-    total += entry.bytes.byteLength;
-  }
-  return total;
+  return sumByteLengths(pdfCache.values(), (entry) => entry.bytes.byteLength);
 }
 
 function enforcePdfCacheLimits() {
+  enforceMaxEntries(pdfCache, maxCachedPdfs);
   while (pdfCache.size > maxCachedPdfs || cachedPdfByteTotal() > maxCachedPdfBytes) {
     const oldestToken = pdfCache.keys().next().value;
     if (!oldestToken) {
@@ -95,4 +88,16 @@ export function cachePdf(entry: Omit<CachedPdf, "expiresAt">) {
 export function getCachedPdf(token: string) {
   cleanupExpiredPdfCache();
   return pdfCache.get(token);
+}
+
+export function deleteCachedPdf(token: string) {
+  pdfCache.delete(token);
+}
+
+export function getPdfCacheStats() {
+  cleanupExpiredPdfCache();
+  return {
+    entries: pdfCache.size,
+    totalBytes: cachedPdfByteTotal(),
+  };
 }

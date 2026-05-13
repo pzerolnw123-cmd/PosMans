@@ -105,3 +105,22 @@ export function stockLabel(product: ProductItem, inCart = 0) {
 
   return `คงเหลือ ${remaining}`;
 }
+
+export function compactStockLabel(product: ProductItem, inCart = 0) {
+  if (!product.trackStock) {
+    return null;
+  }
+
+  const remaining = Math.max(0, normalizeStockValue(product.stockQuantity) - inCart);
+  if (remaining <= 0) {
+    return "สต็อกหมด";
+  }
+
+  const displayRemaining = remaining > 999 ? "999+" : String(remaining);
+
+  if (product.lowStockThreshold > 0 && remaining <= product.lowStockThreshold) {
+    return `ใกล้หมด ${displayRemaining}`;
+  }
+
+  return `คงเหลือ ${displayRemaining}`;
+}

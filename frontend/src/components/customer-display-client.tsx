@@ -5,6 +5,11 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { isCustomerDisplayInvalidated } from "@/components/customer-display-session";
 import { Loader } from "@/components/ui-primitives";
 import { formatBaht, type PaymentMethod } from "@/components/payment-checkout-client/shared";
+import {
+  customerDisplayPollDelay,
+  shouldRefreshCustomerDisplayStoreSnapshot,
+  type CustomerDisplayConnectionState,
+} from "@/components/customer-display/polling";
 import { defaultOwnerTheme, isOwnerTheme, readStoredOwnerTheme, subscribeOwnerTheme, type OwnerThemeId } from "@/lib/owner-theme";
 
 type CustomerDisplayStatus = "IDLE" | "PAYMENT" | "SUCCESS";
@@ -53,7 +58,7 @@ const paymentLabels: Record<PaymentMethod, string> = {
 export function CustomerDisplayClient({ displayId, token }: { displayId: string; token: string }) {
   const [payload, setPayload] = useState<CustomerDisplayPayload | null>(null);
   const [localTheme, setLocalTheme] = useState<OwnerThemeId | null>(() => readStoredOwnerTheme());
-  const [connectionState, setConnectionState] = useState<"connecting" | "live" | "offline" | "blocked">("connecting");
+  const [connectionState, setConnectionState] = useState<CustomerDisplayConnectionState>("connecting");
   const [locallyInvalidated, setLocallyInvalidated] = useState(false);
   const connectionStateRef = useRef(connectionState);
   const lastStoreSnapshotAtRef = useRef(0);
@@ -209,7 +214,7 @@ export function CustomerDisplayClient({ displayId, token }: { displayId: string;
 
     let cancelled = false;
     const isCancelled = () => cancelled;
-    const pollDelay = connectionState === "live" ? 30000 : 1500;
+    const pollDelay = customerDisplayPollDelay(connectionState);
     const initialTimer = window.setTimeout(() => {
       void loadSnapshot(isCancelled);
       void loadStoreSnapshot(isCancelled);
@@ -217,9 +222,14 @@ export function CustomerDisplayClient({ displayId, token }: { displayId: string;
     }, 0);
     const snapshotInterval = window.setInterval(() => {
       const now = Date.now();
-      const minimumDelay = connectionStateRef.current === "live" ? 30000 : 1500;
       void loadSnapshot(isCancelled);
-      if (now - lastStoreSnapshotAtRef.current >= minimumDelay) {
+      if (
+        shouldRefreshCustomerDisplayStoreSnapshot({
+          now,
+          lastStoreSnapshotAt: lastStoreSnapshotAtRef.current,
+          connectionState: connectionStateRef.current,
+        })
+      ) {
         lastStoreSnapshotAtRef.current = now;
         void loadStoreSnapshot(isCancelled);
       }

@@ -1,48 +1,14 @@
 import { expect, test } from "@playwright/test";
-
-const ownerUsername = process.env.E2E_OWNER_USERNAME;
-const ownerPassword = process.env.E2E_OWNER_PASSWORD;
-const ownerPin = process.env.E2E_OWNER_PIN;
+import { hasOwnerCredentials, signInOwner } from "./helpers/owner-auth";
 
 test.describe("owner menu flow", () => {
   test.skip(
-    !ownerUsername || !ownerPassword || !ownerPin,
-    "Set E2E_OWNER_USERNAME, E2E_OWNER_PASSWORD, and E2E_OWNER_PIN to run the authenticated owner/menu flow.",
+    !hasOwnerCredentials(),
+    "Set E2E_RUN_OWNER_FLOWS=1 with E2E_OWNER_USERNAME, E2E_OWNER_PASSWORD, and E2E_OWNER_PIN to run the authenticated owner/menu flow.",
   );
 
   test("signs in and verifies product management basics", async ({ page }) => {
-    await page.goto("/login", { waitUntil: "networkidle" });
-
-    const usernameInput = page.locator('input[autocomplete="username"]');
-    const passwordInput = page.locator('input[autocomplete="current-password"]');
-    const continueButton = page.getByRole("button", { name: "ดำเนินการต่อ" });
-
-    await expect(usernameInput).toBeEnabled();
-    await usernameInput.click();
-    await usernameInput.pressSequentially(ownerUsername || "");
-    await expect(usernameInput).toHaveValue(ownerUsername || "");
-    await passwordInput.click();
-    await passwordInput.pressSequentially(ownerPassword || "");
-    await expect(passwordInput).toHaveValue(ownerPassword || "");
-    await expect(continueButton).toBeEnabled();
-    await continueButton.click();
-
-    await expect(page.getByRole("heading", { name: /^(ตั้งค่า PIN ใหม่|ยืนยัน PIN)$/ })).toBeVisible();
-
-    for (const digit of ownerPin || "") {
-      await page.getByRole("button", { name: digit }).click();
-    }
-
-    const unlockButton = page.getByRole("button", { name: /ปลดล็อกหลังบ้าน|บันทึก PIN และเข้าใช้งาน/ });
-    await expect(unlockButton).toBeEnabled();
-    await unlockButton.click();
-
-    await Promise.race([
-      page.waitForURL(/\/owner\/sales/),
-      page.getByText("Invalid PIN").waitFor({ state: "visible" }).then(() => {
-        throw new Error("E2E_OWNER_PIN does not match the stored PIN for E2E_OWNER_USERNAME.");
-      }),
-    ]);
+    await signInOwner(page);
     await page.goto("/owner/menu");
 
     await expect(page.getByRole("heading", { name: "แก้ไขสินค้า" })).toBeVisible();

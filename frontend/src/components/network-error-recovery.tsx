@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { buildClientErrorReport, reportClientError } from "@/lib/client-error-reporting";
 import { isRecoverableDevNetworkError } from "@/lib/dev-network-recovery";
 
 const networkRecoveryStorageKey = "pos-mans-network-error-hard-reload-at";
@@ -26,6 +27,7 @@ export function NetworkErrorRecovery() {
         return;
       }
 
+      reportClientError(buildClientErrorReport("network-error-recovery", event.reason, { recoverable: true }));
       event.preventDefault();
       scheduleNetworkRecovery();
     }
@@ -35,6 +37,7 @@ export function NetworkErrorRecovery() {
         return;
       }
 
+      reportClientError(buildClientErrorReport("network-error-recovery", event.error || event.message, { recoverable: true }));
       event.preventDefault();
       scheduleNetworkRecovery();
     }

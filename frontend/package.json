@@ -8,10 +8,13 @@
     "start": "next start",
     "lint": "eslint .",
     "test:logic": "node --experimental-strip-types --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/frontend-logic-tests.mjs",
+    "verify": "npm run test:logic && npm run lint && npm run build && npm run build:smoke && npm run theme:contrast",
     "theme:contrast": "node scripts/theme-contrast-check.mjs",
     "build:smoke": "node scripts/build-smoke-check.mjs",
     "e2e": "playwright test",
     "e2e:smoke": "playwright test e2e/smoke.spec.ts",
+    "e2e:visual": "playwright test e2e/visual-smoke.spec.ts",
+    "e2e:owner": "playwright test e2e/owner-menu.spec.ts e2e/owner-critical-flow.spec.ts e2e/owner-visual-regression.spec.ts",
     "e2e:ui": "playwright test --ui",
     "e2e:install": "playwright install chromium"
   },
