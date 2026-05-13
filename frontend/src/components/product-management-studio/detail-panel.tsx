@@ -139,7 +139,7 @@ export function ProductDetailPanel({
                     className="block h-full w-full object-cover object-center"
                   />
                 ) : selectedProduct.imageUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
+                  // eslint-disable-next-line @next/next/no-img-element -- รูปที่อัปโหลดอาจเป็น URL ภายนอกที่ไม่ได้ผ่าน next/image loader
                   <img src={selectedProduct.imageUrl} alt={selectedProduct.name} className="block h-full w-full object-cover object-center" decoding="async" />
                 ) : (
                   <div className="h-full w-full bg-[var(--panel-subtle)]" />

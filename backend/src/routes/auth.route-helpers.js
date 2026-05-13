@@ -370,6 +370,7 @@ const accountLoginLimiter = rateLimit({
 });
 
 function pinRateLimitKey(req) {
+  // ผูก rate limit กับ login challenge เพื่อลดผลกระทบผู้ใช้ที่แชร์ IP เดียวกัน
   const challengeToken = req.cookies?.[LOGIN_CHALLENGE_COOKIE_NAME] || "no-challenge";
   const ipKey = rateLimit.ipKeyGenerator ? rateLimit.ipKeyGenerator(req.ip) : req.ip || "unknown";
   return `${challengeToken}:${ipKey}`;

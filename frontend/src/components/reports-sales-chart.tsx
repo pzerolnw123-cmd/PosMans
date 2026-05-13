@@ -176,6 +176,7 @@ export function ReportsSalesChart() {
   }, [report]);
 
   const visiblePaymentSummary = useMemo(
+    // ซ่อน method ที่ยังไม่มียอดจริง เพื่อไม่ให้การ์ดสรุปเพิ่มขึ้นจากค่า 0 ที่ backend ส่งมา
     () => report?.paymentSummary.filter((payment) => alwaysVisiblePaymentMethods.has(payment.method) || payment.orders > 0 || payment.sales > 0) || [],
     [report],
   );

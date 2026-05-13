@@ -103,6 +103,7 @@ function asNumber(value) {
 }
 
 async function fetchBucketRows(storeId, rangeInfo) {
+  // รวมยอดขายตามชั่วโมง/วันในฐานข้อมูลเพื่อลดการโหลด order ทั้งช่วงเข้าหน่วยความจำ
   const bucketExpression =
     rangeInfo.bucket === "hour"
       ? Prisma.sql`EXTRACT(HOUR FROM ("createdAt" AT TIME ZONE 'Asia/Bangkok'))::text`
@@ -123,6 +124,7 @@ async function fetchBucketRows(storeId, rangeInfo) {
 }
 
 async function fetchProductRows(storeId, rangeInfo) {
+  // รวมสินค้าขายดีด้วย SQL เพื่อรักษา shape เดิมโดยไม่ต้องดึง sale items ทุกแถว
   return prisma.$queryRaw`
     SELECT
       COALESCE(item."productId", item."productName") AS key,

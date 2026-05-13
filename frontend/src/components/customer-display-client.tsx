@@ -1,6 +1,6 @@
 "use client";
 
-/* eslint-disable @next/next/no-img-element -- customer display accepts token-scoped data URLs and store-hosted images that may not be available through next/image loaders. */
+/* eslint-disable @next/next/no-img-element -- จอลูกค้ารับ data URL ตาม token และรูปจาก store ที่อาจใช้ next/image loader ไม่ได้ */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { isCustomerDisplayInvalidated } from "@/components/customer-display-session";
 import { Loader } from "@/components/ui-primitives";
@@ -123,7 +123,7 @@ export function CustomerDisplayClient({ displayId, token }: { displayId: string;
           setPayload((current) => (current ? { ...current, store: data.store } : current));
         }
       } catch {
-        // SSE remains primary; store metadata polling is a quiet fallback.
+        // ใช้ SSE เป็นช่องทางหลัก ส่วน polling metadata เป็น fallback เงียบ ๆ เท่านั้น
       }
     },
     [storeSnapshotUrl],

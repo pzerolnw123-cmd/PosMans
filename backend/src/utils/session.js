@@ -58,6 +58,7 @@ async function cleanupExpiredSessions() {
 
   lastExpiredSessionCleanupAt = now;
   expiredSessionCleanupPromise = (async () => {
+    // ล้าง session หมดอายุเป็น batch เพื่อเลี่ยง query/delete ก้อนใหญ่เมื่อระบบสะสมข้อมูลนาน
     let deletedCount = 0;
 
     for (let batch = 0; batch < EXPIRED_SESSION_CLEANUP_MAX_BATCHES; batch += 1) {
@@ -181,7 +182,7 @@ async function touchSession(session) {
   const now = new Date();
   const remainingMs = session.expiresAt.getTime() - now.getTime();
 
-  // Only refresh the idle timeout when the session is getting close to expiry.
+  // ต่ออายุเฉพาะ session ที่ใกล้หมดอายุ เพื่อลด write load ใน request ปกติ
   if (remainingMs > SESSION_REFRESH_THRESHOLD_MS) {
     return session;
   }

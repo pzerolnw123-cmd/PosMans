@@ -216,6 +216,7 @@ router.delete("/:productId", requireTrustedOrigin, requireCsrf, requireStoreRole
       where: { id: existingProduct.id },
     });
 
+    // ลบไฟล์หลัง DB สำเร็จเพื่อไม่ให้ record ที่ลบไม่สำเร็จอ้างไปยังรูปที่หายไปแล้ว
     if (existingProduct.uploadedKey) {
       await deleteReplacedUploadBestEffort(existingProduct.uploadedKey);
     }

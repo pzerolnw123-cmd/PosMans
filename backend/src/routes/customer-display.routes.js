@@ -116,6 +116,7 @@ function decrementConnectionCount(map, key) {
 }
 
 function assertSseConnectionAllowed(displayId, ipAddress) {
+  // จำกัด connection ฝั่ง public display เพื่อกันโหลดสะสมจากการเปิดซ้ำหรือ reconnect ถี่
   const displayConnections = activeSseConnectionsByDisplay.get(displayId) || 0;
   const ipConnections = activeSseConnectionsByIp.get(ipAddress) || 0;
 
@@ -135,6 +136,7 @@ function registerSseConnection(displayId, ipAddress) {
 }
 
 async function touchDisplayLastSeen(display) {
+  // อัปเดต lastSeenAt แบบ throttle เพราะ fallback polling อาจเรียก endpoint นี้ถี่
   const lastSeenAt = display.lastSeenAt ? new Date(display.lastSeenAt) : null;
   if (lastSeenAt && Date.now() - lastSeenAt.getTime() < LAST_SEEN_THROTTLE_MS) {
     return;

@@ -116,7 +116,7 @@ async function deleteR2Object(objectKey) {
     });
     await getR2Client().send(command);
   } catch (error) {
-    // Log error but don't fail the request - orphan files are less critical than broken business logic
+    // การลบไฟล์เป็น best-effort เพื่อไม่ให้ธุรกรรมหลักล้มเพราะ cleanup ภายนอก
     console.error(`[R2] Failed to delete object ${objectKey}:`, error);
   }
 }

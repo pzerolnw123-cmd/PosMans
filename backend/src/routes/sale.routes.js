@@ -109,6 +109,7 @@ router.post("/", saleCheckoutLimiter, requireTrustedOrigin, requireCsrf, require
     const productIds = mergedItems.map((item) => item.productId);
 
     const order = await prisma.$transaction(async (tx) => {
+      // อ่าน snapshot สินค้าภายใน transaction เพื่อให้ราคาและสถานะตรงกับจังหวะสร้างบิล
       const products = await tx.product.findMany({
         where: {
           id: { in: productIds },

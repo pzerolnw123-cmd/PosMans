@@ -36,8 +36,7 @@ function sendSse(res, event, data) {
 }
 
 function sendSseFlush(res) {
-  // Small SSE frames can sit in proxy buffers. A comment frame with padding nudges
-  // intermediaries to flush without changing the browser EventSource payload.
+  // ส่ง comment frame ขนาดเล็กเพื่อกระตุ้น proxy ให้ flush โดยไม่เปลี่ยน payload ของ EventSource
   res.write(`: ${" ".repeat(2048)}\n\n`);
 }
 
@@ -109,7 +108,7 @@ async function startDisplayEventListener() {
           deliverStoreEvent(payload.storeId, payload.event, payload.data);
         }
       } catch {
-        // Ignore malformed notification payloads. They should never come from app code.
+        // ข้าม payload ที่อ่านไม่ได้ เพราะ notify จากระบบควรเป็น JSON ที่ควบคุมโดยแอปเท่านั้น
       }
     });
     listenerClient.on("error", () => {
@@ -148,7 +147,7 @@ async function publishDisplayEvent(displayId, event, data) {
   try {
     await pool.query(`SELECT pg_notify($1, $2)`, [pgNotifyChannel, payload]);
   } catch {
-    // Local in-process delivery already happened; DB notification is a cross-instance best effort.
+    // ส่งใน process นี้ไปแล้ว ส่วน notify ข้าม instance เป็น best-effort
   }
 }
 
@@ -169,7 +168,7 @@ async function publishStoreEvent(storeId, event, data) {
   try {
     await pool.query(`SELECT pg_notify($1, $2)`, [pgNotifyChannel, payload]);
   } catch {
-    // Local in-process delivery already happened; DB notification is a cross-instance best effort.
+    // ส่งใน process นี้ไปแล้ว ส่วน notify ข้าม instance เป็น best-effort
   }
 }
 

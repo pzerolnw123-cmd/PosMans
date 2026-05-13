@@ -64,7 +64,7 @@ export function QrPaymentInstructions({
       ) : dynamicPromptPayReady ? (
         <div className={compact ? `grid w-full justify-items-center gap-2.5 text-center ${compactQrLandscapeGridClass}` : "grid grid-cols-[148px_minmax(0,1fr)] items-center gap-4 max-[860px]:grid-cols-1"}>
           {promptPayQrDataUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
+            // eslint-disable-next-line @next/next/no-img-element -- QR เป็น data URL ที่สร้างในเครื่องและไม่เหมาะกับ next/image
             <img
               src={promptPayQrDataUrl}
               alt="PromptPay QR"
