@@ -9,7 +9,7 @@ import {
   ownerLandscapePanelPaddingClass,
   ownerLandscapeTightGapClass,
 } from "@/components/owner-workspace/landscape-preset";
-import { requestJson, requestProductList } from "@/components/product-management-studio/lib";
+import { loadAllProducts, requestJson } from "@/components/product-management-studio/lib";
 import type { ProductItem } from "@/components/product-management-studio/types";
 import { formatBaht, normalizeStockValue, salesCartStorageKey } from "@/components/sales-workspace/helpers";
 import type { Receipt, ReceiptListResponse } from "@/components/receipt-desk-client/receipt-format";
@@ -87,21 +87,6 @@ function readCartState() {
     sessionStorage.removeItem(salesCartStorageKey);
     return { count: 0, total: 0 };
   }
-}
-
-async function loadAllProducts() {
-  const pageSize = 50;
-  const firstParams = new URLSearchParams({ page: "1", pageSize: String(pageSize) });
-  const firstPage = await requestProductList(firstParams, { force: true });
-  const allProducts = [...firstPage.products];
-
-  for (let page = 2; page <= firstPage.pagination.totalPages; page += 1) {
-    const params = new URLSearchParams({ page: String(page), pageSize: String(pageSize) });
-    const response = await requestProductList(params, { force: true });
-    allProducts.push(...response.products);
-  }
-
-  return allProducts;
 }
 
 export function OwnerOverviewClient({

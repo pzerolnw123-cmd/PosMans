@@ -10,6 +10,8 @@ export type CachedPdf = {
 
 const cacheTtlMs = 5 * 60 * 1000;
 const maxPdfBytes = 2 * 1024 * 1024;
+const maxCachedPdfs = 50;
+const maxCachedPdfBytes = 20 * 1024 * 1024;
 const pdfCache = new Map<string, CachedPdf>();
 
 export function cleanupExpiredPdfCache() {
@@ -18,6 +20,24 @@ export function cleanupExpiredPdfCache() {
     if (entry.expiresAt <= now) {
       pdfCache.delete(token);
     }
+  }
+}
+
+function cachedPdfByteTotal() {
+  let total = 0;
+  for (const entry of pdfCache.values()) {
+    total += entry.bytes.byteLength;
+  }
+  return total;
+}
+
+function enforcePdfCacheLimits() {
+  while (pdfCache.size > maxCachedPdfs || cachedPdfByteTotal() > maxCachedPdfBytes) {
+    const oldestToken = pdfCache.keys().next().value;
+    if (!oldestToken) {
+      return;
+    }
+    pdfCache.delete(oldestToken);
   }
 }
 
@@ -68,6 +88,7 @@ export function cachePdf(entry: Omit<CachedPdf, "expiresAt">) {
     ...entry,
     expiresAt: Date.now() + cacheTtlMs,
   });
+  enforcePdfCacheLimits();
   return token;
 }
 

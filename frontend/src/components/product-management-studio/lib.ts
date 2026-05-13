@@ -5,6 +5,7 @@ export const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 export const CROP_VIEWPORT_SIZE = 320;
 const CROPPED_EXPORT_SIZE = 1200;
 const PRODUCT_LIST_CACHE_TTL_MS = 15_000;
+const PRODUCT_LIST_CACHE_MAX_ENTRIES = 40;
 export const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"] as const;
 
 const productListCache = new Map<string, { expiresAt: number; payload: ProductListResponse }>();
@@ -60,15 +61,35 @@ function cloneProductListResponse(payload: ProductListResponse): ProductListResp
   };
 }
 
+function pruneProductListCache() {
+  const now = Date.now();
+  for (const [cacheKey, entry] of productListCache) {
+    if (entry.expiresAt <= now) {
+      productListCache.delete(cacheKey);
+    }
+  }
+
+  while (productListCache.size > PRODUCT_LIST_CACHE_MAX_ENTRIES) {
+    const oldestKey = productListCache.keys().next().value;
+    if (!oldestKey) {
+      return;
+    }
+    productListCache.delete(oldestKey);
+  }
+}
+
 export function invalidateProductListCache() {
   productListCache.clear();
 }
 
 export async function requestProductList(params: URLSearchParams, { force = false }: { force?: boolean } = {}) {
+  pruneProductListCache();
   const cacheKey = params.toString();
   const cached = productListCache.get(cacheKey);
 
   if (!force && cached && cached.expiresAt > Date.now()) {
+    productListCache.delete(cacheKey);
+    productListCache.set(cacheKey, cached);
     return cloneProductListResponse(cached.payload);
   }
 
@@ -77,8 +98,24 @@ export async function requestProductList(params: URLSearchParams, { force = fals
     expiresAt: Date.now() + PRODUCT_LIST_CACHE_TTL_MS,
     payload: cloneProductListResponse(payload),
   });
+  pruneProductListCache();
 
   return payload;
+}
+
+export async function loadAllProducts() {
+  const pageSize = 50;
+  const firstParams = new URLSearchParams({ page: "1", pageSize: String(pageSize) });
+  const firstPage = await requestProductList(firstParams, { force: true });
+  const allProducts = [...firstPage.products];
+
+  for (let page = 2; page <= firstPage.pagination.totalPages; page += 1) {
+    const params = new URLSearchParams({ page: String(page), pageSize: String(pageSize) });
+    const response = await requestProductList(params, { force: true });
+    allProducts.push(...response.products);
+  }
+
+  return allProducts;
 }
 
 export function createImageObjectUrl(file: File) {

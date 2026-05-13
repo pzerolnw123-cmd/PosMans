@@ -17,6 +17,17 @@ const {
 
 const router = express.Router();
 
+async function deleteReplacedUploadBestEffort(uploadedKey) {
+  try {
+    await deleteR2Object(uploadedKey);
+  } catch (error) {
+    console.error("[product] Failed to delete replaced product upload", {
+      uploadedKey,
+      error,
+    });
+  }
+}
+
 router.get("/", requireStoreRole(["OWNER"]), async (req, res, next) => {
   try {
     const storeId = await getRequiredOwnerStoreId(req, res);
@@ -169,7 +180,7 @@ router.patch("/:productId", requireTrustedOrigin, requireCsrf, requireStoreRole(
     });
 
     if (parsed.uploadedKey !== undefined && existingProduct.uploadedKey && existingProduct.uploadedKey !== parsed.uploadedKey) {
-      await deleteR2Object(existingProduct.uploadedKey);
+      await deleteReplacedUploadBestEffort(existingProduct.uploadedKey);
     }
 
     await writeAuditLog({

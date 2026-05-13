@@ -1,16 +1,9 @@
 "use client";
 
 import { useEffect } from "react";
+import { isRecoverableDevNetworkError } from "@/lib/dev-network-recovery";
 
 const networkRecoveryStorageKey = "pos-mans-network-error-hard-reload-at";
-
-function isNetworkError(value: unknown) {
-  if (value instanceof Error) {
-    return value.message.toLowerCase().includes("network error");
-  }
-
-  return typeof value === "string" && value.toLowerCase().includes("network error");
-}
 
 function scheduleNetworkRecovery() {
   const now = Date.now();
@@ -29,7 +22,7 @@ function scheduleNetworkRecovery() {
 export function NetworkErrorRecovery() {
   useEffect(() => {
     function handleUnhandledRejection(event: PromiseRejectionEvent) {
-      if (!isNetworkError(event.reason)) {
+      if (!isRecoverableDevNetworkError(event.reason)) {
         return;
       }
 
@@ -38,7 +31,7 @@ export function NetworkErrorRecovery() {
     }
 
     function handleError(event: ErrorEvent) {
-      if (!isNetworkError(event.error) && !isNetworkError(event.message)) {
+      if (!isRecoverableDevNetworkError(event.error) && !isRecoverableDevNetworkError(event.message)) {
         return;
       }
 

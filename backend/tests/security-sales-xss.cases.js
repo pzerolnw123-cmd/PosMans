@@ -203,7 +203,7 @@ describe("backend security hardening - sales and xss", () => {
       });
 
     expect(response.status).toBe(201);
-    expect(prisma.product.updateMany).toHaveBeenCalledWith({
+    expect(prisma.product.updateManyAndReturn).toHaveBeenCalledWith({
       where: {
         id: "product-1",
         storeId: "store-1",
@@ -212,6 +212,10 @@ describe("backend security hardening - sales and xss", () => {
       },
       data: {
         stockQuantity: { decrement: 2 },
+      },
+      select: {
+        id: true,
+        stockQuantity: true,
       },
     });
     expect(prisma.inventoryMovement.createMany).toHaveBeenCalledWith({
@@ -250,7 +254,7 @@ describe("backend security hardening - sales and xss", () => {
     expect(response.body.error).toBe("มีสินค้าบางรายการคงเหลือไม่พอ กรุณาตรวจสอบตะกร้า");
     expect(response.body.code).toBeUndefined();
     expect(prisma.saleOrder.create).not.toHaveBeenCalled();
-    expect(prisma.product.updateMany).not.toHaveBeenCalled();
+    expect(prisma.product.updateManyAndReturn).not.toHaveBeenCalled();
     expect(prisma.inventoryMovement.createMany).not.toHaveBeenCalled();
   });
 

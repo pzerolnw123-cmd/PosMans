@@ -150,8 +150,8 @@ router.post("/", saleCheckoutLimiter, requireTrustedOrigin, requireCsrf, require
 
           const stockTrackedItems = orderItems.filter((entry) => entry.trackStock);
           const stockUpdates = await Promise.all(
-            stockTrackedItems.map((item) =>
-              tx.product.updateMany({
+            stockTrackedItems.map(async (item) => {
+              const updatedProducts = await tx.product.updateManyAndReturn({
                 where: {
                   id: item.productId,
                   storeId,
@@ -161,24 +161,36 @@ router.post("/", saleCheckoutLimiter, requireTrustedOrigin, requireCsrf, require
                 data: {
                   stockQuantity: { decrement: item.quantity },
                 },
-              }),
-            ),
+                select: {
+                  id: true,
+                  stockQuantity: true,
+                },
+              });
+
+              const updatedProduct = updatedProducts[0] ?? null;
+              return updatedProduct
+                ? {
+                    item,
+                    stockQuantityAfter: updatedProduct.stockQuantity,
+                  }
+                : null;
+            }),
           );
 
-          if (stockUpdates.some((updated) => updated.count !== 1)) {
+          if (stockUpdates.some((updated) => updated === null)) {
             throw new AppError("มีสินค้าบางรายการคงเหลือไม่พอ กรุณาตรวจสอบตะกร้า", 409, { code: "SALE_INSUFFICIENT_STOCK" });
           }
 
           if (stockTrackedItems.length > 0) {
             await tx.inventoryMovement.createMany({
-              data: stockTrackedItems.map((item) => ({
+              data: stockUpdates.map(({ item, stockQuantityAfter }) => ({
                 storeId,
                 productId: item.productId,
                 createdByUserId: req.session.user.id,
                 type: "SALE",
                 quantityChange: -item.quantity,
-                quantityBefore: item.stockQuantity,
-                quantityAfter: item.stockQuantity - item.quantity,
+                quantityBefore: stockQuantityAfter + item.quantity,
+                quantityAfter: stockQuantityAfter,
                 reason: "Sale checkout",
                 referenceType: "saleOrder",
                 referenceId: createdOrder.id,

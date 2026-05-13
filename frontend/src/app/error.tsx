@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { isRecoverableDevNetworkError } from "@/lib/dev-network-recovery";
 
 const networkRecoveryStorageKey = "pos-mans-network-error-hard-reload-at";
 
@@ -12,9 +13,10 @@ export default function AppError({
   reset: () => void;
 }) {
   const isNetworkError = error.message.toLowerCase().includes("network error");
+  const shouldAutoRecover = isRecoverableDevNetworkError(error);
 
   useEffect(() => {
-    if (!isNetworkError) {
+    if (!shouldAutoRecover) {
       console.error(error);
       return;
     }
@@ -33,7 +35,7 @@ export default function AppError({
     return () => {
       window.clearTimeout(timeoutId);
     };
-  }, [error, isNetworkError, reset]);
+  }, [error, shouldAutoRecover, reset]);
 
   return (
     <main className="grid min-h-dvh place-items-center bg-[var(--background)] px-4 py-8 text-[var(--foreground)]">

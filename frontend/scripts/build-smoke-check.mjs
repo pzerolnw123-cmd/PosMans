@@ -2,12 +2,13 @@ import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 
 const root = path.resolve(import.meta.dirname, "..");
+const buildDir = process.env.NEXT_BUILD_DIR || ".next-build";
 const requiredFiles = [
-  ".next/BUILD_ID",
-  ".next/app-path-routes-manifest.json",
-  ".next/routes-manifest.json",
-  ".next/required-server-files.json",
-];
+  "BUILD_ID",
+  "app-path-routes-manifest.json",
+  "routes-manifest.json",
+  "required-server-files.json",
+].map((file) => path.join(buildDir, file));
 const requiredRoutes = [
   "/login",
   "/owner/[section]",
@@ -24,7 +25,7 @@ if (missingFiles.length > 0) {
   process.exit(1);
 }
 
-const manifestPath = path.join(root, ".next", "app-path-routes-manifest.json");
+const manifestPath = path.join(root, buildDir, "app-path-routes-manifest.json");
 const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
 const manifestValues = new Set(Object.values(manifest));
 const missingRoutes = requiredRoutes.filter(

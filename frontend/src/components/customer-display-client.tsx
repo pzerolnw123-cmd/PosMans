@@ -104,16 +104,32 @@ export function CustomerDisplayClient({ displayId, token }: { displayId: string;
     [displayId, query],
   );
 
+  const loadStoreSnapshot = useCallback(
+    async (cancelled: () => boolean) => {
+      try {
+        const response = await fetch(storeSnapshotUrl, { cache: "no-store" });
+        const data = (await response.json().catch(() => null)) as CustomerDisplayStorePayload | null;
+        if (!cancelled() && (response.status === 403 || response.status === 404 || response.status === 410)) {
+          setPayload(null);
+          setConnectionState("blocked");
+          return;
+        }
+        if (!cancelled() && response.ok && data?.store) {
+          setPayload((current) => (current ? { ...current, store: data.store } : current));
+        }
+      } catch {
+        // SSE remains primary; store metadata polling is a quiet fallback.
+      }
+    },
+    [storeSnapshotUrl],
+  );
+
   useEffect(() => {
     connectionStateRef.current = connectionState;
   }, [connectionState]);
 
   useEffect(() => {
     let cancelled = false;
-    const isCancelled = () => cancelled;
-    const initialSnapshotTimer = window.setTimeout(() => {
-      void loadSnapshot(isCancelled);
-    }, 0);
 
     const events = new EventSource(eventSourceUrl);
     events.addEventListener("open", () => {
@@ -182,63 +198,9 @@ export function CustomerDisplayClient({ displayId, token }: { displayId: string;
 
     return () => {
       cancelled = true;
-      window.clearTimeout(initialSnapshotTimer);
       events.close();
     };
-  }, [eventSourceUrl, loadSnapshot]);
-
-  useEffect(() => {
-    if (payload || connectionState === "blocked") {
-      return;
-    }
-
-    let cancelled = false;
-    const isCancelled = () => cancelled;
-    const retryTimer = window.setInterval(() => {
-      void loadSnapshot(isCancelled);
-    }, 1500);
-
-    return () => {
-      cancelled = true;
-      window.clearInterval(retryTimer);
-    };
-  }, [connectionState, loadSnapshot, payload]);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    async function loadStoreSnapshot() {
-      try {
-        const response = await fetch(storeSnapshotUrl, { cache: "no-store" });
-        const data = (await response.json().catch(() => null)) as CustomerDisplayStorePayload | null;
-        if (!cancelled && (response.status === 403 || response.status === 404 || response.status === 410)) {
-          setPayload(null);
-          setConnectionState("blocked");
-          return;
-        }
-        if (!cancelled && response.ok && data?.store) {
-          setPayload((current) => (current ? { ...current, store: data.store } : current));
-        }
-      } catch {
-        // SSE remains primary; store metadata polling is a quiet fallback.
-      }
-    }
-
-    void loadStoreSnapshot();
-    const snapshotInterval = window.setInterval(() => {
-      const now = Date.now();
-      const minimumDelay = connectionStateRef.current === "live" ? 30000 : 1500;
-      if (now - lastStoreSnapshotAtRef.current >= minimumDelay) {
-        lastStoreSnapshotAtRef.current = now;
-        void loadStoreSnapshot();
-      }
-    }, 1500);
-
-    return () => {
-      cancelled = true;
-      window.clearInterval(snapshotInterval);
-    };
-  }, [storeSnapshotUrl]);
+  }, [eventSourceUrl]);
 
   useEffect(() => {
     if (connectionState === "blocked") {
@@ -250,9 +212,17 @@ export function CustomerDisplayClient({ displayId, token }: { displayId: string;
     const pollDelay = connectionState === "live" ? 30000 : 1500;
     const initialTimer = window.setTimeout(() => {
       void loadSnapshot(isCancelled);
+      void loadStoreSnapshot(isCancelled);
+      lastStoreSnapshotAtRef.current = Date.now();
     }, 0);
     const snapshotInterval = window.setInterval(() => {
+      const now = Date.now();
+      const minimumDelay = connectionStateRef.current === "live" ? 30000 : 1500;
       void loadSnapshot(isCancelled);
+      if (now - lastStoreSnapshotAtRef.current >= minimumDelay) {
+        lastStoreSnapshotAtRef.current = now;
+        void loadStoreSnapshot(isCancelled);
+      }
     }, pollDelay);
 
     return () => {
@@ -260,7 +230,7 @@ export function CustomerDisplayClient({ displayId, token }: { displayId: string;
       window.clearTimeout(initialTimer);
       window.clearInterval(snapshotInterval);
     };
-  }, [connectionState, loadSnapshot]);
+  }, [connectionState, loadSnapshot, loadStoreSnapshot]);
 
   useEffect(() => {
     function syncStoredTheme() {

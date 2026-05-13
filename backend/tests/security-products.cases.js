@@ -1,4 +1,4 @@
-const { request, prisma, hashPassword, hashPin, verifyPassword, verifyPin, createPresignedUpload, isR2Configured, createApp, assertSafeHttpUrl, sanitizeRichText, buildSessionUser, buildChallenge, buildProduct, buildSaleOrder, mockOwnerSession, makeUniqueConflictError, originalEnv, installSecurityTestLifecycle } = require("./security-test-context");
+const { request, prisma, hashPassword, hashPin, verifyPassword, verifyPin, createPresignedUpload, deleteR2Object, isR2Configured, createApp, assertSafeHttpUrl, sanitizeRichText, buildSessionUser, buildChallenge, buildProduct, buildSaleOrder, mockOwnerSession, makeUniqueConflictError, originalEnv, installSecurityTestLifecycle } = require("./security-test-context");
 
 describe("backend security hardening - products", () => {
   installSecurityTestLifecycle();
@@ -204,6 +204,44 @@ describe("backend security hardening - products", () => {
         data: expect.objectContaining({ name: "ข้าวกะเพราพิเศษ", price: 75 }),
       }),
     );
+  });
+
+  test("keeps product update successful when replaced upload cleanup fails", async () => {
+    const app = createApp();
+    mockOwnerSession();
+    const consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+    prisma.product.findFirst.mockResolvedValue({
+      id: "product-1",
+      uploadedKey: "stores/store-1/uploads/old.webp",
+      trackStock: false,
+      stockQuantity: 0,
+      lowStockThreshold: 0,
+    });
+    prisma.product.update.mockResolvedValue(buildProduct({
+      imageUrl: "https://cdn.example.com/stores/store-1/uploads/new.webp",
+      uploadedKey: "stores/store-1/uploads/new.webp",
+    }));
+    deleteR2Object.mockRejectedValue(new Error("R2 delete failed"));
+
+    const response = await request(app)
+      .patch("/api/products/product-1")
+      .set("Origin", "http://localhost:3000")
+      .set("Cookie", ["pos_mans_session=session-token", "pos_mans_session_csrf=csrf-token"])
+      .set("x-csrf-token", "csrf-token")
+      .send({
+        imageUrl: "https://cdn.example.com/stores/store-1/uploads/new.webp",
+        uploadedKey: "stores/store-1/uploads/new.webp",
+      });
+
+    expect(response.status).toBe(200);
+    expect(deleteR2Object).toHaveBeenCalledWith("stores/store-1/uploads/old.webp");
+    expect(prisma.auditLog.create).toHaveBeenCalledWith(expect.objectContaining({
+      data: expect.objectContaining({
+        action: "PRODUCT_UPDATED",
+        status: "success",
+      }),
+    }));
+    consoleErrorSpy.mockRestore();
   });
 
   test("returns 404 when updating product outside current store", async () => {

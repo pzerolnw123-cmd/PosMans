@@ -33,6 +33,7 @@ jest.mock("../src/lib/db", () => ({
       findFirst: jest.fn(),
       create: jest.fn(),
       updateMany: jest.fn(),
+      updateManyAndReturn: jest.fn(),
       update: jest.fn(),
       delete: jest.fn(),
     },
@@ -74,7 +75,7 @@ jest.mock("../src/lib/r2", () => ({
 
 const { prisma } = require("../src/lib/db");
 const { hashPassword, hashPin, verifyPassword, verifyPin } = require("../src/utils/password");
-const { createPresignedUpload, isR2Configured } = require("../src/lib/r2");
+const { createPresignedUpload, deleteR2Object, isR2Configured } = require("../src/lib/r2");
 const { createApp } = require("../src/app");
 const { assertSafeHttpUrl, sanitizeRichText } = require("../src/utils/xss");
 const { Prisma } = require("../src/generated/prisma");
@@ -190,6 +191,7 @@ function installSecurityTestLifecycle() {
     prisma.product.findFirst.mockResolvedValue(null);
     prisma.product.create.mockResolvedValue({});
     prisma.product.updateMany.mockResolvedValue({ count: 1 });
+    prisma.product.updateManyAndReturn.mockResolvedValue([{ id: "product-1", stockQuantity: 1 }]);
     prisma.product.update.mockResolvedValue({});
     prisma.product.delete.mockResolvedValue({});
     prisma.inventoryMovement.create.mockResolvedValue({ id: "movement-1" });
@@ -269,6 +271,7 @@ function installSecurityTestLifecycle() {
       maxUploadBytes: 5_242_880,
       publicUrl: "https://cdn.example.com/stores/store-1/uploads/test.webp",
     });
+    deleteR2Object.mockResolvedValue(undefined);
     process.env = { ...originalEnv };
   });
 
@@ -278,5 +281,5 @@ function installSecurityTestLifecycle() {
 }
 
 module.exports = {
-  request, prisma, hashPassword, hashPin, verifyPassword, verifyPin, createPresignedUpload, isR2Configured, createApp, assertSafeHttpUrl, sanitizeRichText, buildSessionUser, buildChallenge, buildProduct, buildSaleOrder, mockOwnerSession, makeUniqueConflictError, originalEnv, installSecurityTestLifecycle,
+  request, prisma, hashPassword, hashPin, verifyPassword, verifyPin, createPresignedUpload, deleteR2Object, isR2Configured, createApp, assertSafeHttpUrl, sanitizeRichText, buildSessionUser, buildChallenge, buildProduct, buildSaleOrder, mockOwnerSession, makeUniqueConflictError, originalEnv, installSecurityTestLifecycle,
 };

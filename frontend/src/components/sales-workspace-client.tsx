@@ -3,8 +3,9 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type KeyboardEvent, type PointerEvent } from "react";
 import { useRouter } from "next/navigation";
 import { setStoredCustomerDisplayIdle } from "@/components/customer-display-session";
-import { requestProductList } from "@/components/product-management-studio/lib";
+import { loadAllProducts, requestProductList } from "@/components/product-management-studio/lib";
 import { categoryOptions, type ProductCategory, type ProductItem } from "@/components/product-management-studio/types";
+import { normalizeCartProduct, reconcileCartItemsWithLiveProducts } from "@/components/sales-workspace/cart-reconcile";
 
 type CartItem = {
   product: ProductItem;
@@ -57,21 +58,6 @@ const oldPosLowHeightSaleProductButtonClass =
   "[@media(width:1366px)_and_(height:720px)_and_(orientation:landscape)]:!h-[48px] [@media(width:1366px)_and_(height:720px)_and_(orientation:landscape)]:!w-[48px] [@media(width:1366px)_and_(height:720px)_and_(orientation:landscape)]:!min-w-[48px] [@media(width:1366px)_and_(height:720px)_and_(orientation:landscape)]:!gap-0 [@media(width:1366px)_and_(height:720px)_and_(orientation:landscape)]:!px-0";
 const oldPosLowHeightSaleProductHideClass =
   "[@media(width:1366px)_and_(height:720px)_and_(orientation:landscape)]:hidden";
-async function loadAllProducts() {
-  const pageSize = 50;
-  const firstParams = new URLSearchParams({ page: "1", pageSize: String(pageSize) });
-  const firstPage = await requestProductList(firstParams, { force: true });
-  const allProducts = [...firstPage.products];
-
-  for (let page = 2; page <= firstPage.pagination.totalPages; page += 1) {
-    const params = new URLSearchParams({ page: String(page), pageSize: String(pageSize) });
-    const response = await requestProductList(params, { force: true });
-    allProducts.push(...response.products);
-  }
-
-  return allProducts;
-}
-
 function compactStockLabel(product: ProductItem, inCart = 0) {
   if (!product.trackStock) {
     return null;
@@ -221,14 +207,7 @@ export function SalesWorkspaceClient() {
         ? parsed.items
             .filter((item) => item.product && item.productId && item.quantity > 0)
             .map((item) => ({
-              product: {
-                ...item.product!,
-                status: item.product!.status || "พร้อมขาย",
-                costPerUnit: normalizeStockValue(item.product!.costPerUnit),
-                trackStock: item.product!.trackStock ?? false,
-                stockQuantity: normalizeStockValue(item.product!.stockQuantity),
-                lowStockThreshold: normalizeStockValue(item.product!.lowStockThreshold),
-              },
+              product: normalizeCartProduct(item.product!),
               quantity: Math.max(1, Math.floor(item.quantity)),
             }))
         : [];
@@ -251,28 +230,7 @@ export function SalesWorkspaceClient() {
       let cancelled = false;
 
       void (async () => {
-        const liveProducts = await loadAllProducts().catch(() => []);
-        const liveProductsById = new Map(liveProducts.map((product) => [product.id, product] as const));
-        const reconciledItems = cartItems
-          .map((item) => {
-            const liveProduct = liveProductsById.get(item.product.id);
-            if (!liveProduct) {
-              return null;
-            }
-
-            return {
-              product: {
-                ...liveProduct,
-                status: liveProduct.status || "พร้อมขาย",
-                costPerUnit: normalizeStockValue(liveProduct.costPerUnit),
-                trackStock: liveProduct.trackStock ?? false,
-                stockQuantity: normalizeStockValue(liveProduct.stockQuantity),
-                lowStockThreshold: normalizeStockValue(liveProduct.lowStockThreshold),
-              },
-              quantity: Math.max(1, Math.floor(item.quantity)),
-            };
-          })
-          .filter((item): item is CartItem => Boolean(item));
+        const reconciledItems = await reconcileCartItemsWithLiveProducts(cartItems, loadAllProducts);
 
         if (!cancelled) {
           setCartItems(reconciledItems);
