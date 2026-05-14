@@ -1,4 +1,4 @@
-import { expect, test, type Page, type StorageState } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 
 export const ownerCredentials = {
   username: process.env.E2E_OWNER_USERNAME,
@@ -13,12 +13,13 @@ export function hasOwnerCredentials() {
   );
 }
 
-let ownerStorageState: StorageState | null = null;
+let ownerStorageState: Awaited<ReturnType<ReturnType<Page["context"]>["storageState"]>> | null = null;
 
 export async function signInOwner(page: Page) {
   if (ownerStorageState) {
+    const storageState = ownerStorageState;
     await test.step("restore owner session", async () => {
-      await page.context().addCookies(ownerStorageState.cookies);
+      await page.context().addCookies(storageState.cookies);
     });
     return;
   }
