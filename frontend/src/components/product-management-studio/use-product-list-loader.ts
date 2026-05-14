@@ -14,7 +14,7 @@ type ProductListLoaderOptions = {
   activeCategory: ProductCategory;
   itemsPerPage: number;
   page: number;
-  pendingDraftRef: { current: ProductItem | null };
+  pendingDraft: ProductItem | null;
   setPage: Dispatch<SetStateAction<number>>;
   setPagination: Dispatch<SetStateAction<ProductPagination>>;
   setProducts: Dispatch<SetStateAction<ProductItem[]>>;
@@ -28,7 +28,7 @@ export function useProductListLoader({
   activeCategory,
   itemsPerPage,
   page,
-  pendingDraftRef,
+  pendingDraft,
   setPage,
   setPagination,
   setProducts,
@@ -57,7 +57,6 @@ export function useProductListLoader({
           setPage(response.pagination.page);
         }
 
-        const pendingDraft = pendingDraftRef.current;
         const nextProducts = pendingDraft ? [pendingDraft, ...response.products.filter((item) => item.id !== pendingDraft.id)] : response.products;
 
         if (nextProducts.length > 0) {
@@ -87,5 +86,5 @@ export function useProductListLoader({
     return () => {
       cancelled = true;
     };
-  }, [activeCategory, itemsPerPage, page, pendingDraftRef, setPage, setPagination, setProducts, setProductsLoading, setSelectedId, setServerProducts, setUploadError]);
+  }, [activeCategory, itemsPerPage, page, pendingDraft, setPage, setPagination, setProducts, setProductsLoading, setSelectedId, setServerProducts, setUploadError]);
 }

@@ -169,33 +169,37 @@ export function SalesWorkspaceClient({ storeId }: { storeId: string }) {
   }, []);
 
   useEffect(() => {
-    const raw = sessionStorage.getItem(cartStorageKey);
-    if (!raw) {
-      setCartHydrated(true);
-      return;
-    }
-
-    try {
-      const parsed = JSON.parse(raw) as StoredSalesCart;
-      if (parsed.storeId !== storeId) {
-        sessionStorage.removeItem(cartStorageKey);
+    const timeoutId = window.setTimeout(() => {
+      const raw = sessionStorage.getItem(cartStorageKey);
+      if (!raw) {
         setCartHydrated(true);
         return;
       }
-      const restoredItems = Array.isArray(parsed.items)
-        ? parsed.items
-            .filter((item) => item.product && item.productId && item.quantity > 0)
-            .map((item) => ({
-              product: normalizeCartProduct(item.product!),
-              quantity: Math.max(1, Math.floor(item.quantity)),
-            }))
-        : [];
-      setCartItems(restoredItems);
-    } catch {
-      sessionStorage.removeItem(cartStorageKey);
-    } finally {
-      setCartHydrated(true);
-    }
+
+      try {
+        const parsed = JSON.parse(raw) as StoredSalesCart;
+        if (parsed.storeId !== storeId) {
+          sessionStorage.removeItem(cartStorageKey);
+          setCartHydrated(true);
+          return;
+        }
+        const restoredItems = Array.isArray(parsed.items)
+          ? parsed.items
+              .filter((item) => item.product && item.productId && item.quantity > 0)
+              .map((item) => ({
+                product: normalizeCartProduct(item.product!),
+                quantity: Math.max(1, Math.floor(item.quantity)),
+              }))
+          : [];
+        setCartItems(restoredItems);
+      } catch {
+        sessionStorage.removeItem(cartStorageKey);
+      } finally {
+        setCartHydrated(true);
+      }
+    }, 0);
+
+    return () => window.clearTimeout(timeoutId);
   }, [cartStorageKey, storeId]);
 
   useEffect(() => {

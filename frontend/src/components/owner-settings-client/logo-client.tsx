@@ -51,9 +51,13 @@ export function OwnerLogoProvider({ children, initialLogoUrl = "" }: { children:
   const [saved, setSaved] = useState(Boolean(normalizedInitialLogoUrl));
 
   useEffect(() => {
-    setPreviewUrl(normalizedInitialLogoUrl);
-    setSavedLogoUrl(normalizedInitialLogoUrl);
-    setSaved(Boolean(normalizedInitialLogoUrl));
+    const timeoutId = window.setTimeout(() => {
+      setPreviewUrl(normalizedInitialLogoUrl);
+      setSavedLogoUrl(normalizedInitialLogoUrl);
+      setSaved(Boolean(normalizedInitialLogoUrl));
+    }, 0);
+
+    return () => window.clearTimeout(timeoutId);
   }, [normalizedInitialLogoUrl]);
 
   useEffect(() => {
@@ -367,4 +371,3 @@ export function OwnerLogoClient({ compact = false }: { compact?: boolean }) {
     </div>
   );
 }
-

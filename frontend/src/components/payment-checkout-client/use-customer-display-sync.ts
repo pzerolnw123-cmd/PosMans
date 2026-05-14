@@ -56,10 +56,14 @@ export function useCustomerDisplaySync({
   const [customerDisplayBusy, setCustomerDisplayBusy] = useState(false);
 
   useEffect(() => {
-    const storedDisplay = readStoredCustomerDisplay();
-    if (storedDisplay) {
-      setCustomerDisplay(storedDisplay);
-    }
+    const timeoutId = window.setTimeout(() => {
+      const storedDisplay = readStoredCustomerDisplay();
+      if (storedDisplay) {
+        setCustomerDisplay(storedDisplay);
+      }
+    }, 0);
+
+    return () => window.clearTimeout(timeoutId);
   }, []);
 
   const updateCustomerDisplay = useCallback(

@@ -149,8 +149,11 @@ export function OwnerPaymentSettingsClient({ initialSettings }: { initialSetting
 
   useEffect(() => {
     if (!usesBankAccount || effectivelyDisabled) {
-      setBankDropdownOpen(false);
+      const timeoutId = window.setTimeout(() => setBankDropdownOpen(false), 0);
+      return () => window.clearTimeout(timeoutId);
     }
+
+    return undefined;
   }, [effectivelyDisabled, usesBankAccount]);
 
   async function handleQrUpload(event: ChangeEvent<HTMLInputElement>) {
