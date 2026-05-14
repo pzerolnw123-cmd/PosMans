@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type PointerEvent } from "react";
+import { formatBaht, formatThaiDate, formatThaiDateTime, formatThaiNumber } from "@/lib/format";
 import { requestJson } from "@/components/product-management-studio/lib";
-import { CalendarPicker } from "@/components/receipt-desk-client/calendar-picker";
 import { shiftDateInputValue, toDateInputValue } from "@/components/receipt-desk-client/shared";
+import { ReportRangeControls } from "@/components/report-range-controls";
 import { LoadingState, inputClass, primaryButtonClass, secondaryButtonClass } from "@/components/ui-primitives";
 
 type ReportRange = "today" | "yesterday" | "7d" | "month";
@@ -26,6 +27,15 @@ type SalesReportResponse = {
   productSummary: ProductSummary[];
 };
 
+const profitCalculatorLayoutClass =
+  "grid h-full min-h-0 grid-cols-[minmax(0,0.65fr)_minmax(280px,0.35fr)] items-stretch gap-[18px] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:grid-cols-[minmax(0,1fr)_minmax(248px,0.44fr)] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:gap-3 [@media(orientation:portrait)]:h-auto [@media(orientation:portrait)]:grid-cols-1 [@media(orientation:portrait)]:gap-4 max-[820px]:h-auto max-[820px]:grid-cols-1";
+
+const profitCalculatorMainPanelClass =
+  "grid h-full min-h-0 grid-rows-[auto_auto_minmax(0,1fr)] gap-[18px] overflow-hidden rounded-none border border-[var(--border)] bg-[var(--panel-strong)] px-5 py-5 shadow-[var(--shadow-soft)] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:gap-3 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:px-4 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:py-4 [@media(orientation:portrait)]:h-fit [@media(orientation:portrait)]:overflow-visible [@media(orientation:portrait)]:px-4 [@media(orientation:portrait)]:py-4 max-[820px]:h-fit max-[820px]:overflow-visible max-[820px]:px-4 max-[820px]:py-4";
+
+const profitRangeControlClass =
+  "grid w-full gap-2 [&_.report-range-buttons]:gap-2.5 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:gap-1.5 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:[&_>div]:gap-1.5 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:[&_>div>span]:text-[0.68rem] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:[&_>div>div>button]:h-[36px] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:[&_>div>div>button]:px-3 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:[&_>div>div>button]:pr-8 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:[&_>div>div>button]:text-[0.78rem] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:[&_.report-range-buttons]:gap-2.5 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:[&_.report-range-buttons>button]:min-h-[32px] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:[&_.report-range-buttons>button]:px-2.5 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:[&_.report-range-buttons>button]:text-[0.76rem]";
+
 const rangeOptions: Array<{ value: ReportRange; label: string }> = [
   { value: "today", label: "วันนี้" },
   { value: "yesterday", label: "เมื่อวาน" },
@@ -33,9 +43,17 @@ const rangeOptions: Array<{ value: ReportRange; label: string }> = [
   { value: "month", label: "เดือนนี้" },
 ];
 
-function formatBaht(value: number) {
-  return `฿${Math.round(value).toLocaleString("th-TH")}`;
-}
+const extraCostFields: Array<[keyof ExtraCosts, string]> = [
+  ["labor", "ค่าแรงรวม"],
+  ["packaging", "ค่าแพ็กเกจรวม"],
+  ["other", "ค่าใช้จ่ายอื่น ๆ"],
+];
+
+type ExtraCosts = {
+  labor: string;
+  packaging: string;
+  other: string;
+};
 
 function parseMoney(value: string) {
   const numberValue = Number(value.replace(/,/g, ""));
@@ -43,7 +61,7 @@ function parseMoney(value: string) {
 }
 
 function formatReportDate(date: Date) {
-  return date.toLocaleDateString("th-TH", { day: "numeric", month: "short", year: "numeric" });
+  return formatThaiDate(date);
 }
 
 function addDays(date: Date, days: number) {
@@ -114,7 +132,7 @@ export function ProfitCalculatorClient({ storeName = "" }: { storeName?: string 
   const [error, setError] = useState("");
   const [exportMessage, setExportMessage] = useState("");
   const [unitCosts, setUnitCosts] = useState<Record<string, string>>({});
-  const [extraCosts, setExtraCosts] = useState({ labor: "", packaging: "", other: "" });
+  const [extraCosts, setExtraCosts] = useState<ExtraCosts>({ labor: "", packaging: "", other: "" });
   const [productScrollMetric, setProductScrollMetric] = useState({ top: 0, height: 100, visible: false });
   const productScrollRef = useRef<HTMLDivElement | null>(null);
   const productDragRef = useRef({
@@ -170,6 +188,24 @@ export function ProfitCalculatorClient({ storeName = "" }: { storeName?: string 
 
     return { products, productCost, extraCost, totalCost, sales, profit, margin, itemCount, averageCost };
   }, [extraCosts, report, unitCosts]);
+  const summaryItems = useMemo(
+    () => [
+      ["ยอดขายจริง", formatBaht(calculation.sales)],
+      ["จำนวนบิล", `${formatThaiNumber(report?.totals.orders || 0)} บิล`],
+      ["จำนวนสินค้า", `${formatThaiNumber(calculation.itemCount)} ชิ้น`],
+      ["ต้นทุนที่กรอก", formatBaht(calculation.totalCost)],
+    ],
+    [calculation.itemCount, calculation.sales, calculation.totalCost, report?.totals.orders],
+  );
+  const profitSnapshotItems = useMemo(
+    () => [
+      ["ยอดขาย", formatBaht(calculation.sales)],
+      ["ต้นทุนรวม", formatBaht(calculation.totalCost)],
+      ["กำไรสุทธิ", formatBaht(calculation.profit)],
+      ["Margin", `${calculation.margin.toFixed(1)}%`],
+    ],
+    [calculation.margin, calculation.profit, calculation.sales, calculation.totalCost],
+  );
   const today = useMemo(() => toDateInputValue(new Date()), []);
   const yesterday = useMemo(() => shiftDateInputValue(-1), []);
   const calendarSelectedDate = selectedDate || (range === "today" ? today : range === "yesterday" ? yesterday : "");
@@ -304,7 +340,7 @@ export function ProfitCalculatorClient({ storeName = "" }: { storeName?: string 
     const rows = buildExportRows();
     const dateLabel = reportDateLabel();
     const periodLabel = reportPeriodLabel();
-    const generatedAt = new Date().toLocaleString("th-TH", { dateStyle: "medium", timeStyle: "short" });
+    const generatedAt = formatThaiDateTime(new Date());
     const reportStoreName = storeName.trim();
 
     const productRows = rows
@@ -312,7 +348,7 @@ export function ProfitCalculatorClient({ storeName = "" }: { storeName?: string 
         (row, index) => `
           <tr class="${index % 2 === 0 ? "row-even" : "row-odd"}">
             <td class="cell-product">${escapeHtml(row.name)}</td>
-            <td class="number">${escapeHtml(row.quantity.toLocaleString("th-TH"))}</td>
+            <td class="number">${escapeHtml(formatThaiNumber(row.quantity))}</td>
             <td class="number">${escapeHtml(formatBaht(row.sales))}</td>
             <td class="number muted-number">${escapeHtml(formatBaht(row.unitCost))}</td>
             <td class="number muted-number">${escapeHtml(formatBaht(row.totalCost))}</td>
@@ -388,7 +424,7 @@ export function ProfitCalculatorClient({ storeName = "" }: { storeName?: string 
               <td class="summary-value">${escapeHtml(formatBaht(calculation.totalCost))}</td>
               <td class="summary-value ${calculation.profit < 0 ? "loss" : "profit"}" colspan="2">${escapeHtml(formatBaht(calculation.profit))}</td>
               <td class="summary-value">${escapeHtml(`${calculation.margin.toFixed(1)}%`)}</td>
-              <td class="summary-value">${escapeHtml(calculation.itemCount.toLocaleString("th-TH"))}</td>
+              <td class="summary-value">${escapeHtml(formatThaiNumber(calculation.itemCount))}</td>
             </tr>
             <tr><td class="spacer" colspan="6"></td></tr>
             <tr><td class="section-title" colspan="6">รายละเอียดสินค้า</td></tr>
@@ -443,7 +479,7 @@ export function ProfitCalculatorClient({ storeName = "" }: { storeName?: string 
 
     try {
       const { createProfitReportPdfBlob } = await import("@/components/profit-report-pdf");
-      const generatedAt = new Date().toLocaleString("th-TH", { dateStyle: "medium", timeStyle: "short" });
+      const generatedAt = formatThaiDateTime(new Date());
       const pdfBlob = await createProfitReportPdfBlob({
         storeName: storeName.trim(),
         periodLabel: reportPeriodLabel(),
@@ -495,8 +531,8 @@ export function ProfitCalculatorClient({ storeName = "" }: { storeName?: string 
   }
 
   return (
-    <div className="grid h-full min-h-0 grid-cols-[minmax(0,0.65fr)_minmax(280px,0.35fr)] items-stretch gap-[18px] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:grid-cols-[minmax(0,1fr)_minmax(248px,0.44fr)] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:gap-3 [@media(orientation:portrait)]:h-auto [@media(orientation:portrait)]:grid-cols-1 [@media(orientation:portrait)]:gap-4 max-[820px]:h-auto max-[820px]:grid-cols-1">
-      <section className="grid h-full min-h-0 grid-rows-[auto_auto_minmax(0,1fr)] gap-[18px] overflow-hidden rounded-none border border-[var(--border)] bg-[var(--panel-strong)] px-5 py-5 shadow-[var(--shadow-soft)] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:gap-3 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:px-4 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:py-4 [@media(orientation:portrait)]:h-fit [@media(orientation:portrait)]:overflow-visible [@media(orientation:portrait)]:px-4 [@media(orientation:portrait)]:py-4 max-[820px]:h-fit max-[820px]:overflow-visible max-[820px]:px-4 max-[820px]:py-4">
+    <div className={profitCalculatorLayoutClass}>
+      <section className={profitCalculatorMainPanelClass}>
         <div className="grid grid-cols-[minmax(0,1fr)_minmax(280px,auto)] items-start gap-3 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:grid-cols-[minmax(0,1fr)_minmax(200px,auto)] [@media(orientation:portrait)]:grid-cols-1 max-[720px]:grid-cols-1">
           <div>
             <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[var(--eyebrow)] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:text-[0.62rem] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:tracking-[0.22em]">Real Sales Costing</p>
@@ -504,41 +540,21 @@ export function ProfitCalculatorClient({ storeName = "" }: { storeName?: string 
             <p className="m-0 text-[0.92rem] text-[var(--foreground-soft)] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:max-w-[230px] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:text-[0.82rem] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:leading-[1.45]">เลือกช่วงเวลา แล้วกรอกต้นทุนเองเพื่อประเมินกำไร</p>
           </div>
           <div className="grid min-w-[280px] justify-items-end gap-2 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:min-w-0 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:gap-1.5 max-[720px]:w-full max-[720px]:min-w-0 max-[720px]:justify-items-stretch">
-            <div className="w-full [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:[&_>div]:gap-1 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:[&_>div>span]:text-[0.68rem] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:[&_>div>div>button]:h-[36px] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:[&_>div>div>button]:px-3 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:[&_>div>div>button]:pr-8 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:[&_>div>div>button]:text-[0.78rem]">
-              <CalendarPicker selectedDate={calendarSelectedDate} onSelectDate={setSelectedDate} />
-            </div>
-            <div className="flex flex-wrap justify-end gap-2 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:gap-1.5 max-[720px]:justify-start">
-              {rangeOptions.map((option) => {
-                const active = !selectedDate && option.value === range;
-                return (
-                  <button
-                    key={option.value}
-                    type="button"
-                    className={
-                      active
-                        ? "min-h-[36px] rounded-none border border-[var(--accent-border)] bg-[var(--accent-surface)] px-3 text-[0.84rem] font-bold text-[var(--foreground)] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:min-h-[32px] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:px-2.5 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:text-[0.76rem]"
-                        : "min-h-[36px] rounded-none border border-[var(--border)] bg-[var(--field-bg)] px-3 text-[0.84rem] font-bold text-[var(--foreground-soft)] transition hover:border-[var(--accent-border)] hover:text-[var(--foreground)] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:min-h-[32px] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:px-2.5 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:text-[0.76rem]"
-                    }
-                    onClick={() => {
-                      setSelectedDate("");
-                      setRange(option.value);
-                    }}
-                  >
-                    {option.label}
-                  </button>
-                );
-              })}
+            <div className={profitRangeControlClass}>
+              <ReportRangeControls
+                calendarSelectedDate={calendarSelectedDate}
+                range={range}
+                rangeOptions={rangeOptions}
+                selectedDate={selectedDate}
+                onRangeChange={setRange}
+                onSelectedDateChange={setSelectedDate}
+              />
             </div>
           </div>
         </div>
 
         <div className="grid grid-cols-[repeat(4,minmax(118px,1fr))] items-start gap-[10px] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:grid-cols-4 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:gap-2 [@media(orientation:portrait)]:grid-cols-2 [@media(orientation:portrait)_and_(max-width:640px)]:grid-cols-1 max-[820px]:grid-cols-2 max-[640px]:grid-cols-1">
-          {[
-            ["ยอดขายจริง", formatBaht(calculation.sales)],
-            ["จำนวนบิล", `${(report?.totals.orders || 0).toLocaleString("th-TH")} บิล`],
-            ["จำนวนสินค้า", `${calculation.itemCount.toLocaleString("th-TH")} ชิ้น`],
-            ["ต้นทุนที่กรอก", formatBaht(calculation.totalCost)],
-          ].map(([label, value]) => (
+          {summaryItems.map(([label, value]) => (
             <div key={label} className="grid h-[72px] content-center rounded-none border border-[var(--border)] bg-[var(--surface-muted)] px-3 py-2.5 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:h-[62px] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:px-2.5 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:py-2">
               <span className="truncate text-[0.78rem] text-[var(--foreground-soft)] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:text-[0.68rem]">{label}</span>
               <strong className="mt-1 block min-w-[74px] whitespace-nowrap text-[1rem] tabular-nums text-[var(--foreground)] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:min-w-0 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:text-[0.86rem]">{value}</strong>
@@ -590,7 +606,7 @@ export function ProfitCalculatorClient({ storeName = "" }: { storeName?: string 
                   <div key={product.name} className="grid w-[calc(100%-32px)] justify-self-start grid-cols-[minmax(180px,1.35fr)_minmax(118px,0.72fr)_minmax(104px,0.56fr)_minmax(104px,0.56fr)] items-center gap-x-6 gap-y-3 rounded-none border border-[var(--border)] bg-[var(--surface)] px-4 py-3 max-[1180px]:w-full max-[1180px]:grid-cols-[minmax(180px,1fr)_minmax(118px,180px)] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:!w-full [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:!grid-cols-[minmax(112px,1fr)_minmax(92px,104px)_minmax(54px,64px)_minmax(54px,64px)] [@media(min-width:1181px)_and_(max-width:1366px)_and_(max-height:860px)_and_(orientation:landscape)]:!w-[calc(100%-4px)] [@media(width:1440px)_and_(height:900px)_and_(orientation:landscape)]:!w-full [@media(width:1600px)_and_(height:900px)_and_(orientation:landscape)]:!w-full [@media(width:1600px)_and_(height:900px)_and_(orientation:landscape)]:!grid-cols-[minmax(170px,1.18fr)_minmax(108px,0.66fr)_minmax(88px,0.48fr)_minmax(88px,0.48fr)] [@media(width:1600px)_and_(height:900px)_and_(orientation:landscape)]:!gap-x-4 [@media(width:1600px)_and_(height:900px)_and_(orientation:landscape)]:!px-3 [@media(min-width:1181px)_and_(max-width:1366px)_and_(max-height:860px)_and_(orientation:landscape)]:grid-cols-[minmax(170px,1.22fr)_minmax(108px,0.72fr)_minmax(88px,0.5fr)_minmax(82px,0.46fr)] [@media(min-width:1181px)_and_(max-width:1366px)_and_(max-height:860px)_and_(orientation:landscape)]:gap-x-4 [@media(min-width:1181px)_and_(max-width:1366px)_and_(max-height:860px)_and_(orientation:landscape)]:px-3 [@media(min-width:1181px)_and_(max-width:1366px)_and_(max-height:860px)_and_(orientation:landscape)]:py-2.5 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:gap-x-2 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:gap-y-1.5 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:px-2 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:py-2 max-[780px]:grid-cols-1 max-[780px]:px-3">
                     <div className="min-w-0">
                       <strong className="block truncate text-[var(--foreground)] [@media(width:1600px)_and_(height:900px)_and_(orientation:landscape)]:max-w-[150px] [@media(min-width:1181px)_and_(max-width:1366px)_and_(max-height:860px)_and_(orientation:landscape)]:text-[0.84rem] [@media(min-width:1181px)_and_(max-width:1366px)_and_(max-height:860px)_and_(orientation:landscape)]:leading-tight [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:text-[0.78rem] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:leading-tight">{product.name}</strong>
-                      <span className="mt-1 block text-[0.78rem] font-bold text-[var(--foreground-soft)] [@media(min-width:1181px)_and_(max-width:1366px)_and_(max-height:860px)_and_(orientation:landscape)]:text-[0.68rem] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:mt-0.5 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:text-[0.68rem]">{product.quantity.toLocaleString("th-TH")} ชิ้น / ยอดขาย {formatBaht(product.sales)}</span>
+                      <span className="mt-1 block text-[0.78rem] font-bold text-[var(--foreground-soft)] [@media(min-width:1181px)_and_(max-width:1366px)_and_(max-height:860px)_and_(orientation:landscape)]:text-[0.68rem] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:mt-0.5 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:text-[0.68rem]">{formatThaiNumber(product.quantity)} ชิ้น / ยอดขาย {formatBaht(product.sales)}</span>
                     </div>
                     <label className="grid gap-1 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:gap-0.5">
                       <span className="text-[0.72rem] font-bold text-[var(--foreground-soft)] [@media(min-width:1181px)_and_(max-width:1366px)_and_(max-height:860px)_and_(orientation:landscape)]:text-[0.66rem] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:text-[0.66rem]">ต้นทุน/ชิ้น</span>
@@ -649,12 +665,7 @@ export function ProfitCalculatorClient({ storeName = "" }: { storeName?: string 
         </div>
 
         <div className="grid grid-cols-2 gap-2 max-[420px]:grid-cols-1">
-          {[
-            ["ยอดขาย", formatBaht(calculation.sales)],
-            ["ต้นทุนรวม", formatBaht(calculation.totalCost)],
-            ["กำไรสุทธิ", formatBaht(calculation.profit)],
-            ["Margin", `${calculation.margin.toFixed(1)}%`],
-          ].map(([label, value]) => (
+          {profitSnapshotItems.map(([label, value]) => (
             <div key={label} className="rounded-none border border-[var(--border)] bg-[var(--surface-muted)] px-3 py-2.5">
               <span className="text-[0.72rem] text-[var(--foreground-soft)]">{label}</span>
               <strong className="mt-0.5 block text-[0.94rem] text-[var(--foreground)]">{value}</strong>
@@ -664,17 +675,13 @@ export function ProfitCalculatorClient({ storeName = "" }: { storeName?: string 
 
         <div className="grid gap-2 rounded-none border border-[var(--border)] bg-[var(--panel-subtle)] px-3.5 py-3">
           <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.22em] text-[var(--eyebrow)]">Additional Costs</p>
-          {[
-            ["labor", "ค่าแรงรวม"],
-            ["packaging", "ค่าแพ็กเกจรวม"],
-            ["other", "ค่าใช้จ่ายอื่น ๆ"],
-          ].map(([key, label]) => (
+          {extraCostFields.map(([key, label]) => (
             <label key={key} className="grid gap-1">
               <span className="text-[0.76rem] font-bold text-[var(--foreground-soft)]">{label}</span>
               <input
                 className={`${inputClass} h-[38px] px-3 text-[0.9rem]`}
                 inputMode="decimal"
-                value={extraCosts[key as keyof typeof extraCosts]}
+                value={extraCosts[key]}
                 onChange={(event) => setExtraCosts((current) => ({ ...current, [key]: event.target.value }))}
                 placeholder="0"
               />

@@ -7,6 +7,12 @@ const {
   shouldRefreshCustomerDisplayStoreSnapshot,
 } = await import("../src/components/customer-display/polling.ts");
 const { enforceMaxEntries, pruneExpiredEntries, sumByteLengths } = await import("../src/lib/cache-limits.ts");
+const { formatBaht, formatCompactBaht, formatThaiNumber } = await import("../src/lib/format.ts");
+const {
+  crc16Ccitt,
+  createPromptPayPayload,
+  normalizePromptPayProxy,
+} = await import("../src/components/payment-checkout-client/promptpay.ts");
 const {
   normalizeCartProduct,
   reconcileCartItemsWithLiveProducts,
@@ -29,6 +35,49 @@ const product = {
 };
 
 assert.equal(isRecoverableDevNetworkError(new Error("Network Error"), "development"), true);
+assert.equal(formatThaiNumber(1234567), "1,234,567");
+assert.equal(formatBaht(1234.56), "฿1,235");
+assert.equal(formatCompactBaht(950), "฿950");
+assert.equal(formatCompactBaht(12_300), "฿12K");
+assert.equal(formatCompactBaht(1_250_000), "฿1.3M");
+assert.equal(crc16Ccitt("123456789"), "29B1");
+assert.deepEqual(
+  normalizePromptPayProxy({
+    promptPayRecipientType: "MOBILE",
+    promptPayMobileId: "081-234-5678",
+    promptPayNationalId: "",
+    promptPayTaxId: "",
+  }),
+  { tag: "01", value: "0066812345678" },
+);
+assert.deepEqual(
+  normalizePromptPayProxy({
+    promptPayRecipientType: "NATIONAL_ID",
+    promptPayMobileId: "",
+    promptPayNationalId: "1-2345-67890-12-3",
+    promptPayTaxId: "",
+  }),
+  { tag: "02", value: "1234567890123" },
+);
+assert.equal(
+  normalizePromptPayProxy({
+    promptPayRecipientType: "STATIC_QR",
+    promptPayMobileId: "0812345678",
+    promptPayNationalId: "",
+    promptPayTaxId: "",
+  }),
+  null,
+);
+const promptPayPayload = createPromptPayPayload(
+  {
+    promptPayRecipientType: "MOBILE",
+    promptPayMobileId: "0812345678",
+    promptPayNationalId: "",
+    promptPayTaxId: "",
+  },
+  125.5,
+);
+assert.equal(promptPayPayload, "00020101021229370016A0000006770101110113006681234567853037645406125.505802TH630434FE");
 assert.equal(isRecoverableDevNetworkError("failed to fetch RSC payload", "development"), true);
 assert.equal(isRecoverableDevNetworkError(new Error("Network Error"), "production"), false);
 assert.equal(isRecoverableDevNetworkError("unrelated error", "development"), false);

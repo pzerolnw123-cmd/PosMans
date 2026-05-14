@@ -1,10 +1,12 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { formatBaht, formatCompactBaht, formatThaiNumber } from "@/lib/format";
+import { paymentMethodLabels, type PaymentMethod } from "@/lib/payment-methods";
 import { ownerLandscapeClass, ownerLandscapeCompactPanelPaddingClass, ownerLandscapePanelPaddingClass } from "@/components/owner-workspace/landscape-preset";
 import { requestJson } from "@/components/product-management-studio/lib";
-import { CalendarPicker } from "@/components/receipt-desk-client/calendar-picker";
 import { shiftDateInputValue, toDateInputValue } from "@/components/receipt-desk-client/shared";
+import { ReportRangeControls } from "@/components/report-range-controls";
 import { LoadingState } from "@/components/ui-primitives";
 
 type ReportRange = "today" | "yesterday" | "7d" | "month";
@@ -15,8 +17,6 @@ type SalesReportPoint = {
   sales: number;
   orders: number;
 };
-
-type PaymentMethod = "CASH" | "QR" | "CARD" | "TRANSFER" | "OTHER";
 
 type SalesReportResponse = {
   range: ReportRange;
@@ -50,28 +50,13 @@ const rangeOptions: Array<{ value: ReportRange; label: string }> = [
 ];
 
 const alwaysVisiblePaymentMethods = new Set<PaymentMethod>(["CASH", "QR", "TRANSFER"]);
-
-const paymentMethodLabels: Record<PaymentMethod, string> = {
-  CASH: "เงินสด",
-  QR: "QR PromptPay",
-  CARD: "บัตร",
-  TRANSFER: "โอนเงิน",
-  OTHER: "อื่น ๆ",
-};
-
-function formatBaht(value: number) {
-  return `฿${value.toLocaleString("th-TH")}`;
-}
-
-function formatCompactBaht(value: number) {
-  if (value >= 1_000_000) {
-    return `฿${(value / 1_000_000).toFixed(1)}M`;
-  }
-  if (value >= 1_000) {
-    return `฿${Math.round(value / 1000)}K`;
-  }
-  return `฿${value}`;
-}
+const summaryFallbackItems = [
+  ["ยอดขาย", "—"],
+  ["จำนวนบิล", "—"],
+  ["บิลเฉลี่ย", "—"],
+  ["ช่วงพีค", "—"],
+];
+const placeholderRows = [0, 1, 2];
 
 function buildSmoothPath(points: Array<{ x: number; y: number }>) {
   if (points.length === 0) return "";
@@ -182,19 +167,18 @@ export function ReportsSalesChart() {
     [report],
   );
 
-  const summaryItems = report
-    ? [
+  const summaryItems = useMemo(
+    () =>
+      report
+        ? [
         ["ยอดขาย", formatBaht(report.totals.sales)],
-        ["จำนวนบิล", `${report.totals.orders.toLocaleString("th-TH")} บิล`],
+        ["จำนวนบิล", `${formatThaiNumber(report.totals.orders)} บิล`],
         ["บิลเฉลี่ย", formatBaht(report.totals.averageOrder)],
         ["ช่วงพีค", report.totals.peakLabel || "-"],
-      ]
-    : [
-        ["ยอดขาย", "—"],
-        ["จำนวนบิล", "—"],
-        ["บิลเฉลี่ย", "—"],
-        ["ช่วงพีค", "—"],
-      ];
+          ]
+        : summaryFallbackItems,
+    [report],
+  );
   const initialLoading = loading && !report;
   const today = useMemo(() => toDateInputValue(new Date()), []);
   const yesterday = useMemo(() => shiftDateInputValue(-1), []);
@@ -214,29 +198,14 @@ export function ReportsSalesChart() {
             <p className="m-0 text-[0.92rem] text-[var(--foreground-soft)]">แสดงยอดขายจริงตามช่วงเวลาที่เลือก</p>
           </div>
           <div className="grid min-w-[280px] justify-items-end gap-2 [@media(min-width:744px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:min-w-0 [@media(min-width:744px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:justify-items-start [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:min-w-0 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:justify-items-start max-[720px]:w-full max-[720px]:min-w-0 max-[720px]:justify-items-stretch">
-            <CalendarPicker selectedDate={calendarSelectedDate} onSelectDate={setSelectedDate} />
-            <div className="flex flex-wrap justify-end gap-2 max-[720px]:justify-start">
-              {rangeOptions.map((option) => {
-                const active = !selectedDate && option.value === range;
-                return (
-                  <button
-                    key={option.value}
-                    type="button"
-                    className={
-                      active
-                        ? "min-h-[36px] rounded-none border border-[var(--accent-border)] bg-[var(--accent-surface)] px-3 text-[0.84rem] font-bold text-[var(--foreground)]"
-                        : "min-h-[36px] rounded-none border border-[var(--border)] bg-[var(--field-bg)] px-3 text-[0.84rem] font-bold text-[var(--foreground-soft)] transition hover:border-[var(--accent-border)] hover:text-[var(--foreground)]"
-                    }
-                    onClick={() => {
-                      setSelectedDate("");
-                      setRange(option.value);
-                    }}
-                  >
-                    {option.label}
-                  </button>
-                );
-              })}
-            </div>
+            <ReportRangeControls
+              calendarSelectedDate={calendarSelectedDate}
+              range={range}
+              rangeOptions={rangeOptions}
+              selectedDate={selectedDate}
+              onRangeChange={setRange}
+              onSelectedDateChange={setSelectedDate}
+            />
           </div>
         </div>
 
@@ -346,7 +315,7 @@ export function ReportsSalesChart() {
           {initialLoading ? (
             <div className="relative min-h-[220px]">
               <div className="grid gap-[10px]">
-                {Array.from({ length: 3 }).map((_, index) => (
+                {placeholderRows.map((index) => (
                   <div
                     key={`top-product-placeholder-${index}`}
                     className="grid grid-cols-[44px_minmax(0,1fr)_auto] items-center gap-3 rounded-none border border-[var(--border)] bg-[var(--surface-muted)] px-3 py-3 opacity-0 max-[420px]:grid-cols-[44px_minmax(0,1fr)]"
@@ -393,7 +362,7 @@ export function ReportsSalesChart() {
                     </span>
                     <div className="min-w-0">
                       <strong className="block truncate text-[1rem] leading-tight text-[var(--foreground)] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:text-[0.82rem] [@media(min-width:1025px)_and_(max-width:1180px)_and_(orientation:landscape)_and_(any-pointer:coarse)]:text-[0.82rem]">{product.name}</strong>
-                      <span className="mt-1 block text-[0.78rem] font-bold text-[var(--foreground-soft)]">{product.quantity.toLocaleString("th-TH")} ชิ้น</span>
+                      <span className="mt-1 block text-[0.78rem] font-bold text-[var(--foreground-soft)]">{formatThaiNumber(product.quantity)} ชิ้น</span>
                     </div>
                     <strong className="text-right text-[0.96rem] text-[var(--foreground)] max-[420px]:col-span-2 max-[420px]:text-left">{formatBaht(product.sales)}</strong>
                   </button>
@@ -425,7 +394,7 @@ export function ReportsSalesChart() {
           {initialLoading ? (
             <div className="relative min-h-[146px]">
               <div className="grid gap-2">
-                {Array.from({ length: 3 }).map((_, index) => (
+                {placeholderRows.map((index) => (
                   <div
                     key={`payment-summary-placeholder-${index}`}
                     className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 rounded-none border border-[var(--border)] bg-[var(--surface-muted)] px-3 py-2.5 opacity-0"
@@ -452,7 +421,7 @@ export function ReportsSalesChart() {
                   <div key={payment.method} className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 rounded-none border border-[var(--border)] bg-[var(--surface-muted)] px-3 py-2.5">
                     <div className="min-w-0">
                       <strong className="block truncate text-[0.94rem] text-[var(--foreground)]">{paymentMethodLabels[payment.method]}</strong>
-                      <span className="mt-1 block text-[0.76rem] font-bold text-[var(--foreground-soft)]">{payment.orders.toLocaleString("th-TH")} บิล</span>
+                      <span className="mt-1 block text-[0.76rem] font-bold text-[var(--foreground-soft)]">{formatThaiNumber(payment.orders)} บิล</span>
                     </div>
                     <strong className="text-right text-[0.94rem] text-[var(--foreground)]">{formatBaht(payment.sales)}</strong>
                   </div>
@@ -501,7 +470,7 @@ export function ReportsSalesChart() {
               </div>
               <div className="flex items-center justify-between gap-3 border-t border-[var(--border-subtle)] pt-3 text-[0.92rem]">
                 <span className="text-[var(--foreground-soft)]">จำนวนขาย</span>
-                <strong className="text-[var(--foreground)]">{selectedTopProduct.quantity.toLocaleString("th-TH")} ชิ้น</strong>
+                <strong className="text-[var(--foreground)]">{formatThaiNumber(selectedTopProduct.quantity)} ชิ้น</strong>
               </div>
               <div className="flex items-center justify-between gap-3 border-t border-[var(--border-subtle)] pt-3">
                 <span className="font-bold text-[var(--foreground)]">ยอดขายรวม</span>

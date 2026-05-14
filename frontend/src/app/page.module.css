@@ -899,3 +899,26 @@
     font-size: 2.05rem;
   }
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-nav a,
+  .landing-button,
+  .landing-feature-card,
+  .landing-nav a::after,
+  .landing-hero-background-image,
+  .landing-hero-copy,
+  .landing-typewriter-cursor {
+    animation: none;
+    transition: none;
+  }
+
+  .landing-button:hover,
+  .landing-feature-card:hover {
+    transform: none;
+  }
+
+  .landing-hero-background-image:first-child {
+    opacity: 1;
+    transform: none;
+  }
+}

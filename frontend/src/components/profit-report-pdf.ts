@@ -1,4 +1,5 @@
 import { blobToBinaryString, canvasBlob, pdfBlobFromJpeg, wrapCanvasText } from "@/components/receipt-desk-client/pdf-canvas-utils";
+import { formatBaht, formatThaiNumber } from "@/lib/format";
 
 export type ProfitReportRow = {
   name: string;
@@ -23,10 +24,6 @@ export type ProfitReportPdfPayload = {
   averageCost: number;
   rows: ProfitReportRow[];
 };
-
-function formatBaht(value: number) {
-  return `฿${Math.round(value).toLocaleString("th-TH")}`;
-}
 
 function drawText(
   ctx: CanvasRenderingContext2D,
@@ -59,6 +56,44 @@ function drawCell(ctx: CanvasRenderingContext2D, x: number, y: number, width: nu
 function reportCanvasHeight(payload: ProfitReportPdfPayload, scale: number) {
   void payload;
   return 297 * scale;
+}
+
+function drawSummarySection(ctx: CanvasRenderingContext2D, payload: ProfitReportPdfPayload, left: number, y: number, contentWidth: number) {
+  const summaryGap = 18;
+  const summaryWidth = (contentWidth - summaryGap * 3) / 4;
+  const summaryItems = [
+    ["ยอดขาย", formatBaht(payload.sales)],
+    ["ต้นทุนรวม", formatBaht(payload.totalCost)],
+    ["กำไรสุทธิ", formatBaht(payload.profit)],
+    ["Margin", `${payload.margin.toFixed(1)}%`],
+  ];
+
+  summaryItems.forEach(([label, value], index) => {
+    const x = left + index * (summaryWidth + summaryGap);
+    drawBox(ctx, x, y, summaryWidth, 118);
+    drawText(ctx, label, x + 22, y + 22, { size: 21, color: "#4b5563" });
+    drawText(ctx, value, x + 22, y + 64, { size: 31, bold: true });
+  });
+
+  return y + 158;
+}
+
+function drawTotalsSection(ctx: CanvasRenderingContext2D, payload: ProfitReportPdfPayload, right: number, y: number) {
+  const totalBoxWidth = 640;
+  const totalsBoxHeight = 132;
+  const totalBoxX = right - totalBoxWidth;
+  const totalRows = [
+    ["ต้นทุนสินค้ารวม", formatBaht(payload.productCost)],
+    ["ค่าใช้จ่ายเพิ่ม", formatBaht(payload.extraCost)],
+    ["ต้นทุนเฉลี่ย/ชิ้น", formatBaht(payload.averageCost)],
+  ];
+
+  drawBox(ctx, totalBoxX, y, totalBoxWidth, totalsBoxHeight);
+  totalRows.forEach(([label, value], index) => {
+    const rowY = y + 20 + index * 37;
+    drawText(ctx, label, totalBoxX + 24, rowY, { size: 22, color: "#374151" });
+    drawText(ctx, value, totalBoxX + totalBoxWidth - 24, rowY, { align: "right", size: 22, bold: true });
+  });
 }
 
 export async function createProfitReportPdfBlob(payload: ProfitReportPdfPayload) {
@@ -104,21 +139,7 @@ export async function createProfitReportPdfBlob(payload: ProfitReportPdfPayload)
   ctx.stroke();
   y += 38;
 
-  const summaryGap = 18;
-  const summaryWidth = (contentWidth - summaryGap * 3) / 4;
-  const summaryItems = [
-    ["ยอดขาย", formatBaht(payload.sales)],
-    ["ต้นทุนรวม", formatBaht(payload.totalCost)],
-    ["กำไรสุทธิ", formatBaht(payload.profit)],
-    ["Margin", `${payload.margin.toFixed(1)}%`],
-  ];
-  summaryItems.forEach(([label, value], index) => {
-    const x = left + index * (summaryWidth + summaryGap);
-    drawBox(ctx, x, y, summaryWidth, 118);
-    drawText(ctx, label, x + 22, y + 22, { size: 21, color: "#4b5563" });
-    drawText(ctx, value, x + 22, y + 64, { size: 31, bold: true });
-  });
-  y += 158;
+  y = drawSummarySection(ctx, payload, left, y, contentWidth);
 
   const columns = [
     { label: "สินค้า", width: 0.34, align: "left" as CanvasTextAlign },
@@ -167,7 +188,7 @@ export async function createProfitReportPdfBlob(payload: ProfitReportPdfPayload)
     }
 
     const values = [
-      row.quantity.toLocaleString("th-TH"),
+      formatThaiNumber(row.quantity),
       formatBaht(row.sales),
       formatBaht(row.unitCost),
       formatBaht(row.totalCost),
@@ -185,19 +206,7 @@ export async function createProfitReportPdfBlob(payload: ProfitReportPdfPayload)
   }
 
   y = tableBottom + 32;
-  const totalBoxWidth = 640;
-  const totalBoxX = right - totalBoxWidth;
-  const totalRows = [
-    ["ต้นทุนสินค้ารวม", formatBaht(payload.productCost)],
-    ["ค่าใช้จ่ายเพิ่ม", formatBaht(payload.extraCost)],
-    ["ต้นทุนเฉลี่ย/ชิ้น", formatBaht(payload.averageCost)],
-  ];
-  drawBox(ctx, totalBoxX, y, totalBoxWidth, totalsBoxHeight);
-  totalRows.forEach(([label, value], index) => {
-    const rowY = y + 20 + index * 37;
-    drawText(ctx, label, totalBoxX + 24, rowY, { size: 22, color: "#374151" });
-    drawText(ctx, value, totalBoxX + totalBoxWidth - 24, rowY, { align: "right", size: 22, bold: true });
-  });
+  drawTotalsSection(ctx, payload, right, y);
   drawText(ctx, "รายงานนี้สร้างจากยอดขายจริงและต้นทุนที่กรอกในหน้าคำนวณ", left, bottom - 8, { size: 19, color: "#6b7280" });
 
   const exportCanvas = document.createElement("canvas");

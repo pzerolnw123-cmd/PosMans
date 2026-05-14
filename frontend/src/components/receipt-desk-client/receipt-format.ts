@@ -1,3 +1,6 @@
+import { formatBaht as formatSharedBaht, formatThaiDateTime } from "@/lib/format";
+import { paymentMethodLabels, type PaymentMethod } from "@/lib/payment-methods";
+
 export type ReceiptItem = {
   id: string;
   productId: string | null;
@@ -13,7 +16,7 @@ export type Receipt = {
   id: string;
   code: string;
   status: "PAID" | "CANCELLED";
-  paymentMethod: "CASH" | "QR" | "CARD" | "TRANSFER" | "OTHER";
+  paymentMethod: PaymentMethod;
   subtotal: number;
   discount: number;
   tax: number;
@@ -42,23 +45,14 @@ export type ReceiptDetailResponse = {
 
 export const pageSize = 4;
 
-export const paymentMethodLabels: Record<Receipt["paymentMethod"], string> = {
-  CASH: "เงินสด",
-  QR: "QR PromptPay",
-  CARD: "บัตร",
-  TRANSFER: "โอนเงิน",
-  OTHER: "อื่น ๆ",
-};
+export { paymentMethodLabels };
 
 export function formatBaht(value: number) {
-  return `฿${value.toLocaleString("th-TH")}`;
+  return formatSharedBaht(value);
 }
 
 export function formatDateTime(value: string) {
-  return new Intl.DateTimeFormat("th-TH", {
-    dateStyle: "medium",
-    timeStyle: "short",
-  }).format(new Date(value));
+  return formatThaiDateTime(value);
 }
 
 export function receiptPdfFileName(receipt: Receipt) {

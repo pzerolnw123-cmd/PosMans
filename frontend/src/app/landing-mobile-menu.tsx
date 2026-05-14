@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { navItems } from "./landing-nav";
+import { navItems } from "./landing-nav-items";
 import styles from "./page.module.css";
 
 type LandingMobileMenuProps = {

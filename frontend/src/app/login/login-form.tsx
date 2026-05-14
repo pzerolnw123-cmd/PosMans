@@ -374,7 +374,7 @@ export function LoginForm({ initialNotice = null }: { initialNotice?: string | n
               className={primaryButtonClass}
               disabled={pending || (challengeMode === "setup" ? confirmPin.length !== pinLength : pin.length !== pinLength)}
             >
-              {pending ? "กำลังตรวจสอบ..." : challengeMode === "setup" ? "บันทึก PIN และเข้าใช้งาน" : "ปลดล็อกหลังบ้าน"}
+              {pending ? "กำลังตรวจสอบ..." : challengeMode === "setup" ? "บันทึก PIN และเข้าใช้งาน" : "เข้าสู่ระบบ"}
             </button>
           </div>
         </div>

@@ -1,20 +1,13 @@
 /* eslint-disable @next/next/no-img-element -- จอลูกค้าแสดง QR data URL และรูป token-scoped ที่ไม่เหมาะกับ next/image */
 import { Loader } from "@/components/ui-primitives";
 import { formatBaht, type PaymentMethod } from "@/components/payment-checkout-client/shared";
+import { paymentMethodLabels } from "@/lib/payment-methods";
 
 type CustomerDisplayState = {
   amount: number;
   paymentMethod: PaymentMethod | null;
   qrDataUrl: string | null;
   message: string | null;
-};
-
-const paymentLabels: Record<PaymentMethod, string> = {
-  CASH: "เงินสด",
-  QR: "QR PromptPay",
-  CARD: "บัตร",
-  TRANSFER: "โอนเงิน",
-  OTHER: "อื่น ๆ",
 };
 
 export function StandbyDisplay() {
@@ -30,7 +23,7 @@ export function StandbyDisplay() {
 }
 
 export function PaymentDisplay({ display }: { display: CustomerDisplayState }) {
-  const method = display.paymentMethod ? paymentLabels[display.paymentMethod] : "ชำระเงิน";
+  const method = display.paymentMethod ? paymentMethodLabels[display.paymentMethod] : "ชำระเงิน";
 
   return (
     <section className="grid h-full min-h-0 place-items-center gap-3 overflow-hidden py-3 text-center [@media(orientation:portrait)]:py-5">

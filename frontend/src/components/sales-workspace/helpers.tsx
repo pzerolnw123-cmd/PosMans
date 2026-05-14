@@ -1,5 +1,7 @@
 ﻿import type { ProductCategory, ProductItem } from "@/components/product-management-studio/types";
 
+import { formatBaht as formatSharedBaht } from "@/lib/format";
+
 export const legacySalesCartStorageKey = "pos-mans-sales-cart";
 
 export function salesCartStorageKey(storeId: string) {
@@ -70,7 +72,7 @@ export function BasketIcon({ size = 17 }: { size?: number }) {
 }
 
 export function formatBaht(value: number) {
-  return `฿${value.toLocaleString("th-TH")}`;
+  return formatSharedBaht(value);
 }
 
 export function normalizeStockValue(value: number | undefined) {
