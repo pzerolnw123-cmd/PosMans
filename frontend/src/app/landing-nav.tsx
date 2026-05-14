@@ -23,18 +23,16 @@ export function LandingNav() {
     }
 
     function updateActiveSection() {
-      const anchorOffset = 140;
-      const current = sections.reduce((nearest, section) => {
-        const distance = Math.abs(section.getBoundingClientRect().top - anchorOffset);
-        if (!nearest || distance < nearest.distance) {
-          return { id: section.id, distance };
-        }
-        return nearest;
-      }, null as { id: string; distance: number } | null);
+      const activationOffset = 160;
+      let currentId = sections[0].id;
 
-      if (current) {
-        setActiveId(current.id);
+      for (const section of sections) {
+        if (section.getBoundingClientRect().top <= activationOffset) {
+          currentId = section.id;
+        }
       }
+
+      setActiveId(currentId);
     }
 
     updateActiveSection();

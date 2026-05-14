@@ -2,6 +2,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { getCurrentSession } from "@/lib/session";
 import { getWorkspaceHref } from "@/lib/workspace";
+import { features, footerPendingItems, plans, showcase } from "./landing-content";
+import type { FeatureIconName } from "./landing-content";
 import { LandingNav } from "./landing-nav";
 import { LandingTypewriterTitle } from "./landing-typewriter-title";
 import styles from "./page.module.css";
@@ -10,125 +12,52 @@ function cx(...names: string[]) {
   return names.map((name) => styles[name]).join(" ");
 }
 
-const features = [
-  {
-    icon: (
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M5 7h14M7 12h10M9 17h6" />
-      </svg>
-    ),
-    title: "ขายหน้าร้านเร็ว",
-    copy: "หน้าขายถูกออกแบบให้เลือกสินค้า รับชำระเงิน และปิดบิลได้ไวในจังหวะร้านจริง",
-  },
-  {
-    icon: (
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M4 6h16v12H4z" />
-        <path d="M8 10h3M8 14h8" />
-      </svg>
-    ),
-    title: "จัดการสินค้าเป็นระบบ",
-    copy: "สินค้า หมวดหมู่ ราคา สต็อก และสถานะขายอยู่ในพื้นที่เดียว ลดงานซ้ำของเจ้าของร้าน",
-  },
-  {
-    icon: (
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M5 19V8M12 19V5M19 19v-9" />
-        <path d="M4 19h16" />
-      </svg>
-    ),
-    title: "รายงานเข้าใจง่าย",
-    copy: "เห็นยอดขาย สินค้าขายดี และช่องทางชำระเงินแบบอ่านเร็ว พร้อมใช้ตัดสินใจรายวัน",
-  },
-  {
-    icon: (
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M6 8h12M7 12h10M9 16h6" />
-        <path d="M5 4h14v16H5z" />
-      </svg>
-    ),
-    title: "ใบเสร็จและเอกสาร",
-    copy: "รองรับการสรุปข้อมูลสำคัญและต่อยอดเอกสารร้านได้โดยไม่ทำให้ flow หลักซับซ้อน",
-  },
-  {
-    icon: (
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M12 3 4 7l8 4 8-4-8-4Z" />
-        <path d="M4 12l8 4 8-4M4 17l8 4 8-4" />
-      </svg>
-    ),
-    title: "เหมาะกับหลายประเภทร้าน",
-    copy: "วางโครงให้ใช้ได้ทั้งร้านอาหาร เครื่องดื่ม ขนม และร้านค้าขนาดเล็กที่ต้องการหลังบ้านชัดเจน",
-  },
-  {
-    icon: (
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M4 7h16v10H4z" />
-        <path d="M8 21h8M12 17v4M7 11h10" />
-      </svg>
-    ),
-    title: "รองรับการใช้งานทุกขนาดหน้าจอ",
-    copy: "ออกแบบให้ใช้งานได้ทั้งเดสก์ท็อป แท็บเล็ต และมือถือ เพื่อให้ร้านทำงานต่อเนื่องได้ในทุกสถานการณ์",
-  },
-];
-
-const showcase = [
-  {
-    eyebrow: "PAYMENT FLOW",
-    title: "ปิดบิลและยืนยันชำระเงินได้ในจอเดียว",
-    copy: "ตรวจรายการ เลือกวิธีชำระ รับเงินสดหรือ QR PromptPay และยืนยันยอดขายจริงโดยไม่หลุดจากหน้าขาย",
-    image: "/workflow_1.png",
-  },
-  {
-    eyebrow: "RECEIPT DESK",
-    title: "ค้นบิลล่าสุดและพิมพ์เอกสารย้อนหลัง",
-    copy: "เลือกบิลจากรายการล่าสุด ดูรายละเอียดก่อนพิมพ์ PDF หรือคัดลอกข้อมูลสำหรับส่งต่อให้ลูกค้า",
-    image: "/workflow_2.png",
-  },
-  {
-    eyebrow: "SALES TREND",
-    title: "อ่านยอดขายและสินค้าขายดีได้เร็ว",
-    copy: "กราฟยอดขาย สินค้าขายดี และสัดส่วนวิธีชำระเงินช่วยให้เจ้าของร้านเห็นภาพรวมธุรกิจทันที",
-    image: "/workflow_3.png",
-  },
-  {
-    eyebrow: "PRODUCT CONTROL",
-    title: "แก้สินค้า ราคา และสต็อกได้ทันที",
-    copy: "เลือกสินค้าจากรายการแล้วแก้รายละเอียด รูปภาพ ราคา ต้นทุน และจำนวนคงเหลือได้ใน flow เดียว",
-    image: "/workflow_4.png",
-  },
-  {
-    eyebrow: "PROFIT CALCULATOR",
-    title: "คำนวณกำไรจากยอดขายจริง",
-    copy: "กรอกต้นทุนต่อสินค้า เพิ่มค่าใช้จ่ายอื่น ๆ แล้วดูยอดกำไรสุทธิและ margin เพื่อประเมินผลรายวัน",
-    image: "/workflow_5.png",
-  },
-  {
-    eyebrow: "THEME SWITCH",
-    title: "ปรับธีมร้านให้เข้ากับวิธีทำงาน",
-    copy: "เลือกโทนสี workspace ของเจ้าของร้านได้ทันที เพื่อให้หน้าจออ่านง่ายและเหมาะกับสภาพแวดล้อมจริง",
-    image: "/workflow_6.png",
-  },
-];
-
-const plans = [
-  {
-    name: "Start",
-    eyebrow: "START PLAN",
-    price: "ฟรี",
-    description: "เหมาะกับร้านที่เริ่มทดลองระบบและต้องการคุมขอบเขตการใช้งานรายเดือน",
-    features: ["ยืนยันชำระเงิน 30 ครั้ง / เดือน", "เพิ่มสินค้าได้ 7 รายการ", "จำนวนสต๊อกรวมสูงสุด 300 ชิ้น"],
-  },
-  {
-    name: "Plus",
-    eyebrow: "PLUS PLAN",
-    price: "$15",
-    suffix: "/เดือน",
-    description: "สำหรับร้านที่ใช้งานจริงทุกวันและไม่ต้องการชนเพดานการขายหรือจำนวนสินค้า",
-    features: ["ยืนยันชำระเงินไม่จำกัด", "เพิ่มสินค้าได้ไม่จำกัด", "จำนวนสต๊อกสินค้าไม่จำกัด"],
-    highlighted: true,
-  },
-];
+function FeatureIcon({ name }: { name: FeatureIconName }) {
+  switch (name) {
+    case "products":
+      return (
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M4 6h16v12H4z" />
+          <path d="M8 10h3M8 14h8" />
+        </svg>
+      );
+    case "reports":
+      return (
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M5 19V8M12 19V5M19 19v-9" />
+          <path d="M4 19h16" />
+        </svg>
+      );
+    case "receipts":
+      return (
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M6 8h12M7 12h10M9 16h6" />
+          <path d="M5 4h14v16H5z" />
+        </svg>
+      );
+    case "store-types":
+      return (
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 3 4 7l8 4 8-4-8-4Z" />
+          <path d="M4 12l8 4 8-4M4 17l8 4 8-4" />
+        </svg>
+      );
+    case "screens":
+      return (
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M4 7h16v10H4z" />
+          <path d="M8 21h8M12 17v4M7 11h10" />
+        </svg>
+      );
+    case "sales":
+    default:
+      return (
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M5 7h14M7 12h10M9 17h6" />
+        </svg>
+      );
+  }
+}
 
 export default async function HomePage() {
   const session = await getCurrentSession();
@@ -182,7 +111,9 @@ export default async function HomePage() {
         <div className={cx("landing-feature-grid")}>
           {features.map((feature) => (
             <article className={cx("landing-feature-card")} key={feature.title}>
-              <span className={cx("landing-feature-icon")}>{feature.icon}</span>
+              <span className={cx("landing-feature-icon")}>
+                <FeatureIcon name={feature.icon} />
+              </span>
               <h3>{feature.title}</h3>
               <p>{feature.copy}</p>
             </article>
@@ -193,8 +124,8 @@ export default async function HomePage() {
       <section id="showcase" className={cx("landing-section", "landing-showcase")}>
         <div className={cx("landing-section-heading")}>
           <p className={cx("landing-eyebrow")}>WORKFLOW</p>
-          <h2>หน้าจอทำงานที่จัดวางตาม flow ร้านจริง</h2>
-          <p>ตั้งแต่ขายหน้าร้าน รับชำระเงิน ดูรายงาน จัดการสินค้า ไปจนถึงปรับธีม ระบบถูกวางให้ทำงานต่อเนื่องในจังหวะร้านจริง</p>
+          <h2>ทุกหน้าจอสำคัญของร้าน อยู่ในระบบเดียว</h2>
+          <p>ขายหน้าร้าน รับชำระเงิน เช็กบิล ดูรายงาน จัดการสินค้า และปรับหน้าร้านได้ต่อเนื่อง โดยออกแบบให้ใช้งานง่ายในจังหวะงานจริง</p>
         </div>
         <div className={cx("landing-showcase-list")}>
           {showcase.map((item, index) => (
@@ -213,7 +144,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section id="pricing" className={cx("landing-section", "landing-section-soft")}>
+      <section id="pricing" className={cx("landing-section", "landing-section-soft", "landing-pricing-section")}>
         <div className={cx("landing-pricing")}>
           <div className={cx("landing-pricing-heading")}>
             <p className={cx("landing-eyebrow")}>PLANS</p>
@@ -255,10 +186,12 @@ export default async function HomePage() {
             <a href="#showcase">Solutions</a>
             <a href="#pricing">Pricing</a>
           </nav>
-          <div className={cx("landing-footer-nav")} aria-label="Company footer links">
-            <button type="button">Contact</button>
-            <button type="button">Privacy Policy</button>
-            <button type="button">Terms of Service</button>
+          <div className={cx("landing-footer-nav")} aria-label="Company footer items">
+            {footerPendingItems.map((item) => (
+              <span key={item} aria-disabled="true">
+                {item}
+              </span>
+            ))}
           </div>
         </div>
       </footer>

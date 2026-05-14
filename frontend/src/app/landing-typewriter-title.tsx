@@ -13,40 +13,24 @@ export function LandingTypewriterTitle() {
   const [visibleLength, setVisibleLength] = useState(0);
 
   useEffect(() => {
+    const shouldReduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     let timeout: number | undefined;
     let currentLength = 0;
-    let direction: "typing" | "erasing" = "typing";
 
     function scheduleNextTick(delay: number) {
       timeout = window.setTimeout(() => {
-        if (direction === "typing") {
-          currentLength += 1;
-          setVisibleLength(currentLength);
-
-          if (currentLength >= titleLetters.length) {
-            direction = "erasing";
-            scheduleNextTick(3600);
-            return;
-          }
-
-          scheduleNextTick(82);
-          return;
-        }
-
-        currentLength -= 1;
+        currentLength += 1;
         setVisibleLength(currentLength);
 
-        if (currentLength <= 0) {
-          direction = "typing";
-          scheduleNextTick(700);
+        if (currentLength >= titleLetters.length) {
           return;
         }
 
-        scheduleNextTick(24);
+        scheduleNextTick(shouldReduceMotion ? 42 : 82);
       }, delay);
     }
 
-    scheduleNextTick(520);
+    scheduleNextTick(shouldReduceMotion ? 180 : 520);
 
     return () => {
       if (timeout) {
