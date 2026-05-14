@@ -13,13 +13,11 @@ test.describe("owner visual regression contracts", () => {
     "Set E2E_RUN_OWNER_FLOWS=1 with E2E owner credentials to run authenticated owner visual checks.",
   );
 
-  test.beforeEach(async ({ page }) => {
+  test("owner routes stay inside the Desktop HD+ viewport", async ({ page }) => {
     await page.setViewportSize({ width: 1600, height: 900 });
     await signInOwner(page);
-  });
 
-  for (const route of ownerVisualRoutes) {
-    test(`${route.path} stays inside the Desktop HD+ viewport`, async ({ page }) => {
+    for (const route of ownerVisualRoutes) {
       await page.goto(route.path, { waitUntil: "domcontentloaded" });
       const anchor = route.visibleAnchor();
       await expect(page.getByRole(anchor.role, { name: anchor.name })).toBeVisible();
@@ -38,6 +36,6 @@ test.describe("owner visual regression contracts", () => {
       expect(metrics.bodyWidth).toBeLessThanOrEqual(metrics.viewportWidth + 1);
       expect(metrics.mainTop).toBeGreaterThanOrEqual(-1);
       expect(metrics.mainWidth).toBeLessThanOrEqual(metrics.viewportWidth + 1);
-    });
-  }
+    }
+  });
 });
