@@ -10,18 +10,11 @@ const titleLetters = Array.from(
 );
 
 export function LandingTypewriterTitle() {
-  const [visibleLength, setVisibleLength] = useState(() =>
-    typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches ? titleLetters.length : 0,
-  );
+  const [visibleLength, setVisibleLength] = useState(0);
 
   useEffect(() => {
-    const shouldReduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     let timeout: number | undefined;
     let currentLength = 0;
-
-    if (shouldReduceMotion) {
-      return undefined;
-    }
 
     function scheduleNextTick(delay: number) {
       timeout = window.setTimeout(() => {
