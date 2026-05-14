@@ -13,7 +13,7 @@
     "build:smoke": "node scripts/build-smoke-check.mjs",
     "e2e": "playwright test",
     "e2e:smoke": "playwright test e2e/smoke.spec.ts",
-    "e2e:visual": "playwright test e2e/visual-smoke.spec.ts",
+    "e2e:visual": "playwright test e2e/visual-smoke.spec.ts --workers=4",
     "e2e:owner": "playwright test e2e/owner-menu.spec.ts e2e/owner-critical-flow.spec.ts e2e/owner-visual-regression.spec.ts --workers=1",
     "e2e:ui": "playwright test --ui",
     "e2e:install": "playwright install chromium"

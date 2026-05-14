@@ -8,10 +8,20 @@ const visualViewports = [
 ];
 
 test.describe("visual smoke", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.route("**/api/auth/csrf", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ csrfToken: "visual-smoke-csrf-token" }),
+      });
+    });
+  });
+
   for (const viewport of visualViewports) {
     test(`login screen renders without horizontal overflow at ${viewport.name}`, async ({ page }) => {
       await page.setViewportSize({ width: viewport.width, height: viewport.height });
-      await page.goto("/login", { waitUntil: "networkidle" });
+      await page.goto("/login", { waitUntil: "domcontentloaded" });
 
       await expect(page.locator('input[autocomplete="username"]')).toBeVisible();
       await expect(page.locator('input[autocomplete="current-password"]')).toBeVisible();
@@ -26,7 +36,7 @@ test.describe("visual smoke", () => {
 
   test("auth visuals show hero image and animated floating balls", async ({ page }) => {
     await page.setViewportSize({ width: 1600, height: 900 });
-    await page.goto("/login", { waitUntil: "networkidle" });
+    await page.goto("/login", { waitUntil: "domcontentloaded" });
 
     await expect(page.locator('input[autocomplete="username"]')).toBeVisible();
     await expect(page.locator(".auth-floating-ball").first()).toBeVisible();
