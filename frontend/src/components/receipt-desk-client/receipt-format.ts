@@ -47,6 +47,13 @@ export const pageSize = 4;
 
 export { paymentMethodLabels };
 
+const bangkokDateInputFormatter = new Intl.DateTimeFormat("en", {
+  day: "2-digit",
+  month: "2-digit",
+  timeZone: "Asia/Bangkok",
+  year: "numeric",
+});
+
 export function formatBaht(value: number) {
   return formatSharedBaht(value);
 }
@@ -75,10 +82,23 @@ export function toDateInputValue(value: Date) {
   return `${year}-${month}-${day}`;
 }
 
+export function toBangkokDateInputValue(value: Date) {
+  const parts = bangkokDateInputFormatter.formatToParts(value);
+  const year = parts.find((part) => part.type === "year")?.value;
+  const month = parts.find((part) => part.type === "month")?.value;
+  const day = parts.find((part) => part.type === "day")?.value;
+
+  if (!year || !month || !day) {
+    return toDateInputValue(value);
+  }
+
+  return `${year}-${month}-${day}`;
+}
+
 export function shiftDateInputValue(days: number) {
-  const date = new Date();
-  date.setDate(date.getDate() + days);
-  return toDateInputValue(date);
+  const [year, month, day] = toBangkokDateInputValue(new Date()).split("-").map(Number);
+  const date = new Date(Date.UTC(year, month - 1, day + days, 12));
+  return toBangkokDateInputValue(date);
 }
 
 export function parseDateInput(value: string) {

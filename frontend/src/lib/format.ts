@@ -9,12 +9,14 @@ const thaiCurrencyFormatter = new Intl.NumberFormat("th-TH", {
 const thaiMediumDateTimeFormatter = new Intl.DateTimeFormat("th-TH", {
   dateStyle: "medium",
   timeStyle: "short",
+  timeZone: "Asia/Bangkok",
 });
 
 const thaiShortDateFormatter = new Intl.DateTimeFormat("th-TH", {
   day: "numeric",
   month: "short",
   year: "numeric",
+  timeZone: "Asia/Bangkok",
 });
 
 export function formatThaiNumber(value: number) {

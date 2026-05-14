@@ -3,7 +3,7 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type PointerEvent } from "react";
 import { formatBaht, formatThaiDate, formatThaiDateTime, formatThaiNumber } from "@/lib/format";
 import { requestJson } from "@/components/product-management-studio/lib";
-import { shiftDateInputValue, toDateInputValue } from "@/components/receipt-desk-client/shared";
+import { shiftDateInputValue, toBangkokDateInputValue } from "@/components/receipt-desk-client/shared";
 import { ReportRangeControls } from "@/components/report-range-controls";
 import { LoadingState, inputClass, primaryButtonClass, secondaryButtonClass } from "@/components/ui-primitives";
 
@@ -206,7 +206,7 @@ export function ProfitCalculatorClient({ storeName = "" }: { storeName?: string 
     ],
     [calculation.margin, calculation.profit, calculation.sales, calculation.totalCost],
   );
-  const today = useMemo(() => toDateInputValue(new Date()), []);
+  const today = useMemo(() => toBangkokDateInputValue(new Date()), []);
   const yesterday = useMemo(() => shiftDateInputValue(-1), []);
   const calendarSelectedDate = selectedDate || (range === "today" ? today : range === "yesterday" ? yesterday : "");
 

@@ -1,5 +1,5 @@
 ﻿import { useState, useMemo } from "react";
-import { formatDateTime, monthLabel, buildCalendarDays, toDateInputValue, parseDateInput } from "./shared";
+import { formatDateTime, monthLabel, buildCalendarDays, parseDateInput, toBangkokDateInputValue } from "./shared";
 
 export type CalendarPickerProps = {
   selectedDate: string;
@@ -9,11 +9,11 @@ export type CalendarPickerProps = {
 export function CalendarPicker({ selectedDate, onSelectDate }: CalendarPickerProps) {
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [calendarMonth, setCalendarMonth] = useState(() => {
-    const todayDate = new Date();
-    return new Date(todayDate.getFullYear(), todayDate.getMonth(), 1);
+    const [year, month] = toBangkokDateInputValue(new Date()).split("-").map(Number);
+    return new Date(year, month - 1, 1);
   });
 
-  const today = useMemo(() => toDateInputValue(new Date()), []);
+  const today = useMemo(() => toBangkokDateInputValue(new Date()), []);
 
   const calendarDays = useMemo(() => buildCalendarDays(calendarMonth), [calendarMonth]);
 

@@ -6,7 +6,7 @@ import { ownerLandscapeClass, ownerLandscapePanelPaddingClass, ownerLandscapeTig
 import { requestJson } from "@/components/product-management-studio/lib";
 import { LoadingState, secondaryButtonClass, StatusPill } from "@/components/ui-primitives";
 import type { Receipt, ReceiptDetailResponse, ReceiptListResponse } from "./shared";
-import { formatBaht, formatDateTime, paymentMethodLabels, toDateInputValue, shiftDateInputValue } from "./shared";
+import { formatBaht, formatDateTime, paymentMethodLabels, shiftDateInputValue, toBangkokDateInputValue } from "./shared";
 import { CalendarPicker } from "./calendar-picker";
 import { ReceiptViewer } from "./receipt-viewer";
 
@@ -25,7 +25,7 @@ export function ReceiptDeskClient() {
   const [receipts, setReceipts] = useState<Receipt[]>([]);
   const [selectedReceipt, setSelectedReceipt] = useState<Receipt | null>(null);
   const [selectedReceiptId, setSelectedReceiptId] = useState<string | null>(null);
-  const [selectedDate, setSelectedDate] = useState(() => toDateInputValue(new Date()));
+  const [selectedDate, setSelectedDate] = useState(() => toBangkokDateInputValue(new Date()));
   const [page, setPage] = useState(1);
   const [pagination, setPagination] = useState({ page: 1, pageSize: 4, totalItems: 0, totalPages: 1 });
   const [loading, setLoading] = useState(true);
@@ -76,7 +76,7 @@ export function ReceiptDeskClient() {
     };
   }, []);
 
-  const today = useMemo(() => toDateInputValue(new Date()), []);
+  const today = useMemo(() => toBangkokDateInputValue(new Date()), []);
   const yesterday = useMemo(() => shiftDateInputValue(-1), []);
   const datePreset =
     selectedDate === ""

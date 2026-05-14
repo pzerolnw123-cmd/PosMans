@@ -5,7 +5,7 @@ import { formatBaht, formatCompactBaht, formatThaiNumber } from "@/lib/format";
 import { paymentMethodLabels, type PaymentMethod } from "@/lib/payment-methods";
 import { ownerLandscapeClass, ownerLandscapeCompactPanelPaddingClass, ownerLandscapePanelPaddingClass } from "@/components/owner-workspace/landscape-preset";
 import { requestJson } from "@/components/product-management-studio/lib";
-import { shiftDateInputValue, toDateInputValue } from "@/components/receipt-desk-client/shared";
+import { shiftDateInputValue, toBangkokDateInputValue } from "@/components/receipt-desk-client/shared";
 import { ReportRangeControls } from "@/components/report-range-controls";
 import { LoadingState } from "@/components/ui-primitives";
 
@@ -180,7 +180,7 @@ export function ReportsSalesChart() {
     [report],
   );
   const initialLoading = loading && !report;
-  const today = useMemo(() => toDateInputValue(new Date()), []);
+  const today = useMemo(() => toBangkokDateInputValue(new Date()), []);
   const yesterday = useMemo(() => shiftDateInputValue(-1), []);
   const calendarSelectedDate = selectedDate || (range === "today" ? today : range === "yesterday" ? yesterday : "");
 
