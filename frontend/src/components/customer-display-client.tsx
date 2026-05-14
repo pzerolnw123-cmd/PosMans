@@ -79,6 +79,7 @@ export function CustomerDisplayClient({ displayId, token }: { displayId: string;
   }, [displayId, query]);
   const payloadTheme = isOwnerTheme(payload?.store.ownerTheme) ? payload.store.ownerTheme : null;
   const displayTheme = payloadTheme || localTheme || defaultOwnerTheme;
+  const hasPayload = payload !== null;
 
   const loadSnapshot = useCallback(
     async (cancelled: () => boolean) => {
@@ -149,6 +150,10 @@ export function CustomerDisplayClient({ displayId, token }: { displayId: string;
   }, [connectionState]);
 
   useEffect(() => {
+    if (!hasPayload || connectionState === "blocked" || !token || locallyInvalidated) {
+      return;
+    }
+
     let cancelled = false;
 
     const events = new EventSource(eventSourceUrl);
@@ -225,7 +230,7 @@ export function CustomerDisplayClient({ displayId, token }: { displayId: string;
         eventSourceRef.current = null;
       }
     };
-  }, [eventSourceUrl, loadSnapshot]);
+  }, [connectionState, eventSourceUrl, hasPayload, loadSnapshot, locallyInvalidated, token]);
 
   useEffect(() => {
     if (connectionState === "blocked") {

@@ -1,7 +1,7 @@
 const { ZodError } = require("zod");
 const { AppError } = require("../utils/app-error");
 
-function logHandledError(err, statusCode) {
+function logHandledError(err, statusCode, req) {
   if (process.env.NODE_ENV === "test") {
     return;
   }
@@ -11,26 +11,31 @@ function logHandledError(err, statusCode) {
       name: err.constructor.name,
       statusCode,
       code: err instanceof AppError ? err.code : undefined,
+      method: req.method,
+      path: req.originalUrl || req.url,
     });
     return;
   }
 
-  console.error("[errorHandler] Error:", err.constructor.name, err.message);
+  console.error("[errorHandler] Error:", err.constructor.name, err.message, {
+    method: req.method,
+    path: req.originalUrl || req.url,
+  });
   if (err instanceof ZodError) {
     console.error("[errorHandler] ZodError details:", JSON.stringify(err.issues));
   }
 }
 
-function errorHandler(err, _req, res, _next) {
+function errorHandler(err, req, res, _next) {
   if (err instanceof ZodError) {
-    logHandledError(err, 400);
+    logHandledError(err, 400, req);
     return res.status(400).json({
       error: "ข้อมูลที่ส่งมาไม่ถูกต้อง กรุณาตรวจสอบแล้วลองอีกครั้ง",
     });
   }
 
   if (err instanceof AppError) {
-    logHandledError(err, err.statusCode);
+    logHandledError(err, err.statusCode, req);
     const payload = {
       error: err.expose ? err.message : "ไม่สามารถดำเนินการตามคำขอได้",
     };
@@ -47,7 +52,7 @@ function errorHandler(err, _req, res, _next) {
   }
 
   const statusCode = err.statusCode || 500;
-  logHandledError(err, statusCode);
+  logHandledError(err, statusCode, req);
 
   return res.status(statusCode).json({
     error: statusCode >= 500 ? "ไม่สามารถดำเนินการได้ในขณะนี้ กรุณาลองอีกครั้ง" : "ไม่สามารถดำเนินการตามคำขอได้",
