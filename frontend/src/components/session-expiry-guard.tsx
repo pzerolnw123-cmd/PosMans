@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { revokeStoredCustomerDisplay } from "@/components/customer-display-session";
 import { useBackofficeShellAlert } from "@/components/backoffice-shell";
 import { fetchWithCsrfRetry } from "@/lib/csrf";
 import { clearStoredOwnerTheme } from "@/lib/owner-theme";
@@ -27,8 +26,6 @@ export function SessionExpiryGuard({ initialExpiresAt }: SessionExpiryGuardProps
       tone: "info",
       message: "Session หมดอายุ กำลังกลับไปหน้า login...",
     });
-
-    await revokeStoredCustomerDisplay().catch(() => undefined);
 
     await fetchWithCsrfRetry("/api/auth/logout", {
       method: "POST",

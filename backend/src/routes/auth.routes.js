@@ -392,7 +392,7 @@ router.post("/logout", requireTrustedOrigin, requireCsrf, async (req, res, next)
   try {
     const token = req.cookies?.[env.SESSION_COOKIE_NAME];
     const session = await getSessionFromToken(token);
-    await deleteSession(token);
+    await deleteSession(token, { revokeDisplays: false });
     clearSessionCookie(res);
     clearCsrfCookie(res);
     clearLoginChallengeCookie(res);

@@ -2,7 +2,6 @@
 
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { revokeStoredCustomerDisplay } from "@/components/customer-display-session";
 import { useBackofficeShellAlert } from "@/components/backoffice-shell";
 import { fetchWithCsrfRetry } from "@/lib/csrf";
 import { clearStoredOwnerTheme } from "@/lib/owner-theme";
@@ -17,8 +16,6 @@ export function LogoutButton({ className = "" }: { className?: string }) {
       type="button"
       disabled={pending}
       onClick={async () => {
-        await revokeStoredCustomerDisplay().catch(() => undefined);
-
         try {
           await fetchWithCsrfRetry("/api/auth/logout", {
             method: "POST",
