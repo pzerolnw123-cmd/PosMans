@@ -272,6 +272,58 @@ describe("backend security hardening - auth and sessions", () => {
     expect(prisma.user.create).not.toHaveBeenCalled();
   });
 
+  test("rejects registration text that contains inappropriate language", async () => {
+    const app = createApp();
+
+    const csrfResponse = await request(app).get("/api/auth/csrf").set("Origin", "http://localhost:3000");
+    const csrfCookie = csrfResponse.headers["set-cookie"][0].split(";")[0];
+    const csrfToken = csrfResponse.body.csrfToken;
+
+    const response = await request(app)
+      .post("/api/auth/register")
+      .set("Origin", "http://localhost:3000")
+      .set("Cookie", [csrfCookie])
+      .set("x-csrf-token", csrfToken)
+      .send({
+        storeName: "bad fuck cafe",
+        ownerName: "New Owner",
+        username: "newowner",
+        password: "Password123!",
+        confirmPassword: "Password123!",
+      });
+
+    expect(response.status).toBe(400);
+    expect(response.body.error).toBe("ข้อความมีคำไม่เหมาะสม กรุณาแก้ไขก่อนบันทึก");
+    expect(prisma.store.create).not.toHaveBeenCalled();
+    expect(prisma.user.create).not.toHaveBeenCalled();
+  });
+
+  test("rejects registration usernames that contain inappropriate language", async () => {
+    const app = createApp();
+
+    const csrfResponse = await request(app).get("/api/auth/csrf").set("Origin", "http://localhost:3000");
+    const csrfCookie = csrfResponse.headers["set-cookie"][0].split(";")[0];
+    const csrfToken = csrfResponse.body.csrfToken;
+
+    const response = await request(app)
+      .post("/api/auth/register")
+      .set("Origin", "http://localhost:3000")
+      .set("Cookie", [csrfCookie])
+      .set("x-csrf-token", csrfToken)
+      .send({
+        storeName: "New Cafe",
+        ownerName: "New Owner",
+        username: "f.u.c.k",
+        password: "Password123!",
+        confirmPassword: "Password123!",
+      });
+
+    expect(response.status).toBe(400);
+    expect(response.body.error).toBe("ข้อความมีคำไม่เหมาะสม กรุณาแก้ไขก่อนบันทึก");
+    expect(prisma.store.create).not.toHaveBeenCalled();
+    expect(prisma.user.create).not.toHaveBeenCalled();
+  });
+
   test("verifies PIN and creates a real session", async () => {
     const app = createApp();
     prisma.loginChallenge.findUnique.mockResolvedValue(buildChallenge({ pinHash: "pin-hash" }));

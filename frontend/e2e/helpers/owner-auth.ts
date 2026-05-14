@@ -18,7 +18,7 @@ export async function signInOwner(page: Page) {
 
   const usernameInput = page.locator('input[autocomplete="username"]');
   const passwordInput = page.locator('input[autocomplete="current-password"]');
-  const continueButton = page.getByRole("button", { name: "ดำเนินการต่อ" });
+  const continueButton = page.getByRole("button", { name: "เข้าสู่ระบบ" });
 
   await expect(usernameInput).toBeEnabled();
   await usernameInput.click();

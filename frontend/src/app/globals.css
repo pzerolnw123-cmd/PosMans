@@ -296,6 +296,88 @@ html[data-store-theme="mono"] .payment-method-active {
   will-change: width, background-color;
 }
 
+.auth-floating-background {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  background: #ffffff;
+}
+
+.auth-floating-ball {
+  position: absolute;
+  display: block;
+  border-radius: 999px;
+  border: 1px solid rgba(35, 136, 255, 0.18);
+  background: rgba(35, 136, 255, 0.08);
+  box-shadow: 0 18px 44px rgba(35, 136, 255, 0.08);
+  animation: auth-floating-ball 12s ease-in-out infinite;
+  will-change: transform;
+}
+
+.auth-floating-ball-1 {
+  width: 9rem;
+  height: 9rem;
+  left: 8%;
+  top: 12%;
+  animation-duration: 14s;
+}
+
+.auth-floating-ball-2 {
+  width: 5rem;
+  height: 5rem;
+  right: 12%;
+  top: 18%;
+  animation-delay: -4s;
+  animation-duration: 11s;
+}
+
+.auth-floating-ball-3 {
+  width: 12rem;
+  height: 12rem;
+  right: -3rem;
+  bottom: 12%;
+  animation-delay: -7s;
+  animation-duration: 16s;
+}
+
+.auth-floating-ball-4 {
+  width: 4rem;
+  height: 4rem;
+  left: 15%;
+  bottom: 18%;
+  animation-delay: -2s;
+  animation-duration: 10s;
+}
+
+.auth-floating-ball-5 {
+  width: 7rem;
+  height: 7rem;
+  left: 60%;
+  top: 48%;
+  animation-delay: -9s;
+  animation-duration: 15s;
+}
+
+.auth-floating-ball-6 {
+  width: 3rem;
+  height: 3rem;
+  left: 28%;
+  top: 34%;
+  animation-delay: -5s;
+  animation-duration: 9s;
+}
+
+.auth-password-input::-ms-reveal,
+.auth-password-input::-ms-clear {
+  display: none;
+}
+
+.auth-password-input::-webkit-credentials-auto-fill-button {
+  visibility: hidden;
+  pointer-events: none;
+}
+
 @media (min-width: 1181px) and (max-width: 1280px) and (max-height: 720px) and (orientation: landscape) {
   .product-stock-toggle-button {
     --size: 28px;
@@ -511,6 +593,17 @@ html[data-store-theme="mono"] .payment-method-active {
   100% {
     width: 0.5rem;
     background: rgba(35, 136, 255, 0.3);
+  }
+}
+
+@keyframes auth-floating-ball {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+
+  50% {
+    transform: translate3d(2.4rem, -3.2rem, 0) scale(1.05);
   }
 }
 

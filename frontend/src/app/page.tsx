@@ -1,162 +1,267 @@
-﻿import Link from "next/link";
+import Image from "next/image";
+import Link from "next/link";
 import { getCurrentSession } from "@/lib/session";
 import { getWorkspaceHref } from "@/lib/workspace";
-import { PanelCard } from "@/components/backoffice-shell";
-import { ghostPillClass } from "@/components/ui-primitives";
+import { LandingNav } from "./landing-nav";
+import { LandingTypewriterTitle } from "./landing-typewriter-title";
+import styles from "./page.module.css";
 
-const featureCards = [
+function cx(...names: string[]) {
+  return names.map((name) => styles[name]).join(" ");
+}
+
+const features = [
   {
-    title: "ขายไว",
-    copy: "หน้า POS และหลังบ้านใช้ภาษาภาพแบบเดียวกัน ช่วยให้ทีมใหม่เข้าใจระบบเร็วและใช้งานมั่นใจขึ้น",
+    icon: (
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M5 7h14M7 12h10M9 17h6" />
+      </svg>
+    ),
+    title: "ขายหน้าร้านเร็ว",
+    copy: "หน้าขายถูกออกแบบให้เลือกสินค้า รับชำระเงิน และปิดบิลได้ไวในจังหวะร้านจริง",
   },
   {
-    title: "จัดการร้านชัด",
-    copy: "แยกส่วนสินค้า รายงาน การตั้งค่า และสิทธิ์ผู้ใช้เป็นบล็อกชัดเจนตาม flow จริงของร้านอาหาร",
+    icon: (
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M4 6h16v12H4z" />
+        <path d="M8 10h3M8 14h8" />
+      </svg>
+    ),
+    title: "จัดการสินค้าเป็นระบบ",
+    copy: "สินค้า หมวดหมู่ ราคา สต็อก และสถานะขายอยู่ในพื้นที่เดียว ลดงานซ้ำของเจ้าของร้าน",
   },
   {
-    title: "พร้อมต่อยอด",
-    copy: "ดีไซน์นี้เปิดทางให้เพิ่มหน้าสินค้า สต็อก รายงาน และ checkout โดยยังรักษาโครงสร้างเดิมได้",
+    icon: (
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M5 19V8M12 19V5M19 19v-9" />
+        <path d="M4 19h16" />
+      </svg>
+    ),
+    title: "รายงานเข้าใจง่าย",
+    copy: "เห็นยอดขาย สินค้าขายดี และช่องทางชำระเงินแบบอ่านเร็ว พร้อมใช้ตัดสินใจรายวัน",
+  },
+  {
+    icon: (
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M6 8h12M7 12h10M9 16h6" />
+        <path d="M5 4h14v16H5z" />
+      </svg>
+    ),
+    title: "ใบเสร็จและเอกสาร",
+    copy: "รองรับการสรุปข้อมูลสำคัญและต่อยอดเอกสารร้านได้โดยไม่ทำให้ flow หลักซับซ้อน",
+  },
+  {
+    icon: (
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M12 3 4 7l8 4 8-4-8-4Z" />
+        <path d="M4 12l8 4 8-4M4 17l8 4 8-4" />
+      </svg>
+    ),
+    title: "เหมาะกับหลายประเภทร้าน",
+    copy: "วางโครงให้ใช้ได้ทั้งร้านอาหาร เครื่องดื่ม ขนม และร้านค้าขนาดเล็กที่ต้องการหลังบ้านชัดเจน",
+  },
+  {
+    icon: (
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M4 7h16v10H4z" />
+        <path d="M8 21h8M12 17v4M7 11h10" />
+      </svg>
+    ),
+    title: "รองรับการใช้งานทุกขนาดหน้าจอ",
+    copy: "ออกแบบให้ใช้งานได้ทั้งเดสก์ท็อป แท็บเล็ต และมือถือ เพื่อให้ร้านทำงานต่อเนื่องได้ในทุกสถานการณ์",
   },
 ];
 
-const statCards = [
-  { label: "Sections Ready", value: "3", hint: "Home, Login, Owner" },
-  { label: "Design Tokens", value: "1 system", hint: "Shared cards, inputs, buttons, sidebar" },
-  { label: "Visual Direction", value: "Store console", hint: "Clean glass panels with soft blue glow" },
+const showcase = [
+  {
+    eyebrow: "PAYMENT FLOW",
+    title: "ปิดบิลและยืนยันชำระเงินได้ในจอเดียว",
+    copy: "ตรวจรายการ เลือกวิธีชำระ รับเงินสดหรือ QR PromptPay และยืนยันยอดขายจริงโดยไม่หลุดจากหน้าขาย",
+    image: "/workflow_1.png",
+  },
+  {
+    eyebrow: "RECEIPT DESK",
+    title: "ค้นบิลล่าสุดและพิมพ์เอกสารย้อนหลัง",
+    copy: "เลือกบิลจากรายการล่าสุด ดูรายละเอียดก่อนพิมพ์ PDF หรือคัดลอกข้อมูลสำหรับส่งต่อให้ลูกค้า",
+    image: "/workflow_2.png",
+  },
+  {
+    eyebrow: "SALES TREND",
+    title: "อ่านยอดขายและสินค้าขายดีได้เร็ว",
+    copy: "กราฟยอดขาย สินค้าขายดี และสัดส่วนวิธีชำระเงินช่วยให้เจ้าของร้านเห็นภาพรวมธุรกิจทันที",
+    image: "/workflow_3.png",
+  },
+  {
+    eyebrow: "PRODUCT CONTROL",
+    title: "แก้สินค้า ราคา และสต็อกได้ทันที",
+    copy: "เลือกสินค้าจากรายการแล้วแก้รายละเอียด รูปภาพ ราคา ต้นทุน และจำนวนคงเหลือได้ใน flow เดียว",
+    image: "/workflow_4.png",
+  },
+  {
+    eyebrow: "PROFIT CALCULATOR",
+    title: "คำนวณกำไรจากยอดขายจริง",
+    copy: "กรอกต้นทุนต่อสินค้า เพิ่มค่าใช้จ่ายอื่น ๆ แล้วดูยอดกำไรสุทธิและ margin เพื่อประเมินผลรายวัน",
+    image: "/workflow_5.png",
+  },
+  {
+    eyebrow: "THEME SWITCH",
+    title: "ปรับธีมร้านให้เข้ากับวิธีทำงาน",
+    copy: "เลือกโทนสี workspace ของเจ้าของร้านได้ทันที เพื่อให้หน้าจออ่านง่ายและเหมาะกับสภาพแวดล้อมจริง",
+    image: "/workflow_6.png",
+  },
+];
+
+const plans = [
+  {
+    name: "Start",
+    eyebrow: "START PLAN",
+    price: "ฟรี",
+    description: "เหมาะกับร้านที่เริ่มทดลองระบบและต้องการคุมขอบเขตการใช้งานรายเดือน",
+    features: ["ยืนยันชำระเงิน 30 ครั้ง / เดือน", "เพิ่มสินค้าได้ 7 รายการ", "จำนวนสต๊อกรวมสูงสุด 300 ชิ้น"],
+  },
+  {
+    name: "Plus",
+    eyebrow: "PLUS PLAN",
+    price: "$15",
+    suffix: "/เดือน",
+    description: "สำหรับร้านที่ใช้งานจริงทุกวันและไม่ต้องการชนเพดานการขายหรือจำนวนสินค้า",
+    features: ["ยืนยันชำระเงินไม่จำกัด", "เพิ่มสินค้าได้ไม่จำกัด", "จำนวนสต๊อกสินค้าไม่จำกัด"],
+    highlighted: true,
+  },
 ];
 
 export default async function HomePage() {
   const session = await getCurrentSession();
-  const primaryHref = session ? getWorkspaceHref(session.user) : "/login";
-  const primaryLabel = session ? "เปิดหลังบ้าน" : "เข้าสู่ระบบ";
-  const primaryButtonClass =
-    "inline-flex min-h-[42px] items-center justify-center gap-[10px] rounded-[10px] border border-transparent [background:var(--brand-gradient)] px-[18px] font-bold text-[var(--foreground-inverse)] shadow-[var(--brand-shadow)_0_6px_14px] transition hover:-translate-y-px";
-  const secondaryButtonClass =
-    "inline-flex min-h-[42px] items-center justify-center gap-[10px] rounded-[10px] border border-[var(--border)] bg-[var(--surface-muted)] px-[18px] font-bold text-[var(--foreground)] transition hover:-translate-y-px hover:border-[var(--border-strong)] hover:shadow-[var(--shadow-hover)]";
+  const primaryHref = session ? getWorkspaceHref(session.user) : "/register";
+  const primaryLabel = session ? "เปิดหลังบ้าน" : "สมัครสมาชิก";
+  const loginHref = session ? getWorkspaceHref(session.user) : "/login";
+  const loginLabel = session ? "ไปที่ระบบ" : "เข้าสู่ระบบ";
 
   return (
-    <main>
-      <div className="mx-auto w-[min(1400px,calc(100%-32px))] px-0 pb-7 pt-[18px] max-[1180px]:w-[min(100%-24px,100%)] max-[720px]:w-[min(100%-16px,100%)] max-[720px]:pt-2.5 [@media(orientation:portrait)]:w-[min(100%-24px,100%)] [@media(orientation:portrait)]:pb-5 [@media(orientation:portrait)]:pt-3 [@media(orientation:portrait)_and_(max-width:640px)]:w-[min(100%-16px,100%)] [@media(orientation:portrait)_and_(min-width:768px)]:max-w-[760px]">
-        <div className="flex items-center justify-between gap-4 rounded-[18px] border border-[var(--border)] bg-[var(--surface-glass)] px-5 py-4 shadow-[var(--shadow-soft)] max-[820px]:px-4 max-[720px]:flex-col max-[720px]:items-stretch max-[640px]:px-3.5 [@media(orientation:portrait)]:flex-col [@media(orientation:portrait)]:items-stretch [@media(orientation:portrait)]:gap-3.5 [@media(orientation:portrait)_and_(min-width:768px)]:px-5 [@media(orientation:portrait)_and_(max-width:640px)]:px-3.5">
-          <div className="min-w-0">
-            <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[var(--eyebrow)]">POS MANS</p>
-            <p className="mt-1 max-w-[52ch] text-[0.92rem] leading-[1.6] text-[var(--foreground-soft)]">Store-first interface system inspired by your reference screen</p>
-          </div>
-          <div className="flex flex-wrap justify-end gap-[10px] max-[820px]:w-full max-[820px]:justify-stretch max-[820px]:[&>*]:flex-1 max-[720px]:[&>*]:w-full [@media(orientation:portrait)]:w-full [@media(orientation:portrait)]:grid [@media(orientation:portrait)]:grid-cols-1 [@media(orientation:portrait)]:gap-[10px] [@media(orientation:portrait)_and_(min-width:768px)]:grid-cols-2 [@media(orientation:portrait)_and_(min-width:768px)]:[&>*]:min-w-0 [@media(orientation:portrait)_and_(max-width:640px)]:[&>*]:w-full">
-            <Link
-              href="/login"
-              className={secondaryButtonClass}
-            >
-              เข้าสู่ระบบ
-            </Link>
-            <Link
-              href={primaryHref}
-              className={primaryButtonClass}
-            >
-              {primaryLabel}
+    <main id="top" className={cx("landing-page")}>
+      <header className={cx("landing-header")}>
+        <Link href="/" className={cx("landing-logo")} aria-label="POS MANS หน้าแรก">
+          <Image src="/logo.png" alt="POS MANS" width={488} height={111} priority />
+        </Link>
+        <LandingNav />
+        <div className={cx("landing-header-actions")}>
+          <Link href={primaryHref} className={cx("landing-button", "landing-button-primary")}>
+            {primaryLabel}
+          </Link>
+        </div>
+      </header>
+
+      <section className={cx("landing-hero")}>
+        <div className={cx("landing-hero-background")} aria-hidden="true">
+          <span className={cx("landing-hero-background-image", "landing-hero-background-one")} />
+          <span className={cx("landing-hero-background-image", "landing-hero-background-two")} />
+          <span className={cx("landing-hero-background-image", "landing-hero-background-three")} />
+        </div>
+        <div className={cx("landing-hero-copy")}>
+          <p className={cx("landing-eyebrow")}>POS SYSTEM FOR MODERN STORES</p>
+          <LandingTypewriterTitle />
+          <p>
+            POS MANS ช่วยให้เจ้าของร้านขายหน้าร้าน จัดการสินค้า ดูรายงาน และดูแลหลังบ้านได้ในระบบเดียว
+            พร้อมหน้าตาที่สะอาด ใช้ง่าย และเหมาะกับงานประจำวันของร้านจริง
+          </p>
+          <div className={cx("landing-hero-actions")}>
+            <Link href={loginHref} className={cx("landing-button", "landing-button-primary")}>
+              {loginLabel}
             </Link>
           </div>
         </div>
 
-        <section className="mt-[18px] grid gap-[18px] grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] max-[1280px]:grid-cols-1 max-[820px]:gap-4 [@media(orientation:portrait)]:grid-cols-1 [@media(orientation:portrait)]:gap-4">
-          <article className="min-h-full rounded-[22px] border border-[var(--border)] bg-[var(--surface)] p-7 shadow-[var(--shadow-card)] backdrop-blur-[14px] max-[820px]:p-5 max-[640px]:p-4 [@media(orientation:portrait)_and_(min-width:768px)]:p-6">
-            <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[var(--eyebrow)]">Complete UI Refresh</p>
-            <h1 className="mt-[10px] max-w-[12ch] text-[clamp(2rem,2.9vw,3.3rem)] leading-[0.98] tracking-[-0.065em] [@media(orientation:portrait)]:max-w-[14ch] [@media(orientation:portrait)_and_(max-width:640px)]:text-[clamp(1.8rem,9vw,2.45rem)] [@media(orientation:portrait)_and_(min-width:768px)]:max-w-[15ch]">
-              POS หลังบ้านที่ดูพร้อมใช้งานตั้งแต่หน้าบ้านถึงหน้าตั้งค่า
-            </h1>
-            <p className="text-[var(--foreground-soft)] [@media(orientation:portrait)]:max-w-none [@media(orientation:portrait)_and_(max-width:640px)]:text-[0.95rem]">
-              เราปรับหน้าเว็บทุกหน้าที่มีอยู่ให้ไปในทิศทางเดียวกับภาพอ้างอิง: sidebar ชัด, card โปร่งสะอาด, ปุ่มเด่นอ่านง่าย,
-              และ form ที่โฟกัสกับงานเจ้าของร้านจริง
-            </p>
+      </section>
 
-            <div className="mt-[22px] flex flex-wrap justify-start gap-[10px] max-[720px]:[&>*]:w-full [@media(orientation:portrait)]:grid [@media(orientation:portrait)]:grid-cols-1 [@media(orientation:portrait)]:gap-[10px] [@media(orientation:portrait)_and_(min-width:768px)]:grid-cols-2">
-              <Link
-                href={primaryHref}
-                className={primaryButtonClass}
-              >
-                {primaryLabel}
-              </Link>
-              <a
-                href="#overview"
-                className={secondaryButtonClass}
-              >
-                ดูภาพรวม
-              </a>
-            </div>
-          </article>
-
-          <PanelCard
-            eyebrow="Preview"
-            title="FastManFoods"
-            description="ตัวอย่างทิศทาง UI ที่ยึดจากหน้าตั้งค่าร้านในภาพ และขยายให้ครอบคลุมทั้งระบบ"
-          >
-            <div className="mt-5 grid grid-cols-3 gap-[14px] max-[980px]:grid-cols-2 max-[720px]:grid-cols-1 [@media(orientation:portrait)]:grid-cols-2 [@media(orientation:portrait)_and_(max-width:640px)]:grid-cols-1">
-              {statCards.map((item) => (
-                <div
-                  key={item.label}
-                  className="rounded-2xl border border-[var(--border)] [background:var(--panel-elevated)] p-[18px]"
-                >
-                  <h3 className="m-0 text-[1.08rem] font-bold tracking-[-0.03em]">{item.label}</h3>
-                  <strong className="mt-[10px] block text-[clamp(1.55rem,4vw,2rem)] leading-none tracking-[-0.05em]">{item.value}</strong>
-                  <p className="mt-1 text-[0.92rem] text-[var(--foreground-soft)]">{item.hint}</p>
-                </div>
-              ))}
-            </div>
-          </PanelCard>
-        </section>
-
-        <section id="overview" className="mt-[18px] grid grid-cols-3 gap-[18px] max-[1180px]:grid-cols-2 max-[820px]:gap-4 max-[720px]:grid-cols-1 [@media(orientation:portrait)]:grid-cols-2 [@media(orientation:portrait)]:gap-4 [@media(orientation:portrait)_and_(max-width:640px)]:grid-cols-1">
-          {featureCards.map((item) => (
-            <article key={item.title} className="rounded-[18px] border border-[var(--border)] bg-[var(--surface)] p-[18px] shadow-[var(--shadow-card)] backdrop-blur-[14px] [@media(orientation:portrait)_and_(max-width:640px)]:p-4">
-              <p className="m-0 text-[0.72rem] font-bold uppercase tracking-[0.28em] text-[var(--eyebrow)]">Feature</p>
-              <h3 className="my-[10px] text-[1.36rem] tracking-[-0.04em]">{item.title}</h3>
-              <p className="mt-1 text-[0.92rem] text-[var(--foreground-soft)]">{item.copy}</p>
+      <section id="features" className={cx("landing-section", "landing-section-soft")}>
+        <div className={cx("landing-section-heading")}>
+          <p className={cx("landing-eyebrow")}>FEATURES</p>
+          <h2>ฟีเจอร์สำคัญสำหรับเจ้าของร้าน</h2>
+          <p>ออกแบบให้ครบในสิ่งที่ร้านต้องใช้ทุกวัน โดยยังอ่านง่ายและไม่ทำให้หน้าจอดูแน่นเกินไป</p>
+        </div>
+        <div className={cx("landing-feature-grid")}>
+          {features.map((feature) => (
+            <article className={cx("landing-feature-card")} key={feature.title}>
+              <span className={cx("landing-feature-icon")}>{feature.icon}</span>
+              <h3>{feature.title}</h3>
+              <p>{feature.copy}</p>
             </article>
           ))}
-        </section>
+        </div>
+      </section>
 
-        <section className="mt-[18px] grid grid-cols-[minmax(0,1.1fr)_minmax(320px,0.9fr)] gap-[18px] max-[1280px]:grid-cols-1 max-[820px]:gap-4 [@media(orientation:portrait)]:grid-cols-1 [@media(orientation:portrait)]:gap-4">
-          <PanelCard eyebrow="Included Pages" title="สิ่งที่ถูกยกดีไซน์ใหม่แล้ว" description="หน้าที่ผู้ใช้แตะจริงตอนนี้ทั้งหมดอยู่ใน visual language ชุดเดียวกันแล้ว">
-            <div className="mt-4 grid gap-[14px]">
-              {[
-                "หน้าแรกสำหรับแนะนำระบบและพาไปยัง flow ที่ใช้งานต่อ",
-                "หน้าเข้าสู่ระบบพร้อมสองขั้นตอน username/password และ PIN keypad",
-                "หน้า owner ที่วางเป็นหน้าตั้งค่าร้านตามภาพอ้างอิง พร้อม sidebar และ profile card",
-              ].map((item) => (
-                <div
-                  key={item}
-                  className="rounded-2xl border border-[var(--border)] [background:var(--panel-elevated)] p-[18px] [@media(orientation:portrait)_and_(max-width:640px)]:p-4"
-                >
-                  <p className="m-0 text-[0.92rem] text-[var(--foreground-soft)]">{item}</p>
-                </div>
-              ))}
-            </div>
-          </PanelCard>
+      <section id="showcase" className={cx("landing-section", "landing-showcase")}>
+        <div className={cx("landing-section-heading")}>
+          <p className={cx("landing-eyebrow")}>WORKFLOW</p>
+          <h2>หน้าจอทำงานที่จัดวางตาม flow ร้านจริง</h2>
+          <p>ตั้งแต่ขายหน้าร้าน รับชำระเงิน ดูรายงาน จัดการสินค้า ไปจนถึงปรับธีม ระบบถูกวางให้ทำงานต่อเนื่องในจังหวะร้านจริง</p>
+        </div>
+        <div className={cx("landing-showcase-list")}>
+          {showcase.map((item, index) => (
+            <article className={cx("landing-showcase-item")} key={item.title}>
+              <div className={cx("landing-showcase-image")}>
+                <Image src={item.image} alt={item.title} width={1920} height={1280} />
+              </div>
+              <div className={cx("landing-showcase-copy")}>
+                <p className={cx("landing-eyebrow")}>{item.eyebrow}</p>
+                <h3>{item.title}</h3>
+                <p>{item.copy}</p>
+                <span>{index + 1 < 10 ? `0${index + 1}` : index + 1}</span>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
 
-          <PanelCard eyebrow="Experience" title="แนวทาง UX ที่ยึดไว้" description="ลดความรก เพิ่มการอ่านค่าเร็ว และจัดความสำคัญด้วยระยะห่าง น้ำหนักตัวอักษร และสถานะที่ชัด">
-            <div className="mt-4 grid gap-[14px]">
-              {[
-                ["Sidebar ก่อน", "ผู้ใช้รู้ทันทีว่าตอนนี้อยู่ส่วนไหนของระบบ"],
-                ["Card เป็นโมดูล", "ทุกพื้นที่ทำงานแยกหน้าที่ชัดชัดเจนสำหรับงานขายจริง"],
-                ["Action เด่น", "ปุ่มหลักใช้สีแบรนด์และวางชิดมุมล่างขวาตาม flow บันทึก"],
-              ].map(([title, copy]) => (
-                <div
-                  key={title}
-                  className="flex justify-between gap-[14px] rounded-[14px] border border-[var(--border)] [background:var(--panel-elevated)] p-[18px] max-[720px]:flex-col [@media(orientation:portrait)]:flex-col [@media(orientation:portrait)_and_(max-width:640px)]:p-4"
-                >
-                  <div>
-                    <h3 className="m-0 text-[1.08rem] font-bold tracking-[-0.03em]">{title}</h3>
-                    <p className="mt-1 text-[0.92rem] text-[var(--foreground-soft)]">{copy}</p>
-                  </div>
-                  <span className={`${ghostPillClass} self-start max-[720px]:self-auto [@media(orientation:portrait)]:self-start`}>UX</span>
-                </div>
-              ))}
-            </div>
-          </PanelCard>
-        </section>
-      </div>
+      <section id="pricing" className={cx("landing-section", "landing-section-soft")}>
+        <div className={cx("landing-pricing")}>
+          <div className={cx("landing-pricing-heading")}>
+            <p className={cx("landing-eyebrow")}>PLANS</p>
+            <h2>เลือกแพลนให้เหมาะกับจังหวะของร้าน</h2>
+            <p>เริ่มจาก Start เพื่อทดลองใช้งาน แล้วขยับเป็น Plus เมื่อร้านต้องการขายจริงแบบไม่ติดเพดานการใช้งาน</p>
+          </div>
+          <div className={cx("landing-price-grid")}>
+            {plans.map((plan) => (
+              <article className={plan.highlighted ? cx("landing-price-card", "landing-price-card-highlight") : cx("landing-price-card")} key={plan.name}>
+                <p className={cx("landing-price-eyebrow")}>{plan.eyebrow}</p>
+                <h3>{plan.name}</h3>
+                <strong>
+                  {plan.price}
+                  {plan.suffix ? <span>{plan.suffix}</span> : null}
+                </strong>
+                <p className={cx("landing-price-description")}>{plan.description}</p>
+                <ul>
+                  {plan.features.map((feature) => (
+                    <li key={feature}>{feature}</li>
+                  ))}
+                </ul>
+                <Link href={primaryHref} className={cx("landing-button", plan.highlighted ? "landing-button-primary" : "landing-button-secondary")}>
+                  เริ่มใช้งาน
+                </Link>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <footer className={cx("landing-footer")}>
+        <div className={cx("landing-footer-main")}>
+          <div className={cx("landing-footer-brand")}>
+            <Link href="#top">POS MANS</Link>
+            <p>© 2024 POS MANS. All rights reserved.</p>
+          </div>
+          <nav className={cx("landing-footer-nav")} aria-label="Product footer links">
+            <a href="#features">Product</a>
+            <a href="#showcase">Solutions</a>
+            <a href="#pricing">Pricing</a>
+          </nav>
+          <div className={cx("landing-footer-nav")} aria-label="Company footer links">
+            <button type="button">Contact</button>
+            <button type="button">Privacy Policy</button>
+            <button type="button">Terms of Service</button>
+          </div>
+        </div>
+      </footer>
     </main>
   );
 }
-
-

@@ -6,7 +6,7 @@ test.describe("frontend smoke", () => {
 
     await expect(page.locator('input[autocomplete="username"]')).toBeVisible();
     await expect(page.locator('input[autocomplete="current-password"]')).toBeVisible();
-    await expect(page.getByRole("button", { name: /ดำเนินการต่อ|Continue/i })).toBeVisible();
+    await expect(page.getByRole("button", { name: /เข้าสู่ระบบ|Sign in/i })).toBeVisible();
   });
 
   test("redirects protected owner routes without a session cookie", async ({ page }) => {

@@ -2,6 +2,7 @@
 
 import { FormEvent, useEffect, useState, useTransition } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { ensureCsrfToken, fetchWithCsrfRetry } from "@/lib/csrf";
 import { isOwnerTheme, storeOwnerTheme } from "@/lib/owner-theme";
@@ -20,21 +21,30 @@ type ChallengeUser = {
 type ChallengeMode = "verify" | "setup";
 
 const authInputClass =
-  "h-[34px] w-full rounded-[5px] border border-[#d7deea] bg-white px-3 text-[0.9rem] text-[#0f172a] outline-none transition placeholder:text-[#8ea0b7] focus:border-[#635bff] focus:shadow-[0_0_0_3px_rgba(99,91,255,0.16)]";
+  "h-[34px] w-full rounded-[5px] border border-[#d7deea] bg-white px-3 text-[0.9rem] text-[#0f172a] outline-none transition placeholder:text-[#8ea0b7] focus:border-[#2388ff] focus:shadow-[0_0_0_3px_rgba(35,136,255,0.18)]";
+const authPasswordInputClass =
+  "auth-password-input h-[34px] w-full rounded-[5px] border border-[#d7deea] bg-white py-0 pl-3 pr-8 text-[0.9rem] text-[#0f172a] outline-none transition placeholder:text-[#8ea0b7] focus:border-[#2388ff] focus:shadow-[0_0_0_3px_rgba(35,136,255,0.18)]";
 const authPrimaryButtonClass =
   "inline-flex h-[34px] w-full items-center justify-center rounded-[5px] bg-[#2388ff] px-4 text-[0.86rem] font-bold text-white transition hover:bg-[#0f75ee] disabled:cursor-not-allowed disabled:opacity-60";
-const authSecondaryButtonClass =
-  "inline-flex h-[34px] items-center justify-center rounded-[5px] border border-[#d7deea] bg-[#edf2f7] px-4 text-[0.86rem] font-bold text-[#0f172a] transition hover:border-[#c5cfde] hover:bg-[#e4ebf4]";
+const authPasswordToggleClass =
+  "absolute right-1.5 top-1/2 inline-flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-[4px] text-[#2388ff] transition hover:bg-[#eaf4ff]";
 const authLinkClass = "font-bold text-[#6d6bff] transition hover:text-[#8d8bff]";
+
+function PasswordEyeIcon({ hidden }: { hidden: boolean }) {
+  return (
+    <svg viewBox="0 0 24 24" className="h-[17px] w-[17px]" fill="none" aria-hidden="true">
+      <path d="M3.5 12s3.1-5.2 8.5-5.2 8.5 5.2 8.5 5.2-3.1 5.2-8.5 5.2S3.5 12 3.5 12Z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M12 14.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z" stroke="currentColor" strokeWidth="1.8" />
+      {hidden ? <path d="M4.5 19.5 19.5 4.5" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" /> : null}
+    </svg>
+  );
+}
 
 function AuthMark() {
   return (
-    <div className="mb-9 h-7 w-11 text-[#635bff]" aria-hidden="true">
-      <svg viewBox="0 0 48 28" fill="none" className="h-full w-full">
-        <path d="M2 18.5C7.5 9.5 15.5 9.5 24 16.5C31.5 22.6 38 21.5 46 11.5" stroke="currentColor" strokeWidth="8" strokeLinecap="round" />
-        <path d="M5 24C11 17.5 17 18 24.5 23.5" stroke="currentColor" strokeWidth="8" strokeLinecap="round" opacity="0.78" />
-      </svg>
-    </div>
+    <Link href="/" aria-label="กลับไปหน้าแรก" className="mb-5 block h-12 w-[196px] overflow-hidden">
+      <Image src="/logo.png" alt="" width={488} height={111} className="h-12 w-auto -translate-x-[9px]" priority />
+    </Link>
   );
 }
 
@@ -43,10 +53,19 @@ function ErrorBox({ children, light = false }: { children: string; light?: boole
     <p
       className={
         light
-          ? "mt-[18px] rounded-xl border border-[var(--danger-border)] bg-[var(--danger-soft)] px-[14px] py-3 text-[0.94rem] text-[var(--danger-bright)]"
-          : "mt-4 rounded-xl border border-[var(--danger-border)] bg-[var(--danger-soft)] px-[14px] py-3 text-[0.94rem] text-[var(--danger)]"
+          ? "fixed right-5 top-5 z-[420] flex min-h-[42px] w-[min(360px,calc(100vw-40px))] items-center rounded-[6px] border border-[var(--danger-border)] bg-[var(--danger-soft)] px-4 py-3 text-[0.86rem] leading-snug text-[var(--danger-bright)] shadow-[0_14px_34px_rgba(220,38,38,0.14)]"
+          : "fixed right-5 top-5 z-[420] flex min-h-[42px] w-[min(360px,calc(100vw-40px))] items-center rounded-[6px] border border-[var(--danger-border)] bg-[var(--danger-soft)] px-4 py-3 text-[0.86rem] leading-snug text-[var(--danger)] shadow-[0_14px_34px_rgba(220,38,38,0.14)]"
       }
+      role="alert"
     >
+      {children}
+    </p>
+  );
+}
+
+function NoticeBox({ children }: { children: string }) {
+  return (
+    <p className="fixed right-5 top-5 z-[420] flex min-h-[42px] w-[min(360px,calc(100vw-40px))] items-center rounded-[6px] border border-emerald-200 bg-emerald-50 px-4 py-3 text-[0.86rem] leading-snug text-emerald-700 shadow-[0_14px_34px_rgba(5,150,105,0.14)]" role="status">
       {children}
     </p>
   );
@@ -69,20 +88,34 @@ function PinDots({ filled }: { filled: number }) {
   );
 }
 
-export function LoginForm() {
+export function LoginForm({ initialNotice = null }: { initialNotice?: string | null }) {
   const router = useRouter();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [pin, setPin] = useState("");
   const [confirmPin, setConfirmPin] = useState("");
   const [challengeUser, setChallengeUser] = useState<ChallengeUser | null>(null);
   const [challengeMode, setChallengeMode] = useState<ChallengeMode>("verify");
   const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(initialNotice);
   const [pending, startTransition] = useTransition();
 
   useEffect(() => {
     void ensureCsrfToken().catch(() => undefined);
   }, []);
+
+  useEffect(() => {
+    if (!error) {
+      return undefined;
+    }
+
+    const timeout = window.setTimeout(() => {
+      setError(null);
+    }, 3000);
+
+    return () => window.clearTimeout(timeout);
+  }, [error]);
 
   async function completeAuth(url: "/api/auth/verify-pin" | "/api/auth/setup-pin", body: Record<string, string>, fallbackError: string) {
     const response = await fetchWithCsrfRetry(url, {
@@ -117,6 +150,7 @@ export function LoginForm() {
 
   async function submitPasswordStep() {
     setError(null);
+    setNotice(null);
 
     const normalizedUsername = username.trim().toLowerCase();
     if (!normalizedUsername || !password) {
@@ -353,7 +387,7 @@ export function LoginForm() {
     <form
       onSubmit={handlePasswordSubmit}
       noValidate
-      className="w-[min(100%,390px)] rounded-[10px] bg-[#f6f7f9] p-6 text-[#0f172a] shadow-[0_1px_2px_rgba(15,23,42,0.04)]"
+      className="relative z-[1] w-[min(100%,390px)] rounded-[10px] bg-[#f6f7f9] p-6 text-[#0f172a] shadow-[0_1px_2px_rgba(15,23,42,0.04)]"
     >
       <AuthMark />
       <h1 className="m-0 text-[1.35rem] font-extrabold leading-tight text-[#0f172a]">เข้าสู่ระบบบัญชีร้าน</h1>
@@ -370,44 +404,49 @@ export function LoginForm() {
             onChange={(event) => setUsername(event.target.value)}
             autoComplete="username"
             className={authInputClass}
-            placeholder="owner.fastmanfoods"
+            placeholder="owner.yourshop"
           />
         </label>
 
         <label className="grid gap-2">
           <span className="text-[0.82rem] font-bold text-[#0f172a]">Password</span>
-          <input
-            required
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-            type="password"
-            autoComplete="current-password"
-            className={authInputClass}
-            placeholder="กรอกรหัสผ่านของคุณ"
-          />
+          <span className="relative block">
+            <input
+              required
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              type={showPassword ? "text" : "password"}
+              autoComplete="current-password"
+              className={authPasswordInputClass}
+              placeholder="กรอกรหัสผ่านของคุณ"
+            />
+            <button
+              type="button"
+              className={authPasswordToggleClass}
+              onClick={() => setShowPassword((current) => !current)}
+              aria-label={showPassword ? "ซ่อนรหัสผ่าน" : "แสดงรหัสผ่าน"}
+            >
+              <PasswordEyeIcon hidden={showPassword} />
+            </button>
+          </span>
         </label>
       </div>
 
-      {error ? <ErrorBox>{error}</ErrorBox> : null}
-
       <div className="mt-6 grid gap-5">
-        <div className="flex items-center justify-between gap-4 text-[0.82rem]">
+        <div className="flex items-center gap-3 text-[0.82rem]">
           <label className="inline-flex items-center gap-3 text-[#475569]">
             <input type="checkbox" className="h-[14px] w-[14px] rounded-[3px] border border-[#cbd5e1] bg-white" />
             จำบัญชีนี้ไว้
           </label>
-          <span className="text-[#64748b]">PIN จะขึ้นหลังผ่านรหัสผ่าน</span>
         </div>
         <button type="submit" className={authPrimaryButtonClass} disabled={pending || !username.trim() || !password}>
           {pending ? "กำลังตรวจบัญชี..." : "เข้าสู่ระบบ"}
         </button>
-        <Link href="/register" className={`${authSecondaryButtonClass} w-full`}>
-          สมัครสมาชิก
-        </Link>
       </div>
+
+      {notice ? <NoticeBox>{notice}</NoticeBox> : error ? <ErrorBox>{error}</ErrorBox> : null}
     </form>
     {renderPinChallengeModal()}
     </>
   );
 }
-

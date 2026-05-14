@@ -5,6 +5,7 @@ const { prisma } = require("../lib/db");
 const { normalizeUsername } = require("../utils/password");
 const { AppError } = require("../utils/app-error");
 const { assertSafePlainText, safeUrlSchema } = require("../utils/xss");
+const { assertNoProfanity } = require("../utils/profanity-filter");
 const { env } = require("../config/env");
 
 const LOGIN_CHALLENGE_COOKIE_NAME = `${env.SESSION_COOKIE_NAME}_login_challenge`;
@@ -35,7 +36,7 @@ const ownerRegistrationSchema = z
       .min(3)
       .max(32)
       .regex(/^[a-zA-Z0-9._-]+$/)
-      .transform((value) => normalizeUsername(value)),
+      .transform((value) => assertNoProfanity(normalizeUsername(value), "username")),
     password: z.string().min(8).max(128),
     confirmPassword: z.string().min(8).max(128),
   })
@@ -443,7 +444,7 @@ function buildSessionUserResponse(user) {
 
 const ipLoginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 10,
+  max: 15,
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: "พยายามเข้าสู่ระบบบ่อยเกินไป กรุณารอสักครู่แล้วลองใหม่" },
@@ -451,7 +452,7 @@ const ipLoginLimiter = rateLimit({
 
 const accountLoginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 5,
+  max: 8,
   standardHeaders: true,
   legacyHeaders: false,
   skipSuccessfulRequests: true,
@@ -461,7 +462,7 @@ const accountLoginLimiter = rateLimit({
 
 const registrationLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 5,
+  max: 8,
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: "สมัครสมาชิกบ่อยเกินไป กรุณารอสักครู่แล้วลองใหม่" },

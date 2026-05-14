@@ -20,6 +20,7 @@ const backendURL = process.env.PLAYWRIGHT_BACKEND_URL || "http://127.0.0.1:4000"
 const skipWebServer = process.env.PLAYWRIGHT_SKIP_WEB_SERVER === "1";
 const skipBackendServer = process.env.PLAYWRIGHT_SKIP_BACKEND_SERVER === "1";
 const smokeOnly = process.env.PLAYWRIGHT_SMOKE_ONLY === "1";
+const registerFlow = process.env.E2E_RUN_REGISTER_FLOW === "1";
 const hasOwnerCredentials =
   process.env.E2E_RUN_OWNER_FLOWS === "1" &&
   Boolean(process.env.E2E_OWNER_USERNAME) && Boolean(process.env.E2E_OWNER_PASSWORD) && Boolean(process.env.E2E_OWNER_PIN);
@@ -78,7 +79,7 @@ export default defineConfig({
       use: { ...devices["Desktop Chrome"] },
     },
   ],
-  webServer: skipWebServer || (!hasOwnerCredentials && !smokeOnly)
+  webServer: skipWebServer || (!hasOwnerCredentials && !smokeOnly && !registerFlow)
     ? undefined
     : skipBackendServer
       ? [frontendServer]
