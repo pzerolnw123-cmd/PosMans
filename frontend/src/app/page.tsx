@@ -4,6 +4,7 @@ import { getCurrentSession } from "@/lib/session";
 import { getWorkspaceHref } from "@/lib/workspace";
 import { features, footerPendingItems, plans, showcase } from "./landing-content";
 import type { FeatureIconName } from "./landing-content";
+import { LandingMobileMenu } from "./landing-mobile-menu";
 import { LandingNav } from "./landing-nav";
 import { LandingTypewriterTitle } from "./landing-typewriter-title";
 import styles from "./page.module.css";
@@ -77,6 +78,7 @@ export default async function HomePage() {
           <Link href={primaryHref} className={cx("landing-button", "landing-button-primary")}>
             {primaryLabel}
           </Link>
+          <LandingMobileMenu primaryHref={primaryHref} primaryLabel={primaryLabel} />
         </div>
       </header>
 

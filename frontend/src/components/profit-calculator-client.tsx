@@ -3,6 +3,7 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type PointerEvent } from "react";
 import { requestJson } from "@/components/product-management-studio/lib";
 import { CalendarPicker } from "@/components/receipt-desk-client/calendar-picker";
+import { shiftDateInputValue, toDateInputValue } from "@/components/receipt-desk-client/shared";
 import { LoadingState, inputClass, primaryButtonClass, secondaryButtonClass } from "@/components/ui-primitives";
 
 type ReportRange = "today" | "yesterday" | "7d" | "month";
@@ -169,6 +170,9 @@ export function ProfitCalculatorClient({ storeName = "" }: { storeName?: string 
 
     return { products, productCost, extraCost, totalCost, sales, profit, margin, itemCount, averageCost };
   }, [extraCosts, report, unitCosts]);
+  const today = useMemo(() => toDateInputValue(new Date()), []);
+  const yesterday = useMemo(() => shiftDateInputValue(-1), []);
+  const calendarSelectedDate = selectedDate || (range === "today" ? today : range === "yesterday" ? yesterday : "");
 
   useLayoutEffect(() => {
     const frameId = window.requestAnimationFrame(() => {
@@ -501,7 +505,7 @@ export function ProfitCalculatorClient({ storeName = "" }: { storeName?: string 
           </div>
           <div className="grid min-w-[280px] justify-items-end gap-2 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:min-w-0 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:gap-1.5 max-[720px]:w-full max-[720px]:min-w-0 max-[720px]:justify-items-stretch">
             <div className="w-full [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:[&_>div]:gap-1 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:[&_>div>span]:text-[0.68rem] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:[&_>div>div>button]:h-[36px] [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:[&_>div>div>button]:px-3 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:[&_>div>div>button]:pr-8 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:[&_>div>div>button]:text-[0.78rem]">
-              <CalendarPicker selectedDate={selectedDate} onSelectDate={setSelectedDate} />
+              <CalendarPicker selectedDate={calendarSelectedDate} onSelectDate={setSelectedDate} />
             </div>
             <div className="flex flex-wrap justify-end gap-2 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:gap-1.5 max-[720px]:justify-start">
               {rangeOptions.map((option) => {

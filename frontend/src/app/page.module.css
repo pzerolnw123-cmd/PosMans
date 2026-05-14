@@ -101,6 +101,82 @@
   gap: 10px;
 }
 
+.landing-mobile-menu {
+  position: relative;
+  display: none;
+}
+
+.landing-mobile-menu-button {
+  display: inline-flex;
+  width: 42px;
+  height: 42px;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 5px;
+  border: 1px solid #cfe0f2;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #061927;
+  box-shadow: 0 10px 24px rgba(20, 51, 83, 0.1);
+}
+
+.landing-mobile-menu-button span {
+  width: 18px;
+  height: 2px;
+  border-radius: 999px;
+  background: currentColor;
+}
+
+.landing-mobile-menu-panel {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  z-index: 50;
+  display: grid;
+  width: min(284px, calc(100vw - 28px));
+  gap: 10px;
+  border: 1px solid #dce8f4;
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 12px;
+  box-shadow: 0 22px 48px rgba(20, 51, 83, 0.18);
+}
+
+.landing-mobile-menu-links,
+.landing-mobile-menu-actions {
+  display: grid;
+  gap: 4px;
+}
+
+.landing-mobile-menu-links a,
+.landing-mobile-menu-actions a {
+  display: flex;
+  min-height: 42px;
+  align-items: center;
+  border-radius: 8px;
+  padding: 0 12px;
+  color: #1f3345;
+  font-weight: 800;
+}
+
+.landing-mobile-menu-links a:hover,
+.landing-mobile-menu-actions a:hover {
+  background: #f3f8fd;
+  color: #0f75ee;
+}
+
+.landing-mobile-menu-actions {
+  border-top: 1px solid #e6eef7;
+  padding-top: 8px;
+}
+
+.landing-mobile-menu-actions a:last-child {
+  justify-content: center;
+  background: #2388ff;
+  color: #ffffff;
+}
+
 .landing-button {
   display: inline-flex;
   align-items: center;
@@ -678,7 +754,7 @@
 
 @media (max-width: 640px) {
   .landing-header {
-    position: relative;
+    position: sticky;
     grid-template-columns: minmax(0, 1fr) auto;
     width: 100%;
     gap: 12px;
@@ -695,9 +771,11 @@
   }
 
   .landing-header-actions .landing-button {
-    min-height: 38px;
-    padding-inline: 14px;
-    font-size: 0.9rem;
+    display: none;
+  }
+
+  .landing-mobile-menu {
+    display: block;
   }
 
   .landing-hero-actions {
@@ -797,9 +875,9 @@
     width: 132px;
   }
 
-  .landing-header-actions .landing-button {
-    padding-inline: 12px;
-    font-size: 0.84rem;
+  .landing-mobile-menu-button {
+    width: 40px;
+    height: 40px;
   }
 
   .landing-hero h1 {

@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { ownerLandscapeClass, ownerLandscapeCompactPanelPaddingClass, ownerLandscapePanelPaddingClass } from "@/components/owner-workspace/landscape-preset";
 import { requestJson } from "@/components/product-management-studio/lib";
 import { CalendarPicker } from "@/components/receipt-desk-client/calendar-picker";
+import { shiftDateInputValue, toDateInputValue } from "@/components/receipt-desk-client/shared";
 import { LoadingState } from "@/components/ui-primitives";
 
 type ReportRange = "today" | "yesterday" | "7d" | "month";
@@ -195,6 +196,9 @@ export function ReportsSalesChart() {
         ["ช่วงพีค", "—"],
       ];
   const initialLoading = loading && !report;
+  const today = useMemo(() => toDateInputValue(new Date()), []);
+  const yesterday = useMemo(() => shiftDateInputValue(-1), []);
+  const calendarSelectedDate = selectedDate || (range === "today" ? today : range === "yesterday" ? yesterday : "");
 
   return (
     <div
@@ -210,7 +214,7 @@ export function ReportsSalesChart() {
             <p className="m-0 text-[0.92rem] text-[var(--foreground-soft)]">แสดงยอดขายจริงตามช่วงเวลาที่เลือก</p>
           </div>
           <div className="grid min-w-[280px] justify-items-end gap-2 [@media(min-width:744px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:min-w-0 [@media(min-width:744px)_and_(max-width:820px)_and_(orientation:portrait)_and_(any-pointer:coarse)]:justify-items-start [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:min-w-0 [@media(min-width:821px)_and_(max-width:1024px)_and_(orientation:landscape)]:justify-items-start max-[720px]:w-full max-[720px]:min-w-0 max-[720px]:justify-items-stretch">
-            <CalendarPicker selectedDate={selectedDate} onSelectDate={setSelectedDate} />
+            <CalendarPicker selectedDate={calendarSelectedDate} onSelectDate={setSelectedDate} />
             <div className="flex flex-wrap justify-end gap-2 max-[720px]:justify-start">
               {rangeOptions.map((option) => {
                 const active = !selectedDate && option.value === range;
