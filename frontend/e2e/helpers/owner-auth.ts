@@ -1,4 +1,4 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Page, type StorageState } from "@playwright/test";
 
 export const ownerCredentials = {
   username: process.env.E2E_OWNER_USERNAME,
@@ -13,40 +13,82 @@ export function hasOwnerCredentials() {
   );
 }
 
+let ownerStorageState: StorageState | null = null;
+
 export async function signInOwner(page: Page) {
-  await test.step("open owner login", async () => {
+  if (ownerStorageState) {
+    await test.step("restore owner session", async () => {
+      await page.context().addCookies(ownerStorageState.cookies);
+    });
+    return;
+  }
+
+  await test.step("open frontend origin", async () => {
     await page.goto("/login", { waitUntil: "domcontentloaded" });
   });
 
-  const usernameInput = page.locator('input[autocomplete="username"]');
-  const passwordInput = page.locator('input[autocomplete="current-password"]');
-  const continueButton = page.getByRole("button", { name: "เข้าสู่ระบบ" });
+  await test.step("authenticate owner through API", async () => {
+    const result = await page.evaluate(
+      async ({ pin, password, username }) => {
+        async function readJson(response: Response) {
+          return (await response.json().catch(() => null)) as Record<string, unknown> | null;
+        }
 
-  await test.step("submit owner password", async () => {
-    await expect(usernameInput).toBeEnabled();
-    await usernameInput.fill(ownerCredentials.username || "");
-    await expect(usernameInput).toHaveValue(ownerCredentials.username || "");
+        const csrfResponse = await fetch("/api/auth/csrf", {
+          credentials: "same-origin",
+          cache: "no-store",
+        });
+        const csrfData = await readJson(csrfResponse);
+        const csrfToken = typeof csrfData?.csrfToken === "string" ? csrfData.csrfToken : "";
 
-    await passwordInput.fill(ownerCredentials.password || "");
-    await expect(passwordInput).toHaveValue(ownerCredentials.password || "");
+        const loginResponse = await fetch("/api/auth/login", {
+          method: "POST",
+          headers: {
+            "content-type": "application/json",
+            "x-csrf-token": csrfToken,
+          },
+          body: JSON.stringify({ username, password }),
+          credentials: "same-origin",
+        });
+        const loginData = await readJson(loginResponse);
+        if (!loginResponse.ok) {
+          return {
+            ok: false,
+            status: loginResponse.status,
+            error: typeof loginData?.error === "string" ? loginData.error : "Owner password authentication failed.",
+          };
+        }
 
-    await expect(continueButton).toBeEnabled();
-    await continueButton.click();
-  });
+        const pinEndpoint = loginData?.pinSetupRequired ? "/api/auth/setup-pin" : "/api/auth/verify-pin";
+        const pinBody = loginData?.pinSetupRequired ? { pin, confirmPin: pin } : { pin };
+        const pinResponse = await fetch(pinEndpoint, {
+          method: "POST",
+          headers: {
+            "content-type": "application/json",
+            "x-csrf-token": csrfToken,
+          },
+          body: JSON.stringify(pinBody),
+          credentials: "same-origin",
+        });
+        const pinData = await readJson(pinResponse);
+        return {
+          ok: pinResponse.ok,
+          status: pinResponse.status,
+          error: typeof pinData?.error === "string" ? pinData.error : pinResponse.ok ? null : "Owner PIN authentication failed.",
+        };
+      },
+      {
+        username: ownerCredentials.username || "",
+        password: ownerCredentials.password || "",
+        pin: ownerCredentials.pin || "",
+      },
+    );
 
-  await test.step("submit owner PIN", async () => {
-    await expect(page.getByRole("heading", { name: /^(ตั้งค่า PIN ใหม่|ยืนยัน PIN)$/ })).toBeVisible();
-
-    for (const digit of ownerCredentials.pin || "") {
-      await page.getByRole("button", { name: digit }).click();
-    }
-
-    const unlockButton = page.getByRole("button", { name: /ปลดล็อกหลังบ้าน|บันทึก PIN และเข้าใช้งาน/ });
-    await expect(unlockButton).toBeEnabled();
-    await unlockButton.click();
+    expect(result, result.error || "Owner authentication failed.").toMatchObject({ ok: true });
   });
 
   await test.step("wait for owner workspace", async () => {
+    await page.goto("/owner/sales", { waitUntil: "domcontentloaded" });
     await Promise.race([
       expect(page).toHaveURL(/\/owner\/sales/),
       page.getByRole("region", { name: "sales layout" }).waitFor({ state: "visible" }),
@@ -55,4 +97,6 @@ export async function signInOwner(page: Page) {
       }),
     ]);
   });
+
+  ownerStorageState = await page.context().storageState();
 }
