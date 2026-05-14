@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { buildClientErrorReport, reportClientError } from "@/lib/client-error-reporting";
-import { isRecoverableDevNetworkError } from "@/lib/dev-network-recovery";
+import { isRecoverableNetworkError } from "@/lib/dev-network-recovery";
 
 const networkRecoveryStorageKey = "pos-mans-network-error-hard-reload-at";
 
@@ -23,7 +23,7 @@ function scheduleNetworkRecovery() {
 export function NetworkErrorRecovery() {
   useEffect(() => {
     function handleUnhandledRejection(event: PromiseRejectionEvent) {
-      if (!isRecoverableDevNetworkError(event.reason)) {
+      if (!isRecoverableNetworkError(event.reason)) {
         return;
       }
 
@@ -33,7 +33,7 @@ export function NetworkErrorRecovery() {
     }
 
     function handleError(event: ErrorEvent) {
-      if (!isRecoverableDevNetworkError(event.error) && !isRecoverableDevNetworkError(event.message)) {
+      if (!isRecoverableNetworkError(event.error) && !isRecoverableNetworkError(event.message)) {
         return;
       }
 

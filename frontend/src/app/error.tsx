@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { buildClientErrorReport, reportClientError } from "@/lib/client-error-reporting";
-import { isRecoverableDevNetworkError } from "@/lib/dev-network-recovery";
+import { isRecoverableNetworkError } from "@/lib/dev-network-recovery";
 
 const networkRecoveryStorageKey = "pos-mans-network-error-hard-reload-at";
 
@@ -14,7 +14,7 @@ export default function AppError({
   reset: () => void;
 }) {
   const isNetworkError = error.message.toLowerCase().includes("network error");
-  const shouldAutoRecover = isRecoverableDevNetworkError(error);
+  const shouldAutoRecover = isRecoverableNetworkError(error);
 
   useEffect(() => {
     reportClientError(buildClientErrorReport("app-error-boundary", error, { recoverable: shouldAutoRecover }));

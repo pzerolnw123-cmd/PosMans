@@ -45,7 +45,20 @@ type CustomerDisplayStorePayload = {
   store: CustomerDisplayPayload["store"];
 };
 
-const publicBackendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
+const rawPublicBackendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
+const publicBackendUrl = (() => {
+  if (!rawPublicBackendUrl) {
+    return undefined;
+  }
+
+  try {
+    const url = new URL(rawPublicBackendUrl);
+    const isLocalhost = ["localhost", "127.0.0.1", "::1"].includes(url.hostname);
+    return process.env.NODE_ENV === "production" && isLocalhost ? undefined : url.origin;
+  } catch {
+    return undefined;
+  }
+})();
 
 export function CustomerDisplayClient({ displayId, token }: { displayId: string; token: string }) {
   const [payload, setPayload] = useState<CustomerDisplayPayload | null>(null);
@@ -53,6 +66,7 @@ export function CustomerDisplayClient({ displayId, token }: { displayId: string;
   const [connectionState, setConnectionState] = useState<CustomerDisplayConnectionState>("connecting");
   const [locallyInvalidated, setLocallyInvalidated] = useState(false);
   const connectionStateRef = useRef(connectionState);
+  const eventSourceRef = useRef<EventSource | null>(null);
   const lastStoreSnapshotAtRef = useRef(0);
   const query = useMemo(() => new URLSearchParams({ token }).toString(), [token]);
   const eventSourceUrl = useMemo(() => {
@@ -126,9 +140,19 @@ export function CustomerDisplayClient({ displayId, token }: { displayId: string;
   }, [connectionState]);
 
   useEffect(() => {
+    if (connectionState !== "blocked") {
+      return;
+    }
+
+    eventSourceRef.current?.close();
+    eventSourceRef.current = null;
+  }, [connectionState]);
+
+  useEffect(() => {
     let cancelled = false;
 
     const events = new EventSource(eventSourceUrl);
+    eventSourceRef.current = events;
     events.addEventListener("open", () => {
       if (!cancelled) {
         setConnectionState("live");
@@ -190,14 +214,18 @@ export function CustomerDisplayClient({ displayId, token }: { displayId: string;
     events.addEventListener("error", () => {
       if (!cancelled) {
         setConnectionState("offline");
+        void loadSnapshot(() => cancelled);
       }
     });
 
     return () => {
       cancelled = true;
       events.close();
+      if (eventSourceRef.current === events) {
+        eventSourceRef.current = null;
+      }
     };
-  }, [eventSourceUrl]);
+  }, [eventSourceUrl, loadSnapshot]);
 
   useEffect(() => {
     if (connectionState === "blocked") {
