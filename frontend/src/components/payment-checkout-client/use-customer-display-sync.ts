@@ -1,6 +1,12 @@
 import { useCallback, useEffect, useState } from "react";
 
-import { openCustomerDisplayWindow, readStoredCustomerDisplay, storeCustomerDisplay, type CustomerDisplayLink } from "@/components/customer-display-session";
+import {
+  clearStoredCustomerDisplay,
+  openCustomerDisplayWindow,
+  readStoredCustomerDisplay,
+  storeCustomerDisplay,
+  type CustomerDisplayLink,
+} from "@/components/customer-display-session";
 import { requestJson } from "@/components/product-management-studio/lib";
 
 import type { CompletedSale, PaymentMethod } from "./shared";
@@ -42,6 +48,23 @@ type CustomerDisplayStateResponse = {
   controlToken?: string;
 };
 
+type RequestError = Error & {
+  code?: string;
+  status?: number;
+};
+
+function isStaleCustomerDisplayError(error: unknown) {
+  const requestError = error as RequestError;
+  return (
+    requestError?.status === 403 ||
+    requestError?.status === 404 ||
+    requestError?.status === 410 ||
+    requestError?.code === "DISPLAY_FORBIDDEN" ||
+    requestError?.code === "DISPLAY_NOT_FOUND" ||
+    requestError?.code === "DISPLAY_EXPIRED"
+  );
+}
+
 export function useCustomerDisplaySync({
   amount,
   completedSale,
@@ -66,6 +89,43 @@ export function useCustomerDisplaySync({
     return () => window.clearTimeout(timeoutId);
   }, []);
 
+  const clearCustomerDisplayState = useCallback(() => {
+    clearStoredCustomerDisplay();
+    setCustomerDisplay(null);
+  }, []);
+
+  const createCustomerDisplay = useCallback(async () => {
+    const response = await requestJson<CustomerDisplayCreateResponse>("/api/customer-displays", {
+      method: "POST",
+      body: JSON.stringify({ name: "จอลูกค้า" }),
+    });
+    const url = `${window.location.origin}/display/${encodeURIComponent(response.display.id)}?token=${encodeURIComponent(response.token)}`;
+    const displayLink = { id: response.display.id, token: response.token, controlToken: response.controlToken, url };
+    setCustomerDisplay(displayLink);
+    storeCustomerDisplay(displayLink);
+    return displayLink;
+  }, []);
+
+  const sendCustomerDisplayState = useCallback(async (display: CustomerDisplayLink, payload: CustomerDisplayStateUpdate) => {
+    const response = await requestJson<CustomerDisplayStateResponse>(`/api/customer-displays/${encodeURIComponent(display.id)}/state`, {
+      method: "PATCH",
+      body: JSON.stringify(payload),
+    });
+    if (response.controlToken) {
+      const updatedDisplay = { ...display, controlToken: response.controlToken };
+      setCustomerDisplay(updatedDisplay);
+      storeCustomerDisplay(updatedDisplay);
+      return updatedDisplay;
+    }
+
+    return display;
+  }, []);
+
+  const validateCustomerDisplay = useCallback(async (display: CustomerDisplayLink) => {
+    const query = new URLSearchParams({ token: display.token }).toString();
+    await requestJson(`/api/customer-displays/${encodeURIComponent(display.id)}/state?${query}`);
+  }, []);
+
   const updateCustomerDisplay = useCallback(
     async (payload: CustomerDisplayStateUpdate) => {
       if (!customerDisplay) {
@@ -73,45 +133,47 @@ export function useCustomerDisplaySync({
       }
 
       try {
-        const response = await requestJson<CustomerDisplayStateResponse>(`/api/customer-displays/${encodeURIComponent(customerDisplay.id)}/state`, {
-          method: "PATCH",
-          body: JSON.stringify(payload),
-        });
-        if (response.controlToken) {
-          const updatedDisplay = { ...customerDisplay, controlToken: response.controlToken };
-          setCustomerDisplay(updatedDisplay);
-          storeCustomerDisplay(updatedDisplay);
+        await sendCustomerDisplayState(customerDisplay, payload);
+      } catch (error) {
+        if (isStaleCustomerDisplayError(error)) {
+          clearCustomerDisplayState();
+          onError("จอลูกค้าหมดอายุแล้ว กรุณากดเปิดจอลูกค้าใหม่");
+          return;
         }
-      } catch {
+
         onError("ซิงก์จอลูกค้าไม่สำเร็จ กรุณาลองอีกครั้ง");
       }
     },
-    [customerDisplay, onError],
+    [clearCustomerDisplayState, customerDisplay, onError, sendCustomerDisplayState],
   );
 
   const handleOpenCustomerDisplay = useCallback(async () => {
-    if (customerDisplay) {
-      openCustomerDisplayWindow(customerDisplay.url);
-      return;
-    }
-
     setCustomerDisplayBusy(true);
     try {
-      const response = await requestJson<CustomerDisplayCreateResponse>("/api/customer-displays", {
-        method: "POST",
-        body: JSON.stringify({ name: "จอลูกค้า" }),
-      });
-      const url = `${window.location.origin}/display/${encodeURIComponent(response.display.id)}?token=${encodeURIComponent(response.token)}`;
-      const displayLink = { id: response.display.id, token: response.token, controlToken: response.controlToken, url };
-      setCustomerDisplay(displayLink);
-      storeCustomerDisplay(displayLink);
-      openCustomerDisplayWindow(url);
+      let displayLink = customerDisplay;
+      if (displayLink) {
+        try {
+          await validateCustomerDisplay(displayLink);
+        } catch (error) {
+          if (!isStaleCustomerDisplayError(error)) {
+            throw error;
+          }
+          clearCustomerDisplayState();
+          displayLink = null;
+        }
+      }
+
+      if (!displayLink) {
+        displayLink = await createCustomerDisplay();
+      }
+
+      openCustomerDisplayWindow(displayLink.url);
     } catch (displayError) {
       onError(displayError instanceof Error ? displayError.message : "เปิดจอลูกค้าไม่สำเร็จ");
     } finally {
       setCustomerDisplayBusy(false);
     }
-  }, [customerDisplay, onError]);
+  }, [clearCustomerDisplayState, createCustomerDisplay, customerDisplay, onError, validateCustomerDisplay]);
 
   useEffect(() => {
     if (!customerDisplay || completedSale) {

@@ -73,12 +73,9 @@ async function cleanupExpiredSessions() {
         break;
       }
 
-      const sessionIds = expiredSessions.map((session) => session.id);
-      await revokeDisplaysForSessionIds(sessionIds);
-
       const result = await prisma.session.deleteMany({
         where: {
-          id: { in: sessionIds },
+          id: { in: expiredSessions.map((session) => session.id) },
         },
       });
       deletedCount += result.count || 0;
@@ -123,7 +120,7 @@ async function createSession({ userId, userAgent, ipAddress }) {
   return { token, expiresAt, tokenHash };
 }
 
-async function deleteSession(token) {
+async function deleteSession(token, { revokeDisplays = true } = {}) {
   if (!token) return;
   const session = await prisma.session.findUnique({
     where: { tokenHash: hashToken(token) },
@@ -134,7 +131,9 @@ async function deleteSession(token) {
     return;
   }
 
-  await revokeDisplaysForSessionIds([session.id]);
+  if (revokeDisplays) {
+    await revokeDisplaysForSessionIds([session.id]);
+  }
   await prisma.session.delete({ where: { id: session.id } });
 }
 
@@ -171,7 +170,11 @@ async function getSessionFromToken(token) {
     !session.user.isActive ||
     (session.user.storeId && (!session.user.store || !session.user.store.isActive))
   ) {
-    await deleteSession(token).catch(() => undefined);
+    const shouldRevokeDisplays = Boolean(
+      session &&
+        (!session.user.isActive || (session.user.storeId && (!session.user.store || !session.user.store.isActive))),
+    );
+    await deleteSession(token, { revokeDisplays: shouldRevokeDisplays }).catch(() => undefined);
     return null;
   }
 

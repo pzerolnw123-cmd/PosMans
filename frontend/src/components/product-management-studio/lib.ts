@@ -46,6 +46,7 @@ export async function requestJson<T>(path: string, init?: RequestInit) {
 
   if (!response.ok) {
     const error = new Error(payload?.error || "เกิดข้อผิดพลาดในการเชื่อมต่อสินค้า");
+    (error as Error & { status?: number }).status = response.status;
     if (payload?.code) {
       (error as Error & { code?: string }).code = payload.code;
     }
