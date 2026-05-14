@@ -20,7 +20,7 @@ test.describe("owner visual regression contracts", () => {
 
   for (const route of ownerVisualRoutes) {
     test(`${route.path} stays inside the Desktop HD+ viewport`, async ({ page }) => {
-      await page.goto(route.path, { waitUntil: "networkidle" });
+      await page.goto(route.path, { waitUntil: "domcontentloaded" });
       const anchor = route.visibleAnchor();
       await expect(page.getByRole(anchor.role, { name: anchor.name })).toBeVisible();
 

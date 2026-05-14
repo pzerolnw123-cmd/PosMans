@@ -10,7 +10,7 @@ test.describe("owner critical sales flow", () => {
   test("moves an available product from sales to payment without submitting a sale", async ({ page }) => {
     await signInOwner(page);
 
-    await page.goto("/owner/sales", { waitUntil: "networkidle" });
+    await page.goto("/owner/sales", { waitUntil: "domcontentloaded" });
     await expect(page.getByRole("region", { name: "sales layout" })).toBeVisible();
 
     const availableAddButtons = page.locator('button[aria-label="เพิ่มตะกร้า"]:not([disabled])');

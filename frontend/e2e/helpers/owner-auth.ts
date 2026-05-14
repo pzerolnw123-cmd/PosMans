@@ -14,19 +14,17 @@ export function hasOwnerCredentials() {
 }
 
 export async function signInOwner(page: Page) {
-  await page.goto("/login", { waitUntil: "networkidle" });
+  await page.goto("/login", { waitUntil: "domcontentloaded" });
 
   const usernameInput = page.locator('input[autocomplete="username"]');
   const passwordInput = page.locator('input[autocomplete="current-password"]');
   const continueButton = page.getByRole("button", { name: "เข้าสู่ระบบ" });
 
   await expect(usernameInput).toBeEnabled();
-  await usernameInput.click();
-  await usernameInput.pressSequentially(ownerCredentials.username || "");
+  await usernameInput.fill(ownerCredentials.username || "");
   await expect(usernameInput).toHaveValue(ownerCredentials.username || "");
 
-  await passwordInput.click();
-  await passwordInput.pressSequentially(ownerCredentials.password || "");
+  await passwordInput.fill(ownerCredentials.password || "");
   await expect(passwordInput).toHaveValue(ownerCredentials.password || "");
 
   await expect(continueButton).toBeEnabled();
