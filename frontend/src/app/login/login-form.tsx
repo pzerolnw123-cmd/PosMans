@@ -19,6 +19,10 @@ type ChallengeUser = {
 };
 
 type ChallengeMode = "verify" | "setup";
+type AuthErrorPayload = {
+  code?: string;
+  error?: string;
+};
 
 const authInputClass =
   "h-[34px] w-full rounded-[5px] border border-[#d7deea] bg-white px-3 text-[0.9rem] text-[#0f172a] outline-none transition placeholder:text-[#8ea0b7] focus:border-[#2388ff] focus:shadow-[0_0_0_3px_rgba(35,136,255,0.18)]";
@@ -69,6 +73,18 @@ function NoticeBox({ children }: { children: string }) {
       {children}
     </p>
   );
+}
+
+function resolveAuthErrorMessage(payload: AuthErrorPayload | null, fallback: string) {
+  if (payload?.code === "BACKEND_TIMEOUT") {
+    return "Backend ตอบช้าเกินไป กรุณารอสักครู่แล้วลองเข้าสู่ระบบอีกครั้ง";
+  }
+
+  if (payload?.code === "BACKEND_UNAVAILABLE") {
+    return "เชื่อมต่อ backend ไม่สำเร็จ กรุณาลองใหม่อีกครั้ง";
+  }
+
+  return payload?.error || fallback;
 }
 
 function PinDots({ filled }: { filled: number }) {
@@ -150,10 +166,10 @@ export function LoginForm({ initialNotice = null }: { initialNotice?: string | n
       });
 
       if (!response.ok) {
-        const data = (await response.json().catch(() => null)) as { error?: string } | null;
+        const data = (await response.json().catch(() => null)) as AuthErrorPayload | null;
         setPin("");
         setConfirmPin("");
-        setError(data?.error || fallbackError);
+        setError(resolveAuthErrorMessage(data, fallbackError));
         return;
       }
 
@@ -202,11 +218,11 @@ export function LoginForm({ initialNotice = null }: { initialNotice?: string | n
       });
 
       const data = (await response.json().catch(() => null)) as
-        | { error?: string; pinRequired?: boolean; pinSetupRequired?: boolean; user?: ChallengeUser }
+        | (AuthErrorPayload & { pinRequired?: boolean; pinSetupRequired?: boolean; user?: ChallengeUser })
         | null;
 
       if (!response.ok || !data?.user) {
-        setError(data?.error || "เข้าสู่ระบบไม่สำเร็จ");
+        setError(resolveAuthErrorMessage(data, "เข้าสู่ระบบไม่สำเร็จ"));
         return;
       }
 

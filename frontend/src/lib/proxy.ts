@@ -4,11 +4,39 @@ import { NextResponse } from "next/server";
 
 const frontendUrl = process.env.FRONTEND_URL || process.env.NEXT_PUBLIC_FRONTEND_URL || "http://localhost:3000";
 const frontendOrigin = new URL(frontendUrl).origin;
-const backendFetchTimeoutMs = Number(process.env.BACKEND_FETCH_TIMEOUT_MS || 8000);
+const backendFetchTimeoutMs = parseTimeoutMs(process.env.BACKEND_FETCH_TIMEOUT_MS, 8000);
+export const backendAuthFetchTimeoutMs = parseTimeoutMs(
+  process.env.BACKEND_AUTH_FETCH_TIMEOUT_MS,
+  Math.max(backendFetchTimeoutMs, 20000),
+);
 
-async function fetchBackendWithTimeout(url: string, init: RequestInit) {
+function parseTimeoutMs(value: string | undefined, fallback: number) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+}
+
+function isAbortError(error: unknown) {
+  return error instanceof Error && error.name === "AbortError";
+}
+
+function sanitizeProxyPath(path: string) {
+  try {
+    const url = new URL(path, "http://internal.local");
+    for (const param of ["token", "controlToken", "csrfToken", "password", "pin"]) {
+      if (url.searchParams.has(param)) {
+        url.searchParams.set(param, "redacted");
+      }
+    }
+    return `${url.pathname}${url.search}`;
+  } catch {
+    const queryStart = path.indexOf("?");
+    return queryStart === -1 ? path : path.slice(0, queryStart);
+  }
+}
+
+async function fetchBackendWithTimeout(url: string, init: RequestInit, timeoutMs = backendFetchTimeoutMs) {
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), backendFetchTimeoutMs);
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
     return await fetch(url, {
@@ -20,7 +48,7 @@ async function fetchBackendWithTimeout(url: string, init: RequestInit) {
   }
 }
 
-export async function proxyToBackend(path: string, init?: RequestInit) {
+export async function proxyToBackend(path: string, init?: RequestInit, { timeoutMs = backendFetchTimeoutMs }: { timeoutMs?: number } = {}) {
   const cookieStore = await cookies();
   const cookieHeader = cookieStore
     .getAll()
@@ -37,10 +65,26 @@ export async function proxyToBackend(path: string, init?: RequestInit) {
       ...init,
       headers,
       cache: "no-store",
-    });
-  } catch {
+    }, timeoutMs);
+  } catch (error) {
+    const timedOut = isAbortError(error);
+    const code = timedOut ? "BACKEND_TIMEOUT" : "BACKEND_UNAVAILABLE";
+    if (process.env.NODE_ENV === "production") {
+      console.error("[backendProxy] Backend request failed", {
+        code,
+        method: init?.method || "GET",
+        path: sanitizeProxyPath(path),
+        timeoutMs,
+      });
+    }
+
     return NextResponse.json(
-      { error: "Backend connection was interrupted. Please try again.", code: "BACKEND_UNAVAILABLE" },
+      {
+        error: timedOut
+          ? "Backend request timed out. Please try again."
+          : "Backend connection was interrupted. Please try again.",
+        code,
+      },
       { status: 503, headers: { "cache-control": "no-store" } },
     );
   }
@@ -120,6 +164,7 @@ export async function proxyBackendRoute(
     includeSearch = false,
     forwardBody = false,
     empty = false,
+    timeoutMs = backendFetchTimeoutMs,
   }: {
     method?: string;
     csrf?: boolean;
@@ -128,6 +173,7 @@ export async function proxyBackendRoute(
     includeSearch?: boolean;
     forwardBody?: boolean;
     empty?: boolean;
+    timeoutMs?: number;
   } = {},
 ) {
   const url = new URL(request.url);
@@ -135,7 +181,7 @@ export async function proxyBackendRoute(
     method,
     headers: buildBackendHeaders(request, { csrf, contentType, refererPath }),
     ...(forwardBody ? { body: await request.text() } : {}),
-  });
+  }, { timeoutMs });
 
   return backendResponse(response, { empty });
 }
