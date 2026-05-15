@@ -68,7 +68,13 @@ export function CustomerDisplayClient({ displayId, token }: { displayId: string;
   const connectionStateRef = useRef(connectionState);
   const eventSourceRef = useRef<EventSource | null>(null);
   const lastStoreSnapshotAtRef = useRef(0);
+  const lastEventSourceSnapshotAtRef = useRef(0);
+  const consecutiveSnapshotFailuresRef = useRef(0);
   const query = useMemo(() => new URLSearchParams({ token }).toString(), [token]);
+  const stateSnapshotUrl = useMemo(() => {
+    const path = `/api/customer-displays/${encodeURIComponent(displayId)}/state?${query}`;
+    return publicBackendUrl ? `${publicBackendUrl.replace(/\/$/, "")}${path}` : path;
+  }, [displayId, query]);
   const eventSourceUrl = useMemo(() => {
     const path = `/api/customer-displays/${encodeURIComponent(displayId)}/events?${query}`;
     return publicBackendUrl ? `${publicBackendUrl.replace(/\/$/, "")}${path}` : path;
@@ -84,7 +90,7 @@ export function CustomerDisplayClient({ displayId, token }: { displayId: string;
   const loadSnapshot = useCallback(
     async (cancelled: () => boolean) => {
       try {
-        const response = await fetch(`/api/customer-displays/${encodeURIComponent(displayId)}/state?${query}`, {
+        const response = await fetch(stateSnapshotUrl, {
           cache: "no-store",
         });
         const data = (await response.json().catch(() => null)) as CustomerDisplayPayload | { error?: string } | null;
@@ -96,24 +102,30 @@ export function CustomerDisplayClient({ displayId, token }: { displayId: string;
             }
             setConnectionState(response.status === 403 || response.status === 404 || response.status === 410 ? "blocked" : "offline");
           }
-          return;
+          consecutiveSnapshotFailuresRef.current += 1;
+          return false;
         }
 
         if (!cancelled() && data && "display" in data) {
           if (data.display.revokedAt) {
             setConnectionState("blocked");
-            return;
+            consecutiveSnapshotFailuresRef.current = 0;
+            return true;
           }
 
           setPayload(data);
         }
+        consecutiveSnapshotFailuresRef.current = 0;
+        return true;
       } catch {
         if (!cancelled()) {
           setConnectionState("offline");
         }
+        consecutiveSnapshotFailuresRef.current += 1;
+        return false;
       }
     },
-    [displayId, query],
+    [stateSnapshotUrl],
   );
 
   const loadStoreSnapshot = useCallback(
@@ -219,7 +231,12 @@ export function CustomerDisplayClient({ displayId, token }: { displayId: string;
     events.addEventListener("error", () => {
       if (!cancelled) {
         setConnectionState("offline");
-        void loadSnapshot(() => cancelled);
+        const now = Date.now();
+        const retryDelay = customerDisplayPollDelay("offline", consecutiveSnapshotFailuresRef.current);
+        if (now - lastEventSourceSnapshotAtRef.current >= retryDelay) {
+          lastEventSourceSnapshotAtRef.current = now;
+          void loadSnapshot(() => cancelled);
+        }
       }
     });
 
@@ -239,31 +256,40 @@ export function CustomerDisplayClient({ displayId, token }: { displayId: string;
 
     let cancelled = false;
     const isCancelled = () => cancelled;
-    const pollDelay = customerDisplayPollDelay(connectionState);
-    const initialTimer = window.setTimeout(() => {
-      void loadSnapshot(isCancelled);
-      void loadStoreSnapshot(isCancelled);
-      lastStoreSnapshotAtRef.current = Date.now();
-    }, 0);
-    const snapshotInterval = window.setInterval(() => {
+    let snapshotTimer: number | null = null;
+    const pollSnapshot = async () => {
+      if (cancelled) {
+        return;
+      }
+
       const now = Date.now();
-      void loadSnapshot(isCancelled);
+      await loadSnapshot(isCancelled);
       if (
         shouldRefreshCustomerDisplayStoreSnapshot({
           now,
           lastStoreSnapshotAt: lastStoreSnapshotAtRef.current,
           connectionState: connectionStateRef.current,
+          consecutiveFailures: consecutiveSnapshotFailuresRef.current,
         })
       ) {
         lastStoreSnapshotAtRef.current = now;
         void loadStoreSnapshot(isCancelled);
       }
-    }, pollDelay);
+      if (!cancelled) {
+        snapshotTimer = window.setTimeout(
+          pollSnapshot,
+          customerDisplayPollDelay(connectionStateRef.current, consecutiveSnapshotFailuresRef.current),
+        );
+      }
+    };
+
+    snapshotTimer = window.setTimeout(pollSnapshot, 0);
 
     return () => {
       cancelled = true;
-      window.clearTimeout(initialTimer);
-      window.clearInterval(snapshotInterval);
+      if (snapshotTimer !== null) {
+        window.clearTimeout(snapshotTimer);
+      }
     };
   }, [connectionState, loadSnapshot, loadStoreSnapshot]);
 

@@ -4,6 +4,21 @@ import { NextResponse } from "next/server";
 
 const frontendUrl = process.env.FRONTEND_URL || process.env.NEXT_PUBLIC_FRONTEND_URL || "http://localhost:3000";
 const frontendOrigin = new URL(frontendUrl).origin;
+const backendFetchTimeoutMs = Number(process.env.BACKEND_FETCH_TIMEOUT_MS || 8000);
+
+async function fetchBackendWithTimeout(url: string, init: RequestInit) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), backendFetchTimeoutMs);
+
+  try {
+    return await fetch(url, {
+      ...init,
+      signal: controller.signal,
+    });
+  } finally {
+    clearTimeout(timeout);
+  }
+}
 
 export async function proxyToBackend(path: string, init?: RequestInit) {
   const cookieStore = await cookies();
@@ -18,7 +33,7 @@ export async function proxyToBackend(path: string, init?: RequestInit) {
   }
 
   try {
-    return await fetch(`${backendUrl}${path}`, {
+    return await fetchBackendWithTimeout(`${backendUrl}${path}`, {
       ...init,
       headers,
       cache: "no-store",

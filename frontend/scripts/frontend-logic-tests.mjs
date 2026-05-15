@@ -88,10 +88,14 @@ assert.deepEqual(buildClientErrorReport("app-error-boundary", Object.assign(new 
   digest: "digest-1",
 });
 assert.equal(customerDisplayPollDelay("live"), 30000);
-assert.equal(customerDisplayPollDelay("offline"), 1500);
+assert.equal(customerDisplayPollDelay("offline"), 5000);
+assert.equal(customerDisplayPollDelay("connecting"), 2000);
+assert.equal(customerDisplayPollDelay("offline", 1), 10000);
+assert.equal(customerDisplayPollDelay("offline", 10), 60000);
 assert.equal(shouldRefreshCustomerDisplayStoreSnapshot({ now: 31000, lastStoreSnapshotAt: 1000, connectionState: "live" }), true);
 assert.equal(shouldRefreshCustomerDisplayStoreSnapshot({ now: 30999, lastStoreSnapshotAt: 1000, connectionState: "live" }), false);
-assert.equal(shouldRefreshCustomerDisplayStoreSnapshot({ now: 2500, lastStoreSnapshotAt: 1000, connectionState: "offline" }), true);
+assert.equal(shouldRefreshCustomerDisplayStoreSnapshot({ now: 6000, lastStoreSnapshotAt: 1000, connectionState: "offline" }), true);
+assert.equal(shouldRefreshCustomerDisplayStoreSnapshot({ now: 6000, lastStoreSnapshotAt: 1000, connectionState: "offline", consecutiveFailures: 1 }), false);
 const cachePolicyMap = new Map([
   ["expired", { expiresAt: 1000, bytes: new Uint8Array([1, 2]) }],
   ["fresh-1", { expiresAt: 3000, bytes: new Uint8Array([3]) }],

@@ -308,7 +308,7 @@ router.post("/:displayId/revoke", requireTrustedOrigin, async (req, res, next) =
 router.get("/:displayId/state", async (req, res, next) => {
   try {
     const display = await findPublicDisplay(req.params.displayId, String(req.query.token || ""));
-    await touchDisplayLastSeen(display);
+    void touchDisplayLastSeen(display).catch(() => undefined);
     res.json({
       store: {
         name: display.store.name,
@@ -343,7 +343,7 @@ router.get("/:displayId/events", async (req, res, next) => {
     const display = await findPublicDisplay(req.params.displayId, String(req.query.token || ""));
     const ipAddress = req.ip || "unknown";
     assertSseConnectionAllowed(display.id, ipAddress);
-    await touchDisplayLastSeen(display);
+    void touchDisplayLastSeen(display).catch(() => undefined);
     const unregisterConnection = registerSseConnection(display.id, ipAddress);
 
     res.set({

@@ -62,10 +62,25 @@ export type OwnerPlanPayload = {
 };
 
 const sessionCookieName = process.env.NEXT_PUBLIC_SESSION_COOKIE_NAME || "pos_mans_session";
+const backendFetchTimeoutMs = Number(process.env.BACKEND_FETCH_TIMEOUT_MS || 8000);
+
+async function fetchBackendWithTimeout(url: string, init: RequestInit) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), backendFetchTimeoutMs);
+
+  try {
+    return await fetch(url, {
+      ...init,
+      signal: controller.signal,
+    });
+  } finally {
+    clearTimeout(timeout);
+  }
+}
 
 async function fetchBackendJson<T>(url: string, init: RequestInit) {
   try {
-    const response = await fetch(url, init);
+    const response = await fetchBackendWithTimeout(url, init);
     if (!response.ok) {
       return null;
     }
@@ -76,7 +91,7 @@ async function fetchBackendJson<T>(url: string, init: RequestInit) {
   }
 
   try {
-    const response = await fetch(url, init);
+    const response = await fetchBackendWithTimeout(url, init);
     if (!response.ok) {
       return null;
     }

@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { FormEvent, useEffect, useState, useTransition } from "react";
+import { FormEvent, useEffect, useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -99,7 +99,25 @@ export function LoginForm({ initialNotice = null }: { initialNotice?: string | n
   const [challengeMode, setChallengeMode] = useState<ChallengeMode>("verify");
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(initialNotice);
+  const [authBusy, setAuthBusy] = useState(false);
+  const authBusyRef = useRef(false);
   const [pending, startTransition] = useTransition();
+  const isSubmitting = pending || authBusy;
+
+  function beginAuthRequest() {
+    if (pending || authBusyRef.current) {
+      return false;
+    }
+
+    authBusyRef.current = true;
+    setAuthBusy(true);
+    return true;
+  }
+
+  function endAuthRequest() {
+    authBusyRef.current = false;
+    setAuthBusy(false);
+  }
 
   useEffect(() => {
     void ensureCsrfToken().catch(() => undefined);
@@ -118,74 +136,91 @@ export function LoginForm({ initialNotice = null }: { initialNotice?: string | n
   }, [error]);
 
   async function completeAuth(url: "/api/auth/verify-pin" | "/api/auth/setup-pin", body: Record<string, string>, fallbackError: string) {
-    const response = await fetchWithCsrfRetry(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(body),
-    });
-
-    if (!response.ok) {
-      const data = (await response.json().catch(() => null)) as { error?: string } | null;
-      setPin("");
-      setConfirmPin("");
-      setError(data?.error || fallbackError);
+    if (!beginAuthRequest()) {
       return;
     }
 
-    const data = (await response.json().catch(() => null)) as
-      | { user?: { ownerTheme?: string; platformRole: string; storeRole: string | null } }
-      | null;
+    try {
+      const response = await fetchWithCsrfRetry(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(body),
+      });
 
-    if (data?.user?.storeRole === "OWNER" && isOwnerTheme(data.user.ownerTheme)) {
-      storeOwnerTheme(data.user.ownerTheme);
+      if (!response.ok) {
+        const data = (await response.json().catch(() => null)) as { error?: string } | null;
+        setPin("");
+        setConfirmPin("");
+        setError(data?.error || fallbackError);
+        return;
+      }
+
+      const data = (await response.json().catch(() => null)) as
+        | { user?: { ownerTheme?: string; platformRole: string; storeRole: string | null } }
+        | null;
+
+      if (data?.user?.storeRole === "OWNER" && isOwnerTheme(data.user.ownerTheme)) {
+        storeOwnerTheme(data.user.ownerTheme);
+      }
+
+      startTransition(() => {
+        router.push(data?.user ? getWorkspaceHref(data.user) : "/owner");
+        router.refresh();
+      });
+    } finally {
+      endAuthRequest();
     }
-
-    startTransition(() => {
-      router.push(data?.user ? getWorkspaceHref(data.user) : "/owner");
-      router.refresh();
-    });
   }
 
   async function submitPasswordStep() {
+    if (!beginAuthRequest()) {
+      return;
+    }
+
     setError(null);
     setNotice(null);
 
     const normalizedUsername = username.trim().toLowerCase();
     if (!normalizedUsername || !password) {
       setError("กรอก username และ password ก่อน");
+      endAuthRequest();
       return;
     }
 
-    const response = await fetchWithCsrfRetry("/api/auth/login", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        username: normalizedUsername,
-        password,
-      }),
-    });
+    try {
+      const response = await fetchWithCsrfRetry("/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          username: normalizedUsername,
+          password,
+        }),
+      });
 
-    const data = (await response.json().catch(() => null)) as
-      | { error?: string; pinRequired?: boolean; pinSetupRequired?: boolean; user?: ChallengeUser }
-      | null;
+      const data = (await response.json().catch(() => null)) as
+        | { error?: string; pinRequired?: boolean; pinSetupRequired?: boolean; user?: ChallengeUser }
+        | null;
 
-    if (!response.ok || !data?.user) {
-      setError(data?.error || "เข้าสู่ระบบไม่สำเร็จ");
-      return;
+      if (!response.ok || !data?.user) {
+        setError(data?.error || "เข้าสู่ระบบไม่สำเร็จ");
+        return;
+      }
+
+      setPin("");
+      setConfirmPin("");
+      setChallengeUser(data.user);
+      setChallengeMode(data.pinSetupRequired ? "setup" : "verify");
+    } finally {
+      endAuthRequest();
     }
-
-    setPin("");
-    setConfirmPin("");
-    setChallengeUser(data.user);
-    setChallengeMode(data.pinSetupRequired ? "setup" : "verify");
   }
 
   function appendDigit(value: string) {
-    if (pending) return;
+    if (isSubmitting) return;
 
     if (challengeMode === "setup") {
       if (pin.length < pinLength) {
@@ -206,7 +241,7 @@ export function LoginForm({ initialNotice = null }: { initialNotice?: string | n
   }
 
   function removeDigit() {
-    if (pending) return;
+    if (isSubmitting) return;
 
     if (challengeMode === "setup") {
       if (confirmPin.length) {
@@ -253,6 +288,10 @@ export function LoginForm({ initialNotice = null }: { initialNotice?: string | n
   }
 
   function resetChallenge() {
+    if (isSubmitting) {
+      return;
+    }
+
     setPin("");
     setConfirmPin("");
     setError(null);
@@ -262,6 +301,9 @@ export function LoginForm({ initialNotice = null }: { initialNotice?: string | n
 
   function handlePasswordSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (isSubmitting) {
+      return;
+    }
     void submitPasswordStep();
   }
 
@@ -297,6 +339,7 @@ export function LoginForm({ initialNotice = null }: { initialNotice?: string | n
               type="button"
               onClick={resetChallenge}
               className="inline-flex min-h-[42px] shrink-0 items-center justify-center gap-[10px] whitespace-nowrap rounded-[10px] border border-[var(--border)] bg-[var(--surface-muted)] px-[18px] font-bold text-[var(--foreground)] transition hover:-translate-y-px max-[720px]:self-start"
+              disabled={isSubmitting}
             >
               เปลี่ยนบัญชี
             </button>
@@ -331,7 +374,7 @@ export function LoginForm({ initialNotice = null }: { initialNotice?: string | n
                     type="button"
                     onClick={removeDigit}
                     className="h-16 rounded-full bg-transparent text-[2rem] text-[var(--foreground)] transition hover:-translate-y-px hover:bg-[var(--surface-muted)] disabled:cursor-not-allowed disabled:opacity-40 max-[420px]:h-14 max-[420px]:text-[1.7rem]"
-                    disabled={pending || (!pin.length && !confirmPin.length)}
+                    disabled={isSubmitting || (!pin.length && !confirmPin.length)}
                     aria-label="Delete last digit"
                   >
                     ←
@@ -348,7 +391,7 @@ export function LoginForm({ initialNotice = null }: { initialNotice?: string | n
                   type="button"
                   onClick={() => appendDigit(key)}
                   className="h-16 rounded-full bg-transparent text-[2rem] text-[var(--foreground)] transition hover:-translate-y-px hover:bg-[var(--surface-muted)] disabled:cursor-not-allowed disabled:opacity-40 max-[420px]:h-14 max-[420px]:text-[1.7rem]"
-                  disabled={pending || maxReached}
+                  disabled={isSubmitting || maxReached}
                 >
                   {key}
                 </button>
@@ -365,6 +408,7 @@ export function LoginForm({ initialNotice = null }: { initialNotice?: string | n
                 setError(null);
               }}
               className="inline-flex min-h-[42px] items-center justify-center gap-[10px] rounded-[10px] border border-[var(--border)] bg-[var(--surface-muted)] px-[18px] font-bold text-[var(--foreground)] transition hover:-translate-y-px"
+              disabled={isSubmitting}
             >
               ล้างค่า
             </button>
@@ -372,9 +416,9 @@ export function LoginForm({ initialNotice = null }: { initialNotice?: string | n
               type="button"
               onClick={() => void (challengeMode === "setup" ? submitSetupPinStep() : submitVerifyPinStep())}
               className={primaryButtonClass}
-              disabled={pending || (challengeMode === "setup" ? confirmPin.length !== pinLength : pin.length !== pinLength)}
+              disabled={isSubmitting || (challengeMode === "setup" ? confirmPin.length !== pinLength : pin.length !== pinLength)}
             >
-              {pending ? "กำลังตรวจสอบ..." : challengeMode === "setup" ? "บันทึก PIN และเข้าใช้งาน" : "เข้าสู่ระบบ"}
+              {isSubmitting ? "กำลังตรวจสอบ..." : challengeMode === "setup" ? "บันทึก PIN และเข้าใช้งาน" : "เข้าสู่ระบบ"}
             </button>
           </div>
         </div>
@@ -439,8 +483,8 @@ export function LoginForm({ initialNotice = null }: { initialNotice?: string | n
             จำบัญชีนี้ไว้
           </label>
         </div>
-        <button type="submit" className={authPrimaryButtonClass} disabled={pending || !username.trim() || !password}>
-          {pending ? "กำลังตรวจบัญชี..." : "เข้าสู่ระบบ"}
+        <button type="submit" className={authPrimaryButtonClass} disabled={isSubmitting || !username.trim() || !password}>
+          {isSubmitting ? "กำลังตรวจบัญชี..." : "เข้าสู่ระบบ"}
         </button>
       </div>
 
