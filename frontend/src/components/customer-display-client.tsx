@@ -70,6 +70,7 @@ export function CustomerDisplayClient({ displayId, token }: { displayId: string;
   const lastStoreSnapshotAtRef = useRef(0);
   const lastEventSourceSnapshotAtRef = useRef(0);
   const consecutiveSnapshotFailuresRef = useRef(0);
+  const snapshotInFlightRef = useRef(false);
   const query = useMemo(() => new URLSearchParams({ token }).toString(), [token]);
   const stateSnapshotUrl = useMemo(() => {
     const path = `/api/customer-displays/${encodeURIComponent(displayId)}/state?${query}`;
@@ -89,6 +90,11 @@ export function CustomerDisplayClient({ displayId, token }: { displayId: string;
 
   const loadSnapshot = useCallback(
     async (cancelled: () => boolean) => {
+      if (snapshotInFlightRef.current) {
+        return false;
+      }
+
+      snapshotInFlightRef.current = true;
       try {
         const response = await fetch(stateSnapshotUrl, {
           cache: "no-store",
@@ -123,6 +129,8 @@ export function CustomerDisplayClient({ displayId, token }: { displayId: string;
         }
         consecutiveSnapshotFailuresRef.current += 1;
         return false;
+      } finally {
+        snapshotInFlightRef.current = false;
       }
     },
     [stateSnapshotUrl],
@@ -162,7 +170,7 @@ export function CustomerDisplayClient({ displayId, token }: { displayId: string;
   }, [connectionState]);
 
   useEffect(() => {
-    if (!hasPayload || connectionState === "blocked" || !token || locallyInvalidated) {
+    if (!hasPayload || connectionStateRef.current === "blocked" || !token || locallyInvalidated) {
       return;
     }
 
@@ -247,10 +255,12 @@ export function CustomerDisplayClient({ displayId, token }: { displayId: string;
         eventSourceRef.current = null;
       }
     };
-  }, [connectionState, eventSourceUrl, hasPayload, loadSnapshot, locallyInvalidated, token]);
+  }, [eventSourceUrl, hasPayload, loadSnapshot, locallyInvalidated, token]);
 
   useEffect(() => {
-    if (connectionState === "blocked") {
+    const isConnectionBlocked = () => connectionStateRef.current === "blocked";
+
+    if (isConnectionBlocked() || !token || locallyInvalidated) {
       return;
     }
 
@@ -258,7 +268,7 @@ export function CustomerDisplayClient({ displayId, token }: { displayId: string;
     const isCancelled = () => cancelled;
     let snapshotTimer: number | null = null;
     const pollSnapshot = async () => {
-      if (cancelled) {
+      if (cancelled || isConnectionBlocked()) {
         return;
       }
 
@@ -275,7 +285,7 @@ export function CustomerDisplayClient({ displayId, token }: { displayId: string;
         lastStoreSnapshotAtRef.current = now;
         void loadStoreSnapshot(isCancelled);
       }
-      if (!cancelled) {
+      if (!cancelled && !isConnectionBlocked()) {
         snapshotTimer = window.setTimeout(
           pollSnapshot,
           customerDisplayPollDelay(connectionStateRef.current, consecutiveSnapshotFailuresRef.current),
@@ -291,7 +301,7 @@ export function CustomerDisplayClient({ displayId, token }: { displayId: string;
         window.clearTimeout(snapshotTimer);
       }
     };
-  }, [connectionState, loadSnapshot, loadStoreSnapshot]);
+  }, [loadSnapshot, loadStoreSnapshot, locallyInvalidated, token]);
 
   useEffect(() => {
     function syncStoredTheme() {

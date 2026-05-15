@@ -148,6 +148,31 @@ describe("customer display security", () => {
     );
   });
 
+  test("does not enqueue duplicate lastSeenAt updates during the public polling throttle window", async () => {
+    const token = "correct-token-value-that-is-long-enough";
+    prisma.customerDisplaySession.findUnique.mockResolvedValue({
+      id: "display-1",
+      name: "Customer Display",
+      publicTokenHash: hashDisplayToken(token),
+      status: "IDLE",
+      amount: 0,
+      paymentMethod: null,
+      qrDataUrl: null,
+      message: null,
+      saleCode: null,
+      updatedAt: new Date("2026-04-22T00:00:00.000Z"),
+      lastSeenAt: new Date(Date.now() - 60_000),
+      revokedAt: null,
+      expiresAt: new Date(Date.now() + 60_000),
+      store: { id: "store-1", name: "Demo Store", logoUrl: null, isActive: true },
+    });
+
+    await request(createApp()).get(`/api/customer-displays/display-1/state?token=${token}`);
+    await request(createApp()).get(`/api/customer-displays/display-1/state?token=${token}`);
+
+    expect(prisma.customerDisplaySession.updateMany).toHaveBeenCalledTimes(1);
+  });
+
   test("caps SSE connections per display and per IP", () => {
     const { assertSseConnectionAllowed, registerSseConnection } = require("../src/routes/customer-display.presence");
     const unregisterDisplayConnections = Array.from({ length: 20 }, (_, index) => {
@@ -239,5 +264,15 @@ describe("customer display security", () => {
         }),
       }),
     );
+  });
+
+  test("redacts display tokens from handled error log paths", () => {
+    const { sanitizeRequestPathForLog } = require("../src/middleware/error");
+
+    expect(
+      sanitizeRequestPathForLog({
+        originalUrl: "/api/customer-displays/display-1/state?token=public-secret&ok=1&controlToken=owner-secret",
+      }),
+    ).toBe("/api/customer-displays/display-1/state?token=redacted&ok=1&controlToken=redacted");
   });
 });

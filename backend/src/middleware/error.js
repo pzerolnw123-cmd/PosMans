@@ -1,6 +1,24 @@
 const { ZodError } = require("zod");
 const { AppError } = require("../utils/app-error");
 
+const sensitiveQueryParams = new Set(["token", "controlToken", "csrfToken", "password", "pin"]);
+
+function sanitizeRequestPathForLog(req) {
+  const rawPath = req.originalUrl || req.url || "";
+  try {
+    const url = new URL(rawPath, "http://internal.local");
+    for (const param of sensitiveQueryParams) {
+      if (url.searchParams.has(param)) {
+        url.searchParams.set(param, "redacted");
+      }
+    }
+    return `${url.pathname}${url.search}`;
+  } catch {
+    const queryStart = rawPath.indexOf("?");
+    return queryStart === -1 ? rawPath : rawPath.slice(0, queryStart);
+  }
+}
+
 function logHandledError(err, statusCode, req) {
   if (process.env.NODE_ENV === "test") {
     return;
@@ -12,14 +30,14 @@ function logHandledError(err, statusCode, req) {
       statusCode,
       code: err instanceof AppError ? err.code : undefined,
       method: req.method,
-      path: req.originalUrl || req.url,
+      path: sanitizeRequestPathForLog(req),
     });
     return;
   }
 
   console.error("[errorHandler] Error:", err.constructor.name, err.message, {
     method: req.method,
-    path: req.originalUrl || req.url,
+    path: sanitizeRequestPathForLog(req),
   });
   if (err instanceof ZodError) {
     console.error("[errorHandler] ZodError details:", JSON.stringify(err.issues));
@@ -59,4 +77,4 @@ function errorHandler(err, req, res, _next) {
   });
 }
 
-module.exports = { errorHandler };
+module.exports = { errorHandler, sanitizeRequestPathForLog };

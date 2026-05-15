@@ -6,6 +6,7 @@ const MAX_SSE_CONNECTIONS_PER_DISPLAY = 20;
 const MAX_SSE_CONNECTIONS_PER_IP = 10;
 const activeSseConnectionsByDisplay = new Map();
 const activeSseConnectionsByIp = new Map();
+const lastSeenTouchAttemptAtByDisplay = new Map();
 
 function incrementConnectionCount(map, key) {
   const count = (map.get(key) || 0) + 1;
@@ -44,23 +45,46 @@ function registerSseConnection(displayId, ipAddress) {
 
 async function touchDisplayLastSeen(display) {
   // อัปเดต lastSeenAt แบบ throttle เพราะ fallback polling อาจเรียก endpoint นี้ถี่
-  const lastSeenAt = display.lastSeenAt ? new Date(display.lastSeenAt) : null;
-  if (lastSeenAt && Date.now() - lastSeenAt.getTime() < LAST_SEEN_THROTTLE_MS) {
+  const now = Date.now();
+  const recentAttemptAt = lastSeenTouchAttemptAtByDisplay.get(display.id);
+  if (recentAttemptAt && now - recentAttemptAt < LAST_SEEN_THROTTLE_MS) {
     return;
   }
+
+  const lastSeenAt = display.lastSeenAt ? new Date(display.lastSeenAt) : null;
+  if (lastSeenAt && now - lastSeenAt.getTime() < LAST_SEEN_THROTTLE_MS) {
+    return;
+  }
+
+  lastSeenTouchAttemptAtByDisplay.set(display.id, now);
+  pruneLastSeenTouchAttempts(now);
 
   await prisma.customerDisplaySession.updateMany({
     where: {
       id: display.id,
-      OR: [{ lastSeenAt: null }, { lastSeenAt: { lt: new Date(Date.now() - LAST_SEEN_THROTTLE_MS) } }],
+      OR: [{ lastSeenAt: null }, { lastSeenAt: { lt: new Date(now - LAST_SEEN_THROTTLE_MS) } }],
     },
     data: { lastSeenAt: new Date() },
   });
 }
 
+function pruneLastSeenTouchAttempts(now) {
+  if (lastSeenTouchAttemptAtByDisplay.size <= 1000) {
+    return;
+  }
+
+  const staleBefore = now - LAST_SEEN_THROTTLE_MS * 2;
+  for (const [displayId, attemptedAt] of lastSeenTouchAttemptAtByDisplay.entries()) {
+    if (attemptedAt < staleBefore) {
+      lastSeenTouchAttemptAtByDisplay.delete(displayId);
+    }
+  }
+}
+
 function resetSseConnectionCountersForTests() {
   activeSseConnectionsByDisplay.clear();
   activeSseConnectionsByIp.clear();
+  lastSeenTouchAttemptAtByDisplay.clear();
 }
 
 module.exports = {

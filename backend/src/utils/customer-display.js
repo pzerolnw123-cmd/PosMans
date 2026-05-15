@@ -1,5 +1,5 @@
 const { prisma } = require("../lib/db");
-const { broadcastDisplayEvent } = require("./customer-display-events");
+const { publishDisplayEvent } = require("./customer-display-events");
 
 function serializeRevokedDisplay(display) {
   return {
@@ -52,7 +52,7 @@ async function revokeDisplaysForSessionIds(sessionIds) {
   );
 
   revokedDisplays.forEach((display) => {
-    broadcastDisplayEvent(display.id, "display", serializeRevokedDisplay(display));
+    void publishDisplayEvent(display.id, "display", serializeRevokedDisplay(display)).catch(() => undefined);
   });
 
   return revokedDisplays;

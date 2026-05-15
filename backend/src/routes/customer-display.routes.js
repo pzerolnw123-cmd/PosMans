@@ -6,7 +6,7 @@ const { getRequiredOwnerStoreId, requireStoreRole } = require("../middleware/aut
 const { requireCsrf, requireTrustedOrigin } = require("../middleware/security");
 const { writeAuditLog } = require("../utils/audit");
 const { AppError } = require("../utils/app-error");
-const { broadcastDisplayEvent, sendSse, subscribeDisplay, subscribeStore } = require("../utils/customer-display-events");
+const { publishDisplayEvent, sendSse, subscribeDisplay, subscribeStore } = require("../utils/customer-display-events");
 const { assertSafePlainText, assertSafeHttpUrl } = require("../utils/xss");
 const { assertSseConnectionAllowed, registerSseConnection, touchDisplayLastSeen } = require("./customer-display.presence");
 
@@ -89,7 +89,7 @@ function serializeDisplay(display) {
 }
 
 function broadcastDisplay(display) {
-  broadcastDisplayEvent(display.id, "display", serializeDisplay(display));
+  void publishDisplayEvent(display.id, "display", serializeDisplay(display)).catch(() => undefined);
 }
 
 function resolveDisplayTheme(display) {
