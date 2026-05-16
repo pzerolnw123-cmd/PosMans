@@ -1,4 +1,4 @@
-const { request, prisma, hashPassword, hashPin, verifyPassword, verifyPin, createPresignedUpload, isR2Configured, createApp, assertSafeHttpUrl, sanitizeRichText, buildSessionUser, buildChallenge, buildProduct, buildSaleOrder, mockOwnerSession, makeUniqueConflictError, originalEnv, installSecurityTestLifecycle } = require("./security-test-context");
+const { request, pool, prisma, hashPassword, hashPin, verifyPassword, verifyPin, createPresignedUpload, isR2Configured, createApp, assertSafeHttpUrl, sanitizeRichText, buildSessionUser, buildChallenge, buildProduct, buildSaleOrder, mockOwnerSession, makeUniqueConflictError, originalEnv, installSecurityTestLifecycle } = require("./security-test-context");
 
 describe("backend security hardening - owner settings and config", () => {
   installSecurityTestLifecycle();
@@ -127,6 +127,23 @@ describe("backend security hardening - owner settings and config", () => {
     expect(response.status).toBe(401);
   });
 
+  test("reports database health when the pool responds", async () => {
+    const response = await request(createApp()).get("/health/db");
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({ ok: true, db: true });
+    expect(pool.query).toHaveBeenCalledWith("SELECT 1");
+  });
+
+  test("returns 503 for database timeout errors", async () => {
+    pool.query.mockRejectedValueOnce(Object.assign(new Error("statement timeout"), { code: "57014" }));
+
+    const response = await request(createApp()).get("/health/db");
+
+    expect(response.status).toBe(503);
+    expect(response.body.code).toBe("DB_TIMEOUT");
+  });
+
   test("rejects the default session secret in production", () => {
     process.env = {
       ...originalEnv,
@@ -173,6 +190,27 @@ describe("backend security hardening - owner settings and config", () => {
         require("../src/config/env");
       });
     }).toThrow();
+  });
+
+  test("parses bounded database pool timeout settings", () => {
+    process.env = {
+      ...originalEnv,
+      NODE_ENV: "test",
+      DB_POOL_MAX: "7",
+      DB_CONNECTION_TIMEOUT_MS: "4000",
+      DB_QUERY_TIMEOUT_MS: "9000",
+      DB_STATEMENT_TIMEOUT_MS: "9000",
+      DB_IDLE_IN_TRANSACTION_SESSION_TIMEOUT_MS: "11000",
+    };
+
+    jest.isolateModules(() => {
+      const { env } = require("../src/config/env");
+      expect(env.DB_POOL_MAX).toBe(7);
+      expect(env.DB_CONNECTION_TIMEOUT_MS).toBe(4000);
+      expect(env.DB_QUERY_TIMEOUT_MS).toBe(9000);
+      expect(env.DB_STATEMENT_TIMEOUT_MS).toBe(9000);
+      expect(env.DB_IDLE_IN_TRANSACTION_SESSION_TIMEOUT_MS).toBe(11000);
+    });
   });
 
 });

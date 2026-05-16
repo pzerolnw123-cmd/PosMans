@@ -19,6 +19,30 @@ function sanitizeRequestPathForLog(req) {
   }
 }
 
+function isDatabaseTimeoutError(err) {
+  const code = String(err?.code || "");
+  const message = String(err?.message || "");
+  return (
+    code === "57014" ||
+    code === "ETIMEDOUT" ||
+    code === "ECONNRESET" ||
+    code === "ECONNREFUSED" ||
+    /timeout|timed out|statement timeout|Connection terminated|terminating connection/i.test(message)
+  );
+}
+
+function isDatabaseUnavailableError(err) {
+  const code = String(err?.code || "");
+  const message = String(err?.message || "");
+  return (
+    code === "53300" ||
+    code === "57P01" ||
+    code === "57P02" ||
+    code === "57P03" ||
+    /too many clients|remaining connection slots|database.*unavailable|pool.*ended/i.test(message)
+  );
+}
+
 function logHandledError(err, statusCode, req) {
   if (process.env.NODE_ENV === "test") {
     return;
@@ -69,6 +93,15 @@ function errorHandler(err, req, res, _next) {
     return res.status(err.statusCode).json(payload);
   }
 
+  if (isDatabaseTimeoutError(err) || isDatabaseUnavailableError(err)) {
+    const code = isDatabaseTimeoutError(err) ? "DB_TIMEOUT" : "DB_UNAVAILABLE";
+    logHandledError(err, 503, req);
+    return res.status(503).json({
+      error: "Database is temporarily unavailable. Please try again.",
+      code,
+    });
+  }
+
   const statusCode = err.statusCode || 500;
   logHandledError(err, statusCode, req);
 
@@ -77,4 +110,4 @@ function errorHandler(err, req, res, _next) {
   });
 }
 
-module.exports = { errorHandler, sanitizeRequestPathForLog };
+module.exports = { errorHandler, sanitizeRequestPathForLog, isDatabaseTimeoutError, isDatabaseUnavailableError };

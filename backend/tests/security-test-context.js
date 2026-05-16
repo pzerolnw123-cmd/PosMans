@@ -1,6 +1,9 @@
 ﻿const request = require("supertest");
 
 jest.mock("../src/lib/db", () => ({
+  pool: {
+    query: jest.fn(),
+  },
   prisma: {
     user: {
       create: jest.fn(),
@@ -95,6 +98,7 @@ jest.mock("../src/lib/r2", () => ({
 }));
 
 const { prisma } = require("../src/lib/db");
+const { pool } = require("../src/lib/db");
 const { hashPassword, hashPin, verifyPassword, verifyPin } = require("../src/utils/password");
 const { createPresignedUpload, deleteR2Object, isR2Configured } = require("../src/lib/r2");
 const { createApp } = require("../src/app");
@@ -353,6 +357,7 @@ function installSecurityTestLifecycle() {
     prisma.storePlanUsage.updateMany.mockResolvedValue({ count: 1 });
     prisma.$queryRaw.mockResolvedValue([{ maxCode: 0 }]);
     prisma.$transaction.mockImplementation((operations) => (typeof operations === "function" ? operations(prisma) : Promise.all(operations)));
+    pool.query.mockResolvedValue({ rows: [{ "?column?": 1 }] });
     prisma.session.update.mockResolvedValue({
       id: "session-1",
       createdAt: new Date(Date.now() - 10 * 60_000),
@@ -381,5 +386,5 @@ function installSecurityTestLifecycle() {
 }
 
 module.exports = {
-  request, prisma, hashPassword, hashPin, verifyPassword, verifyPin, createPresignedUpload, deleteR2Object, isR2Configured, createApp, assertSafeHttpUrl, sanitizeRichText, buildSessionUser, buildChallenge, buildProduct, buildSaleOrder, mockOwnerSession, makeUniqueConflictError, originalEnv, installSecurityTestLifecycle,
+  request, pool, prisma, hashPassword, hashPin, verifyPassword, verifyPin, createPresignedUpload, deleteR2Object, isR2Configured, createApp, assertSafeHttpUrl, sanitizeRichText, buildSessionUser, buildChallenge, buildProduct, buildSaleOrder, mockOwnerSession, makeUniqueConflictError, originalEnv, installSecurityTestLifecycle,
 };

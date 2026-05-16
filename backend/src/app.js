@@ -10,6 +10,7 @@ const uploadRoutes = require("./routes/upload.routes");
 const customerDisplayRoutes = require("./routes/customer-display.routes");
 const superAdminRoutes = require("./routes/superadmin.routes");
 const { env } = require("./config/env");
+const { pool } = require("./lib/db");
 const { errorHandler } = require("./middleware/error");
 
 function createApp() {
@@ -31,6 +32,19 @@ function createApp() {
 
   app.get("/health", (_req, res) => {
     res.json({ ok: true });
+  });
+
+  app.get("/health/db", async (_req, res, next) => {
+    try {
+      if (!pool?.query) {
+        return res.status(503).json({ ok: false, db: false, code: "DB_UNAVAILABLE" });
+      }
+
+      await pool.query("SELECT 1");
+      return res.json({ ok: true, db: true });
+    } catch (error) {
+      return next(error);
+    }
   });
 
   app.use("/api/auth", authRoutes);

@@ -116,6 +116,10 @@ for (const [name, defaultValue] of [
   ["SALE_RATE_LIMIT_MAX", "60"],
   ["UPLOAD_RATE_LIMIT_MAX", "30"],
   ["AUDIT_LOG_RETENTION_DAYS", "365"],
+  ["DB_POOL_MAX", "10"],
+  ["DB_CONNECTION_TIMEOUT_MS", "5000"],
+  ["DB_QUERY_TIMEOUT_MS", "10000"],
+  ["DB_STATEMENT_TIMEOUT_MS", "10000"],
 ]) {
   addCheck(Number(backendEnv[name] || defaultValue) > 0 ? "pass" : "fail", name, "must be a positive number");
 }
