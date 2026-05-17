@@ -6,6 +6,29 @@ const { Pool } = require("pg");
 
 const globalForPrisma = global;
 
+function describeDatabaseUrl(connectionString) {
+  try {
+    const url = new URL(connectionString);
+    const sslMode = url.searchParams.get("sslmode");
+    const channelBinding = url.searchParams.get("channel_binding");
+
+    return {
+      configured: true,
+      host: url.hostname,
+      port: url.port || null,
+      database: url.pathname ? url.pathname.replace(/^\//, "") : null,
+      sslMode,
+      channelBinding,
+      usesPooler: url.hostname.includes("-pooler") || url.hostname.includes("pooler"),
+    };
+  } catch {
+    return {
+      configured: Boolean(connectionString),
+      parseError: true,
+    };
+  }
+}
+
 const pool = new Pool({
   connectionString: env.DATABASE_URL,
   max: env.DB_POOL_MAX,
@@ -28,4 +51,23 @@ if (process.env.NODE_ENV !== "production") {
   globalForPrisma.prisma = prisma;
 }
 
-module.exports = { pool, prisma };
+const databaseDiagnostics = {
+  nodeEnv: env.NODE_ENV,
+  databaseUrl: describeDatabaseUrl(env.DATABASE_URL),
+  directDatabaseUrl: describeDatabaseUrl(env.DIRECT_DATABASE_URL),
+  poolMax: env.DB_POOL_MAX,
+  connectionTimeoutMs: env.DB_CONNECTION_TIMEOUT_MS,
+  idleTimeoutMs: env.DB_IDLE_TIMEOUT_MS,
+  queryTimeoutMs: env.DB_QUERY_TIMEOUT_MS,
+  statementTimeoutMs: env.DB_STATEMENT_TIMEOUT_MS,
+};
+
+function getDatabasePoolSnapshot() {
+  return {
+    totalCount: pool.totalCount,
+    idleCount: pool.idleCount,
+    waitingCount: pool.waitingCount,
+  };
+}
+
+module.exports = { pool, prisma, databaseDiagnostics, getDatabasePoolSnapshot, describeDatabaseUrl };

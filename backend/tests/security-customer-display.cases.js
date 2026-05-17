@@ -275,4 +275,14 @@ describe("customer display security", () => {
       }),
     ).toBe("/api/customer-displays/display-1/state?token=redacted&ok=1&controlToken=redacted");
   });
+
+  test("redacts database URLs from handled error log messages", () => {
+    const { sanitizeErrorMessageForLog } = require("../src/middleware/error");
+
+    expect(
+      sanitizeErrorMessageForLog(
+        "failed postgresql://db-user:db-pass@db.example.com/app?password=secret&token=abc because timeout",
+      ),
+    ).toBe("failed postgresql://***:***@db.example.com/app?password=redacted&token=redacted because timeout");
+  });
 });

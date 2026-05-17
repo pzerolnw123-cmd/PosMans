@@ -10,8 +10,23 @@ const uploadRoutes = require("./routes/upload.routes");
 const customerDisplayRoutes = require("./routes/customer-display.routes");
 const superAdminRoutes = require("./routes/superadmin.routes");
 const { env } = require("./config/env");
-const { pool } = require("./lib/db");
+const { databaseDiagnostics, getDatabasePoolSnapshot, pool } = require("./lib/db");
 const { errorHandler } = require("./middleware/error");
+const { sanitizeErrorMessageForLog } = require("./middleware/error");
+
+function logDatabaseHealthFailure(error) {
+  if (process.env.NODE_ENV === "test") {
+    return;
+  }
+
+  console.error("[health/db] Database probe failed", {
+    name: error?.constructor?.name || "Error",
+    driverCode: error?.code,
+    message: sanitizeErrorMessageForLog(error?.message),
+    diagnostics: databaseDiagnostics,
+    pool: typeof getDatabasePoolSnapshot === "function" ? getDatabasePoolSnapshot() : undefined,
+  });
+}
 
 function createApp() {
   const app = express();
@@ -43,6 +58,7 @@ function createApp() {
       await pool.query("SELECT 1");
       return res.json({ ok: true, db: true });
     } catch (error) {
+      logDatabaseHealthFailure(error);
       return next(error);
     }
   });

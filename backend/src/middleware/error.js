@@ -19,6 +19,13 @@ function sanitizeRequestPathForLog(req) {
   }
 }
 
+function sanitizeErrorMessageForLog(message) {
+  return String(message || "")
+    .replace(/postgres(?:ql)?:\/\/[^@\s]+@/gi, "postgresql://***:***@")
+    .replace(/([?&](?:password|token|pin|key|secret)=)[^&\s]+/gi, "$1redacted")
+    .slice(0, 240);
+}
+
 function isDatabaseTimeoutError(err) {
   const code = String(err?.code || "");
   const message = String(err?.message || "");
@@ -49,13 +56,21 @@ function logHandledError(err, statusCode, req) {
   }
 
   if (process.env.NODE_ENV === "production") {
-    console.error("[errorHandler] Request failed", {
+    const isDatabaseError = isDatabaseTimeoutError(err) || isDatabaseUnavailableError(err);
+    const payload = {
       name: err.constructor.name,
       statusCode,
       code: err instanceof AppError ? err.code : undefined,
       method: req.method,
       path: sanitizeRequestPathForLog(req),
-    });
+    };
+
+    if (isDatabaseError) {
+      payload.driverCode = err?.code;
+      payload.message = sanitizeErrorMessageForLog(err?.message);
+    }
+
+    console.error("[errorHandler] Request failed", payload);
     return;
   }
 
@@ -110,4 +125,10 @@ function errorHandler(err, req, res, _next) {
   });
 }
 
-module.exports = { errorHandler, sanitizeRequestPathForLog, isDatabaseTimeoutError, isDatabaseUnavailableError };
+module.exports = {
+  errorHandler,
+  sanitizeErrorMessageForLog,
+  sanitizeRequestPathForLog,
+  isDatabaseTimeoutError,
+  isDatabaseUnavailableError,
+};
