@@ -3,6 +3,7 @@
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useBackofficeShellAlert } from "@/components/backoffice-shell";
+import { revokeStoredCustomerDisplay } from "@/components/customer-display-session";
 import { fetchWithCsrfRetry } from "@/lib/csrf";
 import { clearStoredOwnerTheme } from "@/lib/owner-theme";
 
@@ -29,6 +30,7 @@ export function LogoutButton({ className = "" }: { className?: string }) {
         }
 
         clearStoredOwnerTheme();
+        void revokeStoredCustomerDisplay().catch(() => undefined);
 
         startTransition(() => {
           router.push("/login");

@@ -6,6 +6,7 @@ const {
   customerDisplayPollDelay,
   shouldRefreshCustomerDisplayStoreSnapshot,
 } = await import("../src/components/customer-display/polling.ts");
+const { parseCustomerDisplayStorageRecord } = await import("../src/components/customer-display/storage.ts");
 const { enforceMaxEntries, pruneExpiredEntries, sumByteLengths } = await import("../src/lib/cache-limits.ts");
 const { formatBaht, formatCompactBaht, formatThaiNumber } = await import("../src/lib/format.ts");
 const {
@@ -96,6 +97,25 @@ assert.equal(shouldRefreshCustomerDisplayStoreSnapshot({ now: 31000, lastStoreSn
 assert.equal(shouldRefreshCustomerDisplayStoreSnapshot({ now: 30999, lastStoreSnapshotAt: 1000, connectionState: "live" }), false);
 assert.equal(shouldRefreshCustomerDisplayStoreSnapshot({ now: 6000, lastStoreSnapshotAt: 1000, connectionState: "offline" }), true);
 assert.equal(shouldRefreshCustomerDisplayStoreSnapshot({ now: 6000, lastStoreSnapshotAt: 1000, connectionState: "offline", consecutiveFailures: 1 }), false);
+const storedDisplayRecord = JSON.stringify({
+  id: "display-1",
+  token: "public-token",
+  controlToken: "control-token",
+  storeId: "store-1",
+});
+assert.deepEqual(parseCustomerDisplayStorageRecord(storedDisplayRecord, { storeId: "store-1" }), {
+  id: "display-1",
+  token: "public-token",
+  controlToken: "control-token",
+  storeId: "store-1",
+});
+assert.equal(parseCustomerDisplayStorageRecord(storedDisplayRecord, { storeId: "store-2" }), null);
+assert.equal(
+  parseCustomerDisplayStorageRecord(JSON.stringify({ id: "legacy-display", token: "public-token", controlToken: "control-token" }), {
+    storeId: "store-1",
+  }),
+  null,
+);
 const cachePolicyMap = new Map([
   ["expired", { expiresAt: 1000, bytes: new Uint8Array([1, 2]) }],
   ["fresh-1", { expiresAt: 3000, bytes: new Uint8Array([3]) }],

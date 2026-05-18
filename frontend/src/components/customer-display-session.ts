@@ -1,11 +1,13 @@
 "use client";
 
 import { requestJson } from "@/components/product-management-studio/lib";
+import { parseCustomerDisplayStorageRecord, type CustomerDisplayStorageScope } from "@/components/customer-display/storage";
 
 export type CustomerDisplayLink = {
   id: string;
   token: string;
   controlToken: string;
+  storeId?: string;
   url: string;
 };
 
@@ -50,36 +52,27 @@ export function buildCustomerDisplayUrl(id: string, token: string) {
   return `${window.location.origin}/display/${encodeURIComponent(id)}?token=${encodeURIComponent(token)}`;
 }
 
-export function readStoredCustomerDisplay(): CustomerDisplayLink | null {
-  try {
-    const raw = sessionStorage.getItem(customerDisplayStorageKey);
-    if (!raw) {
-      return null;
-    }
-
-    const parsed = JSON.parse(raw) as Partial<Pick<CustomerDisplayLink, "id" | "token" | "controlToken">>;
-    if (
-      typeof parsed.id !== "string" ||
-      typeof parsed.token !== "string" ||
-      typeof parsed.controlToken !== "string" ||
-      parsed.id.length === 0 ||
-      parsed.token.length === 0 ||
-      parsed.controlToken.length === 0
-    ) {
+export function readStoredCustomerDisplay(scope: CustomerDisplayStorageScope = {}): CustomerDisplayLink | null {
+  const raw = sessionStorage.getItem(customerDisplayStorageKey);
+  const parsed = parseCustomerDisplayStorageRecord(raw, scope);
+  if (!parsed) {
+    if (raw) {
+      const staleDisplay = parseCustomerDisplayStorageRecord(raw);
+      if (staleDisplay) {
+        invalidateCustomerDisplay(staleDisplay.id);
+      }
       clearStoredCustomerDisplay();
-      return null;
     }
-
-    return {
-      id: parsed.id,
-      token: parsed.token,
-      controlToken: parsed.controlToken,
-      url: buildCustomerDisplayUrl(parsed.id, parsed.token),
-    };
-  } catch {
-    clearStoredCustomerDisplay();
     return null;
   }
+
+  return {
+    id: parsed.id,
+    token: parsed.token,
+    controlToken: parsed.controlToken,
+    storeId: parsed.storeId,
+    url: buildCustomerDisplayUrl(parsed.id, parsed.token),
+  };
 }
 
 export function storeCustomerDisplay(display: CustomerDisplayLink) {
@@ -90,6 +83,7 @@ export function storeCustomerDisplay(display: CustomerDisplayLink) {
       id: display.id,
       token: display.token,
       controlToken: display.controlToken,
+      storeId: display.storeId,
     }),
   );
 }
@@ -117,13 +111,11 @@ export async function revokeStoredCustomerDisplay() {
     return;
   }
 
-  try {
-    await requestJson(`/api/customer-displays/${encodeURIComponent(customerDisplay.id)}/revoke`, {
-      method: "POST",
-      body: JSON.stringify({ controlToken: customerDisplay.controlToken }),
-    });
-  } finally {
-    invalidateCustomerDisplay(customerDisplay.id);
-    clearStoredCustomerDisplay();
-  }
+  invalidateCustomerDisplay(customerDisplay.id);
+  clearStoredCustomerDisplay();
+
+  await requestJson(`/api/customer-displays/${encodeURIComponent(customerDisplay.id)}/revoke`, {
+    method: "POST",
+    body: JSON.stringify({ controlToken: customerDisplay.controlToken }),
+  });
 }

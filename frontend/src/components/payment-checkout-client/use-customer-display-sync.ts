@@ -19,6 +19,7 @@ type CustomerDisplaySyncOptions = {
   paymentMethod: PaymentMethod;
   qrPaymentConfigured: boolean;
   selectedQrDataUrl: string;
+  storeId: string;
   transferPaymentConfigured: boolean;
 };
 
@@ -73,6 +74,7 @@ export function useCustomerDisplaySync({
   paymentMethod,
   qrPaymentConfigured,
   selectedQrDataUrl,
+  storeId,
   transferPaymentConfigured,
 }: CustomerDisplaySyncOptions) {
   const [customerDisplay, setCustomerDisplay] = useState<CustomerDisplayLink | null>(null);
@@ -80,14 +82,14 @@ export function useCustomerDisplaySync({
 
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
-      const storedDisplay = readStoredCustomerDisplay();
+      const storedDisplay = readStoredCustomerDisplay({ storeId });
       if (storedDisplay) {
         setCustomerDisplay(storedDisplay);
       }
     }, 0);
 
     return () => window.clearTimeout(timeoutId);
-  }, []);
+  }, [storeId]);
 
   const clearCustomerDisplayState = useCallback(() => {
     clearStoredCustomerDisplay();
@@ -100,11 +102,11 @@ export function useCustomerDisplaySync({
       body: JSON.stringify({ name: "จอลูกค้า" }),
     });
     const url = `${window.location.origin}/display/${encodeURIComponent(response.display.id)}?token=${encodeURIComponent(response.token)}`;
-    const displayLink = { id: response.display.id, token: response.token, controlToken: response.controlToken, url };
+    const displayLink = { id: response.display.id, token: response.token, controlToken: response.controlToken, storeId, url };
     setCustomerDisplay(displayLink);
     storeCustomerDisplay(displayLink);
     return displayLink;
-  }, []);
+  }, [storeId]);
 
   const sendCustomerDisplayState = useCallback(async (display: CustomerDisplayLink, payload: CustomerDisplayStateUpdate) => {
     const response = await requestJson<CustomerDisplayStateResponse>(`/api/customer-displays/${encodeURIComponent(display.id)}/state`, {

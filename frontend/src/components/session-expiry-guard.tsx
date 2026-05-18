@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useBackofficeShellAlert } from "@/components/backoffice-shell";
+import { revokeStoredCustomerDisplay } from "@/components/customer-display-session";
 import { fetchWithCsrfRetry } from "@/lib/csrf";
 import { clearStoredOwnerTheme } from "@/lib/owner-theme";
 
@@ -32,6 +33,7 @@ export function SessionExpiryGuard({ initialExpiresAt }: SessionExpiryGuardProps
     }).catch(() => undefined);
 
     clearStoredOwnerTheme();
+    void revokeStoredCustomerDisplay().catch(() => undefined);
     window.setTimeout(() => {
       window.location.replace("/login");
     }, 1000);

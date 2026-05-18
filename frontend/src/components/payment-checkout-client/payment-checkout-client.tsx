@@ -121,6 +121,7 @@ export function PaymentCheckoutClient({ paymentSettings, storeId }: { paymentSet
     paymentMethod,
     qrPaymentConfigured,
     selectedQrDataUrl,
+    storeId,
     transferPaymentConfigured,
   });
 
