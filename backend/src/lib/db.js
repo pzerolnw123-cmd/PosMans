@@ -38,6 +38,16 @@ const pool = new Pool({
   statement_timeout: env.DB_STATEMENT_TIMEOUT_MS,
   idle_in_transaction_session_timeout: env.DB_IDLE_IN_TRANSACTION_SESSION_TIMEOUT_MS,
 });
+
+const eventPool = new Pool({
+  connectionString: env.DIRECT_DATABASE_URL,
+  max: 2,
+  connectionTimeoutMillis: env.DB_CONNECTION_TIMEOUT_MS,
+  idleTimeoutMillis: env.DB_IDLE_TIMEOUT_MS,
+  query_timeout: env.DB_QUERY_TIMEOUT_MS,
+  statement_timeout: env.DB_STATEMENT_TIMEOUT_MS,
+  idle_in_transaction_session_timeout: env.DB_IDLE_IN_TRANSACTION_SESSION_TIMEOUT_MS,
+});
 const adapter = new PrismaPg(pool);
 
 const prisma =
@@ -70,4 +80,4 @@ function getDatabasePoolSnapshot() {
   };
 }
 
-module.exports = { pool, prisma, databaseDiagnostics, getDatabasePoolSnapshot, describeDatabaseUrl };
+module.exports = { pool, eventPool, prisma, databaseDiagnostics, getDatabasePoolSnapshot, describeDatabaseUrl };

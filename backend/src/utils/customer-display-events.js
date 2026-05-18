@@ -5,6 +5,8 @@ let listenerStarted = false;
 let listenerClient = null;
 
 function subscribeDisplay(displayId, res) {
+  void startDisplayEventListener();
+
   const clients = displayClients.get(displayId) || new Set();
   clients.add(res);
   displayClients.set(displayId, clients);
@@ -18,6 +20,8 @@ function subscribeDisplay(displayId, res) {
 }
 
 function subscribeStore(storeId, res) {
+  void startDisplayEventListener();
+
   const clients = storeClients.get(storeId) || new Set();
   clients.add(res);
   storeClients.set(storeId, clients);
@@ -72,9 +76,10 @@ function deliverStoreEvent(storeId, event, data) {
   });
 }
 
-function getPool() {
+function getEventPool() {
   try {
-    return require("../lib/db").pool;
+    const { eventPool, pool } = require("../lib/db");
+    return eventPool || pool;
   } catch {
     return null;
   }
@@ -85,7 +90,7 @@ async function startDisplayEventListener() {
     return;
   }
 
-  const pool = getPool();
+  const pool = getEventPool();
   if (!pool?.connect) {
     return;
   }
@@ -134,7 +139,7 @@ async function publishDisplayEvent(displayId, event, data) {
   deliverDisplayEvent(displayId, event, data);
   void startDisplayEventListener();
 
-  const pool = getPool();
+  const pool = getEventPool();
   if (!pool?.query) {
     return;
   }
@@ -155,7 +160,7 @@ async function publishStoreEvent(storeId, event, data) {
   deliverStoreEvent(storeId, event, data);
   void startDisplayEventListener();
 
-  const pool = getPool();
+  const pool = getEventPool();
   if (!pool?.query) {
     return;
   }
@@ -171,7 +176,5 @@ async function publishStoreEvent(storeId, event, data) {
     // ส่งใน process นี้ไปแล้ว ส่วน notify ข้าม instance เป็น best-effort
   }
 }
-
-void startDisplayEventListener();
 
 module.exports = { broadcastDisplayEvent, broadcastStoreEvent, publishDisplayEvent, publishStoreEvent, sendSse, subscribeDisplay, subscribeStore };
